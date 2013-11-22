@@ -1,0 +1,26 @@
+<idea-plugin version="2">
+    <id>com.intellij.plugins.thrift</id>
+    <name>Pants Support</name>
+    <description>Support for pants build system</description>
+    <change-notes>
+      <![CDATA[
+      <p>0.1:</p>
+      <ul>
+        <li>init</li>
+      </ul>
+      ]]>
+    </change-notes>
+    <version>0.1</version>
+    <vendor>Twitter, Inc.</vendor>
+    <idea-version since-build="132.1"/>
+
+    <application-components>
+        <!-- Add your application components here -->
+    </application-components>
+    <extensions defaultExtensionNs="com.intellij">
+
+    </extensions>
+
+    <actions>
+    </actions>
+</idea-plugin>
