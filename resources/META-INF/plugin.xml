@@ -12,13 +12,17 @@
     </change-notes>
     <version>0.1</version>
     <vendor>Twitter, Inc.</vendor>
-    <idea-version since-build="132.1"/>
+    <idea-version since-build="133.1"/>
+    <depends>Pythonid</depends>
 
     <application-components>
         <!-- Add your application components here -->
     </application-components>
     <extensions defaultExtensionNs="com.intellij">
+        <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeProvider"/>
 
+        <facetType implementation="com.twitter.intellij.pants.facet.PantsFacetType"/>
+        <framework.detector implementation="com.twitter.intellij.pants.facet.PantsFacetType$PantsFrameworkDetector"/>
     </extensions>
 
     <actions>
