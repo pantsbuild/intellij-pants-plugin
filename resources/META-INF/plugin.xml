@@ -20,9 +20,6 @@
     </application-components>
     <extensions defaultExtensionNs="com.intellij">
         <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
-
-        <facetType implementation="com.twitter.intellij.pants.facet.PantsFacetType"/>
-        <framework.detector implementation="com.twitter.intellij.pants.facet.PantsFacetType$PantsFrameworkDetector"/>
     </extensions>
 
     <actions>
