@@ -8,7 +8,7 @@ import com.jetbrains.python.PythonFileType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BUILDFileTypeProvider implements FileTypeRegistry.FileTypeDetector {
+public class BUILDFileTypeDetector implements FileTypeRegistry.FileTypeDetector {
     @Nullable
     @Override
     public FileType detect(@NotNull VirtualFile file, @NotNull ByteSequence firstBytes, @Nullable CharSequence firstCharsIfText) {
