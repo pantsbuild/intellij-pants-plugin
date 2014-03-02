@@ -28,6 +28,12 @@
                          groupKey="inspections.group.name" enabledByDefault="true"
                          implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection"/>
 
+        <localInspection language="Python" shortName="PantsLibNotConfigured"
+                         bundle="com.twitter.intellij.pants.PantsBundle"
+                         key="pants.inspection.library.not.configured"
+                         groupKey="inspections.group.name" enabledByDefault="true"
+                         implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection"/>
+
     </extensions>
     <extensions defaultExtensionNs="Pythonid">
         <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.resolve.PantsReferenceResolveProvide"/>
