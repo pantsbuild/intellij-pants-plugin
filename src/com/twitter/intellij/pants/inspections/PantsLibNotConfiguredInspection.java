@@ -4,6 +4,8 @@ import com.intellij.codeInspection.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.DependencyScope;
+import com.intellij.openapi.roots.LibraryDependencyScopeSuggester;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
@@ -110,7 +112,8 @@ public class PantsLibNotConfiguredInspection extends LocalInspectionTool {
             }
 
             ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(myModule).getModifiableModel();
-            modifiableModel.addLibraryEntry(pantsLib);
+            DependencyScope defaultScope = LibraryDependencyScopeSuggester.getDefaultScope(pantsLib);
+            modifiableModel.addLibraryEntry(pantsLib).setScope(defaultScope);
             modifiableModel.commit();
         }
     }
