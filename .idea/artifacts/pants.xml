@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="intellij-pants">
+  <artifact build-on-make="true" name="pants">
     <output-path>$PROJECT_DIR$/out/artifacts/pants</output-path>
-    <root id="archive" name="intellij-pants.jar">
+    <root id="root">
       <element id="directory" name="lib">
         <element id="archive" name="pants.jar">
           <element id="module-output" name="intellij-pants" />
