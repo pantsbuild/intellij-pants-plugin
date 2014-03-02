@@ -7,6 +7,7 @@ import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.twitter.intellij.pants.PantsBundle;
@@ -98,7 +99,8 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
             }
 
             final VirtualFile pexFile = PantsUtil.findPexVersionFile(folderWithPex, pantsVersion);
-            if (pexFile == null) {
+            final VirtualFile jar = pexFile == null ? null : JarFileSystem.getInstance().refreshAndFindFileByPath(pexFile.getPath() + "!/");
+            if (jar == null) {
                 Messages.showErrorDialog(
                         project,
                         PantsBundle.message("pants.inspection.library.no.pex.file", pantsVersion),
@@ -110,7 +112,7 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
             final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
             final Library library = libraryTable.createLibrary(PantsUtil.PANTS_LIBRAY_NAME);
             final Library.ModifiableModel modifiableModel = library.getModifiableModel();
-            modifiableModel.addRoot(pexFile, OrderRootType.CLASSES);
+            modifiableModel.addRoot(jar, OrderRootType.CLASSES);
             modifiableModel.commit();
         }
     };
