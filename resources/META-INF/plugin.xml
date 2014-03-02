@@ -6,7 +6,7 @@
       <![CDATA[
       <p>0.1:</p>
       <ul>
-        <li>init</li>
+        <li>Initial Code Assistance for BUILD files</li>
       </ul>
       ]]>
     </change-notes>
@@ -20,11 +20,16 @@
     </application-components>
     <extensions defaultExtensionNs="com.intellij">
         <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
+
+        <localInspection language="Python" shortName="PantsLib" bundle="com.twitter.intellij.pants.PantsBundle"
+                         key="pants.inspection.library.found"
+                         groupKey="inspections.group.name" enabledByDefault="true"
+                         implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection"/>
+
     </extensions>
     <extensions defaultExtensionNs="Pythonid">
         <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.resolve.PantsReferenceResolveProvide"/>
     </extensions>
 
     <actions>
-    </actions>
-</idea-plugin>
+    </actions></idea-plugin>

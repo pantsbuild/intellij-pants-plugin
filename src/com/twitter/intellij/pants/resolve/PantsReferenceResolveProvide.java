@@ -9,6 +9,7 @@ import com.jetbrains.python.psi.PyUtil;
 import com.jetbrains.python.psi.resolve.PyReferenceResolveProvider;
 import com.jetbrains.python.psi.resolve.RatedResolveResult;
 import com.jetbrains.python.psi.resolve.ResolveImportUtil;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class PantsReferenceResolveProvide implements PyReferenceResolveProvider 
     @Override
     public List<RatedResolveResult> resolveName(@NotNull PyQualifiedExpression element, @NotNull List<PsiElement> definers) {
         PsiFile containingFile = element.getContainingFile();
-        return "BUILD".equals(containingFile.getName()) ?
+        return PantsUtil.BUILD.equals(containingFile.getName()) ?
                 resolvePantsName(element) :
                 Collections.<RatedResolveResult>emptyList();
     }
@@ -29,7 +30,7 @@ public class PantsReferenceResolveProvide implements PyReferenceResolveProvider 
         String name = element.getName();
 
         List<PsiElement> modules = ResolveImportUtil.resolveModule(
-                QualifiedName.fromComponents("twitter", "pants"),
+                QualifiedName.fromComponents(PantsUtil.TWITTER, PantsUtil.PANTS),
                 element.getContainingFile(),
                 true,
                 0
