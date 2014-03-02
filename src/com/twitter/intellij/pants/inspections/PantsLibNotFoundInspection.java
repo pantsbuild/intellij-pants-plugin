@@ -36,7 +36,7 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public String getShortName() {
-        return "PantsLib";
+        return "PantsLibNotFound";
     }
 
     @Nullable
