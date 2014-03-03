@@ -1,5 +1,5 @@
 <idea-plugin version="2">
-    <id>com.intellij.plugins.thrift</id>
+    <id>com.intellij.plugins.pants</id>
     <name>Pants Support</name>
     <description>Support for pants build system</description>
     <change-notes>
