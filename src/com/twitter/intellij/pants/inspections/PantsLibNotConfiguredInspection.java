@@ -73,7 +73,7 @@ public class PantsLibNotConfiguredInspection extends LocalInspectionTool {
                 PantsBundle.message("pants.inspection.library.not.configured", module.getName()),
                 isOnTheFly,
                 new LocalQuickFix[]{new ConfigureLibFix(module)},
-                ProblemHighlightType.GENERIC_ERROR_OR_WARNING
+                ProblemHighlightType.GENERIC_ERROR
         );
         return new ProblemDescriptor[]{problemDescriptor};
     }
