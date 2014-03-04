@@ -1,0 +1,28 @@
+<idea-plugin version="2">
+    <application-components>
+        <!-- Add your application components here -->
+    </application-components>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
+        <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>
+
+        <localInspection language="Python" shortName="PantsLibNotFound"
+                         bundle="com.twitter.intellij.pants.PantsBundle"
+                         key="pants.inspection.library.not.found"
+                         groupKey="inspections.group.name" enabledByDefault="true"
+                         implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection"/>
+
+        <localInspection language="Python" shortName="PantsLibNotConfigured"
+                         bundle="com.twitter.intellij.pants.PantsBundle"
+                         key="pants.inspection.library.not.configured"
+                         groupKey="inspections.group.name" enabledByDefault="true"
+                         implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection"/>
+
+    </extensions>
+    <extensions defaultExtensionNs="Pythonid">
+        <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.resolve.PantsReferenceResolveProvide"/>
+    </extensions>
+
+    <actions>
+    </actions>
+</idea-plugin>

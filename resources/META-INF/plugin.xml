@@ -4,6 +4,10 @@
     <description>Support for pants build system</description>
     <change-notes>
       <![CDATA[
+      <p>0.2:</p>
+      <ul>
+        <li>Community Edition Support</li>
+      </ul>
       <p>0.1:</p>
       <ul>
         <li>Initial Code Assistance for BUILD files</li>
@@ -11,34 +15,9 @@
       </ul>
       ]]>
     </change-notes>
-    <version>0.1</version>
+    <version>0.2</version>
     <vendor>Twitter, Inc.</vendor>
     <idea-version since-build="133.1"/>
-    <depends>Pythonid</depends>
-
-    <application-components>
-        <!-- Add your application components here -->
-    </application-components>
-    <extensions defaultExtensionNs="com.intellij">
-        <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
-        <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>
-
-        <localInspection language="Python" shortName="PantsLibNotFound"
-                         bundle="com.twitter.intellij.pants.PantsBundle"
-                         key="pants.inspection.library.not.found"
-                         groupKey="inspections.group.name" enabledByDefault="true"
-                         implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection"/>
-
-        <localInspection language="Python" shortName="PantsLibNotConfigured"
-                         bundle="com.twitter.intellij.pants.PantsBundle"
-                         key="pants.inspection.library.not.configured"
-                         groupKey="inspections.group.name" enabledByDefault="true"
-                         implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection"/>
-
-    </extensions>
-    <extensions defaultExtensionNs="Pythonid">
-        <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.resolve.PantsReferenceResolveProvide"/>
-    </extensions>
-
-    <actions>
-    </actions></idea-plugin>
+    <depends optional="true" config-file="pants-core.xml">Pythonid</depends>
+    <depends optional="true" config-file="pants-core.xml">PythonCore</depends>
+</idea-plugin>
