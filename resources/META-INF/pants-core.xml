@@ -6,6 +6,8 @@
         <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
         <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>
 
+        <completion.contributor language="Python" implementationClass="com.twitter.intellij.pants.completion.PantsCompletionContributor"/>
+
         <localInspection language="Python" shortName="PantsLibNotFound"
                          bundle="com.twitter.intellij.pants.PantsBundle"
                          key="pants.inspection.library.not.found"
