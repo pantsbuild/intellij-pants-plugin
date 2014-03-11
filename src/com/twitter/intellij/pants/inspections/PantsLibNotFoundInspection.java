@@ -17,103 +17,118 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PantsLibNotFoundInspection extends LocalInspectionTool {
+  @NotNull
+  public String getGroupDisplayName() {
+    return PantsBundle.message("inspections.group.name");
+  }
+
+  @Nls
+  @NotNull
+  @Override
+  public String getDisplayName() {
+    return PantsBundle.message("pants.inspection.library.found");
+  }
+
+  @Override
+  public boolean isEnabledByDefault() {
+    return true;
+  }
+
+  @NotNull
+  @Override
+  public String getShortName() {
+    return "PantsLibNotFound";
+  }
+
+  @Nullable
+  @Override
+  public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
+    if (!PantsUtil.BUILD.equals(file.getName())) {
+      return ProblemDescriptor.EMPTY_ARRAY;
+    }
+    final Project project = file.getProject();
+    final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
+    final Library libraryByName = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRAY_NAME);
+    if (libraryByName != null) {
+      return ProblemDescriptor.EMPTY_ARRAY;
+    }
+
+    final ProblemDescriptor problemDescriptor = manager.createProblemDescriptor(
+      file,
+      PantsBundle.message("pants.inspection.library.not.found"),
+      isOnTheFly,
+      new LocalQuickFix[]{INSTALL_FIX},
+      ProblemHighlightType.GENERIC_ERROR_OR_WARNING
+    );
+    return new ProblemDescriptor[]{problemDescriptor};
+  }
+
+  private static LocalQuickFix INSTALL_FIX = new InstallQuickFix();
+
+  public static class InstallQuickFix implements LocalQuickFix {
     @NotNull
-    public String getGroupDisplayName() {
-        return PantsBundle.message("inspections.group.name");
-    }
-
-    @Nls
-    @NotNull
     @Override
-    public String getDisplayName() {
-        return PantsBundle.message("pants.inspection.library.found");
-    }
-
-    @Override
-    public boolean isEnabledByDefault() {
-        return true;
+    public String getName() {
+      return PantsBundle.message("pants.inspection.fix.it");
     }
 
     @NotNull
     @Override
-    public String getShortName() {
-        return "PantsLibNotFound";
+    public String getFamilyName() {
+      return getName();
     }
 
-    @Nullable
     @Override
-    public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
-        if (!PantsUtil.BUILD.equals(file.getName())) {
-            return ProblemDescriptor.EMPTY_ARRAY;
-        }
-        final Project project = file.getProject();
-        final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
-        final Library libraryByName = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRAY_NAME);
-        if (libraryByName != null) {
-            return ProblemDescriptor.EMPTY_ARRAY;
-        }
-
-        final ProblemDescriptor problemDescriptor = manager.createProblemDescriptor(
-                file,
-                PantsBundle.message("pants.inspection.library.not.found"),
-                isOnTheFly,
-                new LocalQuickFix[]{INSTALL_FIX},
-                ProblemHighlightType.GENERIC_ERROR_OR_WARNING
-        );
-        return new ProblemDescriptor[]{problemDescriptor};
+    public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+      applyFix(project);
     }
 
-    private static LocalQuickFix INSTALL_FIX = new LocalQuickFix() {
-        @NotNull
-        @Override
-        public String getName() {
-            return PantsBundle.message("pants.inspection.fix.it");
+    public static void applyFix(@NotNull Project project) {
+      final VirtualFile localPexFile = PantsUtil.findLocalPantsPex(project);
+
+      VirtualFile pexFile;
+      if (localPexFile != null) {
+        pexFile = localPexFile;
+      } else {
+        final String pantsVersion = PantsUtil.findPantsVersion(project);
+        if (pantsVersion == null) {
+          Messages.showErrorDialog(
+            project,
+            PantsBundle.message("pants.inspection.library.no.version"),
+            PantsBundle.message("pants.error.title")
+          );
+          return;
         }
 
-        @NotNull
-        @Override
-        public String getFamilyName() {
-            return getName();
+        final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
+        if (folderWithPex == null) {
+          Messages.showErrorDialog(
+            project,
+            PantsBundle.message("pants.inspection.library.no.pex.folder"),
+            PantsBundle.message("pants.error.title")
+          );
+          return;
         }
 
-        @Override
-        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            final String pantsVersion = PantsUtil.findPantsVersion(project);
-            if (pantsVersion == null) {
-                Messages.showErrorDialog(
-                        project,
-                        PantsBundle.message("pants.inspection.library.no.version"),
-                        PantsBundle.message("pants.error.title")
-                );
-                return;
-            }
-
-            final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
-            if (folderWithPex == null) {
-                Messages.showErrorDialog(
-                        project,
-                        PantsBundle.message("pants.inspection.library.no.pex.folder"),
-                        PantsBundle.message("pants.error.title")
-                );
-                return;
-            }
-
-            final VirtualFile pexFile = PantsUtil.findPexVersionFile(folderWithPex, pantsVersion);
-            final VirtualFile jar = pexFile == null ? null : JarFileSystem.getInstance().refreshAndFindFileByPath(pexFile.getPath() + "!/");
-            if (jar == null) {
-                Messages.showErrorDialog(
-                        project,
-                        PantsBundle.message("pants.inspection.library.no.pex.file", pantsVersion),
-                        PantsBundle.message("pants.error.title")
-                );
-                return;
-            }
-
-            final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
-            final Library library = libraryTable.createLibrary(PantsUtil.PANTS_LIBRAY_NAME);
-            final Library.ModifiableModel modifiableModel = library.getModifiableModel();
-            modifiableModel.addRoot(jar, OrderRootType.CLASSES);
-            modifiableModel.commit();
+        pexFile = PantsUtil.findPexVersionFile(folderWithPex, pantsVersion);
+        if (pexFile == null) {
+          Messages.showErrorDialog(
+            project,
+            PantsBundle.message("pants.inspection.library.no.pex.file", pantsVersion),
+            PantsBundle.message("pants.error.title")
+          );
+          return;
         }
-    };
+      }
+
+      final VirtualFile jar = JarFileSystem.getInstance().refreshAndFindFileByPath(pexFile.getPath() + "!/");
+      assert jar != null;
+
+      final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
+      final Library library = libraryTable.createLibrary(PantsUtil.PANTS_LIBRAY_NAME);
+      final Library.ModifiableModel modifiableModel = library.getModifiableModel();
+      modifiableModel.addRoot(jar, OrderRootType.CLASSES);
+      modifiableModel.commit();
+    }
+  }
 }

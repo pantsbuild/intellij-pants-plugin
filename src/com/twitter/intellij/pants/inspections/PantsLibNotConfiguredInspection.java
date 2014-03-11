@@ -78,10 +78,11 @@ public class PantsLibNotConfiguredInspection extends LocalInspectionTool {
         return new ProblemDescriptor[]{problemDescriptor};
     }
 
-    private static class ConfigureLibFix implements LocalQuickFix {
+    public static class ConfigureLibFix implements LocalQuickFix {
+        @NotNull
         private final Module myModule;
 
-        public ConfigureLibFix(Module module) {
+        public ConfigureLibFix(@NotNull Module module) {
             myModule = module;
         }
 
@@ -99,6 +100,10 @@ public class PantsLibNotConfiguredInspection extends LocalInspectionTool {
 
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+          applyFix(project, myModule);
+        }
+
+        public static void applyFix(@NotNull Project project, @NotNull Module myModule) {
             final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
             final Library pantsLib = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRAY_NAME);
             if (pantsLib == null) {

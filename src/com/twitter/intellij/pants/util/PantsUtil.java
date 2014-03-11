@@ -1,5 +1,6 @@
 package com.twitter.intellij.pants.util;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -10,6 +11,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.ContainerUtil;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,6 +26,7 @@ public class PantsUtil {
 
     public static final String PANTS_LIBRAY_NAME = "pants";
     public static final String PANTS_INI = "pants.ini";
+    public static final String PANTS_PEX = "pants.pex";
 
     private static final String PANTS_VERSION_REGEXP = "pants_version: (\\d+(\\.\\d+)*)";
     private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
@@ -49,9 +52,19 @@ public class PantsUtil {
 
     @Nullable
     public static VirtualFile findPantsIniFile(@NotNull Project project) {
+        return findFileInContentRoots(project, PANTS_INI);
+    }
+
+    @Nullable
+    public static VirtualFile findLocalPantsPex(@NotNull Project project) {
+        return findFileInContentRoots(project, PANTS_PEX);
+    }
+
+    @Nullable
+    public static VirtualFile findFileInContentRoots(@NotNull Project project, @NotNull @NonNls String fileName) {
         for (Module module : ModuleManager.getInstance(project).getModules()) {
             for (VirtualFile root : ModuleRootManager.getInstance(module).getContentRoots()) {
-                VirtualFile iniFile = root.findChild(PANTS_INI);
+                VirtualFile iniFile = root.findChild(fileName);
                 if (iniFile != null) {
                     return iniFile;
                 }
