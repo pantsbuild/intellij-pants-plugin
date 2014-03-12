@@ -15,8 +15,11 @@ import com.twitter.intellij.pants.util.PantsTestUtils;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
+  private static final String PLUGINS_KEY = "idea.load.plugins.id";
+  private static final String USER_HOME_KEY = "user.home";
 
   private String defaultUserHome = null;
+  private String defaultPlugins = null;
 
   @Override
   protected String getTestDataPath() {
@@ -25,9 +28,16 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
 
   @Override
   protected void setUp() throws Exception {
+    final String pyPluginId = "PythonCore";
+
+    defaultPlugins = System.getProperty(PLUGINS_KEY);
+    System.setProperty(PLUGINS_KEY, pyPluginId + "," + defaultPlugins);
+
+    defaultUserHome = System.getProperty(USER_HOME_KEY);
+    System.setProperty(USER_HOME_KEY, FileUtil.toSystemIndependentName(PantsTestUtils.BASE_TEST_DATA_PATH + "/userHome"));
+
     super.setUp();
 
-    final String pyPluginId = "PythonCore";
     final IdeaPluginDescriptor pyPlugin = PluginManager.getPlugin(PluginId.getId(pyPluginId));
     assertTrue(
       "Python Community Edition plugin should be in classpath for tests\n" +
@@ -38,7 +48,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     checkDependentPlugins(pyPlugin);
     assertTrue(
       "Python Community Edition plugin should be enabled",
-      pyPlugin.isEnabled() || PluginManager.enablePlugin(pyPluginId)
+      pyPlugin.isEnabled()
     );
 
     myFixture.addFileToProject("pants.ini", "pants_version: 0.239");
@@ -53,9 +63,6 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
       "Pants lib not configured!",
       ProjectLibraryTable.getInstance(myFixture.getProject()).getLibraryByName(PantsUtil.PANTS_LIBRAY_NAME)
     );
-
-    defaultUserHome = System.getProperty("user.home");
-    System.setProperty("user.home", FileUtil.toSystemIndependentName(PantsTestUtils.BASE_TEST_DATA_PATH + "/userHome"));
   }
 
   private void checkDependentPlugins(IdeaPluginDescriptor mainPlugin) {
@@ -77,8 +84,12 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
   @Override
   protected void tearDown() throws Exception {
     if (defaultUserHome != null) {
-      System.setProperty("user.home", defaultUserHome);
+      System.setProperty(USER_HOME_KEY, defaultUserHome);
       defaultUserHome = null;
+    }
+    if (defaultPlugins != null) {
+      System.setProperty(PLUGINS_KEY, defaultPlugins);
+      defaultPlugins = null;
     }
 
     final LibraryTable libraryTable = ProjectLibraryTable.getInstance(myFixture.getProject());
