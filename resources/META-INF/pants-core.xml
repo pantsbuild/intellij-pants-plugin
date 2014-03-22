@@ -6,6 +6,15 @@
         <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
         <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>
 
+        <!--<moduleBuilder builderClass="com.twitter.intellij.pants.service.project.wizard.PantsModuleBuilder"/>-->
+        <projectImportProvider implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider"/>
+        <projectImportBuilder implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportBuilder"/>
+
+        <externalSystemManager implementation="com.twitter.intellij.pants.PantsManager"/>
+
+        <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsSettings"/>
+        <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>
+
         <completion.contributor language="Python" implementationClass="com.twitter.intellij.pants.completion.PantsCompletionContributor"/>
 
         <localInspection language="Python" shortName="PantsLibNotFound"

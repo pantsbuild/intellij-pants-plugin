@@ -1,6 +1,7 @@
 package com.twitter.intellij.pants.util;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.ide.actions.OpenProjectFileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -20,74 +21,115 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
-    public static final String PANTS = "pants";
-    public static final String TWITTER = "twitter";
-    public static final String BUILD = "BUILD";
+  public static final String PANTS = "pants";
+  public static final String TWITTER = "twitter";
+  public static final String BUILD = "BUILD";
 
-    public static final String PANTS_LIBRAY_NAME = "pants";
-    public static final String PANTS_INI = "pants.ini";
-    public static final String PANTS_PEX = "pants.pex";
+  public static final String PANTS_LIBRARY_NAME = "pants";
+  public static final String PANTS_INI = "pants.ini";
+  public static final String PANTS_PEX = "pants.pex";
 
-    private static final String PANTS_VERSION_REGEXP = "pants_version: (\\d+(\\.\\d+)*)";
-    private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
+  private static final String PANTS_VERSION_REGEXP = "pants_version: (\\d+(\\.\\d+)*)";
+  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
-    @Nullable
-    public static String findPantsVersion(@NotNull Project project) {
-        final VirtualFile pantsIniFile = findPantsIniFile(project);
-        return pantsIniFile == null ? null : findVersionInFile(pantsIniFile);
+  public static final FileChooserDescriptor BUILD_FILE_CHOOSER_DESCRIPTOR = new OpenProjectFileChooserDescriptor(true) {
+    @Override
+    public boolean isFileSelectable(VirtualFile file) {
+      return BUILD.equals(file.getName());
     }
 
-    @Nullable
-    private static String findVersionInFile(VirtualFile file) {
-        try {
-            final String fileContent = VfsUtilCore.loadText(file);
-            final List<String> matches = StringUtil.findMatches(
-                    fileContent, Pattern.compile(PANTS_VERSION_REGEXP), 1
-            );
-            return matches.isEmpty() ? null : matches.iterator().next();
-        } catch (IOException e) {
-            return null;
+    @Override
+    public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
+      if (!super.isFileVisible(file, showHiddenFiles)) {
+        return false;
+      }
+      return file.isDirectory() || BUILD.equals(file.getName());
+    }
+  };
+
+  public static final FileChooserDescriptor PANTS_FILE_CHOOSER_DESCRIPTOR = new FileChooserDescriptor(true, false, false, false, false, false) {
+    @Override
+    public boolean isFileSelectable(VirtualFile file) {
+      return PANTS.equals(file.getName());
+    }
+
+    @Override
+    public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
+      if (!super.isFileVisible(file, showHiddenFiles)) {
+        return false;
+      }
+      return file.isDirectory() || PANTS.equals(file.getName());
+    }
+  };
+
+  @Nullable
+  public static String findPantsVersion(@NotNull Project project) {
+    final VirtualFile pantsIniFile = findPantsIniFile(project);
+    return pantsIniFile == null ? null : findVersionInFile(pantsIniFile);
+  }
+
+  @Nullable
+  private static String findVersionInFile(VirtualFile file) {
+    try {
+      final String fileContent = VfsUtilCore.loadText(file);
+      final List<String> matches = StringUtil.findMatches(
+        fileContent, Pattern.compile(PANTS_VERSION_REGEXP), 1
+      );
+      return matches.isEmpty() ? null : matches.iterator().next();
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  @Nullable
+  public static VirtualFile findPantsIniFile(@NotNull Project project) {
+    return findFileInContentRoots(project, PANTS_INI);
+  }
+
+  @Nullable
+  public static VirtualFile findLocalPantsPex(@NotNull Project project) {
+    return findFileInContentRoots(project, PANTS_PEX);
+  }
+
+  @Nullable
+  public static VirtualFile findFileInContentRoots(@NotNull Project project, @NotNull @NonNls String fileName) {
+    for (Module module : ModuleManager.getInstance(project).getModules()) {
+      for (VirtualFile root : ModuleRootManager.getInstance(module).getContentRoots()) {
+        VirtualFile iniFile = root.findChild(fileName);
+        if (iniFile != null) {
+          return iniFile;
         }
+      }
     }
+    return null;
+  }
 
-    @Nullable
-    public static VirtualFile findPantsIniFile(@NotNull Project project) {
-        return findFileInContentRoots(project, PANTS_INI);
+  @Nullable
+  public static VirtualFile findFolderWithPex() {
+    final VirtualFile userHomeDir = VfsUtil.getUserHomeDir();
+    return userHomeDir != null ? userHomeDir.findFileByRelativePath(PEX_RELATIVE_PATH) : null;
+  }
+
+  @Nullable
+  public static VirtualFile findPexVersionFile(@NotNull VirtualFile folderWithPex, @NotNull String pantsVersion) {
+    final String filePrefix = "pants-" + pantsVersion;
+    return ContainerUtil.find(folderWithPex.getChildren(), new Condition<VirtualFile>() {
+      @Override
+      public boolean value(VirtualFile virtualFile) {
+        return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
+      }
+    });
+  }
+
+  @Nullable
+  public static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
+    if (file == null) return null;
+    if (file.isDirectory()) {
+      final VirtualFile pantsFile = file.findChild(PantsUtil.PANTS);
+      if (pantsFile != null && !pantsFile.isDirectory()) {
+        return pantsFile;
+      }
     }
-
-    @Nullable
-    public static VirtualFile findLocalPantsPex(@NotNull Project project) {
-        return findFileInContentRoots(project, PANTS_PEX);
-    }
-
-    @Nullable
-    public static VirtualFile findFileInContentRoots(@NotNull Project project, @NotNull @NonNls String fileName) {
-        for (Module module : ModuleManager.getInstance(project).getModules()) {
-            for (VirtualFile root : ModuleRootManager.getInstance(module).getContentRoots()) {
-                VirtualFile iniFile = root.findChild(fileName);
-                if (iniFile != null) {
-                    return iniFile;
-                }
-            }
-
-        }
-        return null;
-    }
-
-    @Nullable
-    public static VirtualFile findFolderWithPex() {
-        final VirtualFile userHomeDir = VfsUtil.getUserHomeDir();
-        return userHomeDir != null ? userHomeDir.findFileByRelativePath(PEX_RELATIVE_PATH) : null;
-    }
-
-    @Nullable
-    public static VirtualFile findPexVersionFile(@NotNull VirtualFile folderWithPex, @NotNull String pantsVersion) {
-        final String filePrefix = "pants-" + pantsVersion;
-        return ContainerUtil.find(folderWithPex.getChildren(), new Condition<VirtualFile>() {
-            @Override
-            public boolean value(VirtualFile virtualFile) {
-                return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
-            }
-        });
-    }
+    return findPantsExecutable(file.getParent());
+  }
 }

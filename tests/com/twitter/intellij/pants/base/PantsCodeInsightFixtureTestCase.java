@@ -61,7 +61,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     });
     assertNotNull(
       "Pants lib not configured!",
-      ProjectLibraryTable.getInstance(myFixture.getProject()).getLibraryByName(PantsUtil.PANTS_LIBRAY_NAME)
+      ProjectLibraryTable.getInstance(myFixture.getProject()).getLibraryByName(PantsUtil.PANTS_LIBRARY_NAME)
     );
   }
 
@@ -93,7 +93,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     }
 
     final LibraryTable libraryTable = ProjectLibraryTable.getInstance(myFixture.getProject());
-    final Library libraryByName = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRAY_NAME);
+    final Library libraryByName = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRARY_NAME);
     if (libraryByName != null) {
       ApplicationManager.getApplication().runWriteAction(new Runnable() {
         @Override
