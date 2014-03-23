@@ -2,6 +2,7 @@ package com.twitter.intellij.pants;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.SimpleJavaParameters;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.ExternalSystemConfigurableAware;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
@@ -16,6 +17,7 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.Function;
 import com.twitter.intellij.pants.service.project.PantsProjectResolver;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
@@ -149,6 +151,9 @@ public class PantsManager implements
 
   @Override
   public void runActivity(@NotNull Project project) {
-
+    // enable inProcessMode for debugging
+    final String key = PantsConstants.SYSTEM_ID.getId() + ExternalSystemConstants.USE_IN_PROCESS_COMMUNICATION_REGISTRY_KEY_SUFFIX;
+    final boolean inProcess = Boolean.valueOf(System.getProperty(key.toLowerCase()));
+    Registry.get(key).setValue(inProcess);
   }
 }
