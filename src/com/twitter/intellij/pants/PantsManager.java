@@ -2,7 +2,6 @@ package com.twitter.intellij.pants;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.SimpleJavaParameters;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.ExternalSystemConfigurableAware;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
@@ -103,7 +102,7 @@ public class PantsManager implements
     return new Function<Pair<Project, String>, PantsExecutionSettings>() {
       @Override
       public PantsExecutionSettings fun(Pair<Project, String> projectStringPair) {
-        return new PantsExecutionSettings();
+        return new PantsExecutionSettings(null);
       }
     };
   }
