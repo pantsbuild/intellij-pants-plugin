@@ -20,37 +20,98 @@
  */
 package com.twitter.intellij.pants.execution;
 
+import com.intellij.ide.util.TreeFileChooser;
+import com.intellij.ide.util.TreeFileChooserFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.ui.RawCommandLineEditor;
+import com.twitter.intellij.pants.PantsBundle;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
     JPanel myPanel;
-    private JTextField myWorkingDirField;
-    private JTextField myCommandLineField;
-    private JTextField myPantsExeField;
-    private JPanel myCommandLineExePanel;
-    private JPanel myPantsExePanel;
-    private JPanel myWorkingDirPanel;
+    private TextFieldWithBrowseButton myExecutableField;
+    private TextFieldWithBrowseButton myWorkingDirectoryField;
+    private RawCommandLineEditor myArguments;
 
     public PantsConfigurable(final Project project) {
+        myExecutableField.getButton().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(project).createFileChooser(
+                        PantsBundle.message("choose.pants.executable.file"),
+                        null,
+                        null,
+                        new TreeFileChooser.PsiFileFilter() {
+                            public boolean accept(PsiFile file) {
+                                return "pants".equalsIgnoreCase(file.getName());
+                            }
+                        }
+                );
+
+                fileChooser.showDialog();
+
+                PsiFile selectedFile = fileChooser.getSelectedFile();
+                final VirtualFile virtualFile = selectedFile == null ? null : selectedFile.getVirtualFile();
+                if (virtualFile != null) {
+                    final String path = FileUtil.toSystemDependentName(virtualFile.getPath());
+                    myExecutableField.setText(path);
+
+                    if (StringUtil.isEmpty(myWorkingDirectoryField.getText())) {
+                        final String folder = FileUtil.toSystemDependentName(virtualFile.getParent().getPath());
+                        myWorkingDirectoryField.setText(folder);
+                    }
+                }
+            }
+        });
+        myWorkingDirectoryField.getButton().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(project).createFileChooser(
+                        PantsBundle.message("choose.working.dir"),
+                        null,
+                        null,
+                        new TreeFileChooser.PsiFileFilter() {
+                            public boolean accept(PsiFile file) {
+                                return file.isDirectory();
+                            }
+                        }
+                );
+
+                fileChooser.showDialog();
+
+                PsiFile selectedFile = fileChooser.getSelectedFile();
+                final VirtualFile virtualFile = selectedFile == null ? null : selectedFile.getVirtualFile();
+                if (virtualFile != null) {
+                    final String folder = FileUtil.toSystemDependentName(virtualFile.getPath());
+                    myWorkingDirectoryField.setText(folder);
+                }
+            }
+        });
     }
 
     public void applyEditorTo(@NotNull final PantsConfiguration configuration) throws ConfigurationException {
         final PantsRunnerParameters runnerParameters = configuration.getRunnerParameters();
-        runnerParameters.setArguments(myCommandLineField.getText().trim());
-        runnerParameters.setExecutable(myPantsExeField.getText().trim());
-        runnerParameters.setWorkingDir(myWorkingDirField.getText().trim());
+        runnerParameters.setExecutable(myExecutableField.getText().trim());
+        runnerParameters.setWorkingDir(myWorkingDirectoryField.getText().trim());
+        runnerParameters.setArguments(myArguments.getText().trim());
     }
 
     public void resetEditorFrom(final PantsConfiguration configuration) {
         final PantsRunnerParameters runnerParameters = configuration.getRunnerParameters();
-        myWorkingDirField.setText(runnerParameters.getWorkingDir());
-        myCommandLineField.setText(runnerParameters.getArguments());
-        myPantsExeField.setText(runnerParameters.getExecutable());
+        myExecutableField.setText(runnerParameters.getExecutable());
+        myWorkingDirectoryField.setText(runnerParameters.getWorkingDir());
+        myArguments.setText(runnerParameters.getArguments());
     }
 
     @NotNull

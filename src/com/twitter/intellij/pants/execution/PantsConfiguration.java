@@ -87,4 +87,9 @@ public class PantsConfiguration extends LocatableConfigurationBase {
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
         return new PantsConfigurable(getProject());
     }
+
+    @Override
+    public RunConfiguration clone() {
+        return new PantsConfiguration(getProject(), getFactory(), getName());
+    }
 }
