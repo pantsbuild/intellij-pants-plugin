@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.io.File;
 
 public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
   JPanel myPanel;
@@ -37,6 +38,25 @@ public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
   private JPanel myWorkingDirPanel;
 
   public PantsConfigurable(final Project project) {
+    // making educated guesses to prepopulate the fields with
+    File workingDir = guessWorkingDir(new File(project.getBasePath()).getAbsoluteFile());
+
+    myWorkingDirField.setText(workingDir.toString());
+    myPantsExeField.setText(new File(workingDir, "pants").toString());
+    myCommandLineField.setText("goal compile <put_your_target_here>");
+  }
+
+  private File guessWorkingDir(File startDir) {
+    // making the assumption that .pants.d is located in the same place as the working dir
+    File basePath = startDir;
+    while (basePath != null) {
+      if (basePath.getParentFile() != null && basePath.getName().equals(".pants.d")) {
+        return basePath.getParentFile();
+      }
+      basePath = basePath.getParentFile();
+    }
+    // no luck, return what we got
+    return startDir;
   }
 
   public void applyEditorTo(@NotNull final PantsConfiguration configuration) throws ConfigurationException {
@@ -55,9 +75,15 @@ public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
   }
 
   public void resetEditorFrom(final PantsConfiguration configuration) {
-    myWorkingDirField.setText(configuration.WORKING_DIR);
-    myCommandLineField.setText(configuration.COMMAND_LINE);
-    myPantsExeField.setText(configuration.PANTS_EXE);
+    if (configuration.WORKING_DIR != null) {
+      myWorkingDirField.setText(configuration.WORKING_DIR);
+    }
+    if (configuration.COMMAND_LINE != null) {
+      myCommandLineField.setText(configuration.COMMAND_LINE);
+    }
+    if (configuration.PANTS_EXE != null) {
+      myPantsExeField.setText(configuration.PANTS_EXE);
+    }
   }
 
   @NotNull
