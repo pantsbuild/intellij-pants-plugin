@@ -26,7 +26,6 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.io.File;
 
 public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
     JPanel myPanel;
@@ -38,60 +37,24 @@ public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
     private JPanel myWorkingDirPanel;
 
     public PantsConfigurable(final Project project) {
-        // making educated guesses to prepopulate the fields with
-        File workingDir = guessWorkingDir(new File(project.getBasePath()).getAbsoluteFile());
-
-        myWorkingDirField.setText(workingDir.toString());
-        myPantsExeField.setText(new File(workingDir, "pants").toString());
-        myCommandLineField.setText("goal compile <put_your_target_here>");
-    }
-
-    private File guessWorkingDir(File startDir) {
-        // making the assumption that .pants.d is located in the same place as the working dir
-        File basePath = startDir;
-        while (basePath != null) {
-            if (basePath.getParentFile() != null && basePath.getName().equals(".pants.d")) {
-                return basePath.getParentFile();
-            }
-            basePath = basePath.getParentFile();
-        }
-        // no luck, return what we got
-        return startDir;
     }
 
     public void applyEditorTo(@NotNull final PantsConfiguration configuration) throws ConfigurationException {
-        configuration.COMMAND_LINE = myCommandLineField.getText().trim();
-        if (configuration.COMMAND_LINE != null && configuration.COMMAND_LINE.isEmpty()) {
-            configuration.COMMAND_LINE = null;
-        }
-        configuration.PANTS_EXE = myPantsExeField.getText().trim();
-        if (configuration.PANTS_EXE != null && configuration.PANTS_EXE.isEmpty()) {
-            configuration.PANTS_EXE = null;
-        }
-        configuration.WORKING_DIR = myWorkingDirField.getText().trim();
-        if (configuration.WORKING_DIR != null && configuration.WORKING_DIR.isEmpty()) {
-            configuration.WORKING_DIR = null;
-        }
+        final PantsRunnerParameters runnerParameters = configuration.getRunnerParameters();
+        runnerParameters.setArguments(myCommandLineField.getText().trim());
+        runnerParameters.setExecutable(myPantsExeField.getText().trim());
+        runnerParameters.setWorkingDir(myWorkingDirField.getText().trim());
     }
 
     public void resetEditorFrom(final PantsConfiguration configuration) {
-        if (configuration.WORKING_DIR != null) {
-            myWorkingDirField.setText(configuration.WORKING_DIR);
-        }
-        if (configuration.COMMAND_LINE != null) {
-            myCommandLineField.setText(configuration.COMMAND_LINE);
-        }
-        if (configuration.PANTS_EXE != null) {
-            myPantsExeField.setText(configuration.PANTS_EXE);
-        }
+        final PantsRunnerParameters runnerParameters = configuration.getRunnerParameters();
+        myWorkingDirField.setText(runnerParameters.getWorkingDir());
+        myCommandLineField.setText(runnerParameters.getArguments());
+        myPantsExeField.setText(runnerParameters.getExecutable());
     }
 
     @NotNull
     public JComponent createEditor() {
         return myPanel;
-    }
-
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
     }
 }

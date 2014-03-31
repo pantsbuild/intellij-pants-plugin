@@ -42,7 +42,7 @@ public class PantsConfigurationType implements ConfigurationType {
     public PantsConfigurationType() {
         myFactory = new ConfigurationFactory(this) {
             public RunConfiguration createTemplateConfiguration(Project project) {
-                return new PantsConfiguration(project, this);
+                return new PantsConfiguration(project, this, PantsBundle.message("pants.name"));
             }
 
         };
@@ -61,7 +61,7 @@ public class PantsConfigurationType implements ConfigurationType {
     }
 
     public ConfigurationFactory[] getConfigurationFactories() {
-        return new ConfigurationFactory[]{myFactory};
+        return new ConfigurationFactory[]{getFactory()};
     }
 
     @NotNull
@@ -71,12 +71,11 @@ public class PantsConfigurationType implements ConfigurationType {
 
     @NotNull
     public String getId() {
-        return "Pants";
+        return PantsBundle.message("pants.name");
     }
 
     @Nullable
     public static PantsConfigurationType getInstance() {
         return ContainerUtil.findInstance(Extensions.getExtensions(CONFIGURATION_TYPE_EP), PantsConfigurationType.class);
     }
-
 }
