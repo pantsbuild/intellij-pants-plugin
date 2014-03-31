@@ -20,23 +20,12 @@
  */
 package com.twitter.intellij.pants.execution;
 
-import com.intellij.execution.ExecutionBundle;
-import com.intellij.execution.configurations.RemoteConnection;
-import com.intellij.execution.ui.ConfigurationArgumentsHelpArea;
-import com.intellij.execution.ui.ConfigurationModuleSelector;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.LabeledComponent;
-import com.intellij.openapi.util.SystemInfo;
-import com.intellij.ui.DocumentAdapter;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.event.*;
 
 public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
   JPanel myPanel;
@@ -46,33 +35,8 @@ public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
   private JPanel myCommandLineExePanel;
   private JPanel myPantsExePanel;
   private JPanel myWorkingDirPanel;
-  private ConfigurationArgumentsHelpArea myHelpArea;
-  private LabeledComponent<JComboBox> myModule;
-  //private final ConfigurationModuleSelector myModuleSelector;
 
   public PantsConfigurable(final Project project) {
-    myHelpArea.setLabelText(ExecutionBundle.message("remote.configuration.remote.debugging.allows.you.to.connect.idea.to.a.running.jvm.label"));
-    myHelpArea.setToolbarVisible();
-
-//    final DocumentListener helpTextUpdater = new DocumentAdapter() {
-//      public void textChanged(DocumentEvent event) {
-//        updateHelpText();
-//      }
-//    };
-////    myWorkingDirField.getDocument().addDocumentListener(helpTextUpdater);
-////    myCommandLineField.getDocument().addDocumentListener(helpTextUpdater);
-////    myPantsExeField.getDocument().addDocumentListener(helpTextUpdater);
-////
-////    final FocusListener fieldFocusListener = new FocusAdapter() {
-////      public void focusLost(final FocusEvent e) {
-////        updateHelpText();
-////      }
-////    };
-//    myWorkingDirField.addFocusListener(fieldFocusListener);
-//    myPantsExeField.addFocusListener(fieldFocusListener);
-
-    //TODO ??
-    //myModuleSelector = new ConfigurationModuleSelector(project, myModule.getComponent(), "<whole project>");
   }
 
   public void applyEditorTo(@NotNull final PantsConfiguration configuration) throws ConfigurationException {
@@ -88,14 +52,12 @@ public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
     if (configuration.WORKING_DIR != null && configuration.WORKING_DIR.isEmpty()) {
       configuration.WORKING_DIR = null;
     }
-    //myModuleSelector.applyTo(configuration);
   }
 
   public void resetEditorFrom(final PantsConfiguration configuration) {
     myWorkingDirField.setText(configuration.WORKING_DIR);
     myCommandLineField.setText(configuration.COMMAND_LINE);
     myPantsExeField.setText(configuration.PANTS_EXE);
-    //myModuleSelector.reset(configuration);
   }
 
   @NotNull
@@ -106,21 +68,4 @@ public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
   private void createUIComponents() {
     // TODO: place custom component creation code here
   }
-
-//  private void updateHelpText() {
-//    boolean useSockets = !myRbShmem.isSelected();
-//
-//    final RemoteConnection connection = new RemoteConnection(
-//      useSockets,
-//      myHostName,
-//      useSockets ? myPantsExeField.getText().trim() : myWorkingDirField.getText().trim(),
-//      myRbListen.isSelected()
-//    );
-//    final String cmdLine = connection.getLaunchCommandLine();
-//    // -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=7007
-//    final String jvmtiCmdLine = cmdLine.replace("-Xdebug", "").replace("-Xrunjdwp:", "-agentlib:jdwp=").trim();
-//    myHelpArea.updateText(jvmtiCmdLine);
-//  }
-
-
 }
