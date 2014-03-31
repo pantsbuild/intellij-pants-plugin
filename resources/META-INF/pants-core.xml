@@ -10,7 +10,9 @@
         <projectImportProvider implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider"/>
         <projectImportBuilder implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportBuilder"/>
 
-        <externalSystemManager implementation="com.twitter.intellij.pants.PantsManager"/>
+        <configurationType implementation="com.twitter.intellij.pants.execution.PantsConfigurationType"/>
+
+      <externalSystemManager implementation="com.twitter.intellij.pants.PantsManager"/>
 
         <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsSettings"/>
         <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>
