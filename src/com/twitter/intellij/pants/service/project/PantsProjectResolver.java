@@ -29,7 +29,7 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
       PantsConstants.SYSTEM_ID,
       StringUtil.notNullize(settings != null ? settings.getTargetName() : null, "project"),
       projectDirPath,
-      projectDirPath
+      projectPath
     );
     return new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
   }
