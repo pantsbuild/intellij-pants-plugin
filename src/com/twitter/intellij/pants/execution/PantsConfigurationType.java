@@ -20,11 +20,9 @@
  */
 package com.twitter.intellij.pants.execution;
 
-import com.intellij.execution.ExecutionBundle;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.containers.ContainerUtil;
@@ -36,47 +34,49 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class PantsConfigurationType implements ConfigurationType {
-  private final ConfigurationFactory myFactory;
+    private final ConfigurationFactory myFactory;
 
-  /**reflection*/
-  public PantsConfigurationType() {
-    myFactory = new ConfigurationFactory(this) {
-      public RunConfiguration createTemplateConfiguration(Project project) {
-        return new PantsConfiguration(project, this);
-      }
+    /**
+     * reflection
+     */
+    public PantsConfigurationType() {
+        myFactory = new ConfigurationFactory(this) {
+            public RunConfiguration createTemplateConfiguration(Project project) {
+                return new PantsConfiguration(project, this);
+            }
 
-    };
-  }
+        };
+    }
 
-  public String getDisplayName() {
-    return PantsBundle.message("pants.debug.configuration.display.name");
-  }
+    public String getDisplayName() {
+        return PantsBundle.message("pants.debug.configuration.display.name");
+    }
 
-  public String getConfigurationTypeDescription() {
-    return PantsBundle.message("pants.debug.configuration.description");
-  }
+    public String getConfigurationTypeDescription() {
+        return PantsBundle.message("pants.debug.configuration.description");
+    }
 
-  public Icon getIcon() {
-    return PantsIcons.Icon;
-  }
+    public Icon getIcon() {
+        return PantsIcons.Icon;
+    }
 
-  public ConfigurationFactory[] getConfigurationFactories() {
-    return new ConfigurationFactory[]{myFactory};
-  }
+    public ConfigurationFactory[] getConfigurationFactories() {
+        return new ConfigurationFactory[]{myFactory};
+    }
 
-  @NotNull
-  public ConfigurationFactory getFactory() {
-    return myFactory;
-  }
+    @NotNull
+    public ConfigurationFactory getFactory() {
+        return myFactory;
+    }
 
-  @NotNull
-  public String getId() {
-    return "Pants";
-  }
+    @NotNull
+    public String getId() {
+        return "Pants";
+    }
 
-  @Nullable
-  public static PantsConfigurationType getInstance() {
-    return ContainerUtil.findInstance(Extensions.getExtensions(CONFIGURATION_TYPE_EP), PantsConfigurationType.class);
-  }
+    @Nullable
+    public static PantsConfigurationType getInstance() {
+        return ContainerUtil.findInstance(Extensions.getExtensions(CONFIGURATION_TYPE_EP), PantsConfigurationType.class);
+    }
 
 }
