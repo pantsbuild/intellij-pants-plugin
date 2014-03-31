@@ -17,6 +17,8 @@
 
         <completion.contributor language="Python" implementationClass="com.twitter.intellij.pants.completion.PantsCompletionContributor"/>
 
+        <psi.referenceContributor implementation="com.twitter.intellij.pants.psi.reference.PantsReferenceContributor"/>
+
         <localInspection language="Python" shortName="PantsLibNotFound"
                          bundle="com.twitter.intellij.pants.PantsBundle"
                          key="pants.inspection.library.not.found"
@@ -31,7 +33,7 @@
 
     </extensions>
     <extensions defaultExtensionNs="Pythonid">
-        <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.resolve.PantsReferenceResolveProvide"/>
+        <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.psi.resolve.PantsReferenceResolveProvide"/>
     </extensions>
 
     <actions>

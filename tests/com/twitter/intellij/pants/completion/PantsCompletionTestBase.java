@@ -6,6 +6,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.UsefulTestCase;
 import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -36,8 +37,17 @@ abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTes
   }
 
   protected void doTest() throws Throwable {
-    final VirtualFile buildFile = myFixture.copyFileToProject(getTestName(true) + ".py", "BUILD");
+    doTest(null);
+  }
+
+  protected void doTest(@Nullable String targetPath) throws Throwable {
+    final String buildPath = targetPath == null ? "BUILD" : targetPath + "/BUILD";
+    final VirtualFile buildFile = myFixture.copyFileToProject(getTestName(true) + ".py", buildPath);
     myFixture.configureFromExistingVirtualFile(buildFile);
+    doTestVariantsInner();
+  }
+
+  protected void doTestVariantsInner() throws Throwable {
     doTestVariantsInner(getTestName(true) + ".txt");
   }
 
@@ -73,12 +83,10 @@ abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTes
 
     if (checkType == CheckType.EQUALS) {
       UsefulTestCase.assertSameElements(stringList, variants);
-    }
-    else if (checkType == CheckType.INCLUDES) {
+    } else if (checkType == CheckType.INCLUDES) {
       variants.removeAll(stringList);
       assertTrue("Missing variants: " + variants, variants.isEmpty());
-    }
-    else if (checkType == CheckType.EXCLUDES) {
+    } else if (checkType == CheckType.EXCLUDES) {
       variants.retainAll(stringList);
       assertTrue("Unexpected variants: " + variants, variants.isEmpty());
     }
