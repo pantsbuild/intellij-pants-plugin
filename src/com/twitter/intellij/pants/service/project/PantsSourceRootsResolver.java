@@ -75,7 +75,7 @@ public class PantsSourceRootsResolver extends PantsResolverBase {
   }
 
   @Override
-  public void Resolving source rootaddInfo(DataNode<ProjectData> projectDataNode) {
+  public void ixed addInfo(DataNode<ProjectData> projectDataNode) {
     final String name = "test";
     final ModuleData moduleData = new ModuleData(
       name,
