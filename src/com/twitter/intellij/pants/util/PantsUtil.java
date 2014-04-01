@@ -11,6 +11,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -119,6 +120,27 @@ public class PantsUtil {
         return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
       }
     });
+  }
+
+  @NotNull
+  public static String findRelativePathToPantsExecutable(@NotNull String projectPath) {
+    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
+    final VirtualFile pantsExecutable = findPantsExecutable(buildFile);
+    if (pantsExecutable == null){
+      return projectPath;
+    }
+    else {
+      return StringUtil.notNullize(
+        StringUtil.substringAfter(projectPath, pantsExecutable.getParent().getPath()),
+        projectPath
+      );
+    }
+  }
+
+  @Nullable
+  public static VirtualFile findPantsExecutable(@NotNull String projectPath) {
+    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
+    return findPantsExecutable(buildFile);
   }
 
   @Nullable

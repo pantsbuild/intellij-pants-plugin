@@ -14,6 +14,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.PathUtil;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,11 +39,17 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     sourceRootsResolver.resolve(id, listener);
     sourceRootsResolver.addInfo(moduleNode);
 
+    final PantsDependenciesResolver dependenciesResolver = new PantsDependenciesResolver(projectPath, settings);
+
+    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
+    dependenciesResolver.resolve(id, listener);
+    dependenciesResolver.addInfo(moduleNode);
+
     return projectDataNode;
   }
 
   private DataNode<ModuleData> createModuleNode(String projectPath, DataNode<ProjectData> projectDataNode) {
-    final String name = "test";
+    final String name = PantsUtil.findRelativePathToPantsExecutable(projectPath);
     final ModuleData moduleData = new ModuleData(
       name,
       PantsConstants.SYSTEM_ID,

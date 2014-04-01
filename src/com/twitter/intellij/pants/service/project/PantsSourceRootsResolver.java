@@ -49,7 +49,7 @@ public class PantsSourceRootsResolver extends PantsResolverBase {
     if (buildFile == null) {
       throw new ExternalSystemException("Couldn't find BUILD file: " + projectPath);
     }
-    final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
+    final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(projectPath);
     if (pantsExecutable == null) {
       throw new ExternalSystemException("Couldn't find pants executable for: " + projectPath);
     }
