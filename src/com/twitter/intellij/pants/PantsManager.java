@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -102,7 +103,8 @@ public class PantsManager implements
     return new Function<Pair<Project, String>, PantsExecutionSettings>() {
       @Override
       public PantsExecutionSettings fun(Pair<Project, String> projectStringPair) {
-        return new PantsExecutionSettings(null);
+        // todo: remove when we can choose targets
+        return new PantsExecutionSettings(Collections.singletonList(""));
       }
     };
   }

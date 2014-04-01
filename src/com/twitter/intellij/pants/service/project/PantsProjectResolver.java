@@ -5,6 +5,7 @@ import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationEvent;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
 import com.intellij.openapi.util.text.StringUtil;
@@ -13,6 +14,8 @@ import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class PantsProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   @Nullable
@@ -24,10 +27,23 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     @Nullable PantsExecutionSettings settings,
     @NotNull ExternalSystemTaskNotificationListener listener
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
+    final DataNode<ProjectData> projectDataNode = getProjectDataNode(projectPath, settings);
+
+    final PantsSourceRootsResolver sourceRootsResolver = new PantsSourceRootsResolver(projectPath, settings);
+
+    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving source roots..."));
+    sourceRootsResolver.resolve(id, listener);
+    sourceRootsResolver.addInfo(projectDataNode);
+
+    return projectDataNode;
+  }
+
+  private DataNode<ProjectData> getProjectDataNode(String projectPath, PantsExecutionSettings settings) {
     final String projectDirPath = PathUtil.getParentPath(projectPath);
+    final List<String> targetNames = settings != null ? settings.getTargetNames() : null;
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
-      StringUtil.notNullize(settings != null ? settings.getTargetName() : null, "project"),
+      StringUtil.notNullize(targetNames != null ? StringUtil.join(targetNames, " ") : null, "project"),
       projectDirPath,
       projectPath
     );

@@ -1,25 +1,27 @@
 package com.twitter.intellij.pants.settings;
 
 import com.intellij.openapi.externalSystem.model.settings.ExternalSystemExecutionSettings;
+import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Created by fedorkorotkov
  */
 public class PantsExecutionSettings extends ExternalSystemExecutionSettings {
-  @Nullable
-  private String targetName;
+  private List<String> targetNames;
 
-  public PantsExecutionSettings(@Nullable String targetName) {
-    this.targetName = targetName;
+  public PantsExecutionSettings(List<String> targetNames) {
+    this.targetNames = targetNames;
   }
 
-  public String getTargetName() {
-    return targetName;
+  public List<String> getTargetNames() {
+    return targetNames;
   }
 
-  public void setTargetName(String targetName) {
-    this.targetName = targetName;
+  public void setTargetNames(@Nullable List<String> targetNames) {
+    this.targetNames = targetNames;
   }
 
   @Override
@@ -30,14 +32,15 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings {
 
     PantsExecutionSettings that = (PantsExecutionSettings) o;
 
-    return !(targetName != null ? !targetName.equals(that.targetName) : that.targetName != null);
-
+    return ContainerUtil.equalsIdentity(targetNames, that.targetNames);
   }
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (targetName != null ? targetName.hashCode() : 0);
+    int result = 0;
+    for (String targetName : targetNames) {
+      result = 31 * result + targetName.hashCode();
+    }
     return result;
   }
 }
