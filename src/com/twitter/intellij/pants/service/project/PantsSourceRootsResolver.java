@@ -78,7 +78,6 @@ public class PantsSourceRootsResolver extends PantsResolverBase {
     for (String root : roots) {
       contentRoot.storePath(ExternalSystemSourceType.SOURCE, root);
     }
-efactored
     moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
   }
 }
