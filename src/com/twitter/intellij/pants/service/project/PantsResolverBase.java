@@ -6,6 +6,7 @@ import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
@@ -76,5 +77,5 @@ abstract public class PantsResolverBase {
 
   protected abstract void parse(List<String> out, List<String> err);
 
-  public abstract void addInfo(DataNode<ProjectData> projectDataNode);
+  public abstract void addInfo(DataNode<ModuleData> moduleDataNode);
 }

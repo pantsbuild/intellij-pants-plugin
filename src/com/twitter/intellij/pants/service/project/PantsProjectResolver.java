@@ -3,11 +3,13 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationEvent;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
+import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.PathUtil;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -28,14 +30,28 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     @NotNull ExternalSystemTaskNotificationListener listener
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     final DataNode<ProjectData> projectDataNode = getProjectDataNode(projectPath, settings);
+    final DataNode<ModuleData> moduleNode = createModuleNode(projectPath, projectDataNode);
 
     final PantsSourceRootsResolver sourceRootsResolver = new PantsSourceRootsResolver(projectPath, settings);
 
     listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving source roots..."));
     sourceRootsResolver.resolve(id, listener);
-    sourceRootsResolver.addInfo(projectDataNode);
+    sourceRootsResolver.addInfo(moduleNode);
 
     return projectDataNode;
+  }
+
+  private DataNode<ModuleData> createModuleNode(String projectPath, DataNode<ProjectData> projectDataNode) {
+    final String name = "test";
+    final ModuleData moduleData = new ModuleData(
+      name,
+      PantsConstants.SYSTEM_ID,
+      ModuleTypeId.JAVA_MODULE,
+      name,
+      PathUtil.getParentPath(projectPath),
+      projectPath
+    );
+    return projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
   }
 
   private DataNode<ProjectData> getProjectDataNode(String projectPath, PantsExecutionSettings settings) {

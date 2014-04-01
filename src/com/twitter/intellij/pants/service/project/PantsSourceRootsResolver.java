@@ -7,8 +7,6 @@ import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.ContentRootData;
 import com.intellij.openapi.externalSystem.model.project.ExternalSystemSourceType;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
-import com.intellij.openapi.externalSystem.model.project.ProjectData;
-import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -75,23 +73,12 @@ public class PantsSourceRootsResolver extends PantsResolverBase {
   }
 
   @Override
-  public void addInfo(DataNode<ProjectData> projectDataNode) {
-    final String name = "test";
-    final ModuleData moduleData = new ModuleData(
-      name,
-      PantsConstants.SYSTEM_ID,
-      ModuleTypeId.JAVA_MODULE,
-      name,
-      PathUtil.getParentPath(projectPath),
-      projectPath
-    );
-    final DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
-
+  public void addInfo(DataNode<ModuleData> moduleDataNode) {
     final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, PathUtil.getParentPath(projectPath));
     for (String root : roots) {
       contentRoot.storePath(ExternalSystemSourceType.SOURCE, root);
     }
-
+efactored
     moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
   }
 }
