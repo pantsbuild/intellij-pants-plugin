@@ -3,6 +3,7 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
+import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
@@ -44,6 +45,12 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
     dependenciesResolver.resolve(id, listener);
     dependenciesResolver.addInfo(moduleNode);
+
+    final PantsArtifactDependenciesResolver artifactDependenciesResolver = new PantsArtifactDependenciesResolver(projectPath, settings);
+
+    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving artifact dependencies..."));
+    artifactDependenciesResolver.resolve(id, listener);
+    artifactDependenciesResolver.addInfo(moduleNode);
 
     return projectDataNode;
   }
