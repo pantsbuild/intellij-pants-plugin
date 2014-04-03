@@ -30,7 +30,11 @@ public class PantsDependenciesResolver extends PantsResolverBase {
     commandLine.addParameter("goal");
     commandLine.addParameter("dependencies");
     for (String targetName : settings.getTargetNames()) {
-      commandLine.addParameter(projectPath + ":" + targetName);
+      if ("".equals(targetName)) {
+        commandLine.addParameter(projectPath);
+      } else {
+        commandLine.addParameter(projectPath + ":" + targetName);
+      }
     }
   }
 
@@ -62,7 +66,8 @@ public class PantsDependenciesResolver extends PantsResolverBase {
 
       List<String> targets = roots.get(projectPath);
       if (targets == null) {
-        targets = roots.put(projectPath, new ArrayList<String>());
+        targets = new ArrayList<String>();
+        roots.put(projectPath, targets);
       }
       targets.add(targetName);
     }
@@ -90,8 +95,7 @@ public class PantsDependenciesResolver extends PantsResolverBase {
         moduleData
       );
 
-      // todo: fix
-//      moduleDataNode.createChild(ProjectKeys.MODULE_DEPENDENCY, contentRoot);
+      moduleDataNode.createChild(ProjectKeys.MODULE_DEPENDENCY, moduleDependencyData);
     }
   }
 }
