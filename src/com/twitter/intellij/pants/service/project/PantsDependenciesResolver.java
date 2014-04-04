@@ -6,6 +6,10 @@ import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ModuleDependencyData;
+import com.intellij.openapi.externalSystem.model.project.ProjectData;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationEvent;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -14,6 +18,7 @@ import com.intellij.util.PathUtil;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -21,8 +26,19 @@ public class PantsDependenciesResolver extends PantsResolverBase {
 
   private Map<String, List<String>> roots = Collections.emptyMap();
 
-  public PantsDependenciesResolver(String projectPath, PantsExecutionSettings settings) {
+  private @NotNull ExternalSystemTaskId id;
+  private @NotNull ExternalSystemTaskNotificationListener listener;
+  private @NotNull DataNode<ProjectData> projectDataNode;
+
+  public PantsDependenciesResolver(String projectPath,
+                                   PantsExecutionSettings settings,
+                                   @NotNull ExternalSystemTaskId id,
+                                   @NotNull ExternalSystemTaskNotificationListener listener,
+                                   @NotNull DataNode<ProjectData> projectDataNode) {
     super(projectPath, settings);
+    this.id = id;
+    this.listener = listener;
+    this.projectDataNode = projectDataNode;
   }
 
   @Override
@@ -31,6 +47,7 @@ public class PantsDependenciesResolver extends PantsResolverBase {
     commandLine.addParameter("dependencies");
     for (String targetName : settings.getTargetNames()) {
       if ("".equals(targetName)) {
+        // otherwise pants lists everything twice it seems.
         commandLine.addParameter(projectPath);
       } else {
         commandLine.addParameter(projectPath + ":" + targetName);
@@ -76,8 +93,15 @@ public class PantsDependenciesResolver extends PantsResolverBase {
 
   @Override
   public void addInfo(DataNode<ModuleData> moduleDataNode) {
+    final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(projectPath);
+    if (pantsExecutable == null) {
+      throw new ExternalSystemException("Couldn't find pants executable for: " + projectPath);
+    }
+    final String workingDir = pantsExecutable.getParent().getPath();
+
     for (Map.Entry<String, List<String>> entry : roots.entrySet()) {
       final String projectPath = entry.getKey();
+      final String fullProjectPath = workingDir + "/" + projectPath; // TODO?
       final List<String> targets = entry.getValue();
 
       final String name = projectPath;
@@ -90,6 +114,22 @@ public class PantsDependenciesResolver extends PantsResolverBase {
         projectPath
       );
 
+      DataNode<ModuleData> submoduleDataNode = moduleDataNode.createChild(ProjectKeys.MODULE, moduleData);
+
+      // resolve source and artifact dependencies for this module
+      final PantsSourceRootsResolver sourceRootsResolver = new PantsSourceRootsResolver(fullProjectPath, new PantsExecutionSettings(targets));
+
+      listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving source roots..."));
+      sourceRootsResolver.resolve(id, listener);
+      sourceRootsResolver.addInfo(submoduleDataNode);
+
+      final PantsArtifactDependenciesResolver artifactDependenciesResolver = new PantsArtifactDependenciesResolver(fullProjectPath, new PantsExecutionSettings(targets));
+
+      listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving artifact dependencies..."));
+      artifactDependenciesResolver.resolve(id, listener);
+      artifactDependenciesResolver.addInfo(submoduleDataNode);
+
+      // add the dependency between modules
       final ModuleDependencyData moduleDependencyData = new ModuleDependencyData(
         moduleDataNode.getData(),
         moduleData

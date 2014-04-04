@@ -40,7 +40,8 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     sourceRootsResolver.resolve(id, listener);
     sourceRootsResolver.addInfo(moduleNode);
 
-    final PantsDependenciesResolver dependenciesResolver = new PantsDependenciesResolver(projectPath, settings);
+    final PantsDependenciesResolver dependenciesResolver = new PantsDependenciesResolver(
+        projectPath, settings, id, listener, projectDataNode);
 
     listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
     dependenciesResolver.resolve(id, listener);
