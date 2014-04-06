@@ -126,10 +126,9 @@ public class PantsUtil {
   public static String findRelativePathToPantsExecutable(@NotNull String projectPath) {
     final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     final VirtualFile pantsExecutable = findPantsExecutable(buildFile);
-    if (pantsExecutable == null){
+    if (pantsExecutable == null) {
       return projectPath;
-    }
-    else {
+    } else {
       return StringUtil.notNullize(
         StringUtil.substringAfter(projectPath, pantsExecutable.getParent().getPath()),
         projectPath

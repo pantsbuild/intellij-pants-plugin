@@ -3,7 +3,6 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
@@ -32,6 +31,32 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     @NotNull ExternalSystemTaskNotificationListener listener
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     final DataNode<ProjectData> projectDataNode = getProjectDataNode(projectPath, settings);
+
+    //resolveUsingOldAPI(id, projectPath, settings, listener, projectDataNode);
+    resolveUsingNewAPI(id, projectPath, settings, listener, projectDataNode, isPreviewMode);
+
+    return projectDataNode;
+  }
+
+  private void resolveUsingNewAPI(
+    ExternalSystemTaskId id,
+    String projectPath,
+    PantsExecutionSettings settings,
+    ExternalSystemTaskNotificationListener listener,
+    DataNode<ProjectData> projectDataNode,
+    boolean isPreviewMode
+  ) {
+    final PantsDependenciesGraphResolver sourceRootsResolver = new PantsDependenciesGraphResolver(projectPath, settings, isPreviewMode);
+
+    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving source roots..."));
+    sourceRootsResolver.resolve(id, listener);
+    sourceRootsResolver.addInfo(projectDataNode);
+  }
+
+  /*
+    todo: remove once new API merged to all pants implementations
+   */
+  private void resolveUsingOldAPI(ExternalSystemTaskId id, String projectPath, PantsExecutionSettings settings, ExternalSystemTaskNotificationListener listener, DataNode<ProjectData> projectDataNode) {
     final DataNode<ModuleData> moduleNode = createModuleNode(projectPath, projectDataNode);
 
     final PantsSourceRootsResolver sourceRootsResolver = new PantsSourceRootsResolver(projectPath, settings);
@@ -41,7 +66,7 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     sourceRootsResolver.addInfo(moduleNode);
 
     final PantsDependenciesResolver dependenciesResolver = new PantsDependenciesResolver(
-        projectPath, settings, id, listener, projectDataNode);
+      projectPath, settings, id, listener, projectDataNode);
 
     listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
     dependenciesResolver.resolve(id, listener);
@@ -52,8 +77,6 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving artifact dependencies..."));
     artifactDependenciesResolver.resolve(id, listener);
     artifactDependenciesResolver.addInfo(moduleNode);
-
-    return projectDataNode;
   }
 
   private DataNode<ModuleData> createModuleNode(String projectPath, DataNode<ProjectData> projectDataNode) {

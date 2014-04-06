@@ -4,10 +4,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
-import com.intellij.openapi.externalSystem.model.project.ModuleData;
-import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.util.Key;
@@ -43,6 +40,9 @@ abstract public class PantsResolverBase {
         }
       });
       final ProcessOutput processOutput = processHandler.runProcess();
+      if (processOutput.getStdout().contains("no such option")) {
+        throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
+      }
       if (processOutput.checkSuccess(logger)) {
         parse(processOutput);
       } else {
@@ -63,9 +63,18 @@ abstract public class PantsResolverBase {
     if (buildFile == null) {
       throw new ExternalSystemException("Couldn't find BUILD file: " + projectPath);
     }
-    final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
     if (pantsExecutable == null) {
       throw new ExternalSystemException("Couldn't find pants executable for: " + projectPath);
+    }
+    boolean runFromSources = Boolean.valueOf(System.getProperty("pants.run.from.sources"));
+    if (runFromSources) {
+      final VirtualFile pantsFolder = pantsExecutable.getParent();
+      final VirtualFile bootstrap = pantsFolder.findChild("pants.bootstrap");
+      if (bootstrap != null) {
+        pantsExecutable = bootstrap;
+        commandLine.getEnvironment().put("PANTS_DEV", "1");
+      }
     }
     commandLine.setExePath(pantsExecutable.getPath());
     commandLine.setWorkDirectory(pantsExecutable.getParent().getPath());
@@ -76,6 +85,4 @@ abstract public class PantsResolverBase {
   protected abstract void fillArguments(GeneralCommandLine commandLine);
 
   protected abstract void parse(List<String> out, List<String> err);
-
-  public abstract void addInfo(DataNode<ModuleData> moduleDataNode);
 }

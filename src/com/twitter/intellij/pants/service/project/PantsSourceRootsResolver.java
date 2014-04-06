@@ -22,7 +22,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import java.util.Collections;
 import java.util.List;
 
-public class PantsSourceRootsResolver extends PantsResolverBase {
+public class PantsSourceRootsResolver extends PantsModuleResolverBase {
 
   private List<String> roots = Collections.emptyList();
 

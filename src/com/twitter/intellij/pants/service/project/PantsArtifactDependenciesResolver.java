@@ -4,14 +4,16 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.project.*;
+import com.intellij.openapi.externalSystem.model.project.LibraryData;
+import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
+import com.intellij.openapi.externalSystem.model.project.LibraryLevel;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.Function;
-import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -21,7 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-public class PantsArtifactDependenciesResolver extends PantsResolverBase {
+public class PantsArtifactDependenciesResolver extends PantsModuleResolverBase {
 
   // TODO hacky but for now i'm just matching on this
   // in the future we'd like something like a pants flag that dumps this as json, xml or similar
@@ -99,9 +101,9 @@ public class PantsArtifactDependenciesResolver extends PantsResolverBase {
   public void addInfo(DataNode<ModuleData> moduleDataNode) {
     for (String artifact : artifacts) {
       final LibraryDependencyData library = new LibraryDependencyData(
-          moduleDataNode.getData(),
-          new LibraryData(PantsConstants.SYSTEM_ID, artifact),
-          LibraryLevel.MODULE
+        moduleDataNode.getData(),
+        new LibraryData(PantsConstants.SYSTEM_ID, artifact),
+        LibraryLevel.MODULE
       );
       moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
     }

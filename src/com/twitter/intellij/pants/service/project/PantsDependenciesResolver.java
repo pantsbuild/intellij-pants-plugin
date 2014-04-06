@@ -22,13 +22,19 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class PantsDependenciesResolver extends PantsResolverBase {
+public class PantsDependenciesResolver extends PantsModuleResolverBase {
 
   private Map<String, List<String>> roots = Collections.emptyMap();
 
-  private @NotNull ExternalSystemTaskId id;
-  private @NotNull ExternalSystemTaskNotificationListener listener;
-  private @NotNull DataNode<ProjectData> projectDataNode;
+  private
+  @NotNull
+  ExternalSystemTaskId id;
+  private
+  @NotNull
+  ExternalSystemTaskNotificationListener listener;
+  private
+  @NotNull
+  DataNode<ProjectData> projectDataNode;
 
   public PantsDependenciesResolver(String projectPath,
                                    PantsExecutionSettings settings,
