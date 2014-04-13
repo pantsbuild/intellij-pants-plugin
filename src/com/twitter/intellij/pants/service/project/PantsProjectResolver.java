@@ -46,11 +46,11 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     DataNode<ProjectData> projectDataNode,
     boolean isPreviewMode
   ) {
-    final PantsDependenciesGraphResolver sourceRootsResolver = new PantsDependenciesGraphResolver(projectPath, settings, isPreviewMode);
+    final PantsDependenciesGraphResolver dependenciesResolver = new PantsDependenciesGraphResolver(projectPath, settings, isPreviewMode);
 
-    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving source roots..."));
-    sourceRootsResolver.resolve(id, listener);
-    sourceRootsResolver.addInfo(projectDataNode);
+    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
+    dependenciesResolver.resolve(id, listener);
+    dependenciesResolver.addInfo(projectDataNode);
   }
 
   /*

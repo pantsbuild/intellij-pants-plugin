@@ -12,6 +12,7 @@ import com.intellij.util.PathUtil;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.generate.tostring.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
     }
     commandLine.addParameter("dependencies-graph");
     for (String targetName : settings.getTargetNames()) {
-      if ("".equals(targetName)) {
+      if (StringUtil.isEmpty(targetName)) {
         // otherwise pants lists everything twice it seems.
         commandLine.addParameter(projectPath);
       } else {
@@ -69,8 +70,9 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
     // create all modules with source roots. no libs and dependencies
     for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
       final String targetName = entry.getKey();
+      final TargetInfo targetInfo = entry.getValue();
       final DataNode<ModuleData> moduleData = createModuleData(
-        projectInfoDataNode, targetName, entry.getValue()
+        projectInfoDataNode, targetName, targetInfo
       );
       modules.put(targetName, moduleData);
     }
@@ -94,7 +96,28 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
       }
     }
 
-    // todo: add libs
+    for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
+      final String mainTarget = entry.getKey();
+      final TargetInfo targetInfo = entry.getValue();
+      final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
+      for (String libraryId : targetInfo.libraries) {
+        if (!projectInfo.libraries.containsKey(libraryId)) {
+          // todo: investigate
+          continue;
+        }
+        final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
+        for (String jarPath : projectInfo.libraries.get(libraryId)) {
+          // todo: sources + docs
+          libraryData.addPath(LibraryPathType.BINARY, jarPath);
+        }
+        final LibraryDependencyData library = new LibraryDependencyData(
+          moduleDataNode.getData(),
+          libraryData,
+          LibraryLevel.MODULE
+        );
+        moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
+      }
+    }
   }
 
   private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, TargetInfo targetInfo) {
@@ -111,13 +134,15 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
-    final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, PathUtil.getParentPath(projectPath));
-    for (String root : targetInfo.roots) {
-      final ExternalSystemSourceType source =
-        targetInfo.test_target ? ExternalSystemSourceType.TEST : ExternalSystemSourceType.SOURCE;
-      contentRoot.storePath(source, root);
+    if (!targetInfo.roots.isEmpty()) {
+      final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, PathUtil.getParentPath(projectPath));
+      for (SourceRoot root : targetInfo.roots) {
+        final ExternalSystemSourceType source =
+          targetInfo.test_target ? ExternalSystemSourceType.TEST : ExternalSystemSourceType.SOURCE;
+        contentRoot.storePath(source, root.source_root);
+      }
+      moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
     }
-    moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
 
     return moduleDataNode;
   }
@@ -141,10 +166,15 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
     /**
      * List of source roots.
      */
-    public List<String> roots;
+    public List<SourceRoot> roots;
     /**
      * Is test target
      */
     public boolean test_target;
+  }
+
+  public static class SourceRoot {
+    public String source_root;
+    public String package_prefix;
   }
 }

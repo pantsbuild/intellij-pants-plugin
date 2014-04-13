@@ -46,7 +46,7 @@ abstract public class PantsResolverBase {
       if (processOutput.checkSuccess(logger)) {
         parse(processOutput);
       } else {
-        // todo: do we want to throw an exception
+        throw new ExternalSystemException("Failed to update the project!\n" + processOutput.getStderr());
       }
     } catch (ExecutionException e) {
       throw new ExternalSystemException(e);
@@ -63,18 +63,13 @@ abstract public class PantsResolverBase {
     if (buildFile == null) {
       throw new ExternalSystemException("Couldn't find BUILD file: " + projectPath);
     }
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
+    final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
     if (pantsExecutable == null) {
       throw new ExternalSystemException("Couldn't find pants executable for: " + projectPath);
     }
-    boolean runFromSources = Boolean.valueOf(System.getProperty("pants.run.from.sources"));
+    boolean runFromSources = Boolean.valueOf(System.getProperty("pants.dev.run"));
     if (runFromSources) {
-      final VirtualFile pantsFolder = pantsExecutable.getParent();
-      final VirtualFile bootstrap = pantsFolder.findChild("pants.bootstrap");
-      if (bootstrap != null) {
-        pantsExecutable = bootstrap;
-        commandLine.getEnvironment().put("PANTS_DEV", "1");
-      }
+      commandLine.getEnvironment().put("PANTS_DEV", "1");
     }
     commandLine.setExePath(pantsExecutable.getPath());
     commandLine.setWorkDirectory(pantsExecutable.getParent().getPath());
