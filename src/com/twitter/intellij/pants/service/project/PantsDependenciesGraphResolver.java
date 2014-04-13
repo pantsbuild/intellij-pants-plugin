@@ -31,10 +31,9 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
   protected void fillArguments(GeneralCommandLine commandLine) {
     commandLine.addParameter("goal");
     if (generateJars) {
-      commandLine.addParameter("dependencies-graph");
-    } else {
-      commandLine.addParameter("fast-dependencies-graph");
+      commandLine.addParameter("resolve");
     }
+    commandLine.addParameter("dependencies-graph");
     for (String targetName : settings.getTargetNames()) {
       if ("".equals(targetName)) {
         // otherwise pants lists everything twice it seems.
@@ -43,11 +42,7 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
         commandLine.addParameter(projectPath + ":" + targetName);
       }
     }
-    if (generateJars) {
-      commandLine.addParameter("--no-dependencies-graph-format");
-    } else {
-      commandLine.addParameter("--no-fast-dependencies-graph-format");
-    }
+    commandLine.addParameter("--no-dependencies-graph-format");
   }
 
   @Override
@@ -128,13 +123,10 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
   }
 
   public static class ProjectInfo {
+    // id(org:name:version) to jars
+    public Map<String, List<String>> libraries;
     // name to info
-    public Map<String, LibraryInfo> libraries;
     public Map<String, TargetInfo> targets;
-  }
-
-  public static class LibraryInfo {
-    public String path;
   }
 
   public static class TargetInfo {
