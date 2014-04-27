@@ -8,11 +8,14 @@ import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.generate.tostring.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -135,11 +138,20 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
     if (!targetInfo.roots.isEmpty()) {
-      final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, PathUtil.getParentPath(projectPath));
+      @SuppressWarnings("ConstantConditions")
+      final ContentRootData contentRoot = new ContentRootData(
+        PantsConstants.SYSTEM_ID,
+        PantsUtil.findCommonRoot(ContainerUtil.map(targetInfo.roots, new Function<SourceRoot, String>() {
+          @Override
+          public String fun(SourceRoot root) {
+            return root.source_root;
+          }
+        }))
+      );
       for (SourceRoot root : targetInfo.roots) {
         final ExternalSystemSourceType source =
           targetInfo.test_target ? ExternalSystemSourceType.TEST : ExternalSystemSourceType.SOURCE;
-        contentRoot.storePath(source, root.source_root);
+        contentRoot.storePath(source, root.source_root, StringUtil.nullize(root.package_prefix));
       }
       moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
     }

@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -152,5 +153,21 @@ public class PantsUtil {
       }
     }
     return findPantsExecutable(file.getParent());
+  }
+
+  @Nullable
+  public static String findCommonRoot(List<String> roots) {
+    final Iterator<String> iterator = roots.iterator();
+    if (!iterator.hasNext()) {
+      return null;
+    }
+    String result = iterator.next();
+    while (iterator.hasNext()) {
+      result = StringUtil.commonPrefix(result, iterator.next());
+    }
+    // /foo/bar/
+    // /foo/barBaz
+    final int lastSlash = result.lastIndexOf('/');
+    return result.substring(0, lastSlash + 1);
   }
 }
