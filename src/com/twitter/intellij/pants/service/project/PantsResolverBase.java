@@ -46,7 +46,7 @@ abstract public class PantsResolverBase {
       if (processOutput.checkSuccess(logger)) {
         parse(processOutput);
       } else {
-        throw new ExternalSystemException("Failed to update the project!\n" + processOutput.getStderr());
+        throw new ExternalSystemException("Failed to update the project!\n" + processOutput.getStdout() );
       }
     } catch (ExecutionException e) {
       throw new ExternalSystemException(e);
