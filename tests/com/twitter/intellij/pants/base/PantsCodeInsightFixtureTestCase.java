@@ -51,7 +51,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
       pyPlugin.isEnabled()
     );
 
-    myFixture.addFileToProject("pants.ini", "pants_version: 0.239");
+    myFixture.addFileToProject("pants.ini", "pants_version: 1.0.0rc9");
     ApplicationManager.getApplication().runWriteAction(
       new Runnable() {
         @Override

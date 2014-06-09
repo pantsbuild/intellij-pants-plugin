@@ -1,6 +1,7 @@
 package com.twitter.intellij.pants.inspections;
 
 import com.intellij.codeInspection.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
@@ -109,6 +110,11 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
             PantsBundle.message("pants.error.title")
           );
           return;
+        }
+
+        if (ApplicationManager.getApplication().isUnitTestMode()) {
+          // saw cases when VFS doesn't refresh the folder and returns old files
+          folderWithPex.refresh(false, false);
         }
 
         pexFile = PantsUtil.findPexVersionFile(folderWithPex, pantsVersion);

@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 public class PantsUtil {
   public static final String PANTS = "pants";
+  public static final String PANTS_INTERNAL = "pants_internal";
   public static final String TWITTER = "twitter";
   public static final String BUILD = "BUILD";
 
@@ -31,7 +32,7 @@ public class PantsUtil {
   public static final String PANTS_INI = "pants.ini";
   public static final String PANTS_PEX = "pants.pex";
 
-  private static final String PANTS_VERSION_REGEXP = "pants_version: (\\d+(\\.\\d+)*)";
+  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
   public static final FileChooserDescriptor BUILD_FILE_CHOOSER_DESCRIPTOR = new OpenProjectFileChooserDescriptor(true) {
@@ -76,7 +77,7 @@ public class PantsUtil {
     try {
       final String fileContent = VfsUtilCore.loadText(file);
       final List<String> matches = StringUtil.findMatches(
-        fileContent, Pattern.compile(PANTS_VERSION_REGEXP), 1
+        fileContent, Pattern.compile(PANTS_VERSION_REGEXP)
       );
       return matches.isEmpty() ? null : matches.iterator().next();
     }
