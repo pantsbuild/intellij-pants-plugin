@@ -41,7 +41,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     final IdeaPluginDescriptor pyPlugin = PluginManager.getPlugin(PluginId.getId(pyPluginId));
     assertTrue(
       "Python Community Edition plugin should be in classpath for tests\n" +
-        "You need to include jars from ~/Library/Application Support/IdeaIC13/python/lib/",
+      "You need to include jars from ~/Library/Application Support/IdeaIC13/python/lib/",
       pyPlugin != null
     );
 
@@ -73,12 +73,11 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
       final IdeaPluginDescriptor plugin = PluginManager.getPlugin(pluginId);
       assertNotNull(
         pluginId.getIdString() + " plugin should be in classpath. " +
-          mainPlugin.getPluginId().getIdString() + " needs it.",
+        mainPlugin.getPluginId().getIdString() + " needs it.",
         plugin
       );
       checkDependentPlugins(plugin);
     }
-
   }
 
   @Override

@@ -83,10 +83,12 @@ abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTes
 
     if (checkType == CheckType.EQUALS) {
       UsefulTestCase.assertSameElements(stringList, variants);
-    } else if (checkType == CheckType.INCLUDES) {
+    }
+    else if (checkType == CheckType.INCLUDES) {
       variants.removeAll(stringList);
       assertTrue("Missing variants: " + variants, variants.isEmpty());
-    } else if (checkType == CheckType.EXCLUDES) {
+    }
+    else if (checkType == CheckType.EXCLUDES) {
       variants.retainAll(stringList);
       assertTrue("Unexpected variants: " + variants, variants.isEmpty());
     }
