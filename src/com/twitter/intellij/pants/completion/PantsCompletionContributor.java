@@ -79,11 +79,9 @@ public class PantsCompletionContributor extends CompletionContributor {
             "wiki"
           );
 
-          List<LookupElement> aliases = new ArrayList<LookupElement>();
           for (String str : stringAliases) {
-            aliases.add(LookupElementBuilder.create(str));
+            result.addElement(LookupElementBuilder.create(str));
           }
-          result.addAllElements(aliases);
         }
       }
     );
