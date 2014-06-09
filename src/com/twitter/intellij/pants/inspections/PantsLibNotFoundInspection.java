@@ -89,7 +89,8 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
       VirtualFile pexFile;
       if (localPexFile != null) {
         pexFile = localPexFile;
-      } else {
+      }
+      else {
         final String pantsVersion = PantsUtil.findPantsVersion(project);
         if (pantsVersion == null) {
           Messages.showErrorDialog(

@@ -42,7 +42,8 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
       if (StringUtil.isEmpty(targetName)) {
         // otherwise pants lists everything twice it seems.
         commandLine.addParameter(projectPath);
-      } else {
+      }
+      else {
         commandLine.addParameter(projectPath + ":" + targetName);
       }
     }
@@ -56,7 +57,8 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
     final String data = out.iterator().next();
     try {
       projectInfo = parseProjectInfoFromJSON(data);
-    } catch (JsonSyntaxException e) {
+    }
+    catch (JsonSyntaxException e) {
       throw new ExternalSystemException("Can't parse output", e);
     }
   }
@@ -141,12 +143,16 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
       @SuppressWarnings("ConstantConditions")
       final ContentRootData contentRoot = new ContentRootData(
         PantsConstants.SYSTEM_ID,
-        PantsUtil.findCommonRoot(ContainerUtil.map(targetInfo.roots, new Function<SourceRoot, String>() {
-          @Override
-          public String fun(SourceRoot root) {
-            return root.source_root;
-          }
-        }))
+        PantsUtil.findCommonRoot(
+          ContainerUtil.map(
+            targetInfo.roots, new Function<SourceRoot, String>() {
+              @Override
+              public String fun(SourceRoot root) {
+                return root.source_root;
+              }
+            }
+          )
+        )
       );
       for (SourceRoot root : targetInfo.roots) {
         final ExternalSystemSourceType source =

@@ -23,32 +23,37 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  */
 public class PantsCompletionContributor extends CompletionContributor {
   public PantsCompletionContributor() {
-    extend(CompletionType.BASIC,
-          psiElement().withParent(PyReferenceExpression.class),
-          new CompletionProvider<CompletionParameters>() {
-            @Override
-            protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
-              final PsiFile psiFile = parameters.getOriginalFile();
-              if (!PantsUtil.BUILD.equals(psiFile.getName())) {
-                return;
-              }
-              final PsiElement position = parameters.getPosition();
-              List<PsiElement> modules = ResolveImportUtil.resolveModule(
-                QualifiedName.fromComponents(PantsUtil.TWITTER, PantsUtil.PANTS),
-                psiFile,
-                true,
-                0
-              );
-              final CompletionVariantsProcessor processor = new CompletionVariantsProcessor(position);
-              for (PsiElement module : modules) {
-                module = PyUtil.turnDirIntoInit(module);
-                if (module instanceof PyFile) {
-                  PyResolveUtil.scopeCrawlUp(processor, (PyFile)module, null, null);
-                }
-              }
-              result.addAllElements(processor.getResultList());
+    extend(
+      CompletionType.BASIC,
+      psiElement().withParent(PyReferenceExpression.class),
+      new CompletionProvider<CompletionParameters>() {
+        @Override
+        protected void addCompletions(
+          @NotNull CompletionParameters parameters,
+          ProcessingContext context,
+          @NotNull CompletionResultSet result
+        ) {
+          final PsiFile psiFile = parameters.getOriginalFile();
+          if (!PantsUtil.BUILD.equals(psiFile.getName())) {
+            return;
+          }
+          final PsiElement position = parameters.getPosition();
+          List<PsiElement> modules = ResolveImportUtil.resolveModule(
+            QualifiedName.fromComponents(PantsUtil.TWITTER, PantsUtil.PANTS),
+            psiFile,
+            true,
+            0
+          );
+          final CompletionVariantsProcessor processor = new CompletionVariantsProcessor(position);
+          for (PsiElement module : modules) {
+            module = PyUtil.turnDirIntoInit(module);
+            if (module instanceof PyFile) {
+              PyResolveUtil.scopeCrawlUp(processor, (PyFile)module, null, null);
             }
           }
+          result.addAllElements(processor.getResultList());
+        }
+      }
     );
   }
 }

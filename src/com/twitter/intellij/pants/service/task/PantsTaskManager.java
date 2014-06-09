@@ -14,17 +14,35 @@ import java.util.List;
 public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExecutionSettings>
   implements ExternalSystemTaskManager<PantsExecutionSettings> {
   @Override
-  public void executeTasks(@NotNull ExternalSystemTaskId id, @NotNull List<String> taskNames, @NotNull String projectPath, @Nullable PantsExecutionSettings settings, @NotNull List<String> vmOptions, @NotNull List<String> scriptParameters, @Nullable String debuggerSetup, @NotNull ExternalSystemTaskNotificationListener listener) throws ExternalSystemException {
+  public void executeTasks(
+    @NotNull ExternalSystemTaskId id,
+    @NotNull List<String> taskNames,
+    @NotNull String projectPath,
+    @Nullable PantsExecutionSettings settings,
+    @NotNull List<String> vmOptions,
+    @NotNull List<String> scriptParameters,
+    @Nullable String debuggerSetup,
+    @NotNull ExternalSystemTaskNotificationListener listener
+  ) throws ExternalSystemException {
 
   }
 
   @Override
-  public void executeTasks(@NotNull ExternalSystemTaskId id, @NotNull List<String> taskNames, @NotNull String projectPath, @Nullable PantsExecutionSettings settings, @Nullable String vmOptions, @Nullable String debuggerSetup, @NotNull ExternalSystemTaskNotificationListener listener) throws ExternalSystemException {
+  public void executeTasks(
+    @NotNull ExternalSystemTaskId id,
+    @NotNull List<String> taskNames,
+    @NotNull String projectPath,
+    @Nullable PantsExecutionSettings settings,
+    @Nullable String vmOptions,
+    @Nullable String debuggerSetup,
+    @NotNull ExternalSystemTaskNotificationListener listener
+  ) throws ExternalSystemException {
 
   }
 
   @Override
-  public boolean cancelTask(@NotNull ExternalSystemTaskId id, @NotNull ExternalSystemTaskNotificationListener listener) throws ExternalSystemException {
+  public boolean cancelTask(@NotNull ExternalSystemTaskId id, @NotNull ExternalSystemTaskNotificationListener listener)
+    throws ExternalSystemException {
     return false;
   }
 }

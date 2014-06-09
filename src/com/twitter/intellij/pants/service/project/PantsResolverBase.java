@@ -28,27 +28,32 @@ abstract public class PantsResolverBase {
     this.settings = settings;
   }
 
-  public void resolve(final ExternalSystemTaskId taskId, final ExternalSystemTaskNotificationListener listener) throws ExternalSystemException {
+  public void resolve(final ExternalSystemTaskId taskId, final ExternalSystemTaskNotificationListener listener)
+    throws ExternalSystemException {
     final GeneralCommandLine command = getCommand();
     try {
       final Process process = command.createProcess();
       final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
-      processHandler.addProcessListener(new ProcessAdapter() {
-        @Override
-        public void onTextAvailable(ProcessEvent event, Key outputType) {
-          listener.onTaskOutput(taskId, event.getText(), outputType == ProcessOutputTypes.STDOUT);
+      processHandler.addProcessListener(
+        new ProcessAdapter() {
+          @Override
+          public void onTextAvailable(ProcessEvent event, Key outputType) {
+            listener.onTaskOutput(taskId, event.getText(), outputType == ProcessOutputTypes.STDOUT);
+          }
         }
-      });
+      );
       final ProcessOutput processOutput = processHandler.runProcess();
       if (processOutput.getStdout().contains("no such option")) {
         throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
       }
       if (processOutput.checkSuccess(logger)) {
         parse(processOutput);
-      } else {
-        throw new ExternalSystemException("Failed to update the project!\n" + processOutput.getStdout() );
       }
-    } catch (ExecutionException e) {
+      else {
+        throw new ExternalSystemException("Failed to update the project!\n" + processOutput.getStdout());
+      }
+    }
+    catch (ExecutionException e) {
       throw new ExternalSystemException(e);
     }
   }

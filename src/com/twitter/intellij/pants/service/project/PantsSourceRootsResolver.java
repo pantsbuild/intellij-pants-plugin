@@ -55,21 +55,25 @@ public class PantsSourceRootsResolver extends PantsModuleResolverBase {
     }
 
     final String workingDir = pantsExecutable.getParent().getPath();
-    final List<String> roots = ContainerUtil.map(out, new Function<String, String>() {
-      @Override
-      public String fun(String line) {
-        final String[] parts = line.split(":");
-        // todo: check targets(parts[1]) to get root type(sources, tests, etc.)
-        return FileUtil.toSystemIndependentName(workingDir + "/" + parts[0]);
+    final List<String> roots = ContainerUtil.map(
+      out, new Function<String, String>() {
+        @Override
+        public String fun(String line) {
+          final String[] parts = line.split(":");
+          // todo: check targets(parts[1]) to get root type(sources, tests, etc.)
+          return FileUtil.toSystemIndependentName(workingDir + "/" + parts[0]);
+        }
       }
-    });
+    );
     final String buildFolder = buildFile.getParent().getPath();
-    return ContainerUtil.findAll(roots, new Condition<String>() {
-      @Override
-      public boolean value(String root) {
-        return root.startsWith(buildFolder);
+    return ContainerUtil.findAll(
+      roots, new Condition<String>() {
+        @Override
+        public boolean value(String root) {
+          return root.startsWith(buildFolder);
+        }
       }
-    });
+    );
   }
 
   @Override

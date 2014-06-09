@@ -34,62 +34,62 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
 public class PantsConfiguration extends LocatableConfigurationBase {
-    private PantsRunnerParameters myRunnerParameters = new PantsRunnerParameters();
+  private PantsRunnerParameters myRunnerParameters = new PantsRunnerParameters();
 
-    protected PantsConfiguration(Project project, ConfigurationFactory factory, String name) {
-        super(project, factory, name);
+  protected PantsConfiguration(Project project, ConfigurationFactory factory, String name) {
+    super(project, factory, name);
+  }
+
+  public PantsRunnerParameters getRunnerParameters() {
+    return myRunnerParameters;
+  }
+
+  @Override
+  public void writeExternal(final Element element) throws WriteExternalException {
+    super.writeExternal(element);
+    XmlSerializer.serializeInto(myRunnerParameters, element);
+  }
+
+  @Override
+  public void readExternal(final Element element) throws InvalidDataException {
+    super.readExternal(element);
+    XmlSerializer.deserializeInto(myRunnerParameters, element);
+  }
+
+
+  @Override
+  public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
+    final String executable = myRunnerParameters.getExecutable();
+    if (executable == null || VirtualFileManager.getInstance().findFileByUrl(VfsUtilCore.pathToUrl(executable)) == null) {
+      throw new ExecutionException("Can't find pants executable: " + executable);
     }
-
-    public PantsRunnerParameters getRunnerParameters() {
-        return myRunnerParameters;
+    final String workingDir = myRunnerParameters.getWorkingDir();
+    if (workingDir == null || VirtualFileManager.getInstance().findFileByUrl(VfsUtilCore.pathToUrl(workingDir)) == null) {
+      throw new ExecutionException("Can't find workingDir: " + workingDir);
     }
+    return new PantsRunningState(env, myRunnerParameters);
+  }
 
-    @Override
-    public void writeExternal(final Element element) throws WriteExternalException {
-        super.writeExternal(element);
-        XmlSerializer.serializeInto(myRunnerParameters, element);
+  @Override
+  public void checkConfiguration() throws RuntimeConfigurationException {
+    final String executable = myRunnerParameters.getExecutable();
+    if (executable == null || VirtualFileManager.getInstance().findFileByUrl(VfsUtilCore.pathToUrl(executable)) == null) {
+      throw new RuntimeConfigurationException("Can't find pants executable: " + executable);
     }
-
-    @Override
-    public void readExternal(final Element element) throws InvalidDataException {
-        super.readExternal(element);
-        XmlSerializer.deserializeInto(myRunnerParameters, element);
+    final String workingDir = myRunnerParameters.getWorkingDir();
+    if (workingDir == null || VirtualFileManager.getInstance().findFileByUrl(VfsUtilCore.pathToUrl(workingDir)) == null) {
+      throw new RuntimeConfigurationException("Can't find workingDir: " + workingDir);
     }
+  }
 
+  @NotNull
+  @Override
+  public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
+    return new PantsConfigurable(getProject());
+  }
 
-    @Override
-    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
-        final String executable = myRunnerParameters.getExecutable();
-        if (executable == null || VirtualFileManager.getInstance().findFileByUrl(VfsUtilCore.pathToUrl(executable)) == null) {
-            throw new ExecutionException("Can't find pants executable: " + executable);
-        }
-        final String workingDir = myRunnerParameters.getWorkingDir();
-        if (workingDir == null || VirtualFileManager.getInstance().findFileByUrl(VfsUtilCore.pathToUrl(workingDir)) == null) {
-            throw new ExecutionException("Can't find workingDir: " + workingDir);
-        }
-        return new PantsRunningState(env, myRunnerParameters);
-    }
-
-    @Override
-    public void checkConfiguration() throws RuntimeConfigurationException {
-        final String executable = myRunnerParameters.getExecutable();
-        if (executable == null || VirtualFileManager.getInstance().findFileByUrl(VfsUtilCore.pathToUrl(executable)) == null) {
-            throw new RuntimeConfigurationException("Can't find pants executable: " + executable);
-        }
-        final String workingDir = myRunnerParameters.getWorkingDir();
-        if (workingDir == null || VirtualFileManager.getInstance().findFileByUrl(VfsUtilCore.pathToUrl(workingDir)) == null) {
-            throw new RuntimeConfigurationException("Can't find workingDir: " + workingDir);
-        }
-    }
-
-    @NotNull
-    @Override
-    public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new PantsConfigurable(getProject());
-    }
-
-    @Override
-    public RunConfiguration clone() {
-        return new PantsConfiguration(getProject(), getFactory(), getName());
-    }
+  @Override
+  public RunConfiguration clone() {
+    return new PantsConfiguration(getProject(), getFactory(), getName());
+  }
 }

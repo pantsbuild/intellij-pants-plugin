@@ -56,7 +56,13 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
   /*
     todo: remove once new API merged to all pants implementations
    */
-  private void resolveUsingOldAPI(ExternalSystemTaskId id, String projectPath, PantsExecutionSettings settings, ExternalSystemTaskNotificationListener listener, DataNode<ProjectData> projectDataNode) {
+  private void resolveUsingOldAPI(
+    ExternalSystemTaskId id,
+    String projectPath,
+    PantsExecutionSettings settings,
+    ExternalSystemTaskNotificationListener listener,
+    DataNode<ProjectData> projectDataNode
+  ) {
     final DataNode<ModuleData> moduleNode = createModuleNode(projectPath, projectDataNode);
 
     final PantsSourceRootsResolver sourceRootsResolver = new PantsSourceRootsResolver(projectPath, settings);
@@ -66,7 +72,8 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     sourceRootsResolver.addInfo(moduleNode);
 
     final PantsDependenciesResolver dependenciesResolver = new PantsDependenciesResolver(
-      projectPath, settings, id, listener, projectDataNode);
+      projectPath, settings, id, listener, projectDataNode
+    );
 
     listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
     dependenciesResolver.resolve(id, listener);

@@ -9,24 +9,24 @@ import java.lang.ref.Reference;
 import java.util.ResourceBundle;
 
 public class PantsBundle {
-    private static Reference<ResourceBundle> ourBundle;
+  private static Reference<ResourceBundle> ourBundle;
 
-    @NonNls
-    private static final String BUNDLE = "com.twitter.intellij.pants.PantsBundle";
+  @NonNls
+  private static final String BUNDLE = "com.twitter.intellij.pants.PantsBundle";
 
-    public static String message(@PropertyKey(resourceBundle = BUNDLE) String key, Object... params) {
-        return CommonBundle.message(getBundle(), key, params);
+  public static String message(@PropertyKey(resourceBundle = BUNDLE) String key, Object... params) {
+    return CommonBundle.message(getBundle(), key, params);
+  }
+
+  private static ResourceBundle getBundle() {
+    ResourceBundle bundle = null;
+
+    if (ourBundle != null) bundle = ourBundle.get();
+
+    if (bundle == null) {
+      bundle = ResourceBundle.getBundle(BUNDLE);
+      ourBundle = new SoftReference<ResourceBundle>(bundle);
     }
-
-    private static ResourceBundle getBundle() {
-        ResourceBundle bundle = null;
-
-        if (ourBundle != null) bundle = ourBundle.get();
-
-        if (bundle == null) {
-            bundle = ResourceBundle.getBundle(BUNDLE);
-            ourBundle = new SoftReference<ResourceBundle>(bundle);
-        }
-        return bundle;
-    }
+    return bundle;
+  }
 }

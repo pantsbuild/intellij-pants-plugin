@@ -37,16 +37,16 @@ import java.util.List;
  * Created by fedorkorotkov
  */
 public class PantsManager implements
-  ExternalSystemConfigurableAware,
+                          ExternalSystemConfigurableAware,
 //        ExternalSystemAutoImportAware,
-  ExternalSystemUiAware,
-  StartupActivity,
-  ExternalSystemManager<
-    PantsProjectSettings,
-    PantsSettingsListener,
-    PantsSettings,
-    PantsLocalSettings,
-    PantsExecutionSettings> {
+                          ExternalSystemUiAware,
+                          StartupActivity,
+                          ExternalSystemManager<
+                            PantsProjectSettings,
+                            PantsSettingsListener,
+                            PantsSettings,
+                            PantsLocalSettings,
+                            PantsExecutionSettings> {
 
   private static final Logger LOG = Logger.getInstance("#" + PantsManager.class.getName());
 

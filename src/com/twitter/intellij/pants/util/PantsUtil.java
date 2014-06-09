@@ -49,20 +49,21 @@ public class PantsUtil {
     }
   };
 
-  public static final FileChooserDescriptor PANTS_FILE_CHOOSER_DESCRIPTOR = new FileChooserDescriptor(true, false, false, false, false, false) {
-    @Override
-    public boolean isFileSelectable(VirtualFile file) {
-      return PANTS.equals(file.getName());
-    }
-
-    @Override
-    public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
-      if (!super.isFileVisible(file, showHiddenFiles)) {
-        return false;
+  public static final FileChooserDescriptor PANTS_FILE_CHOOSER_DESCRIPTOR =
+    new FileChooserDescriptor(true, false, false, false, false, false) {
+      @Override
+      public boolean isFileSelectable(VirtualFile file) {
+        return PANTS.equals(file.getName());
       }
-      return file.isDirectory() || PANTS.equals(file.getName());
-    }
-  };
+
+      @Override
+      public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
+        if (!super.isFileVisible(file, showHiddenFiles)) {
+          return false;
+        }
+        return file.isDirectory() || PANTS.equals(file.getName());
+      }
+    };
 
   @Nullable
   public static String findPantsVersion(@NotNull Project project) {
@@ -78,7 +79,8 @@ public class PantsUtil {
         fileContent, Pattern.compile(PANTS_VERSION_REGEXP), 1
       );
       return matches.isEmpty() ? null : matches.iterator().next();
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       return null;
     }
   }
@@ -115,12 +117,14 @@ public class PantsUtil {
   @Nullable
   public static VirtualFile findPexVersionFile(@NotNull VirtualFile folderWithPex, @NotNull String pantsVersion) {
     final String filePrefix = "pants-" + pantsVersion;
-    return ContainerUtil.find(folderWithPex.getChildren(), new Condition<VirtualFile>() {
-      @Override
-      public boolean value(VirtualFile virtualFile) {
-        return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
+    return ContainerUtil.find(
+      folderWithPex.getChildren(), new Condition<VirtualFile>() {
+        @Override
+        public boolean value(VirtualFile virtualFile) {
+          return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
+        }
       }
-    });
+    );
   }
 
   @NotNull
@@ -129,7 +133,8 @@ public class PantsUtil {
     final VirtualFile pantsExecutable = findPantsExecutable(buildFile);
     if (pantsExecutable == null) {
       return projectPath;
-    } else {
+    }
+    else {
       return StringUtil.notNullize(
         StringUtil.substringAfter(projectPath, pantsExecutable.getParent().getPath()),
         projectPath

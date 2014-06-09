@@ -30,7 +30,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings {
     if (!(o instanceof PantsExecutionSettings)) return false;
     if (!super.equals(o)) return false;
 
-    PantsExecutionSettings that = (PantsExecutionSettings) o;
+    PantsExecutionSettings that = (PantsExecutionSettings)o;
 
     return ContainerUtil.equalsIdentity(targetNames, that.targetNames);
   }

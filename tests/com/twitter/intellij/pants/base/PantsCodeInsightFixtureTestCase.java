@@ -52,13 +52,15 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     );
 
     myFixture.addFileToProject("pants.ini", "pants_version: 0.239");
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        PantsLibNotFoundInspection.InstallQuickFix.applyFix(myFixture.getProject());
-        PantsLibNotConfiguredInspection.ConfigureLibFix.applyFix(myFixture.getProject(), myFixture.getModule());
+    ApplicationManager.getApplication().runWriteAction(
+      new Runnable() {
+        @Override
+        public void run() {
+          PantsLibNotFoundInspection.InstallQuickFix.applyFix(myFixture.getProject());
+          PantsLibNotConfiguredInspection.ConfigureLibFix.applyFix(myFixture.getProject(), myFixture.getModule());
+        }
       }
-    });
+    );
     assertNotNull(
       "Pants lib not configured!",
       ProjectLibraryTable.getInstance(myFixture.getProject()).getLibraryByName(PantsUtil.PANTS_LIBRARY_NAME)
@@ -94,12 +96,14 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     final LibraryTable libraryTable = ProjectLibraryTable.getInstance(myFixture.getProject());
     final Library libraryByName = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRARY_NAME);
     if (libraryByName != null) {
-      ApplicationManager.getApplication().runWriteAction(new Runnable() {
-        @Override
-        public void run() {
-          libraryTable.removeLibrary(libraryByName);
+      ApplicationManager.getApplication().runWriteAction(
+        new Runnable() {
+          @Override
+          public void run() {
+            libraryTable.removeLibrary(libraryByName);
+          }
         }
-      });
+      );
     }
     super.tearDown();
   }

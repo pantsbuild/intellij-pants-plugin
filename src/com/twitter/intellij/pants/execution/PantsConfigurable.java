@@ -39,83 +39,87 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
-    JPanel myPanel;
-    private TextFieldWithBrowseButton myExecutableField;
-    private TextFieldWithBrowseButton myWorkingDirectoryField;
-    private RawCommandLineEditor myArguments;
+  JPanel myPanel;
+  private TextFieldWithBrowseButton myExecutableField;
+  private TextFieldWithBrowseButton myWorkingDirectoryField;
+  private RawCommandLineEditor myArguments;
 
-    public PantsConfigurable(final Project project) {
-        myExecutableField.getButton().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(project).createFileChooser(
-                        PantsBundle.message("choose.pants.executable.file"),
-                        null,
-                        null,
-                        new TreeFileChooser.PsiFileFilter() {
-                            public boolean accept(PsiFile file) {
-                                return "pants".equalsIgnoreCase(file.getName());
-                            }
-                        }
-                );
-
-                fileChooser.showDialog();
-
-                PsiFile selectedFile = fileChooser.getSelectedFile();
-                final VirtualFile virtualFile = selectedFile == null ? null : selectedFile.getVirtualFile();
-                if (virtualFile != null) {
-                    final String path = FileUtil.toSystemDependentName(virtualFile.getPath());
-                    myExecutableField.setText(path);
-
-                    if (StringUtil.isEmpty(myWorkingDirectoryField.getText())) {
-                        final String folder = FileUtil.toSystemDependentName(virtualFile.getParent().getPath());
-                        myWorkingDirectoryField.setText(folder);
-                    }
-                }
+  public PantsConfigurable(final Project project) {
+    myExecutableField.getButton().addActionListener(
+      new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+          TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(project).createFileChooser(
+            PantsBundle.message("choose.pants.executable.file"),
+            null,
+            null,
+            new TreeFileChooser.PsiFileFilter() {
+              public boolean accept(PsiFile file) {
+                return "pants".equalsIgnoreCase(file.getName());
+              }
             }
-        });
-        myWorkingDirectoryField.getButton().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(project).createFileChooser(
-                        PantsBundle.message("choose.working.dir"),
-                        null,
-                        null,
-                        new TreeFileChooser.PsiFileFilter() {
-                            public boolean accept(PsiFile file) {
-                                return file.isDirectory();
-                            }
-                        }
-                );
+          );
 
-                fileChooser.showDialog();
+          fileChooser.showDialog();
 
-                PsiFile selectedFile = fileChooser.getSelectedFile();
-                final VirtualFile virtualFile = selectedFile == null ? null : selectedFile.getVirtualFile();
-                if (virtualFile != null) {
-                    final String folder = FileUtil.toSystemDependentName(virtualFile.getPath());
-                    myWorkingDirectoryField.setText(folder);
-                }
+          PsiFile selectedFile = fileChooser.getSelectedFile();
+          final VirtualFile virtualFile = selectedFile == null ? null : selectedFile.getVirtualFile();
+          if (virtualFile != null) {
+            final String path = FileUtil.toSystemDependentName(virtualFile.getPath());
+            myExecutableField.setText(path);
+
+            if (StringUtil.isEmpty(myWorkingDirectoryField.getText())) {
+              final String folder = FileUtil.toSystemDependentName(virtualFile.getParent().getPath());
+              myWorkingDirectoryField.setText(folder);
             }
-        });
-    }
+          }
+        }
+      }
+    );
+    myWorkingDirectoryField.getButton().addActionListener(
+      new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+          TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(project).createFileChooser(
+            PantsBundle.message("choose.working.dir"),
+            null,
+            null,
+            new TreeFileChooser.PsiFileFilter() {
+              public boolean accept(PsiFile file) {
+                return file.isDirectory();
+              }
+            }
+          );
 
-    public void applyEditorTo(@NotNull final PantsConfiguration configuration) throws ConfigurationException {
-        final PantsRunnerParameters runnerParameters = configuration.getRunnerParameters();
-        runnerParameters.setExecutable(myExecutableField.getText().trim());
-        runnerParameters.setWorkingDir(myWorkingDirectoryField.getText().trim());
-        runnerParameters.setArguments(myArguments.getText().trim());
-    }
+          fileChooser.showDialog();
 
-    public void resetEditorFrom(final PantsConfiguration configuration) {
-        final PantsRunnerParameters runnerParameters = configuration.getRunnerParameters();
-        myExecutableField.setText(runnerParameters.getExecutable());
-        myWorkingDirectoryField.setText(runnerParameters.getWorkingDir());
-        myArguments.setText(runnerParameters.getArguments());
-    }
+          PsiFile selectedFile = fileChooser.getSelectedFile();
+          final VirtualFile virtualFile = selectedFile == null ? null : selectedFile.getVirtualFile();
+          if (virtualFile != null) {
+            final String folder = FileUtil.toSystemDependentName(virtualFile.getPath());
+            myWorkingDirectoryField.setText(folder);
+          }
+        }
+      }
+    );
+  }
 
-    @NotNull
-    public JComponent createEditor() {
-        return myPanel;
-    }
+  public void applyEditorTo(@NotNull final PantsConfiguration configuration) throws ConfigurationException {
+    final PantsRunnerParameters runnerParameters = configuration.getRunnerParameters();
+    runnerParameters.setExecutable(myExecutableField.getText().trim());
+    runnerParameters.setWorkingDir(myWorkingDirectoryField.getText().trim());
+    runnerParameters.setArguments(myArguments.getText().trim());
+  }
+
+  public void resetEditorFrom(final PantsConfiguration configuration) {
+    final PantsRunnerParameters runnerParameters = configuration.getRunnerParameters();
+    myExecutableField.setText(runnerParameters.getExecutable());
+    myWorkingDirectoryField.setText(runnerParameters.getWorkingDir());
+    myArguments.setText(runnerParameters.getArguments());
+  }
+
+  @NotNull
+  public JComponent createEditor() {
+    return myPanel;
+  }
 }

@@ -34,48 +34,47 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class PantsConfigurationType implements ConfigurationType {
-    private final ConfigurationFactory myFactory;
+  private final ConfigurationFactory myFactory;
 
-    /**
-     * reflection
-     */
-    public PantsConfigurationType() {
-        myFactory = new ConfigurationFactory(this) {
-            public RunConfiguration createTemplateConfiguration(Project project) {
-                return new PantsConfiguration(project, this, PantsBundle.message("pants.name"));
-            }
+  /**
+   * reflection
+   */
+  public PantsConfigurationType() {
+    myFactory = new ConfigurationFactory(this) {
+      public RunConfiguration createTemplateConfiguration(Project project) {
+        return new PantsConfiguration(project, this, PantsBundle.message("pants.name"));
+      }
+    };
+  }
 
-        };
-    }
+  public String getDisplayName() {
+    return PantsBundle.message("pants.debug.configuration.display.name");
+  }
 
-    public String getDisplayName() {
-        return PantsBundle.message("pants.debug.configuration.display.name");
-    }
+  public String getConfigurationTypeDescription() {
+    return PantsBundle.message("pants.debug.configuration.description");
+  }
 
-    public String getConfigurationTypeDescription() {
-        return PantsBundle.message("pants.debug.configuration.description");
-    }
+  public Icon getIcon() {
+    return PantsIcons.Icon;
+  }
 
-    public Icon getIcon() {
-        return PantsIcons.Icon;
-    }
+  public ConfigurationFactory[] getConfigurationFactories() {
+    return new ConfigurationFactory[]{getFactory()};
+  }
 
-    public ConfigurationFactory[] getConfigurationFactories() {
-        return new ConfigurationFactory[]{getFactory()};
-    }
+  @NotNull
+  public ConfigurationFactory getFactory() {
+    return myFactory;
+  }
 
-    @NotNull
-    public ConfigurationFactory getFactory() {
-        return myFactory;
-    }
+  @NotNull
+  public String getId() {
+    return PantsBundle.message("pants.name");
+  }
 
-    @NotNull
-    public String getId() {
-        return PantsBundle.message("pants.name");
-    }
-
-    @Nullable
-    public static PantsConfigurationType getInstance() {
-        return ContainerUtil.findInstance(Extensions.getExtensions(CONFIGURATION_TYPE_EP), PantsConfigurationType.class);
-    }
+  @Nullable
+  public static PantsConfigurationType getInstance() {
+    return ContainerUtil.findInstance(Extensions.getExtensions(CONFIGURATION_TYPE_EP), PantsConfigurationType.class);
+  }
 }

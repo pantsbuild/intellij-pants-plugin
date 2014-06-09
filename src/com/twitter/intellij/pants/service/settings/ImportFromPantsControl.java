@@ -11,7 +11,8 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ImportFromPantsControl extends AbstractImportFromExternalSystemControl<PantsProjectSettings, PantsSettingsListener, PantsSettings> {
+public class ImportFromPantsControl
+  extends AbstractImportFromExternalSystemControl<PantsProjectSettings, PantsSettingsListener, PantsSettings> {
 
   public ImportFromPantsControl() {
     super(PantsConstants.SYSTEM_ID, new PantsSettings(ProjectManager.getInstance().getDefaultProject()), getInitialProjectSettings(), true);

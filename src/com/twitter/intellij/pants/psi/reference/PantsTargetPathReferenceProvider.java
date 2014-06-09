@@ -20,8 +20,9 @@ public class PantsTargetPathReferenceProvider extends PsiReferenceProvider {
     final PsiElement parentParent = parent.getParent();
     if (!(parentParent instanceof PyCallExpression)) {
       return PsiReference.EMPTY_ARRAY;
-    } else if ((((PyCallExpression) parentParent).isCalleeText("pants"))) {
-      return getReferences((PyStringLiteralExpression) element);
+    }
+    else if ((((PyCallExpression)parentParent).isCalleeText("pants"))) {
+      return getReferences((PyStringLiteralExpression)element);
     }
     return PsiReference.EMPTY_ARRAY;
   }

@@ -29,13 +29,17 @@ public class PantsTargetReferenceSet extends FileReferenceSet {
     this(element.getStringValue(), element, element.getStringValueTextRange().getStartOffset(), null, caseSensitive, true, new FileType[0]);
   }
 
-  public PantsTargetReferenceSet(@NotNull String str,
-                                 @NotNull PyStringLiteralExpression element,
-                                 int startInElement,
-                                 PsiReferenceProvider provider,
-                                 boolean caseSensitive, boolean endingSlashNotAllowed, @Nullable FileType[] suitableFileTypes) {
-    super(str, element, startInElement, provider, caseSensitive, endingSlashNotAllowed,
-      suitableFileTypes);
+  public PantsTargetReferenceSet(
+    @NotNull String str,
+    @NotNull PyStringLiteralExpression element,
+    int startInElement,
+    PsiReferenceProvider provider,
+    boolean caseSensitive, boolean endingSlashNotAllowed, @Nullable FileType[] suitableFileTypes
+  ) {
+    super(
+      str, element, startInElement, provider, caseSensitive, endingSlashNotAllowed,
+      suitableFileTypes
+    );
     myStringLiteralExpression = element;
     reparse();
   }
@@ -69,16 +73,20 @@ public class PantsTargetReferenceSet extends FileReferenceSet {
     while (matcher.find()) {
       final String s = path.substring(start, matcher.start());
       if (!s.isEmpty()) {
-        final TextRange range = TextRange.create(expression.valueOffsetToTextOffset(start),
-          expression.valueOffsetToTextOffset(matcher.start()));
+        final TextRange range = TextRange.create(
+          expression.valueOffsetToTextOffset(start),
+          expression.valueOffsetToTextOffset(matcher.start())
+        );
         results.add(createFileReference(range, index++, s));
       }
       start = matcher.end();
     }
     final String s = path.substring(start);
     if (!s.isEmpty()) {
-      final TextRange range = TextRange.create(expression.valueOffsetToTextOffset(start),
-        expression.valueOffsetToTextOffset(path.length()));
+      final TextRange range = TextRange.create(
+        expression.valueOffsetToTextOffset(start),
+        expression.valueOffsetToTextOffset(path.length())
+      );
       results.add(createFileReference(range, index, s));
     }
 

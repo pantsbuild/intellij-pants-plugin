@@ -36,11 +36,13 @@ public class PantsDependenciesResolver extends PantsModuleResolverBase {
   @NotNull
   DataNode<ProjectData> projectDataNode;
 
-  public PantsDependenciesResolver(String projectPath,
-                                   PantsExecutionSettings settings,
-                                   @NotNull ExternalSystemTaskId id,
-                                   @NotNull ExternalSystemTaskNotificationListener listener,
-                                   @NotNull DataNode<ProjectData> projectDataNode) {
+  public PantsDependenciesResolver(
+    String projectPath,
+    PantsExecutionSettings settings,
+    @NotNull ExternalSystemTaskId id,
+    @NotNull ExternalSystemTaskNotificationListener listener,
+    @NotNull DataNode<ProjectData> projectDataNode
+  ) {
     super(projectPath, settings);
     this.id = id;
     this.listener = listener;
@@ -55,7 +57,8 @@ public class PantsDependenciesResolver extends PantsModuleResolverBase {
       if ("".equals(targetName)) {
         // otherwise pants lists everything twice it seems.
         commandLine.addParameter(projectPath);
-      } else {
+      }
+      else {
         commandLine.addParameter(projectPath + ":" + targetName);
       }
     }
@@ -123,13 +126,15 @@ public class PantsDependenciesResolver extends PantsModuleResolverBase {
       DataNode<ModuleData> submoduleDataNode = moduleDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
       // resolve source and artifact dependencies for this module
-      final PantsSourceRootsResolver sourceRootsResolver = new PantsSourceRootsResolver(fullProjectPath, new PantsExecutionSettings(targets));
+      final PantsSourceRootsResolver sourceRootsResolver =
+        new PantsSourceRootsResolver(fullProjectPath, new PantsExecutionSettings(targets));
 
       listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving source roots..."));
       sourceRootsResolver.resolve(id, listener);
       sourceRootsResolver.addInfo(submoduleDataNode);
 
-      final PantsArtifactDependenciesResolver artifactDependenciesResolver = new PantsArtifactDependenciesResolver(fullProjectPath, new PantsExecutionSettings(targets));
+      final PantsArtifactDependenciesResolver artifactDependenciesResolver =
+        new PantsArtifactDependenciesResolver(fullProjectPath, new PantsExecutionSettings(targets));
 
       listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving artifact dependencies..."));
       artifactDependenciesResolver.resolve(id, listener);

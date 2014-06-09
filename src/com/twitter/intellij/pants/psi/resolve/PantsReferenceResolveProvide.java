@@ -22,8 +22,8 @@ public class PantsReferenceResolveProvide implements PyReferenceResolveProvider 
   public List<RatedResolveResult> resolveName(@NotNull PyQualifiedExpression element, @NotNull List<PsiElement> definers) {
     PsiFile containingFile = element.getContainingFile();
     return PantsUtil.BUILD.equals(containingFile.getName()) ?
-      resolvePantsName(element) :
-      Collections.<RatedResolveResult>emptyList();
+           resolvePantsName(element) :
+           Collections.<RatedResolveResult>emptyList();
   }
 
   private List<RatedResolveResult> resolvePantsName(@NotNull PyQualifiedExpression element) {
@@ -39,7 +39,7 @@ public class PantsReferenceResolveProvide implements PyReferenceResolveProvider 
     for (PsiElement module : modules) {
       module = PyUtil.turnDirIntoInit(module);
       if (module instanceof PyFile) {
-        final PsiElement target = ((PyFile) module).getElementNamed(name);
+        final PsiElement target = ((PyFile)module).getElementNamed(name);
         if (target != null) {
           result.add(new RatedResolveResult(RatedResolveResult.RATE_NORMAL, target));
         }

@@ -61,12 +61,14 @@ public class PantsArtifactDependenciesResolver extends PantsModuleResolverBase {
 
     // fetching the line that looks something like this
     // cachepath output to science/.pants.d/classpath/69584d41ccf2bbd7f938938251cd3924c38db065/classpath
-    final String classpathLine = ContainerUtil.find(out, new Condition<String>() {
-      @Override
-      public boolean value(String s) {
-        return s.contains(CACHEPATH_OUTPUT);
+    final String classpathLine = ContainerUtil.find(
+      out, new Condition<String>() {
+        @Override
+        public boolean value(String s) {
+          return s.contains(CACHEPATH_OUTPUT);
+        }
       }
-    });
+    );
 
     // TODO right now the command resolve doesn't output this line the second time we call it
     // needs to fix in pants itself
@@ -86,13 +88,16 @@ public class PantsArtifactDependenciesResolver extends PantsModuleResolverBase {
     try {
       String classpathEntries = new String(classpathFile.contentsToByteArray());
       String[] entries = classpathEntries.split(":");
-      return ContainerUtil.map(entries, new Function<String, String>() {
-        @Override
-        public String fun(String entry) {
-          return FileUtil.toSystemIndependentName(entry).trim();
+      return ContainerUtil.map(
+        entries, new Function<String, String>() {
+          @Override
+          public String fun(String entry) {
+            return FileUtil.toSystemIndependentName(entry).trim();
+          }
         }
-      });
-    } catch (IOException e) {
+      );
+    }
+    catch (IOException e) {
       throw new ExternalSystemException("Could not read classpath file " + classpathFile);
     }
   }
