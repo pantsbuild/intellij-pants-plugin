@@ -41,48 +41,48 @@ public class PantsCompletionContributor extends CompletionContributor {
           TODO: un-hardcode target list
           aliases from TestData/userHome/.pants.d/bin/pants.pex/.deps/pantsbuild.pants-0.0.17-py2-none-any.whl/pants/base/build_file_aliases
           */
+          List<String> stringAliases = Arrays.asList(
+            "annotation_processor",
+            "artifact",
+            "artifact",
+            "bundle",
+            "credentials",
+            "dependencies",
+            "egg",
+            "exclude",
+            "fancy_pants",
+            "jar",
+            "java_agent",
+            "java_library",
+            "java_antlr_library",
+            "java_protobuf_library",
+            "junit_tests",
+            "java_tests",
+            "java_thrift_library",
+            "jvm_binary",
+            "jvm_app",
+            "page",
+            "python_artifact",
+            "python_binary",
+            "python_library",
+            "python_antlr_library",
+            "python_requirement",
+            "python_thrift_library",
+            "python_test",
+            "python_test_suite",
+            "repo",
+            "resources",
+            "scala_library",
+            "scala_specs",
+            "scalac_plugin",
+            "source_root",
+            "wiki"
+          );
 
           List<LookupElement> aliases = new ArrayList<LookupElement>();
-          aliases.add(LookupElementBuilder.create("annotation_processor"));
-          aliases.add(LookupElementBuilder.create("artifact"));
-          aliases.add(LookupElementBuilder.create("benchmark"));
-          aliases.add(LookupElementBuilder.create("bundle"));
-          aliases.add(LookupElementBuilder.create("credentials"));
-          aliases.add(LookupElementBuilder.create("dependencies"));
-          aliases.add(LookupElementBuilder.create("dependencies"));
-          aliases.add(LookupElementBuilder.create("egg"));
-          aliases.add(LookupElementBuilder.create("exclude"));
-          aliases.add(LookupElementBuilder.create("fancy_pants"));
-          aliases.add(LookupElementBuilder.create("jar"));
-          aliases.add(LookupElementBuilder.create("java_agent"));
-          aliases.add(LookupElementBuilder.create("java_library"));
-          aliases.add(LookupElementBuilder.create("java_antlr_library"));
-          aliases.add(LookupElementBuilder.create("java_protobuf_library"));
-          aliases.add(LookupElementBuilder.create("junit_tests"));
-          aliases.add(LookupElementBuilder.create("java_tests"));
-          aliases.add(LookupElementBuilder.create("java_thrift_library"));
-          aliases.add(LookupElementBuilder.create("jvm_binary"));
-          aliases.add(LookupElementBuilder.create("jvm_app"));
-          aliases.add(LookupElementBuilder.create("page"));
-          aliases.add(LookupElementBuilder.create("python_artifact"));
-          aliases.add(LookupElementBuilder.create("python_artifact"));
-          aliases.add(LookupElementBuilder.create("python_artifact"));
-          aliases.add(LookupElementBuilder.create("python_binary"));
-          aliases.add(LookupElementBuilder.create("python_library"));
-          aliases.add(LookupElementBuilder.create("python_antlr_library"));
-          aliases.add(LookupElementBuilder.create("python_requirement"));
-          aliases.add(LookupElementBuilder.create("python_thrift_library"));
-          aliases.add(LookupElementBuilder.create("python_test"));
-          aliases.add(LookupElementBuilder.create("python_test_suite"));
-          aliases.add(LookupElementBuilder.create("repo"));
-          aliases.add(LookupElementBuilder.create("resources"));
-          aliases.add(LookupElementBuilder.create("scala_library"));
-          aliases.add(LookupElementBuilder.create("scala_specs"));
-          aliases.add(LookupElementBuilder.create("scala_specs"));
-          aliases.add(LookupElementBuilder.create("scalac_plugin"));
-          aliases.add(LookupElementBuilder.create("source_root"));
-          aliases.add(LookupElementBuilder.create("wiki"));
-
+          for (String str : stringAliases) {
+            aliases.add(LookupElementBuilder.create(str));
+          }
           result.addAllElements(aliases);
         }
       }
