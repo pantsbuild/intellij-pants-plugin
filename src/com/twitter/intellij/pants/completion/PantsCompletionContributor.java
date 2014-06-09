@@ -38,26 +38,10 @@ public class PantsCompletionContributor extends CompletionContributor {
             return;
           }
           /*
-
           TODO: un-hardcode target list
-          final PsiElement position = parameters.getPosition();
-          List<PsiElement> modules = ResolveImportUtil.resolveModule(
-            QualifiedName.fromComponents(PantsUtil.TWITTER, PantsUtil.PANTS),
-            psiFile,
-            true,
-            0
-          );
-          final CompletionVariantsProcessor processor = new CompletionVariantsProcessor(position);
-          for (PsiElement module : modules) {
-            module = PyUtil.turnDirIntoInit(module);
-            if (module instanceof PyFile) {
-              PyResolveUtil.scopeCrawlUp(processor, (PyFile)module, null, null);
-            }
-          }
-
-          result.addAllElements(processor.getResultList());
+          aliases from TestData/userHome/.pants.d/bin/pants.pex/.deps/pantsbuild.pants-0.0.17-py2-none-any.whl/pants/base/build_file_aliases
           */
-          //aliases from TestData/userHome/.pants.d/bin/pants.pex/.deps/pantsbuild.pants-0.0.17-py2-none-any.whl/pants/base/build_file_aliases
+
           List<LookupElement> aliases = new ArrayList<LookupElement>();
           aliases.add(LookupElementBuilder.create("annotation_processor"));
           aliases.add(LookupElementBuilder.create("artifact"));
