@@ -2,21 +2,12 @@ package com.twitter.intellij.pants.completion;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.QualifiedName;
 import com.intellij.util.ProcessingContext;
-import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyReferenceExpression;
-import com.jetbrains.python.psi.PyUtil;
-import com.jetbrains.python.psi.resolve.CompletionVariantsProcessor;
-import com.jetbrains.python.psi.resolve.PyResolveUtil;
-import com.jetbrains.python.psi.resolve.ResolveImportUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import com.intellij.codeInsight.lookup.LookupElement;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,13 +58,18 @@ public class PantsCompletionContributor extends CompletionContributor {
     "source_root",
     "wiki"
   );
+
   public PantsCompletionContributor() {
     extend(
       CompletionType.BASIC,
       psiElement().withParent(PyReferenceExpression.class),
       new CompletionProvider<CompletionParameters>() {
         @Override
-        protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet result) {
+        protected void addCompletions(
+          @NotNull CompletionParameters parameters,
+          ProcessingContext context,
+          @NotNull CompletionResultSet result
+        ) {
           final PsiFile psiFile = parameters.getOriginalFile();
           if (!PantsUtil.BUILD.equals(psiFile.getName())) {
             return;
