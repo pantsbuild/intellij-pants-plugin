@@ -12,6 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.intellij.openapi.util.text.StringUtil.unquoteString;
+
 /**
  * Created by ajohnson on 6/9/14.
  */
@@ -34,7 +36,7 @@ public class PantsPsiUtil {
       for (PyArgumentList args : PsiTreeUtil.findChildrenOfType(expression, PyArgumentList.class)) {
         PyKeywordArgument arg = args.getKeywordArgument("name");
         if (arg != null) {
-          return new Target(arg.getValueExpression().toString().substring(27), expression.toString().substring(18));
+          return new Target(unquoteString(arg.getValueExpression().getText()), expression.getFirstChild().getText());
         }
       }
     }
