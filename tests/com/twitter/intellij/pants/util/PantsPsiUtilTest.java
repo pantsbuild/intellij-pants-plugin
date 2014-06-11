@@ -1,5 +1,8 @@
 package com.twitter.intellij.pants.util;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by ajohnson on 6/10/14.
  */
@@ -9,15 +12,18 @@ public class PantsPsiUtilTest extends PantsPsiUtilTestBase {
   }
 
   public void testFindTargets() {
-    doTest(2);
+    final List<Target> testTargets = Arrays.asList(new Target("main", "jvm_app"), new Target("main-bin", "jvm_binary"));
+    doTest(testTargets);
   }
 
   public void testWeirdBuildFile() {
-    doTest(0);
+    final List<Target> testTargets = Arrays.asList();
+    doTest(testTargets);
   }
 
   public void testTrickyBuildFile() {
-    doTest(2);
+    final List<Target> testTargets = Arrays.asList(new Target("main", "jvm_app"), new Target("main-bin", "jvm_binary"));
+    doTest(testTargets);
   }
 
 }
