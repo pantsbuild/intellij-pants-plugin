@@ -1,4 +1,4 @@
-jvm_app(name='name',
+jvm_app(name='main',
         dependencies = [
             ':main-bin'
         ],

@@ -18,7 +18,7 @@ import java.util.List;
 public class PantsPsiUtil {
 
   public static List<Target> findTargets(@NotNull PsiFile file) {
-    List<Target> targets = new ArrayList<Target>();
+    final List<Target> targets = new ArrayList<Target>();
     for (PyExpressionStatement statement : PsiTreeUtil.findChildrenOfType(file, PyExpressionStatement.class)) {
       Target target = findTarget(statement);
       if (target != null) {
@@ -29,12 +29,12 @@ public class PantsPsiUtil {
   }
 
   @Nullable
-  private static Target findTarget(PyExpressionStatement statement) {
+  private static Target findTarget(@NotNull PyExpressionStatement statement) {
     for (PyCallExpression expression : PsiTreeUtil.findChildrenOfType(statement, PyCallExpression.class)) {
       for (PyArgumentList args : PsiTreeUtil.findChildrenOfType(expression, PyArgumentList.class)) {
         PyKeywordArgument arg = args.getKeywordArgument("name");
         if (arg != null) {
-          return new Target(arg.getValueExpression().toString(), expression.toString());
+          return new Target(arg.getValueExpression().toString().substring(27), expression.toString().substring(18));
         }
       }
     }

@@ -44,6 +44,12 @@ public class PantsPsiUtilTestBase extends PantsCodeInsightFixtureTestCase {
 
     final List<Target> targets = PantsPsiUtil.findTargets(myFixture.getFile());
     assertEquals(actualTargets, targets.size());
+    if (actualTargets != 0) {
+      assertEquals("main", targets.get(0).name);
+      assertEquals("main-bin", targets.get(1).name);
+      assertEquals("jvm_app", targets.get(0).type);
+      assertEquals("jvm_binary", targets.get(1).type);
+    }
   }
 
 }
