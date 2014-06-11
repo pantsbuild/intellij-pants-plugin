@@ -42,15 +42,7 @@ public class PantsPsiUtilTestBase extends PantsCodeInsightFixtureTestCase {
     final VirtualFile buildFile = myFixture.copyFileToProject(getTestName(true) + ".py", buildPath);
     myFixture.configureFromExistingVirtualFile(buildFile);
     final List<Target> targets = PantsPsiUtil.findTargets(myFixture.getFile());
-    int found = 0;
-    for (Target actualTarget : actualTargets) {
-      for (Target target : targets) {
-        if (actualTarget.equals(target)) {
-          found++;
-        }
-      }
-    }
-    assertTrue("Expected " + actualTargets.size() + " targets, found " + found, found==actualTargets.size());
+    assertOrderedEquals(actualTargets, targets);
   }
 
 }
