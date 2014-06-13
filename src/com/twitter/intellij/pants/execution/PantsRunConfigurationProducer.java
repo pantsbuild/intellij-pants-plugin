@@ -9,7 +9,7 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 public class PantsRunConfigurationProducer extends PantsConfigurationProducerBase {
 
   public PantsRunConfigurationProducer() {
-    super("run", "goal run ");
+    super("run", "goal run");
   }
 
 }

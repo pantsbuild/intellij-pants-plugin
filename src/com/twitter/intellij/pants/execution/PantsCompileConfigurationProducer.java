@@ -5,6 +5,6 @@ package com.twitter.intellij.pants.execution;
  */
 public class PantsCompileConfigurationProducer extends PantsConfigurationProducerBase {
   public PantsCompileConfigurationProducer() {
-    super("compile", "goal compile ");
+    super("compile", "goal compile");
   }
 }
