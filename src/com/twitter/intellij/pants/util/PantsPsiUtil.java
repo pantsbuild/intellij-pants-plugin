@@ -31,7 +31,7 @@ public class PantsPsiUtil {
   }
 
   @Nullable
-  private static Target findTarget(@NotNull PyExpressionStatement statement) {
+  public static Target findTarget(@NotNull PyExpressionStatement statement) {
     for (PyCallExpression expression : PsiTreeUtil.findChildrenOfType(statement, PyCallExpression.class)) {
       for (PyArgumentList args : PsiTreeUtil.findChildrenOfType(expression, PyArgumentList.class)) {
         PyKeywordArgument arg = args.getKeywordArgument("name");

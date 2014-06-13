@@ -23,9 +23,14 @@
                          groupKey="inspections.group.name" enabledByDefault="true"
                          implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection"/>
 
+      <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsRunConfigurationProducer"/>
+      <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsCompileConfigurationProducer"/>
+      <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsTestConfigurationProducer"/>
+
     </extensions>
     <extensions defaultExtensionNs="Pythonid">
         <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.psi.resolve.PantsReferenceResolveProvide"/>
+
     </extensions>
 
     <actions>
