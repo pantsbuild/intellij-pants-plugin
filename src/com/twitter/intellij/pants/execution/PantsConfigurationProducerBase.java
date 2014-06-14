@@ -11,6 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.python.psi.PyExpressionStatement;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.Nullable;
 
 
 /**
@@ -27,6 +28,7 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
     this.name = name;
   }
 
+  @Nullable
   private PantsRunnerParameters getParametersFromContext(ConfigurationContext context) {
     final PyExpressionStatement statement = PsiTreeUtil.getParentOfType(context.getPsiLocation(), PyExpressionStatement.class);
     if (statement == null) {
