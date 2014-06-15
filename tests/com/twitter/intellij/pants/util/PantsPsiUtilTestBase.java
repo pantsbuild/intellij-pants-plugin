@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by ajohnson on 6/10/14.
  */
-public class PantsPsiUtilTestBase extends PantsCodeInsightFixtureTestCase {
+abstract public class PantsPsiUtilTestBase extends PantsCodeInsightFixtureTestCase {
 
   private final String myPath;
 
