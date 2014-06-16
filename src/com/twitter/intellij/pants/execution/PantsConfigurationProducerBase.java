@@ -11,6 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.python.psi.PyExpressionStatement;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
+import com.twitter.intellij.pants.util.Target;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -20,12 +21,14 @@ import org.jetbrains.annotations.Nullable;
 public abstract class PantsConfigurationProducerBase extends RunConfigurationProducer<PantsConfiguration> {
 
   final private String arguments;
-  final private String name;
+  final private String goal;
+  private String name;
 
-  public PantsConfigurationProducerBase(String name, String arguments) {
+  public PantsConfigurationProducerBase(String goal, String arguments) {
     super(PantsConfigurationType.getInstance().getFactory());
     this.arguments = arguments;
-    this.name = name;
+    this.goal = goal;
+    this.name = goal;
   }
 
   @Nullable
@@ -34,9 +37,12 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
     if (statement == null) {
       return null;
     }
-    if (PantsPsiUtil.findTarget(statement) == null) {
+    Target target = PantsPsiUtil.findTarget(statement);
+    if (target == null) {
       return null;
     }
+    name = goal + " " + target.getName();
+
     Location location = context.getLocation();
     if (location == null) {
       return null;
@@ -81,6 +87,6 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
   @Override
   public boolean isConfigurationFromContext(PantsConfiguration configuration, ConfigurationContext context) {
     PantsRunnerParameters params = getParametersFromContext(context);
-    return configuration.getRunnerParameters().equals(params);
+    return configuration.getRunnerParameters().equals(params) && configuration.getName() == name;
   }
 }
