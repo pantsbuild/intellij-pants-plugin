@@ -12,6 +12,7 @@ import com.jetbrains.python.psi.PyExpressionStatement;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import com.twitter.intellij.pants.util.Target;
+import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -60,13 +61,24 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
       return null;
     }
     final PantsRunnerParameters params = new PantsRunnerParameters();
-    params.setArguments(arguments + " " + parent.getPath());
+
+    String path = parent.getPath();
+    int workingDirIndex = path.indexOf(context.getProject().getName());
+    String workingDir = path.substring(0,workingDirIndex) + context.getProject().getName();
+    String relativePath = path.substring(workingDirIndex + context.getProject().getName().length());
+    //System.out.println("Workingdir: " + workingDir + ", relativePath: " + relativePath);
+    //end new stuff
+    params.setArguments(arguments + " " + parent.getPath() + ":" + target.getName());
+    /*
+    params.setArguments(relativePath.substring(1) + ":" + target.getName());
+     */
+
     VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(parent);
     if (pantsExecutable == null) {
       return null;
     }
     params.setExecutable(pantsExecutable.getPath());
-    params.setWorkingDir(parent.getPath());
+    params.setWorkingDir(workingDir);
     return params;
   }
 
