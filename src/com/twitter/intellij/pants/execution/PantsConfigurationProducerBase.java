@@ -4,6 +4,7 @@ import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -12,7 +13,6 @@ import com.jetbrains.python.psi.PyExpressionStatement;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import com.twitter.intellij.pants.util.Target;
-import com.intellij.openapi.util.io.FileUtil;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -62,21 +62,13 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
     }
     final PantsRunnerParameters params = new PantsRunnerParameters();
 
-    String path = parent.getPath();
-    int workingDirIndex = path.indexOf(context.getProject().getName());
-    String workingDir = path.substring(0,workingDirIndex) + context.getProject().getName();
-    String relativePath = path.substring(workingDirIndex + context.getProject().getName().length());
-    //System.out.println("Workingdir: " + workingDir + ", relativePath: " + relativePath);
-    //end new stuff
-    params.setArguments(arguments + " " + parent.getPath() + ":" + target.getName());
-    /*
-    params.setArguments(relativePath.substring(1) + ":" + target.getName());
-     */
-
     VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(parent);
     if (pantsExecutable == null) {
       return null;
     }
+    String relativePath = VfsUtil.getRelativePath(parent, pantsExecutable.getParent(), '/');
+    String workingDir = pantsExecutable.getParent().getPath();
+    params.setArguments(arguments + " " + relativePath + ":" + target.getName());
     params.setExecutable(pantsExecutable.getPath());
     params.setWorkingDir(workingDir);
     return params;
@@ -99,6 +91,6 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
   @Override
   public boolean isConfigurationFromContext(PantsConfiguration configuration, ConfigurationContext context) {
     PantsRunnerParameters params = getParametersFromContext(context);
-    return configuration.getRunnerParameters().equals(params) && configuration.getName() == name;
+    return configuration.getRunnerParameters().equals(params) && configuration.getName().equals(name);
   }
 }
