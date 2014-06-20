@@ -5,9 +5,9 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 
 public class PantsRunnerParameters implements Cloneable {
-  public String workingDir;
-  public String arguments;
-  public String executable;
+  protected String workingDir;
+  protected String arguments;
+  protected String executable;
 
   @Nullable
   public String getWorkingDir() {
@@ -34,6 +34,17 @@ public class PantsRunnerParameters implements Cloneable {
 
   public void setExecutable(String executable) {
     this.executable = StringUtil.nullize(executable);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    PantsRunnerParameters that = (PantsRunnerParameters)o;
+    if (arguments != null ? !arguments.equals(that.arguments) : that.arguments != null) return false;
+    if (executable != null ? !executable.equals(that.executable) : that.executable != null) return false;
+    if (workingDir != null ? !workingDir.equals(that.workingDir) : that.workingDir != null) return false;
+    return true;
   }
 
   @Override
