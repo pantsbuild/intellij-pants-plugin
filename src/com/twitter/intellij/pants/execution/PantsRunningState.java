@@ -19,6 +19,7 @@ public class PantsRunningState extends CommandLineState {
   public PantsRunningState(ExecutionEnvironment environment, PantsRunnerParameters runnerParameters) {
     super(environment);
     this.runnerParameters = runnerParameters;
+    addConsoleFilters(new PantsFilter(environment.getProject()));
   }
 
   @NotNull
