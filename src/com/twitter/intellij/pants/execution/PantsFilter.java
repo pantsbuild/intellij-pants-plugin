@@ -25,21 +25,25 @@ public class PantsFilter implements Filter {
   public Result applyFilter(String line, int entireLength) {
     int highlightBeginIndex = entireLength - line.length();
     int highlightEndIndex = highlightBeginIndex;
+
     if (line == null || line.length() == 0) {
       return null;
     }
-    //shave off whitespace
+
+    //shave off whitespace, newline
     while ( line.length() > 0 && line.charAt(0) == ' ') {
       line = line.substring(1);
       highlightBeginIndex++;
       highlightEndIndex++;
     }
-    line = line.replace("\n", "");
+    line = line.replace("\n", "").replace(" ", "");
     if (line.length() == 0) {return null;}
+
     //detect url
     if (line.charAt(0) != '/') {
       return null;
     }
+
     String url = "";
     int i = 0;
     while (i < line.length() && line.charAt(i) != ' ' && line.charAt(i) != ':') {
