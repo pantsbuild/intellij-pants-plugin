@@ -5,9 +5,8 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.NotNull;
+import net.sf.cglib.core.Local;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.TestOnly;
 
 /**
  * Created by ajohnson on 6/18/14.
@@ -22,28 +21,17 @@ public class PantsFilter implements Filter {
 
   @Nullable
   @Override
-  public Result applyFilter(String line, int entireLength) {
-    int highlightBeginIndex = entireLength - line.length();
-    int highlightEndIndex = highlightBeginIndex;
+  public Result applyFilter(final String text, int entireLength) {
+    int highlightBeginIndex = entireLength - text.length();
 
-    if (line == null || line.length() == 0) {
-      return null;
-    }
-
-    //shave off whitespace, newline
-    while ( line.length() > 0 && line.charAt(0) == ' ') {
-      line = line.substring(1);
-      highlightBeginIndex++;
-      highlightEndIndex++;
-    }
-    line = line.replace("\n", "").replace(" ", "");
+    if (text == null) { return null;}
+    String line = text.replace("\n", "").replace(" ", "");
     if (line.length() == 0) {return null;}
-
-    //detect url
     if (line.charAt(0) != '/') {
       return null;
     }
-
+    highlightBeginIndex += text.indexOf("/");
+    int highlightEndIndex = highlightBeginIndex;
     String url = "";
     int i = 0;
     while (i < line.length() && line.charAt(i) != ' ' && line.charAt(i) != ':') {

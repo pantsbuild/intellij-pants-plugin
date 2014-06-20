@@ -41,5 +41,9 @@ public class PantsFilterTest extends PantsCodeInsightFixtureTestCase {
     assertEquals(0, result.highlightStartOffset);
     assertEquals(73, result.highlightEndOffset);
   }
+  public void testPantsCommandLineStatement() {
+    ResultItem result = setUpTest("/Users/ajohnson/workspace/intellij-pants goal test testData/execution/filterTest");
+    assertEquals(null, result);
+  }
 
 }
