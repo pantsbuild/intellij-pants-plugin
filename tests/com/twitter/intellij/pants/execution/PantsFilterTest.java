@@ -1,49 +1,49 @@
 package com.twitter.intellij.pants.execution;
 
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
-import com.intellij.execution.filters.Filter.Result;
-import com.intellij.execution.filters.Filter.ResultItem;
+import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import com.twitter.intellij.pants.execution.PantsFilter.PantsFilterInfo;
+
 
 /**
  * Created by ajohnson on 6/19/14.
  */
-public class PantsFilterTest extends PantsCodeInsightFixtureTestCase {
+public class PantsFilterTest extends LightCodeInsightFixtureTestCase {
 
-  @Override
-  protected String getBasePath() {
-    return "execution";
+  public void testBasic() {
+    PantsFilterInfo info = PantsFilter.parseLine("text text text");
+    assertEquals(null, info);
   }
 
-  public ResultItem setUpTest(String line) {
-    Project project = myFixture.getProject();
-    myFixture.addFileToProject("filterTest", "file text");
-    final VirtualFile testFile = myFixture.copyFileToProject("filterTest", "testPath");
-    myFixture.configureFromExistingVirtualFile(testFile);
-    PantsFilter filter = new PantsFilter(project);
-    Result result =  filter.applyFilter(line, line.length());
-    return result == null ? null : result.getResultItems().get(0);
+  public void testUrl() {
+    PantsFilterInfo info = PantsFilter.parseLine("/this/is/a/url");
+    assertEquals(null, info);
   }
 
-  public void testFilterBasic() {
-    ResultItem result = setUpTest("   blah blah output");
-    assertEquals(null, result);
+  public void testValidUrl() {
+    PantsFilterInfo info = PantsFilter.parseLine(this.getTestDataPath());
+    assertNotNull(info);
+    assertEquals(0, info.getStart());
+    assertEquals(this.getTestDataPath().length(), info.getEnd());
   }
-  public void testUrlWithNoSpaceAtEnd() {
-    ResultItem result = setUpTest("/Users/ajohnson/workspace/intellij-pants/testData/execution/filterTest");
-    assertEquals(0, result.highlightStartOffset);
-    assertEquals(70, result.highlightEndOffset);
 
+  public void testValidUrlWithSpaces() {
+    PantsFilterInfo info = PantsFilter.parseLine("     " + this.getTestDataPath());
+    assertNotNull(info);
+    assertEquals(5, info.getStart());
+    assertEquals(this.getTestDataPath().length() + 5, info.getEnd());
   }
+
   public void testUrlWithLineNumber() {
-    ResultItem result = setUpTest("/Users/ajohnson/workspace/intellij-pants/testData/execution/filterTest:20:error");
-    assertEquals(0, result.highlightStartOffset);
-    assertEquals(73, result.highlightEndOffset);
-  }
-  public void testPantsCommandLineStatement() {
-    ResultItem result = setUpTest("/Users/ajohnson/workspace/intellij-pants goal test testData/execution/filterTest");
-    assertEquals(null, result);
+    PantsFilterInfo info = PantsFilter.parseLine(this.getTestDataPath() + ":23");
+    assertNotNull(info);
+    assertEquals(0, info.getStart());
+    assertEquals(this.getTestDataPath().length() + 3, info.getEnd());
   }
 
+  public void testUrlWithLineNumberAndMessage() {
+    PantsFilterInfo info = PantsFilter.parseLine(this.getTestDataPath() + ":23: error: ...");
+    assertNotNull(info);
+    assertEquals(0, info.getStart());
+    assertEquals(this.getTestDataPath().length() + 3, info.getEnd());
+  }
 }
