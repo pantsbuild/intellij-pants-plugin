@@ -1,6 +1,5 @@
 package com.twitter.intellij.pants.execution;
 
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.execution.PantsFilter.PantsFilterInfo;
 import junit.framework.TestCase;
 
