@@ -32,7 +32,7 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     final DataNode<ProjectData> projectDataNode = getProjectDataNode(projectPath, settings);
 
-    resolveUsingNeemovwAPI(id, projectPath, settings, listener, projectDataNode, isPreviewMode);
+    resolveUsingNewAPI(id, projectPath, settings, listener, projectDataNode, isPreviewMode);
 
     return projectDataNode;
   }
