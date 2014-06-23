@@ -20,20 +20,6 @@ public class PantsFilter implements Filter {
   }
 
   @Nullable
-  @Override
-  public Result applyFilter(final String text, int entireLength) {
-    PantsFilterInfo info = parseLine(text);
-    if (info == null) {return null;}
-    VirtualFile file = LocalFileSystem.getInstance().findFileByPath(info.getFilePath());
-    if (file == null) {
-      return null;
-    }
-    final int start = entireLength - text.length() + info.getStart();
-    final int end = entireLength - text.length() + info.getEnd();
-    return new Result(start, end, new OpenFileHyperlinkInfo(project, file, info.getLineNumber()));
-  }
-
-  @Nullable
   public static PantsFilterInfo parseLine(@NotNull String line) {
     int i = 0;
     while (i < line.length() && (Character.isSpaceChar(line.charAt(i)) || line.charAt(i) == '\t')) {
@@ -53,9 +39,26 @@ public class PantsFilter implements Filter {
     try {
       lineNumber = Integer.parseInt(line.substring(end + 1, i)) - 1;
       end = i;
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
     }
     return new PantsFilterInfo(start, end, filePath, lineNumber);
+  }
+
+  @Nullable
+  @Override
+  public Result applyFilter(final String text, int entireLength) {
+    PantsFilterInfo info = parseLine(text);
+    if (info == null) {
+      return null;
+    }
+    VirtualFile file = LocalFileSystem.getInstance().findFileByPath(info.getFilePath());
+    if (file == null) {
+      return null;
+    }
+    final int start = entireLength - text.length() + info.getStart();
+    final int end = entireLength - text.length() + info.getEnd();
+    return new Result(start, end, new OpenFileHyperlinkInfo(project, file, info.getLineNumber()));
   }
 
   public static class PantsFilterInfo {
@@ -64,6 +67,7 @@ public class PantsFilter implements Filter {
     private final int end;
     private final int lineNumber;
     private final String filePath;
+
     public PantsFilterInfo(int start, int end, String filePath, int lineNumber) {
       this.start = start;
       this.end = end;
