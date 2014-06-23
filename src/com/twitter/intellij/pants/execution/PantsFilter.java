@@ -24,9 +24,13 @@ public class PantsFilter implements Filter {
   public Result applyFilter(final String text, int entireLength) {
     PantsFilterInfo info = parseLine(text);
     if (info == null) {return null;}
+    VirtualFile file = LocalFileSystem.getInstance().findFileByPath(info.getFilePath());
+    if (file == null) {
+      return null;
+    }
     final int start = entireLength - text.length() + info.getStart();
     final int end = entireLength - text.length() + info.getEnd();
-    return new Result(start, end, new OpenFileHyperlinkInfo(project, info.getFile(), info.getLineNumber()));
+    return new Result(start, end, new OpenFileHyperlinkInfo(project, file, info.getLineNumber()));
   }
 
   @Nullable
@@ -51,11 +55,7 @@ public class PantsFilter implements Filter {
       end = i;
     } catch (Exception e) {
     }
-    VirtualFile file = LocalFileSystem.getInstance().findFileByPath(filePath);
-    if (file == null) {
-      return null;
-    }
-    return new PantsFilterInfo(start, end, file, lineNumber);
+    return new PantsFilterInfo(start, end, filePath, lineNumber);
   }
 
   public static class PantsFilterInfo {
@@ -63,11 +63,11 @@ public class PantsFilter implements Filter {
     private final int start;
     private final int end;
     private final int lineNumber;
-    private final VirtualFile file;
-    public PantsFilterInfo(int start, int end, VirtualFile file, int lineNumber) {
+    private final String filePath;
+    public PantsFilterInfo(int start, int end, String filePath, int lineNumber) {
       this.start = start;
       this.end = end;
-      this.file = file;
+      this.filePath = filePath;
       this.lineNumber = lineNumber;
     }
 
@@ -83,8 +83,8 @@ public class PantsFilter implements Filter {
       return lineNumber;
     }
 
-    public VirtualFile getFile() {
-      return file;
+    public String getFilePath() {
+      return filePath;
     }
   }
 }
