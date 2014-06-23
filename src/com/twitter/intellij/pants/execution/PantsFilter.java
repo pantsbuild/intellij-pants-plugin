@@ -36,7 +36,7 @@ public class PantsFilter implements Filter {
   @Nullable
   public static PantsFilterInfo parseLine(@NotNull String line) {
     int i = 0;
-    while (i < line.length() && Character.isSpaceChar(line.charAt(i))) {
+    while (i < line.length() && (Character.isSpaceChar(line.charAt(i)) || line.charAt(i) == '\t')) {
       ++i;
     }
     final int start = i;

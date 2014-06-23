@@ -2,6 +2,7 @@ package com.twitter.intellij.pants.execution;
 
 import com.twitter.intellij.pants.execution.PantsFilter.PantsFilterInfo;
 import junit.framework.TestCase;
+import org.jetbrains.annotations.Nullable;
 
 
 /**
@@ -9,6 +10,7 @@ import junit.framework.TestCase;
  */
 public class PantsFilterTest extends TestCase {//LightCodeInsightFixtureTestCase {
 
+  @Nullable
   public void doTest(PantsFilterInfo expected, PantsFilterInfo actual) {
     if (expected == null) {
       assertEquals(null, actual);
@@ -39,5 +41,15 @@ public class PantsFilterTest extends TestCase {//LightCodeInsightFixtureTestCase
   public void testUrlWithLineNumberAndMessage() {
     PantsFilterInfo info = PantsFilter.parseLine("/this/is/a/url:23: error: ...");
     doTest(new PantsFilterInfo(0,17,"/this/is/a/url",22), info);
+  }
+
+  public void testUrlWithSpaceAndNumberAndMessage() {
+    PantsFilterInfo info = PantsFilter.parseLine("     /this/is/a/url:23: message ...");
+    doTest(new PantsFilterInfo(5,22,"/this/is/a/url",22), info);
+  }
+
+  public void testUrlWithTabsAndNumberAndMessage() {
+    PantsFilterInfo info = PantsFilter.parseLine("\t/this/is/a/url:23: message ...");
+    doTest(new PantsFilterInfo(1,18,"/this/is/a/url",22), info);
   }
 }
