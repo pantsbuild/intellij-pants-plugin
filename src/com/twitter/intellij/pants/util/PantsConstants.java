@@ -8,5 +8,5 @@ import org.jetbrains.annotations.NotNull;
  */
 public class PantsConstants {
   @NotNull
-  public static final ProjectSystemId SYSTEM_ID = new ProjectSystemId("PANTS");
+  public static final ProjectSystemId SYSTEM_ID = new ProjectSystemId("pants");
 }

@@ -32,8 +32,7 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     final DataNode<ProjectData> projectDataNode = getProjectDataNode(projectPath, settings);
 
-    //resolveUsingOldAPI(id, projectPath, settings, listener, projectDataNode);
-    resolveUsingNewAPI(id, projectPath, settings, listener, projectDataNode, isPreviewMode);
+    resolveUsingNeemovwAPI(id, projectPath, settings, listener, projectDataNode, isPreviewMode);
 
     return projectDataNode;
   }
@@ -51,52 +50,6 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
     dependenciesResolver.resolve(id, listener);
     dependenciesResolver.addInfo(projectDataNode);
-  }
-
-  /*
-    todo: remove once new API merged to all pants implementations
-   */
-  private void resolveUsingOldAPI(
-    ExternalSystemTaskId id,
-    String projectPath,
-    PantsExecutionSettings settings,
-    ExternalSystemTaskNotificationListener listener,
-    DataNode<ProjectData> projectDataNode
-  ) {
-    final DataNode<ModuleData> moduleNode = createModuleNode(projectPath, projectDataNode);
-
-    final PantsSourceRootsResolver sourceRootsResolver = new PantsSourceRootsResolver(projectPath, settings);
-
-    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving source roots..."));
-    sourceRootsResolver.resolve(id, listener);
-    sourceRootsResolver.addInfo(moduleNode);
-
-    final PantsDependenciesResolver dependenciesResolver = new PantsDependenciesResolver(
-      projectPath, settings, id, listener, projectDataNode
-    );
-
-    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
-    dependenciesResolver.resolve(id, listener);
-    dependenciesResolver.addInfo(moduleNode);
-
-    final PantsArtifactDependenciesResolver artifactDependenciesResolver = new PantsArtifactDependenciesResolver(projectPath, settings);
-
-    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving artifact dependencies..."));
-    artifactDependenciesResolver.resolve(id, listener);
-    artifactDependenciesResolver.addInfo(moduleNode);
-  }
-
-  private DataNode<ModuleData> createModuleNode(String projectPath, DataNode<ProjectData> projectDataNode) {
-    final String name = PantsUtil.findRelativePathToPantsExecutable(projectPath);
-    final ModuleData moduleData = new ModuleData(
-      name,
-      PantsConstants.SYSTEM_ID,
-      ModuleTypeId.JAVA_MODULE,
-      name,
-      PathUtil.getParentPath(projectPath),
-      projectPath
-    );
-    return projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
   }
 
   private DataNode<ProjectData> getProjectDataNode(String projectPath, PantsExecutionSettings settings) {
