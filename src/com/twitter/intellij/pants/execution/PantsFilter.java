@@ -8,8 +8,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.print.DocFlavor;
-
 /**
  * Created by ajohnson on 6/18/14.
  */
@@ -26,8 +24,8 @@ public class PantsFilter implements Filter {
   public Result applyFilter(final String text, int entireLength) {
     PantsFilterInfo info = parseLine(text);
     if (info == null) {return null;}
-    int start = entireLength - text.length() + info.getStart();
-    int end = entireLength - text.length() + info.getEnd();
+    final int start = entireLength - text.length() + info.getStart();
+    final int end = entireLength - text.length() + info.getEnd();
     return new Result(start, end, new OpenFileHyperlinkInfo(project, info.getFile(), info.getLineNumber()));
   }
 
@@ -47,12 +45,11 @@ public class PantsFilter implements Filter {
     while (i < line.length() && Character.isDigit(line.charAt(i))) {
       ++i;
     }
-    int lineNumber = 1;
+    int lineNumber = 0;
     try {
       lineNumber = Integer.parseInt(line.substring(end + 1, i)) - 1;
       end = i;
     } catch (Exception e) {
-
     }
     VirtualFile file = LocalFileSystem.getInstance().findFileByPath(filePath);
     if (file == null) {

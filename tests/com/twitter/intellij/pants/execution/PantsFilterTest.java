@@ -5,7 +5,7 @@ import com.twitter.intellij.pants.execution.PantsFilter.PantsFilterInfo;
 
 
 /**
- * Created by ajohnson on 6/19/14.
+ * Created by ajohnson on 6/19/14. 
  */
 public class PantsFilterTest extends LightCodeInsightFixtureTestCase {
 
@@ -38,6 +38,7 @@ public class PantsFilterTest extends LightCodeInsightFixtureTestCase {
     assertNotNull(info);
     assertEquals(0, info.getStart());
     assertEquals(this.getTestDataPath().length() + 3, info.getEnd());
+    assertEquals(22, info.getLineNumber());
   }
 
   public void testUrlWithLineNumberAndMessage() {
@@ -45,5 +46,6 @@ public class PantsFilterTest extends LightCodeInsightFixtureTestCase {
     assertNotNull(info);
     assertEquals(0, info.getStart());
     assertEquals(this.getTestDataPath().length() + 3, info.getEnd());
+    assertEquals(22, info.getLineNumber());
   }
 }
