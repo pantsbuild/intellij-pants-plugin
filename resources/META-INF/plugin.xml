@@ -4,6 +4,16 @@
   <description>Support for pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>0.5:</p>
+      <ul>
+        <li>Run Configuration Producer</li>
+        <li>Links to errors in a console output</li>
+        <li>Bug fixes</li>
+      </ul>
+      <p>0.4:</p>
+      <ul>
+        <li>Run Configurations</li>
+      </ul>
       <p>0.3:</p>
       <ul>
         <li>Better completion for BUILD files</li>
@@ -19,7 +29,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>0.3</version>
+  <version>0.5</version>
   <vendor>Twitter, Inc.</vendor>
   <idea-version since-build="133.1"/>
   <depends optional="true" config-file="pants-core.xml">Pythonid</depends>
