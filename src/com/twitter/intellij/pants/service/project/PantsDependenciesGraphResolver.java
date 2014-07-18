@@ -8,6 +8,7 @@ import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
@@ -17,6 +18,7 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,22 +34,29 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
   }
 
   @Override
-  protected void fillArguments(GeneralCommandLine commandLine) {
+  protected void fillArguments(GeneralCommandLine commandLine, String workingDir) {
     commandLine.addParameter("goal");
     if (generateJars) {
       commandLine.addParameter("resolve");
     }
-    commandLine.addParameter("dependencies-graph");
+    final String relativeProjectPath = FileUtil.getRelativePath(new File(workingDir), new File(projectPath));
+
+    if (relativeProjectPath == null) {
+      throw new ExternalSystemException(String.format("Can't find relative path for a target %s from dir %s", projectPath, workingDir));
+    }
+
+    commandLine.addParameter("depmap");
     for (String targetName : settings.getTargetNames()) {
       if (StringUtil.isEmpty(targetName)) {
-        // otherwise pants lists everything twice it seems.
-        commandLine.addParameter(projectPath);
+        // projectPath ends with BUILD
+        commandLine.addParameter(PathUtil.getParentPath(relativeProjectPath) + "/");
       }
       else {
-        commandLine.addParameter(projectPath + ":" + targetName);
+        commandLine.addParameter(relativeProjectPath + ":" + targetName);
       }
     }
-    commandLine.addParameter("--no-dependencies-graph-format");
+    commandLine.addParameter("--depmap-project-info");
+    commandLine.addParameter("--depmap-project-info-formatted");
   }
 
   @Override
@@ -59,7 +68,7 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
       projectInfo = parseProjectInfoFromJSON(data);
     }
     catch (JsonSyntaxException e) {
-      throw new ExternalSystemException("Can't parse output", e);
+      throw new ExternalSystemException("Can't parse output\n" + data, e);
     }
   }
 

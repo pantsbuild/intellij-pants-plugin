@@ -50,7 +50,7 @@ abstract public class PantsResolverBase {
         parse(processOutput);
       }
       else {
-        throw new ExternalSystemException("Failed to update the project!\n" + processOutput.getStdout());
+        throw new ExternalSystemException("Failed to update the project!\n" + processOutput.getStderr());
       }
     }
     catch (ExecutionException e) {
@@ -77,12 +77,13 @@ abstract public class PantsResolverBase {
       commandLine.getEnvironment().put("PANTS_DEV", "1");
     }
     commandLine.setExePath(pantsExecutable.getPath());
-    commandLine.setWorkDirectory(pantsExecutable.getParent().getPath());
-    fillArguments(commandLine);
+    final String workingDir = pantsExecutable.getParent().getPath();
+    commandLine.setWorkDirectory(workingDir);
+    fillArguments(commandLine, workingDir);
     return commandLine;
   }
 
-  protected abstract void fillArguments(GeneralCommandLine commandLine);
+  protected abstract void fillArguments(GeneralCommandLine commandLine, String workingDir);
 
   protected abstract void parse(List<String> out, List<String> err);
 }
