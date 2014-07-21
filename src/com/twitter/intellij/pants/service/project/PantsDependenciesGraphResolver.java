@@ -134,31 +134,37 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
   private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, TargetInfo targetInfo) {
     final String[] pathAndTarget = targetName.split(":");
     final String path = pathAndTarget[0];
+
+    final String contentRootPath = StringUtil.notNullize(
+      PantsUtil.findCommonRoot(
+        ContainerUtil.map(
+          targetInfo.roots,
+          new Function<SourceRoot, String>() {
+            @Override
+            public String fun(SourceRoot root) {
+              return root.source_root;
+            }
+          }
+        )
+      ),
+      path
+    );
+
     final ModuleData moduleData = new ModuleData(
       targetName,
       PantsConstants.SYSTEM_ID,
       ModuleTypeId.JAVA_MODULE,
       targetName,
-      PathUtil.getParentPath(path),
-      path
+      contentRootPath,
+      path + "/" + PantsUtil.BUILD
     );
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
     if (!targetInfo.roots.isEmpty()) {
-      @SuppressWarnings("ConstantConditions")
       final ContentRootData contentRoot = new ContentRootData(
         PantsConstants.SYSTEM_ID,
-        PantsUtil.findCommonRoot(
-          ContainerUtil.map(
-            targetInfo.roots, new Function<SourceRoot, String>() {
-              @Override
-              public String fun(SourceRoot root) {
-                return root.source_root;
-              }
-            }
-          )
-        )
+        contentRootPath
       );
       for (SourceRoot root : targetInfo.roots) {
         final ExternalSystemSourceType source =

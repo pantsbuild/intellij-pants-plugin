@@ -175,10 +175,7 @@ public class PantsUtil {
     while (iterator.hasNext()) {
       result = StringUtil.commonPrefix(result, iterator.next());
     }
-    // /foo/bar/
-    // /foo/barBaz
-    final int lastSlash = result.lastIndexOf('/');
-    return result.substring(0, lastSlash + 1);
+    return result;
   }
 
   public static GeneralCommandLine defaultCommandLine(String projectPath) throws PantsException {
