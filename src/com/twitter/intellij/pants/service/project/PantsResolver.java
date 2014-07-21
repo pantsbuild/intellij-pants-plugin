@@ -11,7 +11,6 @@ import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
-import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -23,12 +22,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PantsDependenciesGraphResolver extends PantsResolverBase {
+public class PantsResolver extends PantsResolverBase {
 
   private final boolean generateJars;
   private ProjectInfo projectInfo = null;
 
-  public PantsDependenciesGraphResolver(@NotNull String projectPath, @NotNull PantsExecutionSettings settings, boolean isPreviewMode) {
+  public PantsResolver(@NotNull String projectPath, @NotNull PantsExecutionSettings settings, boolean isPreviewMode) {
     super(projectPath, settings);
     generateJars = !isPreviewMode;
   }
