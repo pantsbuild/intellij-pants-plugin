@@ -207,13 +207,13 @@ public class PantsUtil {
     commandLine.addParameter("list");
 
     final File workDirectory = commandLine.getWorkDirectory();
-    String relativePath = FileUtil.getRelativePath(workDirectory, new File(projectPath).getParentFile());
+    final String relativePath = FileUtil.getRelativePath(workDirectory, new File(projectPath).getParentFile());
 
     if (relativePath == null) {
       throw new PantsException(String.format("Can't find relative path from %s to %s", workDirectory.getPath(), projectPath));
     }
 
-    commandLine.addParameter(relativePath);
+    commandLine.addParameter(relativePath + "/::");
 
     try {
       final String processOutput = ScriptRunnerUtil.getProcessOutput(commandLine);
@@ -223,7 +223,7 @@ public class PantsUtil {
           new Condition<String>() {
             @Override
             public boolean value(String s) {
-              return s.indexOf(':') >= 0;
+              return s.startsWith(relativePath + ":");
             }
           }
         ),
