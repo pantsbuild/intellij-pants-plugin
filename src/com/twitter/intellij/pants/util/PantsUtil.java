@@ -1,5 +1,8 @@
 package com.twitter.intellij.pants.util;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.ScriptRunnerUtil;
 import com.intellij.ide.actions.OpenProjectFileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
@@ -7,16 +10,20 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.PantsException;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -31,10 +38,6 @@ public class PantsUtil {
   public static final String PANTS_LIBRARY_NAME = "pants";
   public static final String PANTS_INI = "pants.ini";
   public static final String PANTS_PEX = "pants.pex";
-
-  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
-  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
-
   public static final FileChooserDescriptor BUILD_FILE_CHOOSER_DESCRIPTOR = new OpenProjectFileChooserDescriptor(true) {
     @Override
     public boolean isFileSelectable(VirtualFile file) {
@@ -49,7 +52,6 @@ public class PantsUtil {
       return file.isDirectory() || BUILD.equals(file.getName());
     }
   };
-
   public static final FileChooserDescriptor PANTS_FILE_CHOOSER_DESCRIPTOR =
     new FileChooserDescriptor(true, false, false, false, false, false) {
       @Override
@@ -65,6 +67,8 @@ public class PantsUtil {
         return file.isDirectory() || PANTS.equals(file.getName());
       }
     };
+  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
+  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
   @Nullable
   public static String findPantsVersion(@NotNull Project project) {
@@ -175,5 +179,65 @@ public class PantsUtil {
     // /foo/barBaz
     final int lastSlash = result.lastIndexOf('/');
     return result.substring(0, lastSlash + 1);
+  }
+
+  public static GeneralCommandLine defaultCommandLine(String projectPath) throws PantsException {
+    final GeneralCommandLine commandLine = new GeneralCommandLine();
+    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
+    if (buildFile == null) {
+      throw new PantsException("Couldn't find BUILD file: " + projectPath);
+    }
+    final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
+    if (pantsExecutable == null) {
+      throw new PantsException("Couldn't find pants executable for: " + projectPath);
+    }
+    boolean runFromSources = Boolean.valueOf(System.getProperty("pants.dev.run"));
+    if (runFromSources) {
+      commandLine.getEnvironment().put("PANTS_DEV", "1");
+    }
+    commandLine.setExePath(pantsExecutable.getPath());
+    final String workingDir = pantsExecutable.getParent().getPath();
+    commandLine.setWorkDirectory(workingDir);
+    return commandLine;
+  }
+
+  public static List<String> listAllTargets(String projectPath) throws PantsException {
+    final GeneralCommandLine commandLine = defaultCommandLine(projectPath);
+    commandLine.addParameter("goal");
+    commandLine.addParameter("list");
+
+    final File workDirectory = commandLine.getWorkDirectory();
+    String relativePath = FileUtil.getRelativePath(workDirectory, new File(projectPath).getParentFile());
+
+    if (relativePath == null) {
+      throw new PantsException(String.format("Can't find relative path from %s to %s", workDirectory.getPath(), projectPath));
+    }
+
+    commandLine.addParameter(relativePath);
+
+    try {
+      final String processOutput = ScriptRunnerUtil.getProcessOutput(commandLine);
+      return ContainerUtil.map(
+        ContainerUtil.filter(
+          StringUtil.splitByLines(processOutput),
+          new Condition<String>() {
+            @Override
+            public boolean value(String s) {
+              return s.indexOf(':') >= 0;
+            }
+          }
+        ),
+        new Function<String, String>() {
+          @Override
+          public String fun(String target) {
+            int index = target.lastIndexOf(':');
+            return target.substring(index + 1);
+          }
+        }
+      );
+    }
+    catch (ExecutionException e) {
+      throw new PantsException(e);
+    }
   }
 }

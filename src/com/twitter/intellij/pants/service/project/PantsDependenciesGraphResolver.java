@@ -33,27 +33,28 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
     generateJars = !isPreviewMode;
   }
 
+  public static ProjectInfo parseProjectInfoFromJSON(String data) throws JsonSyntaxException {
+    return new Gson().fromJson(data, ProjectInfo.class);
+  }
+
   @Override
-  protected void fillArguments(GeneralCommandLine commandLine, String workingDir) {
+  protected void fillArguments(GeneralCommandLine commandLine) {
     commandLine.addParameter("goal");
     if (generateJars) {
       commandLine.addParameter("resolve");
     }
-    final String relativeProjectPath = FileUtil.getRelativePath(new File(workingDir), new File(projectPath));
+    final File workDirectory = commandLine.getWorkDirectory();
+    final String relativeProjectPath = FileUtil.getRelativePath(workDirectory, new File(projectPath).getParentFile());
 
     if (relativeProjectPath == null) {
-      throw new ExternalSystemException(String.format("Can't find relative path for a target %s from dir %s", projectPath, workingDir));
+      throw new ExternalSystemException(
+        String.format("Can't find relative path for a target %s from dir %s", projectPath, workDirectory.getPath())
+      );
     }
 
     commandLine.addParameter("depmap");
     for (String targetName : settings.getTargetNames()) {
-      if (StringUtil.isEmpty(targetName)) {
-        // projectPath ends with BUILD
-        commandLine.addParameter(PathUtil.getParentPath(relativeProjectPath) + "/");
-      }
-      else {
-        commandLine.addParameter(relativeProjectPath + ":" + targetName);
-      }
+      commandLine.addParameter(relativeProjectPath + File.separator + ":" + targetName);
     }
     commandLine.addParameter("--depmap-project-info");
     commandLine.addParameter("--depmap-project-info-formatted");
@@ -70,10 +71,6 @@ public class PantsDependenciesGraphResolver extends PantsResolverBase {
     catch (JsonSyntaxException e) {
       throw new ExternalSystemException("Can't parse output\n" + data, e);
     }
-  }
-
-  public static ProjectInfo parseProjectInfoFromJSON(String data) throws JsonSyntaxException {
-    return new Gson().fromJson(data, ProjectInfo.class);
   }
 
   public void addInfo(DataNode<ProjectData> projectInfoDataNode) {

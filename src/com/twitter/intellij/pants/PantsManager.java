@@ -8,6 +8,8 @@ import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.ExternalSystemUiAware;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
+import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
+import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.task.ExternalSystemTaskManager;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
@@ -103,8 +105,15 @@ public class PantsManager implements
     return new Function<Pair<Project, String>, PantsExecutionSettings>() {
       @Override
       public PantsExecutionSettings fun(Pair<Project, String> projectStringPair) {
-        // todo: remove when we can choose targets
-        return new PantsExecutionSettings(Collections.singletonList(""));
+        final Project ideProject = projectStringPair.getFirst();
+        final AbstractExternalSystemSettings systemSettings = ExternalSystemApiUtil.getSettings(ideProject, PantsConstants.SYSTEM_ID);
+
+        final String projectPath = projectStringPair.getSecond();
+        final ExternalProjectSettings projectSettings = systemSettings.getLinkedProjectSettings(projectPath);
+
+        final List<String> targets = projectSettings instanceof PantsProjectSettings ?
+                                     ((PantsProjectSettings)projectSettings).getTargets() : Collections.<String>emptyList();
+        return new PantsExecutionSettings(targets);
       }
     };
   }

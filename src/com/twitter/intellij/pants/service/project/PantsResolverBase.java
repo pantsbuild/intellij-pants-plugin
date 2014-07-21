@@ -8,9 +8,7 @@ import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -63,27 +61,17 @@ abstract public class PantsResolverBase {
   }
 
   protected GeneralCommandLine getCommand() {
-    final GeneralCommandLine commandLine = new GeneralCommandLine();
-    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
-    if (buildFile == null) {
-      throw new ExternalSystemException("Couldn't find BUILD file: " + projectPath);
+    try {
+      final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
+      fillArguments(commandLine);
+      return commandLine;
     }
-    final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
-    if (pantsExecutable == null) {
-      throw new ExternalSystemException("Couldn't find pants executable for: " + projectPath);
+    catch (PantsException exception) {
+      throw new ExternalSystemException(exception);
     }
-    boolean runFromSources = Boolean.valueOf(System.getProperty("pants.dev.run"));
-    if (runFromSources) {
-      commandLine.getEnvironment().put("PANTS_DEV", "1");
-    }
-    commandLine.setExePath(pantsExecutable.getPath());
-    final String workingDir = pantsExecutable.getParent().getPath();
-    commandLine.setWorkDirectory(workingDir);
-    fillArguments(commandLine, workingDir);
-    return commandLine;
   }
 
-  protected abstract void fillArguments(GeneralCommandLine commandLine, String workingDir);
+  protected abstract void fillArguments(GeneralCommandLine commandLine);
 
   protected abstract void parse(List<String> out, List<String> err);
 }
