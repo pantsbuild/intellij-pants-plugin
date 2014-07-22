@@ -1,7 +1,4 @@
 <idea-plugin version="2">
-    <application-components>
-        <!-- Add your application components here -->
-    </application-components>
     <extensions defaultExtensionNs="com.intellij">
         <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
         <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>

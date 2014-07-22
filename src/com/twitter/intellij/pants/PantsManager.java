@@ -18,7 +18,6 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.Function;
 import com.twitter.intellij.pants.service.project.PantsProjectResolver;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
@@ -156,14 +155,9 @@ public class PantsManager implements
 
   @Override
   public void enhanceLocalProcessing(@NotNull List<URL> urls) {
-
   }
 
   @Override
   public void runActivity(@NotNull Project project) {
-    // enable inProcessMode for debugging
-    final String key = PantsConstants.SYSTEM_ID.getId() + ExternalSystemConstants.USE_IN_PROCESS_COMMUNICATION_REGISTRY_KEY_SUFFIX;
-    final boolean inProcess = Boolean.valueOf(System.getProperty(key.toLowerCase()));
-    Registry.get(key).setValue(inProcess);
   }
 }
