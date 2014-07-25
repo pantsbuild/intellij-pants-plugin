@@ -102,6 +102,8 @@ public class PantsResolver extends PantsResolverBase {
           moduleDataNode.getData(),
           submoduleDataNode.getData()
         );
+        // todo: is it always exported?
+        moduleDependencyData.setExported(true);
         moduleDataNode.createChild(ProjectKeys.MODULE_DEPENDENCY, moduleDependencyData);
       }
     }
