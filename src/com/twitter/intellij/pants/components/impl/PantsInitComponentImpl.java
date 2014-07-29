@@ -17,8 +17,10 @@ public class PantsInitComponentImpl implements PantsInitComponent {
   public void initComponent() {
     // enable inProcessMode for debugging
     final String key = PantsConstants.SYSTEM_ID.getId() + ExternalSystemConstants.USE_IN_PROCESS_COMMUNICATION_REGISTRY_KEY_SUFFIX;
-    final boolean inProcess = Boolean.valueOf(System.getProperty(key.toLowerCase()));
-    Registry.get(key).setValue(inProcess);
+
+    // todo: deal with external process
+    //final boolean inProcess = Boolean.valueOf(System.getProperty(key.toLowerCase()));
+    Registry.get(key).setValue(true);
   }
 
   @Override
