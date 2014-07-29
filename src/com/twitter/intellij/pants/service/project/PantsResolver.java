@@ -127,6 +127,8 @@ public class PantsResolver extends PantsResolverBase {
           libraryData,
           LibraryLevel.MODULE
         );
+        // todo: is it always exported?
+        library.setExported(true);
         moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
       }
     }
