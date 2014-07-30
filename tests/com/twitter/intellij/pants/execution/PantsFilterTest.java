@@ -52,4 +52,9 @@ public class PantsFilterTest extends TestCase {//LightCodeInsightFixtureTestCase
     PantsFilterInfo info = PantsFilter.parseLine("\t/this/is/a/url:23: message ...");
     doTest(new PantsFilterInfo(1, 18, "/this/is/a/url", 22), info);
   }
+
+  public void testUrlWithErrorInBrackets() {
+    PantsFilterInfo info = PantsFilter.parseLine("     [error] /this/is/a/url");
+    doTest(new PantsFilterInfo(13,27, "/this/is/a/url", 0), info);
+  }
 }

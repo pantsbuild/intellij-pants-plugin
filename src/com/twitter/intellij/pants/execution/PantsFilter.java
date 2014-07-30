@@ -22,6 +22,9 @@ public class PantsFilter implements Filter {
   @Nullable
   public static PantsFilterInfo parseLine(@NotNull String line) {
     int i = 0;
+    if (line.contains("[error]") || line.contains("[warning]") || line.contains("[debug]")) {
+      i = line.indexOf(']') + 1;
+    }
     while (i < line.length() && (Character.isSpaceChar(line.charAt(i)) || line.charAt(i) == '\t')) {
       ++i;
     }
@@ -49,7 +52,7 @@ public class PantsFilter implements Filter {
   @Override
   public Result applyFilter(final String text, int entireLength) {
     PantsFilterInfo info = parseLine(text);
-    if (info == null) {
+    if (info == null || info.getFilePath() == ".") {
       return null;
     }
     VirtualFile file = LocalFileSystem.getInstance().findFileByPath(info.getFilePath());
