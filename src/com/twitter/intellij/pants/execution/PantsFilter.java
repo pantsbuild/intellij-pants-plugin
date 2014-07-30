@@ -22,7 +22,7 @@ public class PantsFilter implements Filter {
   @Nullable
   public static PantsFilterInfo parseLine(@NotNull String line) {
     int i = 0;
-    if (line.contains("[error]")) {
+    if (line.contains("[error]") || line.contains("[warning]") || line.contains("[debug]")) {
       i = line.indexOf(']') + 1;
     }
     while (i < line.length() && (Character.isSpaceChar(line.charAt(i)) || line.charAt(i) == '\t')) {
