@@ -31,7 +31,9 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.RawCommandLineEditor;
+import com.intellij.util.PathUtil;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -39,17 +41,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
+  private final Project myProject;
   JPanel myPanel;
   private TextFieldWithBrowseButton myExecutableField;
   private TextFieldWithBrowseButton myWorkingDirectoryField;
   private RawCommandLineEditor myArguments;
 
   public PantsConfigurable(final Project project) {
+    myProject = project;
     myExecutableField.getButton().addActionListener(
       new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-          TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(project).createFileChooser(
+          TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(myProject).createFileChooser(
             PantsBundle.message("choose.pants.executable.file"),
             null,
             null,
@@ -80,7 +84,7 @@ public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
       new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-          TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(project).createFileChooser(
+          TreeFileChooser fileChooser = TreeFileChooserFactory.getInstance(myProject).createFileChooser(
             PantsBundle.message("choose.working.dir"),
             null,
             null,
@@ -113,9 +117,16 @@ public class PantsConfigurable extends SettingsEditor<PantsConfiguration> {
 
   public void resetEditorFrom(final PantsConfiguration configuration) {
     final PantsRunnerParameters runnerParameters = configuration.getRunnerParameters();
-    myExecutableField.setText(runnerParameters.getExecutable());
-    myWorkingDirectoryField.setText(runnerParameters.getWorkingDir());
     myArguments.setText(runnerParameters.getArguments());
+    myWorkingDirectoryField.setText(runnerParameters.getWorkingDir());
+    myExecutableField.setText(runnerParameters.getExecutable());
+    if (StringUtil.isEmpty(runnerParameters.executable)) {
+      final VirtualFile executable = PantsUtil.findPantsExecutable(myProject.getProjectFilePath());
+      if (executable != null) {
+        myExecutableField.setText(PathUtil.toPresentableUrl(executable.getPath()));
+        myWorkingDirectoryField.setText(PathUtil.toPresentableUrl(executable.getParent().getPath()));
+      }
+    }
   }
 
   @NotNull
