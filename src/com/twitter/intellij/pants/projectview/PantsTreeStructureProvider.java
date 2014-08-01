@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.containers.ContainerUtil;
+import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,10 +52,10 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
         if (buildFile != null) {
           PsiFile buildPsiFile = PsiManager.getInstance(node.getProject()).findFile(buildFile);
           PsiFileNode buildNode = new PsiFileNode(node.getProject(), buildPsiFile, settings);
-          List<AbstractTreeNode> modified_collection = new ArrayList<AbstractTreeNode>(collection);
-          modified_collection.add(buildNode);
-          return modified_collection;
-
+          buildNode.setIcon(PantsIcons.Icon);
+          List<AbstractTreeNode> modifiedCollection = new ArrayList<AbstractTreeNode>(collection);
+          modifiedCollection.add(buildNode);
+          return modifiedCollection;
         }
       }
     }
