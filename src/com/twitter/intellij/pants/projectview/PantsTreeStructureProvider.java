@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.containers.ContainerUtil;
+import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,13 +51,18 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
         VirtualFile buildFile = LocalFileSystem.getInstance().findFileByPath(buildPath);
         if (buildFile != null) {
           PsiFile buildPsiFile = PsiManager.getInstance(node.getProject()).findFile(buildFile);
-          PsiFileNode buildNode = new PsiFileNode(node.getProject(), buildPsiFile, settings);
+          AddedPsiFileNode buildNode = new AddedPsiFileNode(node.getProject(), buildPsiFile, settings);
           if (!collection.contains(buildNode)) {
             List<AbstractTreeNode> modifiedCollection = new ArrayList<AbstractTreeNode>(collection);
             modifiedCollection.add(buildNode);
             return modifiedCollection;
           }
         }
+      }
+    }
+    if (node instanceof AddedPsiFileNode) {
+      if (((PsiFileNode)node).getTitle().contains("BUILD")) {
+        node.setIcon(PantsIcons.Icon);
       }
     }
     return collection;
@@ -66,5 +72,15 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
   @Override
   public Object getData(Collection<AbstractTreeNode> collection, String s) {
     return null;
+  }
+
+  /*
+  This class is only used for BUILD files injected into project structure view by the plugin; these files are marked with the Pants logo to
+  differentiate them.
+   */
+  private class AddedPsiFileNode extends PsiFileNode {
+    public AddedPsiFileNode(Project project, PsiFile value, ViewSettings viewSettings) {
+      super(project, value, viewSettings);
+    }
   }
 }
