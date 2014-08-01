@@ -51,9 +51,11 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
         if (buildFile != null) {
           PsiFile buildPsiFile = PsiManager.getInstance(node.getProject()).findFile(buildFile);
           PsiFileNode buildNode = new PsiFileNode(node.getProject(), buildPsiFile, settings);
-          List<AbstractTreeNode> modifiedCollection = new ArrayList<AbstractTreeNode>(collection);
-          modifiedCollection.add(buildNode);
-          return modifiedCollection;
+          if (!collection.contains(buildNode)) {
+            List<AbstractTreeNode> modifiedCollection = new ArrayList<AbstractTreeNode>(collection);
+            modifiedCollection.add(buildNode);
+            return modifiedCollection;
+          }
         }
       }
     }
