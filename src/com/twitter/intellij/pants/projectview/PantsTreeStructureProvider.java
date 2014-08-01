@@ -18,7 +18,9 @@ import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by ajohnson on 7/30/14.
@@ -27,9 +29,10 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
   @NotNull
   @Override
   public Collection<AbstractTreeNode> modify(
-    final AbstractTreeNode node, Collection<AbstractTreeNode> collection, ViewSettings settings
+    final AbstractTreeNode node,
+    Collection<AbstractTreeNode> collection,
+    ViewSettings settings
   ) {
-
     final Project project = node.getProject();
     if (node instanceof PsiDirectoryNode && project != null) {
       final Module module = ContainerUtil.find(
@@ -41,14 +44,17 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
           }
         }
       );
-      String value = module != null ? module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : null;
-      if (value != null) {
-        value = node.getProject().getBaseDir().getParent().getPath() + "/" + value;
-        VirtualFile buildFile = LocalFileSystem.getInstance().findFileByPath(value);
+      String buildPath = module != null ? module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : null;
+      if (buildPath != null) {
+        buildPath = node.getProject().getBaseDir().getParent().getPath() + "/" + buildPath;
+        VirtualFile buildFile = LocalFileSystem.getInstance().findFileByPath(buildPath);
         if (buildFile != null) {
           PsiFile buildPsiFile = PsiManager.getInstance(node.getProject()).findFile(buildFile);
           PsiFileNode buildNode = new PsiFileNode(node.getProject(), buildPsiFile, settings);
-          collection.add(buildNode);
+          List<AbstractTreeNode> modified_collection = new ArrayList<AbstractTreeNode>(collection);
+          modified_collection.add(buildNode);
+          return modified_collection;
+
         }
       }
     }

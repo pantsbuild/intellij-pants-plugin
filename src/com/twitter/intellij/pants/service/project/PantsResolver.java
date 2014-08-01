@@ -164,11 +164,6 @@ public class PantsResolver extends PantsResolverBase {
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
-    final ContentRootData buildFileRoot = new ContentRootData(
-      PantsConstants.SYSTEM_ID,
-      path + "/" + PantsUtil.BUILD
-    );
-    moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, buildFileRoot);
     if (!targetInfo.roots.isEmpty()) {
       final ContentRootData contentRoot = new ContentRootData(
         PantsConstants.SYSTEM_ID,
