@@ -15,13 +15,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.containers.ContainerUtil;
-import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -49,32 +47,28 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
       String buildPath = module != null ? module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : null;
       if (buildPath != null) {
         buildPath = node.getProject().getBaseDir().getParent().getPath() + "/" + buildPath;
-        VirtualFile buildFile = LocalFileSystem.getInstance().findFileByPath(buildPath);
+        final VirtualFile buildFile = LocalFileSystem.getInstance().findFileByPath(buildPath);
         if (buildFile != null) {
-          PsiFile buildPsiFile = PsiManager.getInstance(node.getProject()).findFile(buildFile);
-          AddedPsiFileNode buildNode = new AddedPsiFileNode(node.getProject(), buildPsiFile, settings);
           // Check if there's already a BUILD file in the directory; if so, we don't add another
-          Iterator iterator = collection.iterator();
-          while (iterator.hasNext()) {
-            Object next = iterator.next();
-            if (next instanceof PsiFileNode) {
-              if (((PsiFileNode) next).getTitle().contains("BUILD")) {
-                return collection;
+          AbstractTreeNode existingBuildFile = ContainerUtil.find(
+            collection.iterator(), new Condition<AbstractTreeNode>() {
+              @Override
+              public boolean value(AbstractTreeNode node) {
+                if (node instanceof PsiFileNode) {
+                  return buildFile.equals(((PsiFileNode) node).getVirtualFile());
+                }
+                return false;
               }
             }
-          }
-          if (!collection.contains(buildNode)) {
+          );
+          if (existingBuildFile == null) {
+            PsiFile buildPsiFile = PsiManager.getInstance(node.getProject()).findFile(buildFile);
+            PsiFileNode buildNode = new PsiFileNode(node.getProject(), buildPsiFile, settings);
             List<AbstractTreeNode> modifiedCollection = new ArrayList<AbstractTreeNode>(collection);
             modifiedCollection.add(buildNode);
             return modifiedCollection;
           }
         }
-      }
-    }
-
-    if (node instanceof AddedPsiFileNode) {
-      if (((PsiFileNode)node).getTitle().contains("BUILD")) {
-        node.setIcon(PantsIcons.Icon);
       }
     }
     return collection;
@@ -86,13 +80,4 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
     return null;
   }
 
-  /*
-  This class is only used for BUILD files injected into project structure view by the plugin; these files are marked with the Pants logo to
-  differentiate them.
-   */
-  private class AddedPsiFileNode extends PsiFileNode {
-    public AddedPsiFileNode(Project project, PsiFile value, ViewSettings viewSettings) {
-      super(project, value, viewSettings);
-    }
-  }
 }
