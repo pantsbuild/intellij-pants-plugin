@@ -58,7 +58,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
           while (iterator.hasNext()) {
             Object next = iterator.next();
             if (next instanceof PsiFileNode) {
-              if (((PsiFileNode) next).getVirtualFile().getName().equals("BUILD")) {
+              if (((PsiFileNode) next).getTitle().contains("BUILD")) {
                 return collection;
               }
             }
