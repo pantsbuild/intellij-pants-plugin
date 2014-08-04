@@ -39,8 +39,8 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
         ModuleManager.getInstance(project).getModules(), new Condition<Module>() {
           @Override
           public boolean value(Module module) {
-            VirtualFile moduleFile = module.getModuleFile();
-            return moduleFile != null && moduleFile.getParent().equals(((PsiDirectoryNode)node).getVirtualFile());
+            final VirtualFile moduleFile = module.getModuleFile();
+            return moduleFile != null && moduleFile.getParent().equals(((PsiDirectoryNode) node).getVirtualFile());
           }
         }
       );
@@ -50,21 +50,18 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
         final VirtualFile buildFile = LocalFileSystem.getInstance().findFileByPath(buildPath);
         if (buildFile != null) {
           // Check if there's already a BUILD file in the directory; if so, we don't add another
-          AbstractTreeNode existingBuildFile = ContainerUtil.find(
+          final AbstractTreeNode existingBuildFile = ContainerUtil.find(
             collection.iterator(), new Condition<AbstractTreeNode>() {
               @Override
               public boolean value(AbstractTreeNode node) {
-                if (node instanceof PsiFileNode) {
-                  return buildFile.equals(((PsiFileNode) node).getVirtualFile());
-                }
-                return false;
+                return node instanceof PsiFileNode && buildFile.equals(((PsiFileNode) node).getVirtualFile());
               }
             }
           );
           if (existingBuildFile == null) {
-            PsiFile buildPsiFile = PsiManager.getInstance(node.getProject()).findFile(buildFile);
-            PsiFileNode buildNode = new PsiFileNode(node.getProject(), buildPsiFile, settings);
-            List<AbstractTreeNode> modifiedCollection = new ArrayList<AbstractTreeNode>(collection);
+            final PsiFile buildPsiFile = PsiManager.getInstance(node.getProject()).findFile(buildFile);
+            final PsiFileNode buildNode = new PsiFileNode(node.getProject(), buildPsiFile, settings);
+            final List<AbstractTreeNode> modifiedCollection = new ArrayList<AbstractTreeNode>(collection);
             modifiedCollection.add(buildNode);
             return modifiedCollection;
           }
