@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -52,6 +53,16 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
         if (buildFile != null) {
           PsiFile buildPsiFile = PsiManager.getInstance(node.getProject()).findFile(buildFile);
           AddedPsiFileNode buildNode = new AddedPsiFileNode(node.getProject(), buildPsiFile, settings);
+          // Check if there's already a BUILD file in the directory; if so, we don't add another
+          Iterator iterator = collection.iterator();
+          while (iterator.hasNext()) {
+            Object next = iterator.next();
+            if (next instanceof PsiFileNode) {
+              if (((PsiFileNode) next).getVirtualFile().getName().equals("BUILD")) {
+                return collection;
+              }
+            }
+          }
           if (!collection.contains(buildNode)) {
             List<AbstractTreeNode> modifiedCollection = new ArrayList<AbstractTreeNode>(collection);
             modifiedCollection.add(buildNode);
@@ -60,6 +71,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
         }
       }
     }
+
     if (node instanceof AddedPsiFileNode) {
       if (((PsiFileNode)node).getTitle().contains("BUILD")) {
         node.setIcon(PantsIcons.Icon);
