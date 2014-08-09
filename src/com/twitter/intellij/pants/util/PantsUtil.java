@@ -210,7 +210,7 @@ public class PantsUtil {
       throw new PantsException(String.format("Can't find relative path from %s to %s", workDirectory.getPath(), projectPath));
     }
 
-    commandLine.addParameter(relativePath + "/::");
+    commandLine.addParameter(relativePath + "::");
 
     try {
       final String processOutput = ScriptRunnerUtil.getProcessOutput(commandLine);
