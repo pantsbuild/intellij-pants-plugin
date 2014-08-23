@@ -35,7 +35,7 @@
   </change-notes>
   <version>0.7</version>
   <vendor>Twitter, Inc.</vendor>
-  <idea-version since-build="138.1"/>
+  <idea-version since-build="135.1200" until-build="136.1"/>
   <depends optional="true" config-file="pants-core.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-core.xml">PythonCore</depends>
 
@@ -61,6 +61,6 @@
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsSettings"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>
 
-    <treeStructureProvider implementation="com.twitter.intellij.pants.projectView.PantsTreeStructureProvider"/>
+    <treeStructureProvider implementation="com.twitter.intellij.pants.projectview.PantsTreeStructureProvider"/>
   </extensions>
 </idea-plugin>
