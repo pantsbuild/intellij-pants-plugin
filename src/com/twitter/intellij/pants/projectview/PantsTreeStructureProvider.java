@@ -1,4 +1,4 @@
-package com.twitter.intellij.pants.projectView;
+package com.twitter.intellij.pants.projectview;
 
 import com.intellij.ide.projectView.TreeStructureProvider;
 import com.intellij.ide.projectView.ViewSettings;
