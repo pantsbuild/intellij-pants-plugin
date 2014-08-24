@@ -116,6 +116,7 @@ public class PantsResolver extends PantsResolverBase {
           // todo: investigate
           continue;
         }
+        // todo(fkorotkov): provide Scala info from the goal
         if (StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
           createScalaFacet(moduleDataNode, libraryId);
         } else {
@@ -126,7 +127,6 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   private void createScalaFacet(DataNode<ModuleData> moduleDataNode, String libraryId) {
-    // todo(fkorotkov): provide it from the goal
     final ScalaModelData scalaModelData = new ScalaModelData(PantsConstants.SYSTEM_ID);
     final Set<File> files = new HashSet<File>();
     for (String jarPath : projectInfo.libraries.get(libraryId)) {

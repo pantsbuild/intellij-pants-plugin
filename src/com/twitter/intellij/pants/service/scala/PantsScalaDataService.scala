@@ -17,9 +17,6 @@ import org.jetbrains.plugins.scala.config._
 
 import scala.collection.JavaConverters._
 
-/**
- * See [[org.jetbrains.plugins.scala.config.ScalaGradleDataService]]
- */
 class ScalaPantsDataService(platformFacade: PlatformFacade, helper: ProjectStructureHelper)
   extends AbstractDataService[ScalaModelData, ScalaFacet](ScalaModelData.KEY) {
 
