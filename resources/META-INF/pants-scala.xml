@@ -1,0 +1,7 @@
+<idea-plugin version="2">
+    <extensions defaultExtensionNs="com.intellij">
+      <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.ScalaPantsDataService"/>
+    </extensions>
+    <actions>
+    </actions>
+</idea-plugin>

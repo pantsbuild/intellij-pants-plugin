@@ -36,8 +36,11 @@
   <version>0.7</version>
   <vendor>Twitter, Inc.</vendor>
   <idea-version since-build="135.1200" until-build="136.1"/>
+
   <depends optional="true" config-file="pants-core.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-core.xml">PythonCore</depends>
+
+  <depends optional="true" config-file="pants-scala.xml">org.intellij.scala</depends>
 
   <application-components>
    <component>

@@ -12,15 +12,14 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.scala.ScalaModelData;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
 
@@ -117,21 +116,47 @@ public class PantsResolver extends PantsResolverBase {
           // todo: investigate
           continue;
         }
-        final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
-        for (String jarPath : projectInfo.libraries.get(libraryId)) {
-          // todo: sources + docs
-          libraryData.addPath(LibraryPathType.BINARY, jarPath);
+        if (StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
+          createScalaFacet(moduleDataNode, libraryId);
+        } else {
+          createLibraryData(moduleDataNode, libraryId);
         }
-        final LibraryDependencyData library = new LibraryDependencyData(
-          moduleDataNode.getData(),
-          libraryData,
-          LibraryLevel.MODULE
-        );
-        // todo: is it always exported?
-        library.setExported(true);
-        moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
       }
     }
+  }
+
+  private void createScalaFacet(DataNode<ModuleData> moduleDataNode, String libraryId) {
+    // todo(fkorotkov): provide it from the goal
+    final ScalaModelData scalaModelData = new ScalaModelData(PantsConstants.SYSTEM_ID);
+    final Set<File> files = new HashSet<File>();
+    for (String jarPath : projectInfo.libraries.get(libraryId)) {
+      final File libFile = new File(jarPath);
+      if (libFile.exists()) {
+        files.add(libFile);
+      }
+      final File compilerFile = new File(StringUtil.replace(jarPath, "scala-library", "scala-compiler"));
+      if (compilerFile.exists()) {
+        files.add(compilerFile);
+      }
+    }
+    scalaModelData.setScalaCompilerJars(files);
+    moduleDataNode.createChild(ScalaModelData.KEY, scalaModelData);
+  }
+
+  private void createLibraryData(DataNode<ModuleData> moduleDataNode, String libraryId) {
+    final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
+    for (String jarPath : projectInfo.libraries.get(libraryId)) {
+      // todo: sources + docs
+      libraryData.addPath(LibraryPathType.BINARY, jarPath);
+    }
+    final LibraryDependencyData library = new LibraryDependencyData(
+      moduleDataNode.getData(),
+      libraryData,
+      LibraryLevel.MODULE
+    );
+    // todo: is it always exported?
+    library.setExported(true);
+    moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
   }
 
   private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, TargetInfo targetInfo) {
