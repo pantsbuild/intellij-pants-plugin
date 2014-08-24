@@ -119,9 +119,8 @@ public class PantsResolver extends PantsResolverBase {
         // todo(fkorotkov): provide Scala info from the goal
         if (StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
           createScalaFacet(moduleDataNode, libraryId);
-        } else {
-          createLibraryData(moduleDataNode, libraryId);
         }
+        createLibraryData(moduleDataNode, libraryId);
       }
     }
   }
