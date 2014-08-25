@@ -71,7 +71,7 @@ public class PantsCompletionContributor extends CompletionContributor {
           @NotNull CompletionResultSet result
         ) {
           final PsiFile psiFile = parameters.getOriginalFile();
-          if (!PantsUtil.BUILD.equals(psiFile.getName())) {
+          if (!PantsUtil.isBUILDFileName(psiFile.getName())) {
             return;
           }
           for (String alias : aliases) {

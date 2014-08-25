@@ -47,7 +47,7 @@ public class PantsLibNotConfiguredInspection extends LocalInspectionTool {
   @Nullable
   @Override
   public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
-    if (!PantsUtil.BUILD.equals(file.getName())) {
+    if (!PantsUtil.isBUILDFileName(file.getName())) {
       return ProblemDescriptor.EMPTY_ARRAY;
     }
     final Project project = file.getProject();

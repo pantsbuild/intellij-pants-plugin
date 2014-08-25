@@ -12,7 +12,9 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.List;
 
 abstract public class PantsResolverBase {
@@ -20,6 +22,9 @@ abstract public class PantsResolverBase {
   protected final String projectPath;
   protected final PantsExecutionSettings settings;
   private final Logger logger = Logger.getInstance(getClass());
+
+  @Nullable
+  protected File myWorkDirectory = null;
 
   public PantsResolverBase(@NotNull String projectPath, @NotNull PantsExecutionSettings settings) {
     this.projectPath = projectPath;
@@ -63,6 +68,7 @@ abstract public class PantsResolverBase {
   protected GeneralCommandLine getCommand() {
     try {
       final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
+      myWorkDirectory = commandLine.getWorkDirectory();
       fillArguments(commandLine);
       return commandLine;
     }

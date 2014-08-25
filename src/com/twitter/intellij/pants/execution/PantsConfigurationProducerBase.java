@@ -49,7 +49,7 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
       return null;
     }
     final PsiFile buildFile = location.getPsiElement().getContainingFile();
-    if (!PantsUtil.BUILD.equals(buildFile.getName())) {
+    if (!PantsUtil.isBUILDFileName(buildFile.getName())) {
       return null;
     }
     final VirtualFile virtualFile = buildFile.getVirtualFile();

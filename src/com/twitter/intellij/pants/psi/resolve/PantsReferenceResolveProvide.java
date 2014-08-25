@@ -21,7 +21,7 @@ public class PantsReferenceResolveProvide implements PyReferenceResolveProvider 
   @Override
   public List<RatedResolveResult> resolveName(@NotNull PyQualifiedExpression element, @NotNull List<PsiElement> definers) {
     PsiFile containingFile = element.getContainingFile();
-    return PantsUtil.BUILD.equals(containingFile.getName()) ?
+    return PantsUtil.isBUILDFileName(containingFile.getName()) ?
            resolvePantsName(element) :
            Collections.<RatedResolveResult>emptyList();
   }

@@ -13,12 +13,12 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
 
   @Override
   protected boolean canImportFromFile(VirtualFile file) {
-    return PantsUtil.BUILD.equals(file.getName());
+    return PantsUtil.isBUILDFileName(file.getName());
   }
 
   @Nullable
   @Override
   public String getFileSample() {
-    return "<b>Pants</b> build file (BUILD)";
+    return "<b>Pants</b> build file (BUILD.*)";
   }
 }

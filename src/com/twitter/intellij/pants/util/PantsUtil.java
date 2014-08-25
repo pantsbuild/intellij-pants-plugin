@@ -31,17 +31,22 @@ import java.util.regex.Pattern;
 
 public class PantsUtil {
   public static final String PANTS = "pants";
-  public static final String PANTS_INTERNAL = "pants_internal";
   public static final String TWITTER = "twitter";
-  public static final String BUILD = "BUILD";
-
   public static final String PANTS_LIBRARY_NAME = "pants";
+
   public static final String PANTS_INI = "pants.ini";
   public static final String PANTS_PEX = "pants.pex";
+
+  private static final String BUILD = "BUILD";
+
+  public static boolean isBUILDFileName(@NotNull String name) {
+    return BUILD.equals(FileUtil.getNameWithoutExtension(name));
+  }
+
   public static final FileChooserDescriptor BUILD_FILE_CHOOSER_DESCRIPTOR = new OpenProjectFileChooserDescriptor(true) {
     @Override
     public boolean isFileSelectable(VirtualFile file) {
-      return BUILD.equals(file.getName());
+      return isBUILDFileName(file.getName());
     }
 
     @Override
@@ -49,24 +54,10 @@ public class PantsUtil {
       if (!super.isFileVisible(file, showHiddenFiles)) {
         return false;
       }
-      return file.isDirectory() || BUILD.equals(file.getName());
+      return isBUILDFileName(file.getName());
     }
   };
-  public static final FileChooserDescriptor PANTS_FILE_CHOOSER_DESCRIPTOR =
-    new FileChooserDescriptor(true, false, false, false, false, false) {
-      @Override
-      public boolean isFileSelectable(VirtualFile file) {
-        return PANTS.equals(file.getName());
-      }
 
-      @Override
-      public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
-        if (!super.isFileVisible(file, showHiddenFiles)) {
-          return false;
-        }
-        return file.isDirectory() || PANTS.equals(file.getName());
-      }
-    };
   private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 

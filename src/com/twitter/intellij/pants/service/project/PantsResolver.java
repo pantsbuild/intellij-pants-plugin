@@ -8,6 +8,7 @@ import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
@@ -177,13 +178,26 @@ public class PantsResolver extends PantsResolverBase {
       path
     );
 
+    final File BUILDFile = ContainerUtil.find(
+      new File(myWorkDirectory, path).listFiles(),
+      new Condition<File>() {
+        @Override
+        public boolean value(File file) {
+          return PantsUtil.isBUILDFileName(file.getName());
+        }
+      }
+    );
+
     final ModuleData moduleData = new ModuleData(
       targetName,
       PantsConstants.SYSTEM_ID,
       ModuleTypeId.JAVA_MODULE,
       targetName,
       contentRootPath,
-      path + "/" + PantsUtil.BUILD
+      StringUtil.notNullize(
+        FileUtil.getRelativePath(myWorkDirectory, BUILDFile),
+        path
+      )
     );
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);

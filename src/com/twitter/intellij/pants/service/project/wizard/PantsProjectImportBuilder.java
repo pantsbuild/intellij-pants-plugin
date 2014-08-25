@@ -38,10 +38,6 @@ public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuil
   @Override
   protected void doPrepare(@NotNull WizardContext context) {
     String pathToUse = context.getProjectFileDirectory();
-    VirtualFile file = LocalFileSystem.getInstance().refreshAndFindFileByPath(pathToUse);
-    if (file != null && file.isDirectory()) {
-      pathToUse = new File(pathToUse, PantsUtil.BUILD).getAbsolutePath();
-    }
     getControl(context.getProject()).setLinkedProjectPath(pathToUse);
   }
 
