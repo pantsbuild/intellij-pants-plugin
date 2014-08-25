@@ -4,6 +4,11 @@
   <description>Support for pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>0.8:</p>
+      <ul>
+        <li>Scala Support</li>
+        <li>Fix to support BUILD.* files</li>
+      </ul>
       <p>0.7:</p>
       <ul>
         <li>Importing BUILD files</li>
@@ -33,7 +38,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>0.7</version>
+  <version>0.8</version>
   <vendor>Twitter, Inc.</vendor>
   <idea-version since-build="135.1200" until-build="136.1"/>
 
