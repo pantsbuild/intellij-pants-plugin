@@ -1,16 +1,16 @@
 package com.twitter.intellij.pants.settings;
 
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
+import com.intellij.util.containers.ContainerUtilRt;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Created by fedorkorotkov
  */
 public class PantsProjectSettings extends ExternalProjectSettings {
-  private List<String> myTargets = Collections.emptyList();
+  List<String> myTargets = ContainerUtilRt.newArrayList();
 
   @NotNull
   @Override

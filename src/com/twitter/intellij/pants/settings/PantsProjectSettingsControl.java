@@ -14,9 +14,11 @@ import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.generate.tostring.util.StringUtil;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
@@ -50,7 +52,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
           try {
-            final List<String> targets = PantsUtil.listAllTargets(getInitialSettings().getExternalProjectPath());
+            final List<String> targets = StringUtil.isEmpty(getInitialSettings().getExternalProjectPath()) ?
+                                         Collections.<String>emptyList() :
+                                         PantsUtil.listAllTargets(getInitialSettings().getExternalProjectPath());
             UIUtil.invokeLaterIfNeeded(
               new Runnable() {
                 @Override
@@ -76,8 +80,11 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
     final List<String> result = new ArrayList<String>();
-    for (int index : myTargets.getSelectedIndices()) {
-      result.add(myTargets.getItemAt(index));
+    for (int i = 0; i < myTargets.getItemsCount(); i++) {
+      String target = myTargets.getItemAt(i);
+      if (myTargets.isItemSelected(target)) {
+        result.add(target);
+      }
     }
     settings.setTargets(result);
   }

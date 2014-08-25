@@ -178,7 +178,7 @@ public class PantsUtil {
     return result;
   }
 
-  public static GeneralCommandLine defaultCommandLine(String projectPath) throws PantsException {
+  public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
     final GeneralCommandLine commandLine = new GeneralCommandLine();
     final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     if (buildFile == null) {
@@ -198,7 +198,7 @@ public class PantsUtil {
     return commandLine;
   }
 
-  public static List<String> listAllTargets(String projectPath) throws PantsException {
+  public static List<String> listAllTargets(@NotNull String projectPath) throws PantsException {
     final GeneralCommandLine commandLine = defaultCommandLine(projectPath);
     commandLine.addParameter("goal");
     commandLine.addParameter("list");
