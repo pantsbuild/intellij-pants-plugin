@@ -1,4 +1,4 @@
-intellij-pants
+intellij-pants-plugin
 ==============
 
 How to configure the project:

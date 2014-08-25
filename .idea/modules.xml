@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/intellij-pants.iml" filepath="$PROJECT_DIR$/intellij-pants.iml" />
+      <module fileurl="file://$PROJECT_DIR$/intellij-pants-plugin.iml" filepath="$PROJECT_DIR$/intellij-pants-plugin.iml" />
     </modules>
   </component>
 </project>
