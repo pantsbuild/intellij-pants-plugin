@@ -4,7 +4,7 @@
     <root id="root">
       <element id="directory" name="lib">
         <element id="archive" name="pants.jar">
-          <element id="module-output" name="intellij-pants" />
+          <element id="module-output" name="intellij-pants-plugin" />
         </element>
       </element>
     </root>
