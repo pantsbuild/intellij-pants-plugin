@@ -1,1 +1,4 @@
-out/
+/out/
+/build-support/*.pex
+/build-support/*.venv
+/build-support/virtualenv-*
