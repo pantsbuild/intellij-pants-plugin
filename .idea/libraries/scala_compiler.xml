@@ -1,9 +1,9 @@
 <component name="libraryTable">
   <library name="scala-compiler">
     <CLASSES>
-      <root url="jar:///opt/twitter/Cellar/scala/2.10.3/libexec/lib/scala-compiler.jar!/" />
-      <root url="jar:///opt/twitter/Cellar/scala/2.10.3/libexec/lib/scala-library.jar!/" />
-      <root url="jar:///opt/twitter/Cellar/scala/2.10.3/libexec/lib/scala-reflect.jar!/" />
+      <root url="jar://$SCALA_HOME$/lib/scala-compiler.jar!/" />
+      <root url="jar://$SCALA_HOME$/lib/scala-library.jar!/" />
+      <root url="jar://$SCALA_HOME$/lib/scala-reflect.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
