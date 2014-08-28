@@ -1,17 +1,17 @@
 <component name="libraryTable">
   <library name="scala-library">
     <CLASSES>
-      <root url="jar:///opt/twitter/Cellar/scala/2.10.3/libexec/lib/scala-library.jar!/" />
-      <root url="jar:///opt/twitter/Cellar/scala/2.10.3/libexec/lib/scala-swing.jar!/" />
-      <root url="jar:///opt/twitter/Cellar/scala/2.10.3/libexec/lib/scala-actors.jar!/" />
+      <root url="jar://$SCALA_HOME$/lib/scala-library.jar!/" />
+      <root url="jar://$SCALA_HOME$/lib/scala-swing.jar!/" />
+      <root url="jar://$SCALA_HOME$/lib/scala-actors.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="file:///opt/twitter/Cellar/scala/2.10.3/libexec/doc/scala-devel-docs/api" />
+      <root url="file://$SCALA_HOME$/doc" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar:///opt/twitter/Cellar/scala/2.10.3/libexec/src/scala-library-src.jar!/" />
-      <root url="jar:///opt/twitter/Cellar/scala/2.10.3/libexec/src/scala-swing-src.jar!/" />
-      <root url="jar:///opt/twitter/Cellar/scala/2.10.3/libexec/src/scala-actors-src.jar!/" />
+      <root url="jar://$SCALA_HOME$/src/scala-library-src.jar!/" />
+      <root url="jar://$SCALA_HOME$/src/scala-swing-src.jar!/" />
+      <root url="jar://$SCALA_HOME$/src/scala-actors-src.jar!/" />
     </SOURCES>
   </library>
 </component>
