@@ -18,9 +18,10 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     // enable inProcessMode for debugging
     final String key = PantsConstants.SYSTEM_ID.getId() + ExternalSystemConstants.USE_IN_PROCESS_COMMUNICATION_REGISTRY_KEY_SUFFIX;
 
-    // todo: deal with external process
-    //final boolean inProcess = Boolean.valueOf(System.getProperty(key.toLowerCase()));
-    Registry.get(key).setValue(true);
+    final boolean inProcess = Boolean.valueOf(System.getProperty(key.toLowerCase()));
+    // until bug at RemoteExternalSystemCommunicationManager.java:162 is not fixed
+    // we'll always run in inProcess mode
+    Registry.get(key).setValue(true/*inProcess*/);
   }
 
   @Override

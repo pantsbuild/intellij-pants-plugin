@@ -3,6 +3,7 @@ package com.twitter.intellij.pants.service.project;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -13,7 +14,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.service.scala.ScalaModelData;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -23,6 +23,8 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
+
+  private static final Logger LOG = Logger.getInstance("#" + PantsResolver.class.getName());
 
   private final boolean generateJars;
   private ProjectInfo projectInfo = null;
@@ -68,7 +70,8 @@ public class PantsResolver extends PantsResolverBase {
       projectInfo = parseProjectInfoFromJSON(data);
     }
     catch (JsonSyntaxException e) {
-      throw new ExternalSystemException("Can't parse output\n" + data, e);
+      LOG.warn("Can't parse output\n" + data, e);
+      throw new ExternalSystemException("Can't parse project structure!");
     }
   }
 
@@ -94,7 +97,7 @@ public class PantsResolver extends PantsResolverBase {
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
       for (String target : targetInfo.targets) {
         if (!modules.containsKey(target)) {
-          // todo: investigate
+          LOG.warn("No info for " + target + " target");
           continue;
         }
         final DataNode<ModuleData> submoduleDataNode = modules.get(target);
@@ -113,37 +116,32 @@ public class PantsResolver extends PantsResolverBase {
       final TargetInfo targetInfo = entry.getValue();
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
       for (String libraryId : targetInfo.libraries) {
-        if (!projectInfo.libraries.containsKey(libraryId)) {
-          // todo: investigate
-          continue;
+        // todo: investigate if not exists
+        if (projectInfo.libraries.containsKey(libraryId)) {
+          createLibraryData(moduleDataNode, libraryId);
+        } else {
+          LOG.warn("No info for " + libraryId + " lib");
         }
-        // todo(fkorotkov): provide Scala info from the goal
-        if (StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
-          createScalaFacet(moduleDataNode, libraryId);
-        }
-        createLibraryData(moduleDataNode, libraryId);
       }
+    }
+    for (String resolverClassName : settings.getResolverExtensionClassNames()) {
+      try {
+        Object resolver = Class.forName(resolverClassName).newInstance();
+        if (resolver instanceof PantsResolverExtension) {
+          ((PantsResolverExtension)resolver).resolve(projectInfo, modules);
+        }
+      }
+      catch (Exception e) {
+        LOG.error(e);
+      }
+    }
+
+    for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
+      resolver.resolve(projectInfo, modules);
     }
   }
 
-  private void createScalaFacet(DataNode<ModuleData> moduleDataNode, String libraryId) {
-    final ScalaModelData scalaModelData = new ScalaModelData(PantsConstants.SYSTEM_ID);
-    final Set<File> files = new HashSet<File>();
-    for (String jarPath : projectInfo.libraries.get(libraryId)) {
-      final File libFile = new File(jarPath);
-      if (libFile.exists()) {
-        files.add(libFile);
-      }
-      final File compilerFile = new File(StringUtil.replace(jarPath, "scala-library", "scala-compiler"));
-      if (compilerFile.exists()) {
-        files.add(compilerFile);
-      }
-    }
-    scalaModelData.setScalaCompilerJars(files);
-    moduleDataNode.createChild(ScalaModelData.KEY, scalaModelData);
-  }
-
-  private void createLibraryData(DataNode<ModuleData> moduleDataNode, String libraryId) {
+  private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId) {
     final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
     for (String jarPath : projectInfo.libraries.get(libraryId)) {
       // todo: sources + docs
@@ -208,9 +206,15 @@ public class PantsResolver extends PantsResolverBase {
         contentRootPath
       );
       for (SourceRoot root : targetInfo.roots) {
-        final ExternalSystemSourceType source =
-          targetInfo.test_target ? ExternalSystemSourceType.TEST : ExternalSystemSourceType.SOURCE;
-        contentRoot.storePath(source, root.source_root, StringUtil.nullize(root.package_prefix));
+        try {
+          final ExternalSystemSourceType source =
+            targetInfo.test_target ? ExternalSystemSourceType.TEST : ExternalSystemSourceType.SOURCE;
+          contentRoot.storePath(source, root.source_root, StringUtil.nullize(root.package_prefix));
+        }
+        catch (IllegalArgumentException e) {
+          LOG.warn(e);
+          // todo(fkorotkov): log and investigate exceptions from ContentRootData.storePath(ContentRootData.java:94)
+        }
       }
       moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
     }

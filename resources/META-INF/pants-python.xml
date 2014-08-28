@@ -27,9 +27,5 @@
     </extensions>
     <extensions defaultExtensionNs="Pythonid">
         <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.psi.resolve.PantsReferenceResolveProvide"/>
-
     </extensions>
-
-    <actions>
-    </actions>
 </idea-plugin>

@@ -42,9 +42,8 @@
   <vendor>Twitter, Inc.</vendor>
   <idea-version since-build="135.1200" until-build="136.1"/>
 
-  <depends optional="true" config-file="pants-core.xml">Pythonid</depends>
-  <depends optional="true" config-file="pants-core.xml">PythonCore</depends>
-
+  <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
+  <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
   <depends optional="true" config-file="pants-scala.xml">org.intellij.scala</depends>
 
   <application-components>
@@ -53,6 +52,11 @@
      <implementation-class>com.twitter.intellij.pants.components.impl.PantsInitComponentImpl</implementation-class>
    </component>
   </application-components>
+
+  <extensionPoints>
+    <extensionPoint name="projectResolver" interface="com.twitter.intellij.pants.service.project.PantsResolverExtension"/>
+  </extensionPoints>
+
   <extensions defaultExtensionNs="com.intellij">
     <!--<moduleBuilder builderClass="com.twitter.intellij.pants.service.project.wizard.PantsModuleBuilder"/>-->
     <projectImportProvider

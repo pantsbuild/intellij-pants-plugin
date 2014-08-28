@@ -2,6 +2,8 @@ package com.twitter.intellij.pants.settings;
 
 import com.intellij.openapi.externalSystem.model.settings.ExternalSystemExecutionSettings;
 import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.containers.ContainerUtilRt;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
  */
 public class PantsExecutionSettings extends ExternalSystemExecutionSettings {
   private List<String> targetNames;
+  @NotNull private final List<String> myResolverExtensionClassNames = ContainerUtilRt.newArrayList();
 
   public PantsExecutionSettings(List<String> targetNames) {
     this.targetNames = targetNames;
@@ -22,6 +25,15 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings {
 
   public void setTargetNames(@Nullable List<String> targetNames) {
     this.targetNames = targetNames;
+  }
+
+  @NotNull
+  public List<String> getResolverExtensionClassNames() {
+    return myResolverExtensionClassNames;
+  }
+
+  public void addResolverExtensionClassNams(@NotNull String className) {
+    myResolverExtensionClassNames.add(className);
   }
 
   @Override

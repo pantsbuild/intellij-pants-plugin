@@ -20,6 +20,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.Pair;
 import com.intellij.util.Function;
 import com.twitter.intellij.pants.service.project.PantsProjectResolver;
+import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
 import com.twitter.intellij.pants.settings.*;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -112,7 +113,12 @@ public class PantsManager implements
 
         final List<String> targets = projectSettings instanceof PantsProjectSettings ?
                                      ((PantsProjectSettings)projectSettings).getTargets() : Collections.<String>emptyList();
-        return new PantsExecutionSettings(targets);
+
+        PantsExecutionSettings executionSettings = new PantsExecutionSettings(targets);
+        for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
+          executionSettings.addResolverExtensionClassNams(resolver.getClass().getName());
+        }
+        return executionSettings;
       }
     };
   }
