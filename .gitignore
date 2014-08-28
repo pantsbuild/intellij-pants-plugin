@@ -1,3 +1,13 @@
+.idea/scopes/
+.idea/dictionaries/
+.idea/inspectionProfiles/
+.idea/highlighting.xml
+.idea/workspace.xml
+.idea/scala_compiler.xml
+.idea/thriftCompiler.xml
+.DS_Store
+*.class
+*~
 /out/
 /build-support/*.pex
 /build-support/*.venv
