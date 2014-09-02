@@ -191,7 +191,8 @@ public class PantsResolver extends PantsResolverBase {
       PantsConstants.SYSTEM_ID,
       ModuleTypeId.JAVA_MODULE,
       targetName,
-      contentRootPath,
+      // do not store .iml files in gen folder because pants will delete them
+      StringUtil.replace(contentRootPath, ".pants.d/gen", ".pants.d/intellij"),
       StringUtil.notNullize(
         FileUtil.getRelativePath(myWorkDirectory, BUILDFile),
         path
