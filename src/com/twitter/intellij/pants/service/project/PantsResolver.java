@@ -17,6 +17,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import com.twitter.intellij.pants.util.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -212,8 +213,7 @@ public class PantsResolver extends PantsResolverBase {
       );
       for (SourceRoot root : targetInfo.roots) {
         try {
-          final ExternalSystemSourceType source =
-            targetInfo.test_target ? ExternalSystemSourceType.TEST : ExternalSystemSourceType.SOURCE;
+          final ExternalSystemSourceType source = Utils.getSourceTypeForTargetType(targetInfo.target_type);
           contentRoot.storePath(source, root.source_root, StringUtil.nullize(root.package_prefix));
         }
         catch (IllegalArgumentException e) {
@@ -248,9 +248,9 @@ public class PantsResolver extends PantsResolverBase {
      */
     public List<SourceRoot> roots;
     /**
-     * Is test target
+     * Target type.
      */
-    public boolean test_target;
+    public String target_type;
   }
 
   public static class SourceRoot {
