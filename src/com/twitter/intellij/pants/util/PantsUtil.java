@@ -166,6 +166,12 @@ public class PantsUtil {
   }
 
   @Nullable
+  public static VirtualFile findPantsWorkingDir(@Nullable VirtualFile file) {
+    final VirtualFile pantsExecutable = findPantsExecutable(file);
+    return pantsExecutable != null ? pantsExecutable.getParent() : null;
+  }
+
+  @Nullable
   public static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
     if (file == null) return null;
     if (file.isDirectory()) {

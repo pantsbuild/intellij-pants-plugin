@@ -74,5 +74,6 @@
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>
 
     <treeStructureProvider implementation="com.twitter.intellij.pants.projectview.PantsTreeStructureProvider"/>
+    <projectViewPane implementation="com.twitter.intellij.pants.projectview.ProjectFilesViewPane"/>
   </extensions>
 </idea-plugin>
