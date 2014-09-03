@@ -11,12 +11,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.Function;
+import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
 import org.jetbrains.annotations.NonNls;
@@ -38,7 +40,14 @@ public class PantsUtil {
   public static final String PANTS_PEX = "pants.pex";
 
   private static final String BUILD = "BUILD";
+  private static final String THRIFT_EXT = "thrift";
+  private static final String ANTLR_EXT = "g";
+  private static final String ANTLR_4_EXT = "g4";
+  private static final String PROTOBUF_EXT = "proto";
 
+  public static boolean isBUILDFilePath(@NotNull String path) {
+    return isBUILDFileName(PathUtil.getFileName(path));
+  }
   public static boolean isBUILDFileName(@NotNull String name) {
     return BUILD.equals(FileUtil.getNameWithoutExtension(name));
   }
@@ -239,5 +248,16 @@ public class PantsUtil {
     catch (ExecutionException e) {
       throw new PantsException(e);
     }
+  }
+
+  public static boolean isGeneratableFile(@NotNull String path) {
+    // todo(fkorotkov): make it configurable or get it from patns.
+    // maybe mark target as a target that generates sources and
+    // we need to refresh the project for any change in the corresponding module
+    // https://github.com/pantsbuild/intellij-pants-plugin/issues/13
+    return FileUtilRt.extensionEquals(path, THRIFT_EXT) ||
+           FileUtilRt.extensionEquals(path, ANTLR_EXT) ||
+           FileUtilRt.extensionEquals(path, ANTLR_4_EXT) ||
+           FileUtilRt.extensionEquals(path, PROTOBUF_EXT);
   }
 }

@@ -3,6 +3,7 @@ package com.twitter.intellij.pants;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.SimpleJavaParameters;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.externalSystem.ExternalSystemAutoImportAware;
 import com.intellij.openapi.externalSystem.ExternalSystemConfigurableAware;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.ExternalSystemUiAware;
@@ -14,10 +15,15 @@ import com.intellij.openapi.externalSystem.task.ExternalSystemTaskManager;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.Function;
 import com.twitter.intellij.pants.service.project.PantsProjectResolver;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
@@ -31,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +47,7 @@ import java.util.List;
  */
 public class PantsManager implements
                           ExternalSystemConfigurableAware,
-//        ExternalSystemAutoImportAware,
+                          ExternalSystemAutoImportAware,
                           ExternalSystemUiAware,
                           StartupActivity,
                           ExternalSystemManager<
@@ -166,5 +173,26 @@ public class PantsManager implements
 
   @Override
   public void runActivity(@NotNull Project project) {
+  }
+
+  @Nullable
+  @Override
+  public String getAffectedExternalProjectPath(@NotNull String changedFileOrDirPath, @NotNull Project project) {
+    final VirtualFile virtualFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(changedFileOrDirPath));
+    if (virtualFile == null) {
+      // impossible! we have vfs events only for files under vfs
+      LOG.error("Incorrect changed file " + changedFileOrDirPath);
+      return null;
+    }
+    String pathKey = null;
+    if (virtualFile.isDirectory()) {
+      pathKey = ExternalSystemConstants.ROOT_PROJECT_PATH_KEY;
+    } else if (PantsUtil.isBUILDFilePath(changedFileOrDirPath) || PantsUtil.isGeneratableFile(changedFileOrDirPath)) {
+      pathKey = ExternalSystemConstants.LINKED_PROJECT_PATH_KEY;
+    }
+
+    // optimization check for pathKey != null
+    final Module module = pathKey != null ? ModuleUtil.findModuleForFile(virtualFile, project) : null;
+    return module != null ? module.getOptionValue(pathKey) : null;
   }
 }

@@ -34,9 +34,7 @@ public class ImportFromPantsControl
   @NotNull
   @Override
   protected ExternalSystemSettingsControl<PantsProjectSettings> createProjectSettingsControl(@NotNull PantsProjectSettings settings) {
-    final PantsProjectSettingsControl settingsControl = new PantsProjectSettingsControl(settings);
-    settingsControl.hideUseAutoImportBox();
-    return settingsControl;
+    return new PantsProjectSettingsControl(settings);
   }
 
   @Nullable
