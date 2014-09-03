@@ -21,7 +21,7 @@ abstract public class PantsResolverBase {
 
   protected final String projectPath;
   protected final PantsExecutionSettings settings;
-  private final Logger logger = Logger.getInstance(getClass());
+  protected final Logger LOG = Logger.getInstance(getClass());
 
   @Nullable
   protected File myWorkDirectory = null;
@@ -49,7 +49,7 @@ abstract public class PantsResolverBase {
       if (processOutput.getStdout().contains("no such option")) {
         throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
       }
-      if (processOutput.checkSuccess(logger)) {
+      if (processOutput.checkSuccess(LOG)) {
         parse(processOutput);
       }
       else {

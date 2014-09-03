@@ -50,7 +50,7 @@ public class PantsManager implements
                             PantsLocalSettings,
                             PantsExecutionSettings> {
 
-  private static final Logger LOG = Logger.getInstance("#" + PantsManager.class.getName());
+  private static final Logger LOG = Logger.getInstance(PantsManager.class);
 
   @NotNull
   @Override
@@ -113,8 +113,9 @@ public class PantsManager implements
 
         final List<String> targets = projectSettings instanceof PantsProjectSettings ?
                                      ((PantsProjectSettings)projectSettings).getTargets() : Collections.<String>emptyList();
-
-        PantsExecutionSettings executionSettings = new PantsExecutionSettings(targets);
+        final boolean allTargets = projectSettings instanceof PantsProjectSettings &&
+                                   ((PantsProjectSettings)projectSettings).isAllTargets();
+        final PantsExecutionSettings executionSettings = new PantsExecutionSettings(targets, allTargets);
         for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
           executionSettings.addResolverExtensionClassNams(resolver.getClass().getName());
         }

@@ -15,8 +15,6 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public class PantsProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   @Nullable
   @Override
@@ -50,11 +48,13 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
   }
 
   private DataNode<ProjectData> getProjectDataNode(String projectPath, PantsExecutionSettings settings) {
-    final String projectDirPath = PathUtil.getParentPath(projectPath);
-    final List<String> targetNames = settings != null ? settings.getTargetNames() : null;
+    final String projectDirPath = settings.isAllTargets() ? projectPath : PathUtil.getParentPath(projectPath);
+    // todo(fkorotkov): add ability to choose a name for a project
+    final String targetsSuffix = settings.isAllTargets() ? ":" : StringUtil.join(settings.getTargetNames(), " :");
+    final String projectName = PathUtil.getFileName(projectDirPath) + "/:" + targetsSuffix;
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
-      StringUtil.notNullize(targetNames != null ? StringUtil.join(targetNames, " ") : null, "project"),
+      projectName,
       projectDirPath,
       projectPath
     );

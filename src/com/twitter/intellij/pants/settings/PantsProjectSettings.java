@@ -6,11 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/**
- * Created by fedorkorotkov
- */
 public class PantsProjectSettings extends ExternalProjectSettings {
-  List<String> myTargets = ContainerUtilRt.newArrayList();
+  private List<String> myTargets = ContainerUtilRt.newArrayList();
+  private boolean myAllTargets;
 
   @NotNull
   @Override
@@ -24,6 +22,7 @@ public class PantsProjectSettings extends ExternalProjectSettings {
   protected void copyTo(@NotNull ExternalProjectSettings receiver) {
     super.copyTo(receiver);
     if (receiver instanceof PantsProjectSettings) {
+      ((PantsProjectSettings)receiver).setAllTargets(isAllTargets());
       ((PantsProjectSettings)receiver).setTargets(getTargets());
     }
   }
@@ -34,5 +33,13 @@ public class PantsProjectSettings extends ExternalProjectSettings {
 
   public void setTargets(List<String> targets) {
     myTargets = targets;
+  }
+
+  public void setAllTargets(boolean allTargets) {
+    myAllTargets = allTargets;
+  }
+
+  public boolean isAllTargets() {
+    return myAllTargets;
   }
 }

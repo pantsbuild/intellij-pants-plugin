@@ -4,7 +4,6 @@ import com.intellij.openapi.externalSystem.model.settings.ExternalSystemExecutio
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -12,19 +11,21 @@ import java.util.List;
  * Created by fedorkorotkov
  */
 public class PantsExecutionSettings extends ExternalSystemExecutionSettings {
-  private List<String> targetNames;
+  private final boolean myAllTargets;
+  private List<String> myTargetNames;
   @NotNull private final List<String> myResolverExtensionClassNames = ContainerUtilRt.newArrayList();
 
-  public PantsExecutionSettings(List<String> targetNames) {
-    this.targetNames = targetNames;
+  public PantsExecutionSettings(List<String> targetNames, boolean allTargets) {
+    myTargetNames = targetNames;
+    myAllTargets = allTargets;
   }
 
   public List<String> getTargetNames() {
-    return targetNames;
+    return myTargetNames;
   }
 
-  public void setTargetNames(@Nullable List<String> targetNames) {
-    this.targetNames = targetNames;
+  public boolean isAllTargets() {
+    return myAllTargets;
   }
 
   @NotNull
@@ -44,13 +45,13 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings {
 
     PantsExecutionSettings that = (PantsExecutionSettings)o;
 
-    return ContainerUtil.equalsIdentity(targetNames, that.targetNames);
+    return ContainerUtil.equalsIdentity(myTargetNames, that.myTargetNames);
   }
 
   @Override
   public int hashCode() {
     int result = 0;
-    for (String targetName : targetNames) {
+    for (String targetName : myTargetNames) {
       result = 31 * result + targetName.hashCode();
     }
     return result;

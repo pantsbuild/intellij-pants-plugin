@@ -46,7 +46,7 @@ public class PantsUtil {
   public static final FileChooserDescriptor BUILD_FILE_CHOOSER_DESCRIPTOR = new OpenProjectFileChooserDescriptor(true) {
     @Override
     public boolean isFileSelectable(VirtualFile file) {
-      return isBUILDFileName(file.getName());
+      return isPantsProjectFolder(file);
     }
 
     @Override
@@ -57,6 +57,18 @@ public class PantsUtil {
       return isBUILDFileName(file.getName());
     }
   };
+
+  /**
+   * Checks if it's a BUILD file or folder under a Pants project
+   *
+   * @param file - a BUILD file or a directory
+   */
+  public static boolean isPantsProjectFolder(VirtualFile file) {
+    if (file.isDirectory()) {
+      return findPantsExecutable(file) != null;
+    }
+    return isBUILDFileName(file.getName());
+  }
 
   private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";

@@ -23,9 +23,6 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
-
-  private static final Logger LOG = Logger.getInstance("#" + PantsResolver.class.getName());
-
   private final boolean generateJars;
   private ProjectInfo projectInfo = null;
 
@@ -45,7 +42,9 @@ public class PantsResolver extends PantsResolverBase {
       commandLine.addParameter("resolve");
     }
     final File workDirectory = commandLine.getWorkDirectory();
-    final String relativeProjectPath = FileUtil.getRelativePath(workDirectory, new File(projectPath).getParentFile());
+    final File projectFile = new File(projectPath);
+    final String relativeProjectPath =
+      FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
 
     if (relativeProjectPath == null) {
       throw new ExternalSystemException(
@@ -54,8 +53,13 @@ public class PantsResolver extends PantsResolverBase {
     }
 
     commandLine.addParameter("depmap");
-    for (String targetName : settings.getTargetNames()) {
-      commandLine.addParameter(relativeProjectPath + File.separator + ":" + targetName);
+    if (settings.isAllTargets()) {
+      commandLine.addParameter(relativeProjectPath + File.separator + "::");
+    }
+    else {
+      for (String targetName : settings.getTargetNames()) {
+        commandLine.addParameter(relativeProjectPath + File.separator + ":" + targetName);
+      }
     }
     commandLine.addParameter("--depmap-project-info");
     commandLine.addParameter("--depmap-project-info-formatted");
@@ -158,8 +162,8 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, TargetInfo targetInfo) {
-    final String[] pathAndTarget = targetName.split(":");
-    final String path = pathAndTarget[0];
+    final int index = targetName.lastIndexOf(':');
+    final String path = targetName.substring(0, index);
 
     final String contentRootPath = StringUtil.notNullize(
       PantsUtil.findCommonRoot(

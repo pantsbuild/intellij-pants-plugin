@@ -1,29 +1,37 @@
 package com.twitter.intellij.pants.settings;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
 import com.intellij.openapi.externalSystem.util.PaintAwarePanel;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.CheckBoxList;
+import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.generate.tostring.util.StringUtil;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
+  private static final Logger LOG = Logger.getInstance(PantsProjectSettingsControl.class);
+
   private JLabel myTargetsLabel;
   private CheckBoxList<String> myTargets;
+  private JBCheckBox myAllTargetsCheckBox;
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
     super(settings);
@@ -33,6 +41,11 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   protected void fillExtraControls(@NotNull PaintAwarePanel content, int indentLevel) {
     myTargetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
     myTargets = new CheckBoxList<String>();
+
+    myAllTargetsCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.all.targets"));
+    myAllTargetsCheckBox.setEnabled(false);
+
+    content.add(myAllTargetsCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
     content.add(myTargetsLabel, ExternalSystemUiUtil.getLabelConstraints(indentLevel));
     content.add(myTargets, ExternalSystemUiUtil.getFillLineConstraints(0));
@@ -45,16 +58,44 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void resetExtraSettings(boolean isDefaultModuleCreation) {
+    final String externalProjectPath = getInitialSettings().getExternalProjectPath();
+    if (!StringUtil.isEmpty(externalProjectPath)) {
+      onProjectPathChanged(externalProjectPath);
+    }
+  }
+
+  public void onProjectPathChanged(@NotNull final String projectPath) {
     myTargets.clear();
+    final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
+    if (file == null || !PantsUtil.isPantsProjectFolder(file)) {
+      myAllTargetsCheckBox.setEnabled(false);
+      myTargets.setEnabled(true);
+      LOG.warn("Bad project path: " + projectPath);
+      return;
+    }
+
+    if (file.isDirectory()) {
+      myAllTargetsCheckBox.setEnabled(true);
+      myAllTargetsCheckBox.setSelected(true);
+      myTargets.setEnabled(false);
+    } else {
+      myAllTargetsCheckBox.setEnabled(false);
+      myTargets.setEnabled(true);
+      loadTargets(projectPath);
+    }
+  }
+
+  private void loadTargets(final String projectPath) {
     myTargets.setPaintBusy(true);
     ProgressManager.getInstance().run(
-      new Task.Backgroundable(null, PantsBundle.message("pants.settings.text.loading.targets")) {
+      new Task.Backgroundable(
+        null, PantsBundle.message("pants.settings.text.loading.targets"),
+        false, PerformInBackgroundOption.ALWAYS_BACKGROUND
+      ) {
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
           try {
-            final List<String> targets = StringUtil.isEmpty(getInitialSettings().getExternalProjectPath()) ?
-                                         Collections.<String>emptyList() :
-                                         PantsUtil.listAllTargets(getInitialSettings().getExternalProjectPath());
+            final List<String> targets = PantsUtil.listAllTargets(projectPath);
             UIUtil.invokeLaterIfNeeded(
               new Runnable() {
                 @Override
@@ -67,7 +108,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
             );
           }
           catch (PantsException e) {
-            // todo(fkorotkov): proper handling
+            LOG.warn(e);
           }
           finally {
             myTargets.setPaintBusy(false);
@@ -80,18 +121,31 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
     final List<String> result = new ArrayList<String>();
-    for (int i = 0; i < myTargets.getItemsCount(); i++) {
-      String target = myTargets.getItemAt(i);
-      if (myTargets.isItemSelected(target)) {
-        result.add(target);
-      }
+    if (myAllTargetsCheckBox.isEnabled()) {
+      settings.setAllTargets(true);
     }
-    settings.setTargets(result);
+    else {
+      for (int i = 0; i < myTargets.getItemsCount(); i++) {
+        String target = myTargets.getItemAt(i);
+        if (myTargets.isItemSelected(target)) {
+          result.add(target);
+        }
+      }
+      settings.setTargets(result);
+    }
   }
 
   @Override
   public boolean validate(@NotNull PantsProjectSettings settings) throws ConfigurationException {
-    if (myTargets.getSelectedIndices().length == 0) {
+    final String projectUrl = VfsUtil.pathToUrl(settings.getExternalProjectPath());
+    final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(projectUrl);
+    if (file == null) {
+      throw new ConfigurationException(PantsBundle.message("pants.error.file.not.exists"));
+    }
+    if (!PantsUtil.isPantsProjectFolder(file)) {
+      throw new ConfigurationException(PantsBundle.message("pants.error.not.build.file.path.or.directory"));
+    }
+    if (!myAllTargetsCheckBox.isSelected() && myTargets.getSelectedIndices().length == 0) {
       throw new ConfigurationException(PantsBundle.message("pants.error.no.targets.are.selected"));
     }
     return true;

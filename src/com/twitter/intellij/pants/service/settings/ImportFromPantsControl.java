@@ -3,6 +3,7 @@ package com.twitter.intellij.pants.service.settings;
 import com.intellij.openapi.externalSystem.service.settings.AbstractImportFromExternalSystemControl;
 import com.intellij.openapi.externalSystem.util.ExternalSystemSettingsControl;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsProjectSettingsControl;
 import com.twitter.intellij.pants.settings.PantsSettings;
@@ -25,6 +26,9 @@ public class ImportFromPantsControl
 
   @Override
   protected void onLinkedProjectPathChange(@NotNull String path) {
+    if (!StringUtil.isEmpty(path)) {
+      ((PantsProjectSettingsControl)getProjectSettingsControl()).onProjectPathChanged(path);
+    }
   }
 
   @NotNull
