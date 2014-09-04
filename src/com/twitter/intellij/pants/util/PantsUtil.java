@@ -210,7 +210,10 @@ public class PantsUtil {
     if (runFromSources) {
       commandLine.getEnvironment().put("PANTS_DEV", "1");
     }
-    commandLine.setExePath(pantsExecutable.getPath());
+
+    final String pantsExecutablePath = StringUtil.notNullize(System.getProperty("pants.executable.path"),
+                                                             pantsExecutable.getPath());
+    commandLine.setExePath(pantsExecutablePath);
     final String workingDir = pantsExecutable.getParent().getPath();
     commandLine.setWorkDirectory(workingDir);
     return commandLine;

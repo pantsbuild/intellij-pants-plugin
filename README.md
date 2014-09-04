@@ -22,3 +22,15 @@ Contributing to the project:
    git checkout master
    git pull
    ./rbt patch -c <RB_ID>
+
+
+Debugging the Plugin from local pants development:
+* If you want to debug plugin using your local development pants, you can do so by using the property pants.executable.path.
+  Add this configuration to Pants Run config.
+  e.g.
+  -Dpants.executable.pants=/path/to/pants_dev/pants
+* Remember to bootstap pants in the project repository inside which you want to test the plugin.
+  cd ~/workspace/example_project
+  /path/to/pants_dev/pants goal goals
+
+  This will bootstrap pants and resolve all the dependencies or else you will get an ExecutionException exception for exceeding 30s Timeout.
