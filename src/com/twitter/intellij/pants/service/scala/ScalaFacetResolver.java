@@ -47,6 +47,10 @@ public class ScalaFacetResolver implements PantsResolverExtension {
       if (compilerFile.exists()) {
         files.add(compilerFile);
       }
+      final File reflectFile = new File(StringUtil.replace(jarPath, "scala-library", "scala-reflect"));
+      if (reflectFile.exists()) {
+        files.add(reflectFile);
+      }
     }
     scalaModelData.setScalaCompilerJars(files);
     moduleDataNode.createChild(ScalaModelData.KEY, scalaModelData);
