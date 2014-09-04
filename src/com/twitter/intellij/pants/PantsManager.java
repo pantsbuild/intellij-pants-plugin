@@ -180,8 +180,6 @@ public class PantsManager implements
   public String getAffectedExternalProjectPath(@NotNull String changedFileOrDirPath, @NotNull Project project) {
     final VirtualFile virtualFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(changedFileOrDirPath));
     if (virtualFile == null) {
-      // impossible! we have vfs events only for files under vfs
-      LOG.error("Incorrect changed file " + changedFileOrDirPath);
       return null;
     }
     String pathKey = null;
