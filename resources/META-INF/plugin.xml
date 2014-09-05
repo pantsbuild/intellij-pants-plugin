@@ -4,6 +4,13 @@
   <description>Support for pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>0.9:</p>
+      <ul>
+        <li>Project Files Project View</li>
+        <li>Open all targets in a directory</li>
+        <li>Auto import on changes in BUILD, Thrift, ANTLR and Protobuf files</li>
+        <li>Bug Fixes</li>
+      </ul>
       <p>0.8:</p>
       <ul>
         <li>Scala Support</li>
@@ -38,7 +45,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>0.8</version>
+  <version>0.9</version>
   <vendor>Twitter, Inc.</vendor>
   <idea-version since-build="135.1200" until-build="136.1"/>
 
