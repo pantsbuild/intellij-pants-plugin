@@ -100,6 +100,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
               new Runnable() {
                 @Override
                 public void run() {
+                  myTargets.clear();
                   for (String target : targets) {
                     myTargets.addItem(target, target, false);
                   }

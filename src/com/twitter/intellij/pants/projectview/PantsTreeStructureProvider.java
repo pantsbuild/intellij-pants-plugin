@@ -10,10 +10,12 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
@@ -38,13 +40,13 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
     final Project project = node.getProject();
     if (node instanceof PsiDirectoryNode && project != null) {
       final Module module = ModuleUtil.findModuleForPsiElement(((PsiDirectoryNode)node).getValue());
-      final VirtualFile moduleFile = module != null ? module.getModuleFile() : null;
-      String buildPath = moduleFile != null && moduleFile.getParent().equals(((PsiDirectoryNode)node).getVirtualFile())?
-                         module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : null;
+      final String buildPath = module != null ? module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : null;
       if (buildPath != null) {
-        final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(moduleFile);
+        final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
         final VirtualFile buildFile = pantsExecutable != null ? pantsExecutable.getParent().findFileByRelativePath(buildPath) : null;
-        if (buildFile != null) {
+
+        boolean isModuleRoot = ArrayUtil.contains(((PsiDirectoryNode)node).getVirtualFile(), ModuleRootManager.getInstance(module).getContentRoots());
+        if (buildFile != null && isModuleRoot) {
           // Check if there's already a BUILD file in the directory; if so, we don't add another
           final AbstractTreeNode existingBuildFile = ContainerUtil.find(
             collection.iterator(), new Condition<AbstractTreeNode>() {

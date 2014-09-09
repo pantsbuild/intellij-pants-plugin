@@ -3,7 +3,6 @@ package com.twitter.intellij.pants.service.project;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -16,8 +15,8 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsSourceType;
 import com.twitter.intellij.pants.util.PantsUtil;
-import com.twitter.intellij.pants.util.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -80,7 +79,7 @@ public class PantsResolver extends PantsResolverBase {
     }
   }
 
-  public void addInfo(DataNode<ProjectData> projectInfoDataNode) {
+  public void addInfo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (projectInfo == null) return;
 
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
@@ -88,6 +87,10 @@ public class PantsResolver extends PantsResolverBase {
     // create all modules with source roots. no libs and dependencies
     for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
       final String targetName = entry.getKey();
+      if (StringUtil.startsWith(targetName, ":scala-library")) {
+        // we already have it in libs
+        continue;
+      }
       final TargetInfo targetInfo = entry.getValue();
       final DataNode<ModuleData> moduleData = createModuleData(
         projectInfoDataNode, targetName, targetInfo
@@ -123,7 +126,10 @@ public class PantsResolver extends PantsResolverBase {
       for (String libraryId : targetInfo.libraries) {
         // todo: investigate if not exists
         if (projectInfo.libraries.containsKey(libraryId)) {
-          createLibraryData(moduleDataNode, libraryId);
+          // skip Scala. Will be added by ScalaPantsDataService
+          if (!StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
+            createLibraryData(moduleDataNode, libraryId);
+          }
         } else {
           LOG.warn("No info for " + libraryId + " lib");
         }
@@ -191,13 +197,14 @@ public class PantsResolver extends PantsResolverBase {
       }
     );
 
+    final String moduleName = PantsUtil.getCanonicalModuleName(targetName);
+
     final ModuleData moduleData = new ModuleData(
-      targetName,
+      moduleName,
       PantsConstants.SYSTEM_ID,
       ModuleTypeId.JAVA_MODULE,
-      targetName,
-      // do not store .iml files in gen folder because pants will delete them
-      StringUtil.replace(contentRootPath, ".pants.d/gen", ".pants.d/intellij"),
+      moduleName,
+      projectInfoDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
       StringUtil.notNullize(
         FileUtil.getRelativePath(myWorkDirectory, BUILDFile),
         path
@@ -213,8 +220,10 @@ public class PantsResolver extends PantsResolverBase {
       );
       for (SourceRoot root : targetInfo.roots) {
         try {
-          final ExternalSystemSourceType source = Utils.getSourceTypeForTargetType(targetInfo.target_type);
-          contentRoot.storePath(source, root.source_root, StringUtil.nullize(root.package_prefix));
+          final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetInfo.target_type);
+          // resource source root shouldn't have a package prefix
+          final String packagePrefix = PantsSourceType.isResource(rootType) ? null : StringUtil.nullize(root.package_prefix);
+          contentRoot.storePath(rootType.toExternalSystemSourceType(), root.source_root, packagePrefix);
         }
         catch (IllegalArgumentException e) {
           LOG.warn(e);

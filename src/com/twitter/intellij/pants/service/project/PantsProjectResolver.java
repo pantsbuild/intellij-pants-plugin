@@ -9,9 +9,12 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotifica
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,13 +52,18 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
 
   private DataNode<ProjectData> getProjectDataNode(String projectPath, PantsExecutionSettings settings) {
     final String projectDirPath = settings.isAllTargets() ? projectPath : PathUtil.getParentPath(projectPath);
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(projectDirPath);
+    if (workingDir == null) {
+      throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", projectDirPath));
+    }
     // todo(fkorotkov): add ability to choose a name for a project
     final String targetsSuffix = settings.isAllTargets() ? ":" : StringUtil.join(settings.getTargetNames(), " :");
-    final String projectName = PathUtil.getFileName(projectDirPath) + "/:" + targetsSuffix;
+    final String relativeProjectPath = StringUtil.substringAfter(projectDirPath, workingDir.getPath() + "/");
+    final String projectName = relativeProjectPath + "/:" + targetsSuffix;
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
       projectName,
-      projectDirPath,
+      workingDir.getPath() + "/.pants.d/intellij/" + relativeProjectPath,
       projectPath
     );
     return new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);

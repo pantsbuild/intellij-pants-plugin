@@ -4,6 +4,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ScriptRunnerUtil;
 import com.intellij.ide.actions.OpenProjectFileChooserDescriptor;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
+  private static final Logger LOG = Logger.getInstance(PantsUtil.class);
+
   public static final String PANTS = "pants";
   public static final String TWITTER = "twitter";
   public static final String PANTS_LIBRARY_NAME = "pants";
@@ -166,6 +169,12 @@ public class PantsUtil {
   }
 
   @Nullable
+  public static VirtualFile findPantsWorkingDir(@NotNull String filePath) {
+    final VirtualFile pantsExecutable = findPantsExecutable(filePath);
+    return pantsExecutable != null ? pantsExecutable.getParent() : null;
+  }
+
+  @Nullable
   public static VirtualFile findPantsWorkingDir(@Nullable VirtualFile file) {
     final VirtualFile pantsExecutable = findPantsExecutable(file);
     return pantsExecutable != null ? pantsExecutable.getParent() : null;
@@ -268,5 +277,22 @@ public class PantsUtil {
            FileUtilRt.extensionEquals(path, ANTLR_EXT) ||
            FileUtilRt.extensionEquals(path, ANTLR_4_EXT) ||
            FileUtilRt.extensionEquals(path, PROTOBUF_EXT);
+  }
+
+  public static String getCanonicalModuleName(@NotNull @NonNls String targetName) {
+    // Do not use ':' because it is used as a separator in a classpath
+    // while running the app. As well as path separators
+    return targetName.replace(':', '_').replace('/', '_').replace('\\', '_');
+  }
+
+  @NotNull
+  public static PantsSourceType getSourceTypeForTargetType(@Nullable String target_type) {
+    try {
+      return target_type == null ? PantsSourceType.SOURCE :
+             PantsSourceType.valueOf(StringUtil.toUpperCase(target_type));
+    } catch (IllegalArgumentException e) {
+      LOG.warn("Got invalid source type " + target_type, e);
+      return PantsSourceType.SOURCE;
+    }
   }
 }

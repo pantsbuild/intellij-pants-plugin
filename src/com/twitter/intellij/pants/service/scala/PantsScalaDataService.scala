@@ -14,6 +14,7 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.{VfsUtil, VfsUtilCore}
 import com.twitter.intellij.pants.service.scala.ScalaPantsDataService._
 import org.jetbrains.plugins.scala.config._
+import org.jetbrains.plugins.scala.util.LibrariesUtil
 
 import scala.collection.JavaConverters._
 
@@ -39,6 +40,8 @@ class ScalaPantsDataService(platformFacade: PlatformFacade, helper: ProjectStruc
       Option(helper.findIdeModule(moduleName, project)) foreach { module =>
         ScalaFacet.findIn(module).map(setup).getOrElse(
           ScalaFacet.createIn(module)(setup))
+
+        LibrariesUtil.addLibrary(compilerLibrary, module)
       }
     }
   }
