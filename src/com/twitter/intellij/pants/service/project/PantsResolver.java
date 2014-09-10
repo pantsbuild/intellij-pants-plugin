@@ -92,6 +92,10 @@ public class PantsResolver extends PantsResolverBase {
         continue;
       }
       final TargetInfo targetInfo = entry.getValue();
+      if (targetInfo.isEmpty()) {
+        LOG.info("Skipping " + targetName + " because it is empty");
+        continue;
+      }
       final DataNode<ModuleData> moduleData = createModuleData(
         projectInfoDataNode, targetName, targetInfo
       );
@@ -102,10 +106,12 @@ public class PantsResolver extends PantsResolverBase {
     for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
+      if (!modules.containsKey(mainTarget)) {
+        continue;
+      }
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
       for (String target : targetInfo.targets) {
         if (!modules.containsKey(target)) {
-          LOG.warn("No info for " + target + " target");
           continue;
         }
         final DataNode<ModuleData> submoduleDataNode = modules.get(target);
@@ -122,16 +128,14 @@ public class PantsResolver extends PantsResolverBase {
     for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
+      if (!modules.containsKey(mainTarget)) {
+        continue;
+      }
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
       for (String libraryId : targetInfo.libraries) {
-        // todo: investigate if not exists
-        if (projectInfo.libraries.containsKey(libraryId)) {
-          // skip Scala. Will be added by ScalaPantsDataService
-          if (!StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
-            createLibraryData(moduleDataNode, libraryId);
-          }
-        } else {
-          LOG.warn("No info for " + libraryId + " lib");
+        // skip Scala. Will be added by ScalaPantsDataService
+        if (!StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
+          createLibraryData(moduleDataNode, libraryId);
         }
       }
     }
@@ -153,8 +157,12 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId) {
+    final List<String> libraryJars = findLibraryJars(libraryId);
+    if (libraryJars.isEmpty()) {
+      return;
+    }
     final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
-    for (String jarPath : projectInfo.libraries.get(libraryId)) {
+    for (String jarPath : libraryJars) {
       // todo: sources + docs
       libraryData.addPath(LibraryPathType.BINARY, jarPath);
     }
@@ -166,6 +174,33 @@ public class PantsResolver extends PantsResolverBase {
     // todo: is it always exported?
     library.setExported(true);
     moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
+  }
+
+  private List<String> findLibraryJars(@NotNull String libraryId) {
+    final List<String> jars = projectInfo.libraries.get(libraryId);
+    return jars == null || jars.isEmpty() ? findLibraryJarsOptimistically(libraryId) : jars;
+  }
+
+  private List<String> findLibraryJarsOptimistically(@NotNull String libraryId) {
+    int versionIndex = libraryId.lastIndexOf(':');
+    if (versionIndex == -1) {
+      LOG.warn("Bad library id: " + libraryId);
+      return Collections.emptyList();
+    }
+    final String libraryName = libraryId.substring(0, versionIndex);
+    for (Map.Entry<String, List<String>> libIdAndJars : projectInfo.libraries.entrySet()) {
+      final String currentLibraryId = libIdAndJars.getKey();
+      if (!StringUtil.startsWith(currentLibraryId, libraryName)) {
+        continue;
+      }
+      final List<String> currentJars = libIdAndJars.getValue();
+      if (!currentJars.isEmpty()) {
+        LOG.info("Using " + currentLibraryId + " instead of " + libraryId);
+        return currentJars;
+      }
+    }
+    LOG.warn("No info for library: " + libraryId);
+    return Collections.emptyList();
   }
 
   private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, TargetInfo targetInfo) {
@@ -260,6 +295,10 @@ public class PantsResolver extends PantsResolverBase {
      * Target type.
      */
     public String target_type;
+
+    public boolean isEmpty() {
+      return libraries.isEmpty() && targets.isEmpty() && roots.isEmpty();
+    }
   }
 
   public static class SourceRoot {
