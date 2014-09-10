@@ -78,6 +78,6 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
 
   @Override
   public SelectInTarget createSelectInTarget() {
-    return new ProjectPaneSelectInTarget(myProject);
+    return new PantsProjectPaneSelectInTarget(myProject);
   }
 }

@@ -7,6 +7,7 @@ import com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -49,5 +50,12 @@ public class ProjectFilesViewProjectNode extends AbstractProjectNode {
       );
     }
     return Arrays.asList(root);
+  }
+
+  @Override
+  public boolean contains(@NotNull VirtualFile file) {
+    final VirtualFile projectWorkingDir = PantsUtil.findPantsWorkingDir(myProject.getBaseDir());
+    return super.contains(file) ||
+           (projectWorkingDir != null && VfsUtil.isAncestor(projectWorkingDir, file, true));
   }
 }

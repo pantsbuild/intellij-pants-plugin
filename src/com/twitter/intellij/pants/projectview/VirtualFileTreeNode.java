@@ -12,12 +12,12 @@ import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +50,7 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
   @Override
   public boolean contains(@NotNull VirtualFile file) {
     final VirtualFile myFile = getValue();
-    return myFile.isDirectory() && ArrayUtil.contains(file, getFilteredChildren(myFile));
+    return myFile.isDirectory() && VfsUtil.isAncestor(myFile, file, true);
   }
 
   @Override
