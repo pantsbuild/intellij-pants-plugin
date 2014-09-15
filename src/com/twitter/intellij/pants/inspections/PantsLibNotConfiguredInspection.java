@@ -52,7 +52,7 @@ public class PantsLibNotConfiguredInspection extends LocalInspectionTool {
     }
     final Project project = file.getProject();
 
-    final Module module = ModuleUtil.findModuleForPsiElement(file);
+    final Module module = PantsUtil.findModuleForBUILDFile(project, file.getVirtualFile());
     if (module == null) {
       return ProblemDescriptor.EMPTY_ARRAY;
     }

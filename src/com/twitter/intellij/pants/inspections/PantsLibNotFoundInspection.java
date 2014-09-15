@@ -85,47 +85,39 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
     }
 
     public static void applyFix(@NotNull Project project) {
-      final VirtualFile localPexFile = PantsUtil.findLocalPantsPex(project);
-
-      VirtualFile pexFile;
-      if (localPexFile != null) {
-        pexFile = localPexFile;
+      final String pantsVersion = PantsUtil.findPantsVersion(project);
+      if (pantsVersion == null) {
+        Messages.showErrorDialog(
+          project,
+          PantsBundle.message("pants.inspection.library.no.version"),
+          PantsBundle.message("pants.error.title")
+        );
+        return;
       }
-      else {
-        final String pantsVersion = PantsUtil.findPantsVersion(project);
-        if (pantsVersion == null) {
-          Messages.showErrorDialog(
-            project,
-            PantsBundle.message("pants.inspection.library.no.version"),
-            PantsBundle.message("pants.error.title")
-          );
-          return;
-        }
 
-        final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
-        if (folderWithPex == null) {
-          Messages.showErrorDialog(
-            project,
-            PantsBundle.message("pants.inspection.library.no.pex.folder"),
-            PantsBundle.message("pants.error.title")
-          );
-          return;
-        }
+      final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
+      if (folderWithPex == null) {
+        Messages.showErrorDialog(
+          project,
+          PantsBundle.message("pants.inspection.library.no.pex.folder"),
+          PantsBundle.message("pants.error.title")
+        );
+        return;
+      }
 
-        if (ApplicationManager.getApplication().isUnitTestMode()) {
-          // saw cases when VFS doesn't refresh the folder and returns old files
-          folderWithPex.refresh(false, false);
-        }
+      if (ApplicationManager.getApplication().isUnitTestMode()) {
+        // saw cases when VFS doesn't refresh the folder and returns old files
+        folderWithPex.refresh(false, false);
+      }
 
-        pexFile = PantsUtil.findPexVersionFile(folderWithPex, pantsVersion);
-        if (pexFile == null) {
-          Messages.showErrorDialog(
-            project,
-            PantsBundle.message("pants.inspection.library.no.pex.file", pantsVersion),
-            PantsBundle.message("pants.error.title")
-          );
-          return;
-        }
+      final VirtualFile pexFile = PantsUtil.findPexVersionFile(folderWithPex, pantsVersion);
+      if (pexFile == null) {
+        Messages.showErrorDialog(
+          project,
+          PantsBundle.message("pants.inspection.library.no.pex.file", pantsVersion),
+          PantsBundle.message("pants.error.title")
+        );
+        return;
       }
 
       final VirtualFile jar = JarFileSystem.getInstance().refreshAndFindFileByPath(pexFile.getPath() + "!/");

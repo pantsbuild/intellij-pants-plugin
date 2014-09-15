@@ -5,11 +5,11 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ScriptRunnerUtil;
 import com.intellij.ide.actions.OpenProjectFileChooserDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
@@ -40,7 +40,6 @@ public class PantsUtil {
   public static final String PANTS_LIBRARY_NAME = "pants";
 
   public static final String PANTS_INI = "pants.ini";
-  public static final String PANTS_PEX = "pants.pex";
 
   private static final String BUILD = "BUILD";
   private static final String THRIFT_EXT = "thrift";
@@ -63,10 +62,7 @@ public class PantsUtil {
 
     @Override
     public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
-      if (!super.isFileVisible(file, showHiddenFiles)) {
-        return false;
-      }
-      return isBUILDFileName(file.getName());
+      return super.isFileVisible(file, showHiddenFiles) && isBUILDFileName(file.getName());
     }
   };
 
@@ -92,7 +88,13 @@ public class PantsUtil {
   }
 
   @Nullable
-  private static String findVersionInFile(VirtualFile file) {
+  public static VirtualFile findPantsIniFile(@NotNull Project project) {
+    final VirtualFile pantsWorkingDir = findPantsWorkingDir(project.getProjectFile());
+    return pantsWorkingDir != null ? pantsWorkingDir.findChild(PANTS_INI) : null;
+  }
+
+  @Nullable
+  private static String findVersionInFile(@NotNull VirtualFile file) {
     try {
       final String fileContent = VfsUtilCore.loadText(file);
       final List<String> matches = StringUtil.findMatches(
@@ -103,29 +105,6 @@ public class PantsUtil {
     catch (IOException e) {
       return null;
     }
-  }
-
-  @Nullable
-  public static VirtualFile findPantsIniFile(@NotNull Project project) {
-    return findFileInContentRoots(project, PANTS_INI);
-  }
-
-  @Nullable
-  public static VirtualFile findLocalPantsPex(@NotNull Project project) {
-    return findFileInContentRoots(project, PANTS_PEX);
-  }
-
-  @Nullable
-  public static VirtualFile findFileInContentRoots(@NotNull Project project, @NotNull @NonNls String fileName) {
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
-      for (VirtualFile root : ModuleRootManager.getInstance(module).getContentRoots()) {
-        VirtualFile iniFile = root.findChild(fileName);
-        if (iniFile != null) {
-          return iniFile;
-        }
-      }
-    }
-    return null;
   }
 
   @Nullable
@@ -145,21 +124,6 @@ public class PantsUtil {
         }
       }
     );
-  }
-
-  @NotNull
-  public static String findRelativePathToPantsExecutable(@NotNull String projectPath) {
-    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
-    final VirtualFile pantsExecutable = findPantsExecutable(buildFile);
-    if (pantsExecutable == null) {
-      return projectPath;
-    }
-    else {
-      return StringUtil.notNullize(
-        StringUtil.substringAfter(projectPath, pantsExecutable.getParent().getPath()),
-        projectPath
-      );
-    }
   }
 
   @Nullable
@@ -294,5 +258,25 @@ public class PantsUtil {
       LOG.warn("Got invalid source type " + target_type, e);
       return PantsSourceType.SOURCE;
     }
+  }
+
+  @Nullable
+  public static Module findModuleForBUILDFile(@NotNull Project project, @Nullable final VirtualFile file) {
+    if (file == null || !isBUILDFileName(file.getName())) return null;
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(project.getProjectFile());
+    if (workingDir == null) {
+      return null;
+    }
+    return ContainerUtil.find(
+      ModuleManager.getInstance(project).getModules(),
+      new Condition<Module>() {
+        @Override
+        public boolean value(Module module) {
+          final String linkedPantsBUILD = module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
+          final VirtualFile moduleBUILDFile = linkedPantsBUILD != null ? workingDir.findFileByRelativePath(linkedPantsBUILD) : null;
+          return file.equals(moduleBUILDFile);
+        }
+      }
+    );
   }
 }
