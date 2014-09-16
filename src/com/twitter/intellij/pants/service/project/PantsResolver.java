@@ -2,32 +2,50 @@ package com.twitter.intellij.pants.service.project;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.*;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsSourceType;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class PantsResolver extends PantsResolverBase {
+public class PantsResolver {
   private final boolean generateJars;
+  private final String projectPath;
+  private final PantsExecutionSettings settings;
+  private final Logger LOG = Logger.getInstance(getClass());
+  @Nullable
+  protected File myWorkDirectory = null;
   private ProjectInfo projectInfo = null;
 
   public PantsResolver(@NotNull String projectPath, @NotNull PantsExecutionSettings settings, boolean isPreviewMode) {
-    super(projectPath, settings);
+    this.projectPath = projectPath;
+    this.settings = settings;
     generateJars = !isPreviewMode;
   }
 
@@ -35,46 +53,14 @@ public class PantsResolver extends PantsResolverBase {
     return new Gson().fromJson(data, ProjectInfo.class);
   }
 
-  @Override
-  protected void fillArguments(GeneralCommandLine commandLine) {
-    commandLine.addParameter("goal");
-    if (generateJars) {
-      commandLine.addParameter("resolve");
-    }
-    final File workDirectory = commandLine.getWorkDirectory();
-    final File projectFile = new File(projectPath);
-    final String relativeProjectPath =
-      FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
-
-    if (relativeProjectPath == null) {
-      throw new ExternalSystemException(
-        String.format("Can't find relative path for a target %s from dir %s", projectPath, workDirectory.getPath())
-      );
-    }
-
-    commandLine.addParameter("depmap");
-    if (settings.isAllTargets()) {
-      commandLine.addParameter(relativeProjectPath + File.separator + "::");
-    }
-    else {
-      for (String targetName : settings.getTargetNames()) {
-        commandLine.addParameter(relativeProjectPath + File.separator + ":" + targetName);
-      }
-    }
-    commandLine.addParameter("--depmap-project-info");
-    commandLine.addParameter("--depmap-project-info-formatted");
-  }
-
-  @Override
-  protected void parse(List<String> out, List<String> err) {
+  private void parse(final String output, List<String> err) {
     projectInfo = null;
-    if (out.isEmpty()) throw new ExternalSystemException("Not output from pants");
-    final String data = out.iterator().next();
+    if (output.isEmpty()) throw new ExternalSystemException("Not output from pants");
     try {
-      projectInfo = parseProjectInfoFromJSON(data);
+      projectInfo = parseProjectInfoFromJSON(output);
     }
     catch (JsonSyntaxException e) {
-      LOG.warn("Can't parse output\n" + data, e);
+      LOG.warn("Can't parse output\n" + output, e);
       throw new ExternalSystemException("Can't parse project structure!");
     }
   }
@@ -269,6 +255,80 @@ public class PantsResolver extends PantsResolverBase {
     }
 
     return moduleDataNode;
+  }
+
+  public void resolve(final ExternalSystemTaskId taskId, final ExternalSystemTaskNotificationListener listener) {
+    try {
+      final File outputFile = FileUtil.createTempFile("pants_run", ".out");
+      final GeneralCommandLine command = getCommand(outputFile);
+      final Process process = command.createProcess();
+      final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
+      processHandler.addProcessListener(
+        new ProcessAdapter() {
+          @Override
+          public void onTextAvailable(ProcessEvent event, Key outputType) {
+            listener.onTaskOutput(taskId, event.getText(), outputType == ProcessOutputTypes.STDOUT);
+          }
+        }
+      );
+      final ProcessOutput processOutput = processHandler.runProcess();
+      if (processOutput.getStdout().contains("no such option")) {
+        throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
+      }
+      if (processOutput.checkSuccess(LOG)) {
+        final String output = FileUtil.loadFile(outputFile);
+        parse(output, processOutput.getStderrLines());
+      }
+      else {
+        throw new ExternalSystemException(
+          "Failed to update the project!\n\n" + processOutput.getStdout() + "\n\n" + processOutput.getStderr()
+        );
+      }
+    }
+    catch (ExecutionException e) {
+      throw new ExternalSystemException(e);
+    }
+    catch (IOException ioException) {
+      throw new ExternalSystemException(ioException);
+    }
+  }
+
+  protected GeneralCommandLine getCommand(final File outputFile) {
+    try {
+      final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
+      myWorkDirectory = commandLine.getWorkDirectory();
+      commandLine.addParameter("goal");
+      if (generateJars) {
+        commandLine.addParameter("resolve");
+      }
+      final File workDirectory = commandLine.getWorkDirectory();
+      final File projectFile = new File(projectPath);
+      final String relativeProjectPath =
+        FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
+
+      if (relativeProjectPath == null) {
+        throw new ExternalSystemException(
+          String.format("Can't find relative path for a target %s from dir %s", projectPath, workDirectory.getPath())
+        );
+      }
+
+      commandLine.addParameter("depmap");
+      if (settings.isAllTargets()) {
+        commandLine.addParameter(relativeProjectPath + File.separator + "::");
+      }
+      else {
+        for (String targetName : settings.getTargetNames()) {
+          commandLine.addParameter(relativeProjectPath + File.separator + ":" + targetName);
+        }
+      }
+      commandLine.addParameter("--depmap-project-info");
+      commandLine.addParameter("--depmap-project-info-formatted");
+      commandLine.addParameter("--depmap-output-file=" + outputFile.getPath());
+      return commandLine;
+    }
+    catch (PantsException exception) {
+      throw new ExternalSystemException(exception);
+    }
   }
 
   public static class ProjectInfo {
