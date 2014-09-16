@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="scala-plugin">
-    <CLASSES>
-      <root url="jar://$APPLICATION_PLUGINS_DIR$/Scala/lib/scala-plugin.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
