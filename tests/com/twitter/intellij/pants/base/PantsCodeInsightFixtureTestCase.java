@@ -8,6 +8,7 @@ import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection;
 import com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection;
@@ -51,12 +52,16 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
       pyPlugin.isEnabled()
     );
 
-    myFixture.addFileToProject("pants.ini", "pants_version: 1.0.5rc2");
+    final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
+    assertNotNull("Folder with pex files should be configured", folderWithPex);
+    final VirtualFile[] pexFiles = folderWithPex.getChildren();
+    assertTrue("There should be only one pex file!", pexFiles.length == 1);
+
     ApplicationManager.getApplication().runWriteAction(
       new Runnable() {
         @Override
         public void run() {
-          PantsLibNotFoundInspection.InstallQuickFix.applyFix(myFixture.getProject());
+          PantsLibNotFoundInspection.InstallQuickFix.configureByFile(myFixture.getProject(), pexFiles[0]);
           PantsLibNotConfiguredInspection.ConfigureLibFix.applyFix(myFixture.getProject(), myFixture.getModule());
         }
       }

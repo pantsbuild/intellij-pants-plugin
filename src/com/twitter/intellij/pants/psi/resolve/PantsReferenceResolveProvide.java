@@ -2,17 +2,15 @@ package com.twitter.intellij.pants.psi.resolve;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.QualifiedName;
-import com.jetbrains.python.psi.PyFile;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.python.psi.PyQualifiedExpression;
-import com.jetbrains.python.psi.PyUtil;
 import com.jetbrains.python.psi.resolve.PyReferenceResolveProvider;
 import com.jetbrains.python.psi.resolve.RatedResolveResult;
-import com.jetbrains.python.psi.resolve.ResolveImportUtil;
+import com.twitter.intellij.pants.index.PantsTargetIndex;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,24 +25,15 @@ public class PantsReferenceResolveProvide implements PyReferenceResolveProvider 
   }
 
   private List<RatedResolveResult> resolvePantsName(@NotNull PyQualifiedExpression element) {
-    String name = element.getName();
-
-    List<PsiElement> modules = ResolveImportUtil.resolveModule(
-      QualifiedName.fromComponents(PantsUtil.TWITTER, PantsUtil.PANTS),
-      element.getContainingFile(),
-      true,
-      0
-    );
-    final List<RatedResolveResult> result = new ArrayList<RatedResolveResult>();
-    for (PsiElement module : modules) {
-      module = PyUtil.turnDirIntoInit(module);
-      if (module instanceof PyFile) {
-        final PsiElement target = ((PyFile)module).getElementNamed(name);
-        if (target != null) {
-          result.add(new RatedResolveResult(RatedResolveResult.RATE_NORMAL, target));
+    final String name = element.getName();
+    return ContainerUtil.map(
+      PantsTargetIndex.resolveTargetByName(name, element.getProject()),
+      new Function<PsiElement, RatedResolveResult>() {
+        @Override
+        public RatedResolveResult fun(PsiElement element) {
+          return new RatedResolveResult(RatedResolveResult.RATE_NORMAL, element);
         }
       }
-    }
-    return result;
+    );
   }
 }

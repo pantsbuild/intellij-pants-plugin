@@ -1,31 +1,32 @@
 <idea-plugin version="2">
-    <extensions defaultExtensionNs="com.intellij">
-        <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
-        <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>
+  <extensions defaultExtensionNs="com.intellij">
+    <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
+    <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>
 
-        <completion.contributor language="Python"
-                                implementationClass="com.twitter.intellij.pants.completion.PantsCompletionContributor"/>
+    <completion.contributor language="Python"
+                            implementationClass="com.twitter.intellij.pants.completion.PantsCompletionContributor"/>
 
-        <psi.referenceContributor implementation="com.twitter.intellij.pants.psi.reference.PantsReferenceContributor"/>
+    <psi.referenceContributor implementation="com.twitter.intellij.pants.psi.reference.PantsReferenceContributor"/>
 
-        <localInspection language="Python" shortName="PantsLibNotFound"
-                         bundle="com.twitter.intellij.pants.PantsBundle"
-                         key="pants.inspection.library.not.found"
-                         groupKey="inspections.group.name" enabledByDefault="true"
-                         implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection"/>
+    <localInspection language="Python" shortName="PantsLibNotFound"
+                     bundle="com.twitter.intellij.pants.PantsBundle"
+                     key="pants.inspection.library.not.found"
+                     groupKey="inspections.group.name" enabledByDefault="true"
+                     implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection"/>
 
-        <localInspection language="Python" shortName="PantsLibNotConfigured"
-                         bundle="com.twitter.intellij.pants.PantsBundle"
-                         key="pants.inspection.library.not.configured"
-                         groupKey="inspections.group.name" enabledByDefault="true"
-                         implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection"/>
+    <localInspection language="Python" shortName="PantsLibNotConfigured"
+                     bundle="com.twitter.intellij.pants.PantsBundle"
+                     key="pants.inspection.library.not.configured"
+                     groupKey="inspections.group.name" enabledByDefault="true"
+                     implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection"/>
 
-      <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsRunConfigurationProducer"/>
-      <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsCompileConfigurationProducer"/>
-      <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsTestConfigurationProducer"/>
+    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsCompileConfigurationProducer"/>
+    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsTestConfigurationProducer"/>
 
-    </extensions>
-    <extensions defaultExtensionNs="Pythonid">
-        <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.psi.resolve.PantsReferenceResolveProvide"/>
-    </extensions>
+    <fileBasedIndex implementation="com.twitter.intellij.pants.index.PantsTargetIndex"/>
+  </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.psi.resolve.PantsReferenceResolveProvide"/>
+  </extensions>
 </idea-plugin>

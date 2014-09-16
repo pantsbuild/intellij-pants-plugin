@@ -36,7 +36,6 @@ public class PantsUtil {
   private static final Logger LOG = Logger.getInstance(PantsUtil.class);
 
   public static final String PANTS = "pants";
-  public static final String TWITTER = "twitter";
   public static final String PANTS_LIBRARY_NAME = "pants";
 
   public static final String PANTS_INI = "pants.ini";

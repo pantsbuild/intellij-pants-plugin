@@ -105,11 +105,6 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
         return;
       }
 
-      if (ApplicationManager.getApplication().isUnitTestMode()) {
-        // saw cases when VFS doesn't refresh the folder and returns old files
-        folderWithPex.refresh(false, false);
-      }
-
       final VirtualFile pexFile = PantsUtil.findPexVersionFile(folderWithPex, pantsVersion);
       if (pexFile == null) {
         Messages.showErrorDialog(
@@ -119,7 +114,10 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
         );
         return;
       }
+      configureByFile(project, pexFile);
+    }
 
+    public static void configureByFile(@NotNull Project project, @NotNull VirtualFile pexFile) {
       final VirtualFile jar = JarFileSystem.getInstance().refreshAndFindFileByPath(pexFile.getPath() + "!/");
       assert jar != null;
 
