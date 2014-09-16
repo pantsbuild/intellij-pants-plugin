@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="python-community-plugin">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Library/Application Support/IdeaIC13/python/lib/python-community.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

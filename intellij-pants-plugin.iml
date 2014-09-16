@@ -18,7 +18,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="scala-library" level="project" />
+    <orderEntry type="library" scope="TEST" name="python-community-plugin" level="project" />
+    <orderEntry type="library" name="python-plugin" level="project" />
+    <orderEntry type="library" name="scala-plugin" level="project" />
+    <orderEntry type="library" name="scala-compiler" level="project" />
   </component>
 </module>
 
