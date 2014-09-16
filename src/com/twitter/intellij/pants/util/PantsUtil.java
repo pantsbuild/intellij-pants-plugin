@@ -117,11 +117,11 @@ public class PantsUtil {
     final String filePrefix = "pants-" + pantsVersion;
     return ContainerUtil.find(
       folderWithPex.getChildren(), new Condition<VirtualFile>() {
-        @Override
-        public boolean value(VirtualFile virtualFile) {
-          return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
-        }
+      @Override
+      public boolean value(VirtualFile virtualFile) {
+        return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
       }
+    }
     );
   }
 
@@ -195,18 +195,23 @@ public class PantsUtil {
     final GeneralCommandLine commandLine = defaultCommandLine(projectPath);
     commandLine.addParameter("goal");
     commandLine.addParameter("list");
-
-    final File workDirectory = commandLine.getWorkDirectory();
-    final String relativePath = FileUtil.getRelativePath(workDirectory, new File(projectPath).getParentFile());
-
-    if (relativePath == null) {
-      throw new PantsException(String.format("Can't find relative path from %s to %s", workDirectory.getPath(), projectPath));
-    }
-
-    commandLine.addParameter(relativePath + "::");
-
     try {
-      final String processOutput = ScriptRunnerUtil.getProcessOutput(commandLine);
+      final File temporaryFile = FileUtil.createTempFile("pants_run", ".out");
+      commandLine.addParameter("--list-output-file=" + temporaryFile.getPath());
+      final File workDirectory = commandLine.getWorkDirectory();
+      final String relativePath = FileUtil.getRelativePath(workDirectory, new File(projectPath).getParentFile());
+
+      if (relativePath == null) {
+        throw new PantsException(String.format("Can't find relative path from %s to %s", workDirectory.getPath(), projectPath));
+      }
+
+      commandLine.addParameter(relativePath + "::");
+
+      String commandOutput = ScriptRunnerUtil.getProcessOutput(commandLine);
+      if (commandOutput.contains("no such option")) {
+        throw new PantsException("Pants doesn't have necessary APIs. Please upgrade you pants!");
+      }
+      final String processOutput = FileUtil.loadFile(temporaryFile);
       return ContainerUtil.map(
         ContainerUtil.filter(
           StringUtil.splitByLines(processOutput),
@@ -228,6 +233,9 @@ public class PantsUtil {
     }
     catch (ExecutionException e) {
       throw new PantsException(e);
+    }
+    catch (IOException e) {
+      throw new PantsException(e.getMessage());
     }
   }
 
