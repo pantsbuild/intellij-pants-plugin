@@ -29,7 +29,8 @@ public class ScalaFacetResolver implements PantsResolverExtension {
       for (String libraryId : targetInfo.libraries) {
         if (projectInfo.libraries.containsKey(libraryId) && isScalaLib(libraryId)) {
           // todo(fkorotkov): provide Scala info from the goal
-          createScalaFacetFromJars(moduleDataNode, projectInfo.libraries.get(libraryId));
+          createScalaFacetFromJars(moduleDataNode, projectInfo.getLibraries(libraryId));
+
         }
       }
     }

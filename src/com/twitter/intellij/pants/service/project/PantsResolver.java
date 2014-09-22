@@ -143,7 +143,7 @@ public class PantsResolver {
   }
 
   private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId) {
-    final List<String> libraryJars = findLibraryJars(libraryId);
+    final List<String> libraryJars = projectInfo.getLibraries(libraryId);
     if (libraryJars.isEmpty()) {
       return;
     }
@@ -160,33 +160,6 @@ public class PantsResolver {
     // todo: is it always exported?
     library.setExported(true);
     moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
-  }
-
-  private List<String> findLibraryJars(@NotNull String libraryId) {
-    final List<String> jars = projectInfo.libraries.get(libraryId);
-    return jars == null || jars.isEmpty() ? findLibraryJarsOptimistically(libraryId) : jars;
-  }
-
-  private List<String> findLibraryJarsOptimistically(@NotNull String libraryId) {
-    int versionIndex = libraryId.lastIndexOf(':');
-    if (versionIndex == -1) {
-      LOG.warn("Bad library id: " + libraryId);
-      return Collections.emptyList();
-    }
-    final String libraryName = libraryId.substring(0, versionIndex);
-    for (Map.Entry<String, List<String>> libIdAndJars : projectInfo.libraries.entrySet()) {
-      final String currentLibraryId = libIdAndJars.getKey();
-      if (!StringUtil.startsWith(currentLibraryId, libraryName)) {
-        continue;
-      }
-      final List<String> currentJars = libIdAndJars.getValue();
-      if (!currentJars.isEmpty()) {
-        LOG.info("Using " + currentLibraryId + " instead of " + libraryId);
-        return currentJars;
-      }
-    }
-    LOG.warn("No info for library: " + libraryId);
-    return Collections.emptyList();
   }
 
   private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, TargetInfo targetInfo) {
@@ -332,10 +305,36 @@ public class PantsResolver {
   }
 
   public static class ProjectInfo {
+    private final Logger LOG = Logger.getInstance(getClass());
     // id(org:name:version) to jars
     public Map<String, List<String>> libraries;
     // name to info
     public Map<String, TargetInfo> targets;
+
+    public List<String> getLibraries(@NotNull String libraryId) {
+      if (libraries.containsKey(libraryId) && libraries.get(libraryId).size() > 0) {
+        return libraries.get(libraryId);
+      }
+      int versionIndex = libraryId.lastIndexOf(':');
+      if (versionIndex == -1) {
+        LOG.warn("Bad library id: " + libraryId);
+        return Collections.emptyList();
+      }
+      final String libraryName = libraryId.substring(0, versionIndex);
+      for (Map.Entry<String, List<String>> libIdAndJars : libraries.entrySet()) {
+        final String currentLibraryId = libIdAndJars.getKey();
+        if (!StringUtil.startsWith(currentLibraryId, libraryName)) {
+          continue;
+        }
+        final List<String> currentJars = libIdAndJars.getValue();
+        if (!currentJars.isEmpty()) {
+          LOG.info("Using " + currentLibraryId + " instead of " + libraryId);
+          return currentJars;
+        }
+      }
+      LOG.warn("No info for library: " + libraryId);
+      return Collections.emptyList();
+    }
   }
 
   public static class TargetInfo {
