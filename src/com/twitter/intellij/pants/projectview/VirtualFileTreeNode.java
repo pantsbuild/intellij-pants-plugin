@@ -101,7 +101,7 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
       new Condition<VirtualFile>() {
         @Override
         public boolean value(VirtualFile file) {
-          return !file.getName().startsWith(".");
+          return file.isDirectory() || !file.getName().startsWith(".");
         }
       }
     );

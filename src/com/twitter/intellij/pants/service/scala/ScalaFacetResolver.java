@@ -6,6 +6,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.service.project.PantsResolver.*;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsScalaUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -27,7 +28,7 @@ public class ScalaFacetResolver implements PantsResolverExtension {
         continue; // shouldn't happened because we created all modules for each target
       }
       for (String libraryId : targetInfo.libraries) {
-        if (projectInfo.libraries.containsKey(libraryId) && isScalaLib(libraryId)) {
+        if (projectInfo.libraries.containsKey(libraryId) && PantsScalaUtil.isScalaLib(libraryId)) {
           // todo(fkorotkov): provide Scala info from the goal
           createScalaFacetFromJars(moduleDataNode, projectInfo.getLibraries(libraryId));
 
@@ -36,28 +37,24 @@ public class ScalaFacetResolver implements PantsResolverExtension {
     }
   }
 
-  private boolean isScalaLib(String libraryId) {
-    return StringUtil.startsWith(libraryId, "org.scala-lang:scala-library");
-  }
-
   private void createScalaFacetFromJars(@NotNull DataNode<ModuleData> moduleDataNode, List<String> scalaLibJars) {
     final ScalaModelData scalaModelData = new ScalaModelData(PantsConstants.SYSTEM_ID);
     final Set<File> files = new HashSet<File>();
     for (String jarPath : scalaLibJars) {
-      final File libFile = new File(jarPath);
-      if (libFile.exists()) {
-        files.add(libFile);
-      }
-      final File compilerFile = new File(StringUtil.replace(jarPath, "scala-library", "scala-compiler"));
-      if (compilerFile.exists()) {
-        files.add(compilerFile);
-      }
-      final File reflectFile = new File(StringUtil.replace(jarPath, "scala-library", "scala-reflect"));
-      if (reflectFile.exists()) {
-        files.add(reflectFile);
+      for (String scalaLibNameToAdd : PantsScalaUtil.getScalaLibNamesToAdd()) {
+        findAndAddScalaLib(files, jarPath, scalaLibNameToAdd);
       }
     }
-    scalaModelData.setScalaCompilerJars(files);
-    moduleDataNode.createChild(ScalaModelData.KEY, scalaModelData);
+    if (!files.isEmpty()) {
+      scalaModelData.setScalaCompilerJars(files);
+      moduleDataNode.createChild(ScalaModelData.KEY, scalaModelData);
+    }
+  }
+
+  private void findAndAddScalaLib(Set<File> files, String jarPath, String libName) {
+    final File compilerFile = new File(StringUtil.replace(jarPath, "scala-library", libName));
+    if (compilerFile.exists()) {
+      files.add(compilerFile);
+    }
   }
 }

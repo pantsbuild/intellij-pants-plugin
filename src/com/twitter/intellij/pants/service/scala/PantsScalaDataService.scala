@@ -11,8 +11,9 @@ import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.{VfsUtil, VfsUtilCore}
+import com.intellij.openapi.vfs._
 import com.twitter.intellij.pants.service.scala.ScalaPantsDataService._
+import io.netty.util.internal.StringUtil
 import org.jetbrains.plugins.scala.config._
 import org.jetbrains.plugins.scala.util.LibrariesUtil
 
@@ -28,8 +29,9 @@ class ScalaPantsDataService(platformFacade: PlatformFacade, helper: ProjectStruc
       val compilerLibrary = {
         val classpath = scalaData.getScalaCompilerJars.asScala.toSet
 
-        findLibraryByClassesIn(project)(classpath).getOrElse(
-          createLibraryIn(project)(compilerLibraryNameFor(classpath), classpath))
+        findPantsScalaCompilerLibraryInForClassPath(project)(classpath).getOrElse(
+          createScalaCompilerLibraryIn(project)(classpath)
+        )
       }
 
       def setup(facet: ScalaFacet) {
@@ -52,32 +54,48 @@ class ScalaPantsDataService(platformFacade: PlatformFacade, helper: ProjectStruc
 }
 
 object ScalaPantsDataService {
-  def findLibraryByClassesIn(project: Project)(classpath: Set[File]): Option[Library] =
-    ProjectLibraryTable.getInstance(project).getLibraries.find(has(classpath))
+  private val pantsScalaLibraryNamePrefix = "Pants:: scala-compiler-bundle"
 
-  private def has(classpath: Set[File])(library: Library) =
-    library.getFiles(OrderRootType.CLASSES).toSet.map(VfsUtilCore.virtualToIoFile) == classpath
+  def findPantsScalaCompilerLibraryInForClassPath(project: Project)(classpath: Set[File]): Option[Library] = {
+    val compilerVersion = findCompilerVersion(classpath)
+    ProjectLibraryTable.getInstance(project).getLibraries find {
+      // if compilerVersion is None then let's just pick first Scala compiler lib
+      _.getName.startsWith(scalaCompilerLibraryNameForVersion(compilerVersion))
+    } map { library =>
+      val libraryClasses = library.getFiles(OrderRootType.CLASSES).toSet
+      val jarsToAdd = classpath flatMap { file =>
+        Option(JarFileSystem.getInstance().findLocalVirtualFileByPath(file.getAbsolutePath))
+      } filterNot libraryClasses.contains
 
-  def compilerLibraryNameFor(classpath: Set[File]): String = {
-    val compilerVersion =
-      classpath.find(_.getName.startsWith("scala-compiler-"))
-        .map(FileUtil.getNameWithoutExtension).map(_.replaceAll("scala-compiler-", ""))
-
-    "Pants:: scala-compiler-bundle" + compilerVersion.fold("")("-" + _)
+      if (jarsToAdd.nonEmpty) {
+        // update jars for existing scala lib
+        val model = library.getModifiableModel
+        jarsToAdd.foreach(model.addRoot(_, OrderRootType.CLASSES))
+        model.commit()
+      }
+      library
+    }
   }
 
-  def createLibraryIn(project: Project)(name: String, classpath: Set[File]): Library = {
+  def createScalaCompilerLibraryIn(project: Project)(classpath: Set[File]): Library = {
     val library = ProjectLibraryTable.getInstance(project).createLibrary()
     val model = library.getModifiableModel
-    model.setName(name)
+    model.setName(scalaCompilerLibraryNameFor(classpath))
     classpath.foreach(file => model.addRoot(VfsUtil.getUrlForLibraryRoot(file), OrderRootType.CLASSES))
     model.commit()
     library
   }
 
-  def configure(compilerLibraryName: String, compilerOptions: Seq[String])(facet: ScalaFacet) {
-    facet.compilerLibraryId = LibraryId(compilerLibraryName, LibraryLevel.Project)
-    facet.compilerParameters = compilerOptions.toArray
+  private def scalaCompilerLibraryNameFor(classpath: Set[File]) =
+    scalaCompilerLibraryNameForVersion(findCompilerVersion(classpath))
+
+  private def scalaCompilerLibraryNameForVersion(compilerVersion: Option[String]): String = {
+    pantsScalaLibraryNamePrefix + compilerVersion.fold("")("-" + _)
+  }
+
+  private def findCompilerVersion(classpath: Set[File]): Option[String] = {
+    classpath.find(_.getName.startsWith("scala-compiler-"))
+      .map(FileUtil.getNameWithoutExtension).map(_.replaceAll("scala-compiler-", ""))
   }
 
   def delete(facet: ScalaFacet) {

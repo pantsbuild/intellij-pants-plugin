@@ -15,6 +15,7 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotifica
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
@@ -29,10 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PantsResolver {
   private final boolean generateJars;
@@ -68,9 +66,12 @@ public class PantsResolver {
   public void addInfo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (projectInfo == null) return;
 
+    // IntelliJ doesn't support when several modules have the same source root
+    final Map<SourceRoot, String> modulesForRootsAndInfo = findTargetsForCommonRoots();
+
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
 
-    // create all modules with source roots. no libs and dependencies
+    // create all modules. no libs, dependencies and source roots
     for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
       final String targetName = entry.getKey();
       if (StringUtil.startsWith(targetName, ":scala-library")) {
@@ -88,6 +89,40 @@ public class PantsResolver {
       modules.put(targetName, moduleData);
     }
 
+    // source roots
+    for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
+      final String mainTarget = entry.getKey();
+      final TargetInfo targetInfo = entry.getValue();
+      if (!modules.containsKey(mainTarget) || targetInfo.roots.isEmpty()) {
+        continue;
+      }
+      final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
+      final ContentRootData contentRoot = findChildData(moduleDataNode, ProjectKeys.CONTENT_ROOT);
+      if (contentRoot == null) {
+        LOG.warn("no content root for " + mainTarget);
+        continue;
+      }
+      for (SourceRoot root : targetInfo.roots) {
+        final String targetForSourceRoot = modulesForRootsAndInfo.get(root);
+        final DataNode<ModuleData> sourceRootModule = targetForSourceRoot != null ? modules.get(targetForSourceRoot) : null;
+        if (!mainTarget.equals(targetForSourceRoot) && sourceRootModule != null) {
+          addModuleDependency(moduleDataNode, sourceRootModule);
+          continue;
+        }
+        try {
+          final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetInfo.target_type);
+          // resource source root shouldn't have a package prefix
+          final String packagePrefix = PantsSourceType.isResource(rootType) ? null : StringUtil.nullize(root.package_prefix);
+          contentRoot.storePath(rootType.toExternalSystemSourceType(), root.source_root, packagePrefix);
+        }
+        catch (IllegalArgumentException e) {
+          LOG.warn(e);
+          // todo(fkorotkov): log and investigate exceptions from ContentRootData.storePath(ContentRootData.java:94)
+        }
+      }
+    }
+
+
     // add dependencies
     for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
       final String mainTarget = entry.getKey();
@@ -100,14 +135,7 @@ public class PantsResolver {
         if (!modules.containsKey(target)) {
           continue;
         }
-        final DataNode<ModuleData> submoduleDataNode = modules.get(target);
-        final ModuleDependencyData moduleDependencyData = new ModuleDependencyData(
-          moduleDataNode.getData(),
-          submoduleDataNode.getData()
-        );
-        // todo: is it always exported?
-        moduleDependencyData.setExported(true);
-        moduleDataNode.createChild(ProjectKeys.MODULE_DEPENDENCY, moduleDependencyData);
+        addModuleDependency(moduleDataNode, modules.get(target));
       }
     }
 
@@ -125,6 +153,7 @@ public class PantsResolver {
         }
       }
     }
+
     for (String resolverClassName : settings.getResolverExtensionClassNames()) {
       try {
         Object resolver = Class.forName(resolverClassName).newInstance();
@@ -136,10 +165,69 @@ public class PantsResolver {
         LOG.error(e);
       }
     }
+  }
 
-    for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
-      resolver.resolve(projectInfo, modules);
+  @Nullable
+  private <T> T findChildData(DataNode<?> dataNode, com.intellij.openapi.externalSystem.model.Key<T> key) {
+    for (DataNode<?> child : dataNode.getChildren()) {
+      T childData = child.getData(key);
+      if (childData != null) {
+        return childData;
+      }
     }
+    return null;
+  }
+
+  private void addModuleDependency(DataNode<ModuleData> moduleDataNode, DataNode<ModuleData> submoduleDataNode) {
+    final ModuleDependencyData moduleDependencyData = new ModuleDependencyData(
+      moduleDataNode.getData(),
+      submoduleDataNode.getData()
+    );
+    // todo: is it always exported?
+    moduleDependencyData.setExported(true);
+    moduleDataNode.createChild(ProjectKeys.MODULE_DEPENDENCY, moduleDependencyData);
+  }
+
+  private Map<SourceRoot, String> findTargetsForCommonRoots() {
+    final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets =
+      new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
+    for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
+      final TargetInfo targetInfo = entry.getValue();
+      for (SourceRoot sourceRoot : targetInfo.roots) {
+        List<Pair<String, TargetInfo>> targetInfos = sourceRoot2Targets.get(sourceRoot);
+        if (targetInfos == null) {
+          targetInfos = new ArrayList<Pair<String, TargetInfo>>();
+          sourceRoot2Targets.put(sourceRoot, targetInfos);
+        }
+        targetInfos.add(Pair.create(entry.getKey(), targetInfo));
+      }
+    }
+
+    final Map<SourceRoot, String> result = new HashMap<SourceRoot, String>();
+
+    for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
+      final List<Pair<String, TargetInfo>> targetNameAndInfos = entry.getValue();
+      if (targetNameAndInfos.size() > 1) {
+        SourceRoot sourceRoot = entry.getKey();
+        final Pair<String, TargetInfo> targetWithOneRoot = ContainerUtil.find(
+          targetNameAndInfos,
+          new Condition<Pair<String, TargetInfo>>() {
+            @Override
+            public boolean value(Pair<String, TargetInfo> info) {
+              return info.getSecond().roots.size() == 1;
+            }
+          }
+        );
+
+        if (targetWithOneRoot != null) {
+          result.put(sourceRoot, targetWithOneRoot.getFirst());
+        } else {
+          LOG.warn("Bad common source root " + sourceRoot);
+        }
+      }
+    }
+
+    return result;
   }
 
   private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId) {
@@ -212,18 +300,6 @@ public class PantsResolver {
         PantsConstants.SYSTEM_ID,
         contentRootPath
       );
-      for (SourceRoot root : targetInfo.roots) {
-        try {
-          final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetInfo.target_type);
-          // resource source root shouldn't have a package prefix
-          final String packagePrefix = PantsSourceType.isResource(rootType) ? null : StringUtil.nullize(root.package_prefix);
-          contentRoot.storePath(rootType.toExternalSystemSourceType(), root.source_root, packagePrefix);
-        }
-        catch (IllegalArgumentException e) {
-          LOG.warn(e);
-          // todo(fkorotkov): log and investigate exceptions from ContentRootData.storePath(ContentRootData.java:94)
-        }
-      }
       moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
     }
 
@@ -335,6 +411,14 @@ public class PantsResolver {
       LOG.warn("No info for library: " + libraryId);
       return Collections.emptyList();
     }
+
+    @Override
+    public String toString() {
+      return "ProjectInfo{" +
+             "libraries=" + libraries +
+             ", targets=" + targets +
+             '}';
+    }
   }
 
   public static class TargetInfo {
@@ -358,10 +442,48 @@ public class PantsResolver {
     public boolean isEmpty() {
       return libraries.isEmpty() && targets.isEmpty() && roots.isEmpty();
     }
+
+    @Override
+    public String toString() {
+      return "TargetInfo{" +
+             "libraries=" + libraries +
+             ", targets=" + targets +
+             ", roots=" + roots +
+             ", target_type='" + target_type + '\'' +
+             '}';
+    }
   }
 
   public static class SourceRoot {
     public String source_root;
     public String package_prefix;
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      SourceRoot root = (SourceRoot)o;
+
+      if (package_prefix != null ? !package_prefix.equals(root.package_prefix) : root.package_prefix != null) return false;
+      if (source_root != null ? !source_root.equals(root.source_root) : root.source_root != null) return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = source_root != null ? source_root.hashCode() : 0;
+      result = 31 * result + (package_prefix != null ? package_prefix.hashCode() : 0);
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "SourceRoot{" +
+             "source_root='" + source_root + '\'' +
+             ", package_prefix='" + package_prefix + '\'' +
+             '}';
+    }
   }
 }

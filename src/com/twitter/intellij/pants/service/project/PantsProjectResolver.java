@@ -28,6 +28,9 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     @Nullable PantsExecutionSettings settings,
     @NotNull ExternalSystemTaskNotificationListener listener
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
+    if (projectPath.startsWith(".pants.d")) {
+      return null;
+    }
     final DataNode<ProjectData> projectDataNode = getProjectDataNode(projectPath, settings);
 
     resolveUsingNewAPI(id, projectPath, settings, listener, projectDataNode, isPreviewMode);
