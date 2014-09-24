@@ -232,6 +232,10 @@ public class PantsResolver {
 
   private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId) {
     final List<String> libraryJars = projectInfo.getLibraries(libraryId);
+    if (libraryJars.isEmpty() && generateJars) {
+      // log only we tried to resolve libs
+      LOG.warn("No info for library: " + libraryId);
+    }
     if (libraryJars.isEmpty()) {
       return;
     }
@@ -393,7 +397,6 @@ public class PantsResolver {
       }
       int versionIndex = libraryId.lastIndexOf(':');
       if (versionIndex == -1) {
-        LOG.warn("Bad library id: " + libraryId);
         return Collections.emptyList();
       }
       final String libraryName = libraryId.substring(0, versionIndex);
@@ -408,7 +411,6 @@ public class PantsResolver {
           return currentJars;
         }
       }
-      LOG.warn("No info for library: " + libraryId);
       return Collections.emptyList();
     }
 
