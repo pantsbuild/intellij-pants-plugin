@@ -161,9 +161,15 @@ public class PantsUtil {
     if (!iterator.hasNext()) {
       return null;
     }
-    String result = iterator.next();
+    String result = iterator.next() + "/";
     while (iterator.hasNext()) {
-      result = StringUtil.commonPrefix(result, iterator.next());
+      result = StringUtil.commonPrefix(result, iterator.next() + "/");
+      if (!result.endsWith("/")) {
+        // means something like
+        // foo/bar/
+        // foo/barjava/
+        result = VfsUtil.getParentDir(result) + "/";
+      }
     }
     return result;
   }

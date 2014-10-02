@@ -66,9 +66,6 @@ public class PantsResolver {
   public void addInfo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (projectInfo == null) return;
 
-    // IntelliJ doesn't support when several modules have the same source root
-    final Map<SourceRoot, String> modulesForRootsAndInfo = findTargetsForCommonRoots();
-
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
 
     // create all modules. no libs, dependencies and source roots
@@ -84,10 +81,13 @@ public class PantsResolver {
         continue;
       }
       final DataNode<ModuleData> moduleData = createModuleData(
-        projectInfoDataNode, targetName, targetInfo
+        projectInfoDataNode, targetName, targetInfo.roots
       );
       modules.put(targetName, moduleData);
     }
+
+    // IntelliJ doesn't support when several modules have the same source root
+    final Map<SourceRoot, DataNode<ModuleData>> modulesForRootsAndInfo = handleCommonRoots(projectInfoDataNode, modules);
 
     // source roots
     for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
@@ -103,10 +103,10 @@ public class PantsResolver {
         continue;
       }
       for (SourceRoot root : targetInfo.roots) {
-        final String targetForSourceRoot = modulesForRootsAndInfo.get(root);
-        final DataNode<ModuleData> sourceRootModule = targetForSourceRoot != null ? modules.get(targetForSourceRoot) : null;
-        if (!mainTarget.equals(targetForSourceRoot) && sourceRootModule != null) {
-          addModuleDependency(moduleDataNode, sourceRootModule);
+        final DataNode<ModuleData> sourceRootModule = modulesForRootsAndInfo.get(root);
+        if (moduleDataNode != sourceRootModule && sourceRootModule != null) {
+          // todo: is it always exported?
+          addModuleDependency(moduleDataNode, sourceRootModule, true);
           continue;
         }
         try {
@@ -135,10 +135,12 @@ public class PantsResolver {
         if (!modules.containsKey(target)) {
           continue;
         }
-        addModuleDependency(moduleDataNode, modules.get(target));
+        // todo: is it always exported?
+        addModuleDependency(moduleDataNode, modules.get(target), true);
       }
     }
 
+    // add libs
     for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
@@ -147,10 +149,8 @@ public class PantsResolver {
       }
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
       for (String libraryId : targetInfo.libraries) {
-        // skip Scala. Will be added by ScalaPantsDataService
-        if (!StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
-          createLibraryData(moduleDataNode, libraryId);
-        }
+        // todo: is it always exported?
+        createLibraryData(moduleDataNode, libraryId, true);
       }
     }
 
@@ -178,17 +178,20 @@ public class PantsResolver {
     return null;
   }
 
-  private void addModuleDependency(DataNode<ModuleData> moduleDataNode, DataNode<ModuleData> submoduleDataNode) {
+  private void addModuleDependency(DataNode<ModuleData> moduleDataNode, DataNode<ModuleData> submoduleDataNode, boolean exported) {
     final ModuleDependencyData moduleDependencyData = new ModuleDependencyData(
       moduleDataNode.getData(),
       submoduleDataNode.getData()
     );
-    // todo: is it always exported?
-    moduleDependencyData.setExported(true);
+    moduleDependencyData.setExported(exported);
     moduleDataNode.createChild(ProjectKeys.MODULE_DEPENDENCY, moduleDependencyData);
   }
 
-  private Map<SourceRoot, String> findTargetsForCommonRoots() {
+  private Map<SourceRoot, DataNode<ModuleData>> handleCommonRoots(
+    DataNode<ProjectData> projectInfoDataNode,
+    Map<String, DataNode<ModuleData>> modules
+  ) {
+    // source root -> list<(target name, target info)>
     final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets =
       new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
     for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
@@ -203,7 +206,7 @@ public class PantsResolver {
       }
     }
 
-    final Map<SourceRoot, String> result = new HashMap<SourceRoot, String>();
+    final Map<SourceRoot, DataNode<ModuleData>> result = new HashMap<SourceRoot, DataNode<ModuleData>>();
 
     for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
       final List<Pair<String, TargetInfo>> targetNameAndInfos = entry.getValue();
@@ -220,9 +223,39 @@ public class PantsResolver {
         );
 
         if (targetWithOneRoot != null) {
-          result.put(sourceRoot, targetWithOneRoot.getFirst());
+          final DataNode<ModuleData> moduleDataDataNode = modules.get(targetWithOneRoot.getFirst());
+          if (moduleDataDataNode != null) {
+            LOG.debug("Found common source root target " + targetWithOneRoot.getFirst());
+            result.put(sourceRoot, moduleDataDataNode);
+          }
+          else {
+            LOG.warn("Bad common source root " + sourceRoot + " for " + targetWithOneRoot.getFirst());
+          }
         } else {
-          LOG.warn("Bad common source root " + sourceRoot);
+          final String root = FileUtil.getRelativePath(myWorkDirectory, new File(sourceRoot.source_root));
+          final DataNode<ModuleData> rootModuleData = createModuleData(projectInfoDataNode, sourceRoot.package_prefix, root, Arrays.asList(sourceRoot));
+
+          final Set<String> libDeps = new HashSet<String>();
+          final Set<String> targetDeps = new HashSet<String>();
+          for (Pair<String, TargetInfo> info : targetNameAndInfos) {
+            final TargetInfo targetInfo = info.getSecond();
+            targetDeps.addAll(targetInfo.targets);
+            libDeps.addAll(targetInfo.libraries);
+          }
+
+          // do not export dependencies so they won't pollute classpaths of dependent modules
+          for (String targetName : targetDeps) {
+            final DataNode<ModuleData> dependencyModule = modules.get(targetName);
+            if (dependencyModule != null) {
+              addModuleDependency(rootModuleData, dependencyModule, false);
+            }
+          }
+
+          for (String libraryId : libDeps) {
+            createLibraryData(rootModuleData, libraryId, false);
+          }
+
+          result.put(sourceRoot, rootModuleData);
         }
       }
     }
@@ -230,7 +263,11 @@ public class PantsResolver {
     return result;
   }
 
-  private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId) {
+  private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId, boolean exported) {
+    if (StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
+      // skip Scala. Will be added by ScalaPantsDataService
+      return;
+    }
     final List<String> libraryJars = projectInfo.getLibraries(libraryId);
     if (libraryJars.isEmpty() && generateJars) {
       // log only we tried to resolve libs
@@ -249,19 +286,21 @@ public class PantsResolver {
       libraryData,
       LibraryLevel.MODULE
     );
-    // todo: is it always exported?
-    library.setExported(true);
+    library.setExported(exported);
     moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
   }
 
-  private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, TargetInfo targetInfo) {
+  private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, List<SourceRoot> roots) {
     final int index = targetName.lastIndexOf(':');
     final String path = targetName.substring(0, index);
+    return createModuleData(projectInfoDataNode, targetName, path, roots);
+  }
 
+  private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, String path, List<SourceRoot> roots) {
     final String contentRootPath = StringUtil.notNullize(
       PantsUtil.findCommonRoot(
         ContainerUtil.map(
-          targetInfo.roots,
+          roots,
           new Function<SourceRoot, String>() {
             @Override
             public String fun(SourceRoot root) {
@@ -292,14 +331,14 @@ public class PantsResolver {
       moduleName,
       projectInfoDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
       StringUtil.notNullize(
-        FileUtil.getRelativePath(myWorkDirectory, BUILDFile),
+        BUILDFile == null ? null : FileUtil.getRelativePath(myWorkDirectory, BUILDFile),
         path
       )
     );
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
-    if (!targetInfo.roots.isEmpty()) {
+    if (!roots.isEmpty()) {
       final ContentRootData contentRoot = new ContentRootData(
         PantsConstants.SYSTEM_ID,
         contentRootPath
