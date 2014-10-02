@@ -104,6 +104,7 @@ public class PantsResolver {
       }
       for (SourceRoot root : targetInfo.roots) {
         final DataNode<ModuleData> sourceRootModule = modulesForRootsAndInfo.get(root);
+
         if (moduleDataNode != sourceRootModule && sourceRootModule != null) {
           // todo: is it always exported?
           addModuleDependency(moduleDataNode, sourceRootModule, true);
@@ -178,7 +179,26 @@ public class PantsResolver {
     return null;
   }
 
+  private <T> List<T> findChildren(DataNode<?> dataNode, com.intellij.openapi.externalSystem.model.Key<T> key) {
+    final ArrayList<T> children = new ArrayList<T>();
+    for (DataNode<?> child : dataNode.getChildren()) {
+      T childData = child.getData(key);
+      if (childData != null) {
+         children.add(childData);
+      }
+    }
+    return children;
+  }
+
   private void addModuleDependency(DataNode<ModuleData> moduleDataNode, DataNode<ModuleData> submoduleDataNode, boolean exported) {
+    final List<ModuleDependencyData> subModuleDeps = findChildren(submoduleDataNode, ProjectKeys.MODULE_DEPENDENCY);
+    for (ModuleDependencyData dep : subModuleDeps) {
+      if (dep.getTarget() == moduleDataNode.getData()) {
+        LOG.debug("Found cyclic dependency between " + submoduleDataNode.getData().getInternalName() +
+                  " and " + moduleDataNode.getData().getInternalName());
+        return;
+      }
+    }
     final ModuleDependencyData moduleDependencyData = new ModuleDependencyData(
       moduleDataNode.getData(),
       submoduleDataNode.getData()
