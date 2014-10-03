@@ -1,9 +1,13 @@
 <idea-plugin version="2">
   <id>com.intellij.plugins.pants</id>
   <name>Pants Support</name>
-  <description>Support for pants build system</description>
+  <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.0.0:</p>
+      <ul>
+        <li>Project structure bug fixes</li>
+      </ul>
       <p>0.9:</p>
       <ul>
         <li>Project Files Project View</li>
@@ -45,7 +49,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>0.9</version>
+  <version>1.0.0</version>
   <vendor>Twitter, Inc.</vendor>
   <idea-version since-build="135.1200" until-build="136.1"/>
 
