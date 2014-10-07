@@ -178,7 +178,12 @@ public class PantsManager implements
   @Nullable
   @Override
   public String getAffectedExternalProjectPath(@NotNull String changedFileOrDirPath, @NotNull Project project) {
-    final VirtualFile virtualFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(changedFileOrDirPath));
+    VirtualFile virtualFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(changedFileOrDirPath));
+    if (virtualFile == null) {
+      // changedFileOrDirPath might be relative
+      final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(project);
+      virtualFile = workingDir != null ? workingDir.findFileByRelativePath(changedFileOrDirPath) : null;
+    }
     if (virtualFile == null) {
       return null;
     }

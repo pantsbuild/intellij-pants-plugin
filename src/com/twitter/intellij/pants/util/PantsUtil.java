@@ -88,7 +88,7 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findPantsIniFile(@NotNull Project project) {
-    final VirtualFile pantsWorkingDir = findPantsWorkingDir(project.getProjectFile());
+    final VirtualFile pantsWorkingDir = findPantsWorkingDir(project);
     return pantsWorkingDir != null ? pantsWorkingDir.findChild(PANTS_INI) : null;
   }
 
@@ -135,6 +135,11 @@ public class PantsUtil {
   public static VirtualFile findPantsWorkingDir(@NotNull String filePath) {
     final VirtualFile pantsExecutable = findPantsExecutable(filePath);
     return pantsExecutable != null ? pantsExecutable.getParent() : null;
+  }
+
+  @Nullable
+  public static VirtualFile findPantsWorkingDir(@NotNull Project project) {
+    return findPantsWorkingDir(project.getProjectFile());
   }
 
   @Nullable
