@@ -56,8 +56,8 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
   @Override
   protected void update(PresentationData presentation) {
     final PsiManager psiManager = PsiManager.getInstance(myProject);
-    VirtualFile virtualFile = getValue();
-    final PsiFile psiElement = psiManager.findFile(virtualFile);
+    final VirtualFile virtualFile = getValue();
+    final PsiFile psiElement = virtualFile.isValid() ? psiManager.findFile(virtualFile) : null;
     if (psiElement instanceof PsiDirectory) {
       new PsiDirectoryNode(myProject, (PsiDirectory)psiElement, getSettings()).update(presentation);
     }
@@ -76,7 +76,7 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
     final PsiManager psiManager = PsiManager.getInstance(myProject);
     final VirtualFile virtualFile = getValue();
     return ContainerUtil.map(
-      virtualFile.isDirectory() ? getFilteredChildren(virtualFile) : Collections.<VirtualFile>emptyList(),
+      virtualFile.isValid() && virtualFile.isDirectory() ? getFilteredChildren(virtualFile) : Collections.<VirtualFile>emptyList(),
       new Function<VirtualFile, AbstractTreeNode>() {
         @Override
         public AbstractTreeNode fun(VirtualFile file) {
