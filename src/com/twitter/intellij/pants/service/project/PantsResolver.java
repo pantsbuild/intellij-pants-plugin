@@ -81,7 +81,7 @@ public class PantsResolver {
         continue;
       }
       final DataNode<ModuleData> moduleData = createModuleData(
-        projectInfoDataNode, targetName, targetInfo.roots
+        projectInfoDataNode, targetName, targetInfo.roots, PantsUtil.getSourceTypeForTargetType(targetInfo.target_type)
       );
       modules.put(targetName, moduleData);
     }
@@ -112,9 +112,11 @@ public class PantsResolver {
         }
         try {
           final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetInfo.target_type);
-          // resource source root shouldn't have a package prefix
-          final String packagePrefix = PantsSourceType.isResource(rootType) ? null : StringUtil.nullize(root.package_prefix);
-          contentRoot.storePath(rootType.toExternalSystemSourceType(), root.source_root, packagePrefix);
+          contentRoot.storePath(
+            rootType.toExternalSystemSourceType(),
+            root.getSourceRootRegardingSourceType(rootType),
+            StringUtil.nullize(root.getPackagePrefix())
+          );
         }
         catch (IllegalArgumentException e) {
           LOG.warn(e);
@@ -252,8 +254,17 @@ public class PantsResolver {
             LOG.warn("Bad common source root " + sourceRoot + " for " + targetWithOneRoot.getFirst());
           }
         } else {
-          final String root = FileUtil.getRelativePath(myWorkDirectory, new File(sourceRoot.source_root));
-          final DataNode<ModuleData> rootModuleData = createModuleData(projectInfoDataNode, sourceRoot.package_prefix, root, Arrays.asList(sourceRoot));
+          final TargetInfo firstTargetInfo = targetNameAndInfos.iterator().next().getSecond();
+          final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(firstTargetInfo.target_type);
+          final String root = FileUtil.getRelativePath(myWorkDirectory, new File(sourceRoot.getSourceRootRegardingSourceType(rootType)));
+          final DataNode<ModuleData> rootModuleData =
+            createModuleData(
+              projectInfoDataNode,
+              sourceRoot.getPackagePrefix(),
+              root,
+              Arrays.asList(sourceRoot),
+              PantsUtil.getSourceTypeForTargetType(firstTargetInfo.target_type)
+            );
 
           final Set<String> libDeps = new HashSet<String>();
           final Set<String> targetDeps = new HashSet<String>();
@@ -310,13 +321,24 @@ public class PantsResolver {
     moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
   }
 
-  private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, List<SourceRoot> roots) {
+  private DataNode<ModuleData> createModuleData(
+    DataNode<ProjectData> projectInfoDataNode,
+    String targetName,
+    List<SourceRoot> roots,
+    @Nullable PantsSourceType rootType
+  ) {
     final int index = targetName.lastIndexOf(':');
     final String path = targetName.substring(0, index);
-    return createModuleData(projectInfoDataNode, targetName, path, roots);
+    return createModuleData(projectInfoDataNode, targetName, path, roots, rootType);
   }
 
-  private DataNode<ModuleData> createModuleData(DataNode<ProjectData> projectInfoDataNode, String targetName, String path, List<SourceRoot> roots) {
+  private DataNode<ModuleData> createModuleData(
+    DataNode<ProjectData> projectInfoDataNode,
+    String targetName,
+    String path,
+    List<SourceRoot> roots,
+    @Nullable final PantsSourceType rootType
+  ) {
     final String contentRootPath = StringUtil.notNullize(
       PantsUtil.findCommonRoot(
         ContainerUtil.map(
@@ -324,7 +346,7 @@ public class PantsResolver {
           new Function<SourceRoot, String>() {
             @Override
             public String fun(SourceRoot root) {
-              return root.source_root;
+              return root.getSourceRootRegardingSourceType(rootType);
             }
           }
         )
@@ -516,8 +538,24 @@ public class PantsResolver {
   }
 
   public static class SourceRoot {
-    public String source_root;
-    public String package_prefix;
+    protected String source_root;
+    protected String package_prefix;
+
+    public String getSourceRootRegardingSourceType(@Nullable PantsSourceType rootType) {
+      if (PantsSourceType.isResource(rootType)) {
+        final String resourcesPath = StringUtil.replaceChar(package_prefix, '.', '/');
+        return source_root.endsWith(resourcesPath) ?
+               source_root.substring(0, source_root.length() - resourcesPath.length()) :
+               source_root;
+      }
+      else {
+        return source_root;
+      }
+    }
+
+    public String getPackagePrefix() {
+      return package_prefix;
+    }
 
     @Override
     public boolean equals(Object o) {
