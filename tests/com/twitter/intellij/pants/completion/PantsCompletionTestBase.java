@@ -6,13 +6,11 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.UsefulTestCase;
 import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-/**
- * Created by fkorotkov.
- */
 abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTestCase {
   enum CheckType {EQUALS, INCLUDES, EXCLUDES}
 
@@ -36,18 +34,24 @@ abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTes
     return myPath;
   }
 
-  protected void doTest() throws Throwable {
-    doTest(null);
+  protected void configure() throws Throwable {
+    configure(null);
   }
 
-  protected void doTest(@Nullable String targetPath) throws Throwable {
+  protected void configure(@Nullable String targetPath) throws Throwable {
+    myFixture.addFileToProject(PantsUtil.PANTS, ""); // make it pants working dir
     final String buildPath = targetPath == null ? "BUILD" : targetPath + "/BUILD";
     final VirtualFile buildFile = myFixture.copyFileToProject(getTestName(true) + ".py", buildPath);
     myFixture.configureFromExistingVirtualFile(buildFile);
-    doTestVariantsInner();
   }
 
-  protected void doTestVariantsInner() throws Throwable {
+  protected void doCompletionTest(char ch) {
+    myFixture.complete(CompletionType.BASIC);
+    myFixture.finishLookup(ch);
+    myFixture.checkResultByFile(getTestName(true) + "_expected.py");
+  }
+
+  protected void doTestVariants() throws Throwable {
     doTestVariantsInner(getTestName(true) + ".txt");
   }
 

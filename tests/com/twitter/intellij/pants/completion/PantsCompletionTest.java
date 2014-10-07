@@ -6,24 +6,49 @@ public class PantsCompletionTest extends PantsCompletionTestBase {
   }
 
   public void testTargets() throws Throwable {
-    doTest();
+    configure();
+    doTestVariants();
   }
 
   public void testTargetPath1() throws Throwable {
     myFixture.addFileToProject("bar/BUILD", "");
     myFixture.addFileToProject("baz/BUILD", "");
-    doTest();
+    configure();
+    doTestVariants();
   }
 
   public void testTargetPath2() throws Throwable {
     myFixture.addFileToProject("bar/BUILD", "");
     myFixture.addFileToProject("baz/BUILD", "");
-    doTest("foo"); // completion from foo/BUILD
+    configure("foo"); // completion from foo/BUILD
+    doTestVariants();
   }
 
   public void testTargetPath3() throws Throwable {
     myFixture.addFileToProject("bar/BUILD", "");
     myFixture.addFileToProject("baz/BUILD", "");
-    doTest("foo");
+    configure("foo");
+    doTestVariants();
+  }
+
+  public void testTargetPath4() throws Throwable {
+    myFixture.addFileToProject("bar/BUILD", "");
+    myFixture.addFileToProject("baz/BUILD", "");
+    configure("foo");
+    doCompletionTest('\n');
+  }
+
+  public void testTargetPath5() throws Throwable {
+    myFixture.addFileToProject("bar/BUILD", "");
+    myFixture.addFileToProject("baz/BUILD", "");
+    configure("foo");
+    doCompletionTest('\n');
+  }
+
+  public void testTargetPath6() throws Throwable {
+    myFixture.addFileToProject("bar/BUILD", "");
+    myFixture.addFileToProject("baz/BUILD", "");
+    configure("foo");
+    doCompletionTest('\n');
   }
 }
