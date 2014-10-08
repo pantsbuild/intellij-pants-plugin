@@ -86,6 +86,7 @@ For contributing to the project, continue reading below.
 * Use IntelliJ IDEA 13 Community Edition as IDEA IC sdk(Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK)
 * Add all jars from ~/Library/Application Support/IdeaIC13/python/lib/ to the sdk's classpath
 * Add ~/Library/Application Support/IdeaIC13/Scala/lib/scala-plugin.jar to the sdk's classpath
+* A Scala facet is already configured but SCALA_LIB_HOME path variable should be configured in Preferences -> Path Variables
 * Make sure that your project is set to configure bytecode compatible with 1.6  Preferences -> Compiler -> Java Compiler -> Project bytecode version
 * Run tests to verify your installation
 
