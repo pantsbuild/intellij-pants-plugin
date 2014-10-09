@@ -33,10 +33,12 @@ import java.io.IOException;
 import java.util.*;
 
 public class PantsResolver {
+  private static final Logger LOG = Logger.getInstance(PantsResolver.class);
+
   private final boolean generateJars;
   private final String projectPath;
   private final PantsExecutionSettings settings;
-  private final Logger LOG = Logger.getInstance(getClass());
+
   @Nullable
   protected File myWorkDirectory = null;
   private ProjectInfo projectInfo = null;
@@ -110,18 +112,7 @@ public class PantsResolver {
           addModuleDependency(moduleDataNode, sourceRootModule, true);
           continue;
         }
-        try {
-          final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetInfo.target_type);
-          contentRoot.storePath(
-            rootType.toExternalSystemSourceType(),
-            root.getSourceRootRegardingSourceType(rootType),
-            StringUtil.nullize(root.getPackagePrefix())
-          );
-        }
-        catch (IllegalArgumentException e) {
-          LOG.warn(e);
-          // todo(fkorotkov): log and investigate exceptions from ContentRootData.storePath(ContentRootData.java:94)
-        }
+        addSourceRoot(contentRoot, root, targetInfo.target_type);
       }
     }
 
@@ -167,6 +158,21 @@ public class PantsResolver {
       catch (Exception e) {
         LOG.error(e);
       }
+    }
+  }
+
+  private void addSourceRoot(@NotNull ContentRootData contentRoot, @NotNull SourceRoot root, @Nullable String targetType) {
+    try {
+      final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetType);
+      contentRoot.storePath(
+        rootType.toExternalSystemSourceType(),
+        root.getSourceRootRegardingSourceType(rootType),
+        StringUtil.nullize(root.getPackagePrefix())
+      );
+    }
+    catch (IllegalArgumentException e) {
+      LOG.warn(e);
+      // todo(fkorotkov): log and investigate exceptions from ContentRootData.storePath(ContentRootData.java:94)
     }
   }
 
@@ -265,6 +271,11 @@ public class PantsResolver {
               Arrays.asList(sourceRoot),
               PantsUtil.getSourceTypeForTargetType(firstTargetInfo.target_type)
             );
+
+          final ContentRootData contentRoot = findChildData(rootModuleData, ProjectKeys.CONTENT_ROOT);
+          if (contentRoot != null) {
+            addSourceRoot(contentRoot, sourceRoot, firstTargetInfo.target_type);
+          }
 
           final Set<String> libDeps = new HashSet<String>();
           final Set<String> targetDeps = new HashSet<String>();
