@@ -9,8 +9,11 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessTerminatedListener;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.text.StringTokenizer;
+import com.intellij.util.execution.ParametersListUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collections;
+import java.util.List;
 
 public class PantsRunningState extends CommandLineState {
 
@@ -44,9 +47,10 @@ public class PantsRunningState extends CommandLineState {
     commandLine.setWorkDirectory(runnerParameters.getWorkingDir());
     commandLine.setPassParentEnvironment(true);
 
-    StringTokenizer argumentsTokenizer = new StringTokenizer(StringUtil.notNullize(runnerParameters.getArguments()));
-    while (argumentsTokenizer.hasMoreTokens()) {
-      commandLine.addParameter(argumentsTokenizer.nextToken());
+    final String cmdArguments = StringUtil.nullize(runnerParameters.getArguments());
+    final List<String> arguments = cmdArguments != null ? ParametersListUtil.parse(cmdArguments) : Collections.<String>emptyList();
+    for (String argument : arguments) {
+      commandLine.addParameter(argument);
     }
 
     return commandLine;
