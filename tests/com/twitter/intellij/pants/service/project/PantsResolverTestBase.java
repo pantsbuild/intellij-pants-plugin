@@ -2,9 +2,7 @@ package com.twitter.intellij.pants.service.project;
 
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.project.ModuleData;
-import com.intellij.openapi.externalSystem.model.project.ModuleDependencyData;
-import com.intellij.openapi.externalSystem.model.project.ProjectData;
+import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
@@ -90,8 +88,9 @@ abstract class PantsResolverTestBase extends TestCase {
   public void assertDependency(String moduleName, final String dependencyName) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertNotNull(String.format("Module %s is missing!", moduleName), moduleNode);
+    final Collection<DataNode<ModuleDependencyData>> dependencies = ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.MODULE_DEPENDENCY);
     final DataNode<ModuleDependencyData> dependencyDataNode = ContainerUtil.find(
-      ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.MODULE_DEPENDENCY),
+      dependencies,
       new Condition<DataNode<ModuleDependencyData>>() {
         @Override
         public boolean value(DataNode<ModuleDependencyData> node) {
@@ -100,6 +99,23 @@ abstract class PantsResolverTestBase extends TestCase {
       }
     );
     assertNotNull(String.format("%s doesn't have a dependency %s", moduleName, dependencyName), dependencyDataNode);
+  }
+
+  public void asserSourceRoot(String moduleName, final String path) {
+    final DataNode<ModuleData> moduleNode = findModule(moduleName);
+    assertNotNull(String.format("Module %s is missing!", moduleName), moduleNode);
+    final DataNode<ContentRootData> contentRoot = ExternalSystemApiUtil.find(moduleNode, ProjectKeys.CONTENT_ROOT);
+    assertNotNull(String.format("No content root for module %s", moduleName), contentRoot);
+    final ContentRootData contentRootData = contentRoot.getData();
+    for (PantsSourceType type: PantsSourceType.values()) {
+      for (ContentRootData.SourceRoot sourceRoot : contentRootData.getRoots(type.toExternalSystemSourceType())) {
+        final File expectedFile = new File(new File(""), path);
+        if (StringUtil.equalsIgnoreCase(expectedFile.getPath(), sourceRoot.getPath())) {
+          return;
+        }
+      }
+    }
+    fail(String.format("Source root %s is not found for %s!", path, moduleName));
   }
 
   @Nullable
@@ -129,10 +145,6 @@ abstract class PantsResolverTestBase extends TestCase {
     @Override
     public TargetInfo build() {
       return new TargetInfo(libraries, targets, roots, target_type);
-    }
-
-    public TargetInfoBuilder withDefaultRoot(@Nls String rootRelativePath) {
-      return withRoot(rootRelativePath, StringUtil.replaceChar(rootRelativePath, '/', '.'));
     }
 
     public TargetInfoBuilder withRoot(@Nls String rootRelativePath, @Nullable String packagePrefix) {

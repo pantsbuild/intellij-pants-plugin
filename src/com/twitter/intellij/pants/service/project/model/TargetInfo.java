@@ -1,5 +1,11 @@
 package com.twitter.intellij.pants.service.project.model;
 
+import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.util.PantsSourceType;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class TargetInfo {
@@ -69,6 +75,18 @@ public class TargetInfo {
 
   public boolean isEmpty() {
     return libraries.isEmpty() && targets.isEmpty() && roots.isEmpty();
+  }
+
+  public TargetInfo intersect(@NotNull TargetInfo other) {
+    final Collection<String> libs = ContainerUtil.intersection(getLibraries(), other.getLibraries());
+    final Collection<String> targets = ContainerUtil.intersection(getTargets(), other.getTargets());
+    final Collection<SourceRoot> roots = ContainerUtil.intersection(getRoots(), other.getRoots());
+    return new TargetInfo(
+      new ArrayList<String>(libs),
+      new ArrayList<String>(targets),
+      new ArrayList<SourceRoot>(roots),
+      getTargetType()
+    );
   }
 
   @Override

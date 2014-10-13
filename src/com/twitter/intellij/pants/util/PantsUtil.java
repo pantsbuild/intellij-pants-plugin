@@ -156,17 +156,21 @@ public class PantsUtil {
     if (!iterator.hasNext()) {
       return null;
     }
-    String result = iterator.next() + "/";
+    String result = pathWithTrailingSeparator(iterator.next());
     while (iterator.hasNext()) {
-      result = StringUtil.commonPrefix(result, iterator.next() + "/");
+      result = StringUtil.commonPrefix(result, pathWithTrailingSeparator(iterator.next()));
       if (!result.endsWith("/")) {
         // means something like
         // foo/bar/
         // foo/barjava/
-        result = VfsUtil.getParentDir(result) + "/";
+        result = pathWithTrailingSeparator(VfsUtil.getParentDir(result));
       }
     }
     return result;
+  }
+
+  private static String pathWithTrailingSeparator(@Nullable String path) {
+    return path == null || path.endsWith("/") ? path : (path + "/");
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
@@ -258,12 +262,12 @@ public class PantsUtil {
   }
 
   @NotNull
-  public static PantsSourceType getSourceTypeForTargetType(@Nullable String target_type) {
+  public static PantsSourceType getSourceTypeForTargetType(@Nullable String targetType) {
     try {
-      return target_type == null ? PantsSourceType.SOURCE :
-             PantsSourceType.valueOf(StringUtil.toUpperCase(target_type));
+      return targetType == null ? PantsSourceType.SOURCE :
+             PantsSourceType.valueOf(StringUtil.toUpperCase(targetType));
     } catch (IllegalArgumentException e) {
-      LOG.warn("Got invalid source type " + target_type, e);
+      LOG.warn("Got invalid source type " + targetType, e);
       return PantsSourceType.SOURCE;
     }
   }
