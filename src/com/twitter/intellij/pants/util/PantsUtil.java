@@ -28,8 +28,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
@@ -52,18 +54,6 @@ public class PantsUtil {
   public static boolean isBUILDFileName(@NotNull String name) {
     return BUILD.equals(FileUtil.getNameWithoutExtension(name));
   }
-
-  public static final FileChooserDescriptor BUILD_FILE_CHOOSER_DESCRIPTOR = new OpenProjectFileChooserDescriptor(true) {
-    @Override
-    public boolean isFileSelectable(VirtualFile file) {
-      return isPantsProjectFolder(file);
-    }
-
-    @Override
-    public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
-      return super.isFileVisible(file, showHiddenFiles) && isBUILDFileName(file.getName());
-    }
-  };
 
   /**
    * Checks if it's a BUILD file or folder under a Pants project
@@ -296,5 +286,14 @@ public class PantsUtil {
         }
       }
     );
+  }
+
+  public static <K, V1, V2> Map<K,V2> mapValues(Map<K, V1> map, Function<V1, V2> fun) {
+    final HashMap<K, V2> result = new HashMap<K, V2>(map.size());
+    for (K key : map.keySet()) {
+      final V1 originalValue = map.get(key);
+      result.put(key, fun.fun(originalValue));
+    }
+    return result;
   }
 }

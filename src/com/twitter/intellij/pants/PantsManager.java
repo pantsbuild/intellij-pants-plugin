@@ -2,6 +2,7 @@ package com.twitter.intellij.pants;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.SimpleJavaParameters;
+import com.intellij.ide.actions.OpenProjectFileChooserDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.ExternalSystemAutoImportAware;
 import com.intellij.openapi.externalSystem.ExternalSystemConfigurableAware;
@@ -37,7 +38,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +57,17 @@ public class PantsManager implements
                             PantsLocalSettings,
                             PantsExecutionSettings> {
 
+  public static final FileChooserDescriptor BUILD_FILE_CHOOSER_DESCRIPTOR = new OpenProjectFileChooserDescriptor(true) {
+    @Override
+    public boolean isFileSelectable(VirtualFile file) {
+      return PantsUtil.isPantsProjectFolder(file);
+    }
+
+    @Override
+    public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
+      return super.isFileVisible(file, showHiddenFiles) && PantsUtil.isBUILDFileName(file.getName());
+    }
+  };
   private static final Logger LOG = Logger.getInstance(PantsManager.class);
 
   @NotNull
@@ -145,7 +156,7 @@ public class PantsManager implements
   @NotNull
   @Override
   public FileChooserDescriptor getExternalProjectDescriptor() {
-    return PantsUtil.BUILD_FILE_CHOOSER_DESCRIPTOR;
+    return BUILD_FILE_CHOOSER_DESCRIPTOR;
   }
 
   @NotNull
@@ -157,7 +168,7 @@ public class PantsManager implements
   @Nullable
   @Override
   public FileChooserDescriptor getExternalProjectConfigDescriptor() {
-    return PantsUtil.BUILD_FILE_CHOOSER_DESCRIPTOR;
+    return BUILD_FILE_CHOOSER_DESCRIPTOR;
   }
 
   @Override

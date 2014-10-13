@@ -21,12 +21,16 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.service.project.model.SourceRoot;
+import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsSourceType;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +46,16 @@ public class PantsResolver {
   @Nullable
   protected File myWorkDirectory = null;
   private ProjectInfo projectInfo = null;
+
+  @TestOnly
+  public void setWorkDirectory(@Nullable File workDirectory) {
+    myWorkDirectory = workDirectory;
+  }
+
+  @TestOnly
+  public void setProjectInfo(ProjectInfo projectInfo) {
+    this.projectInfo = projectInfo;
+  }
 
   public PantsResolver(@NotNull String projectPath, @NotNull PantsExecutionSettings settings, boolean isPreviewMode) {
     this.projectPath = projectPath;
@@ -71,7 +85,7 @@ public class PantsResolver {
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
 
     // create all modules. no libs, dependencies and source roots
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String targetName = entry.getKey();
       if (StringUtil.startsWith(targetName, ":scala-library")) {
         // we already have it in libs
@@ -83,7 +97,7 @@ public class PantsResolver {
         continue;
       }
       final DataNode<ModuleData> moduleData = createModuleData(
-        projectInfoDataNode, targetName, targetInfo.roots, PantsUtil.getSourceTypeForTargetType(targetInfo.target_type)
+        projectInfoDataNode, targetName, targetInfo.getRoots(), PantsUtil.getSourceTypeForTargetType(targetInfo.getTargetType())
       );
       modules.put(targetName, moduleData);
     }
@@ -92,10 +106,10 @@ public class PantsResolver {
     final Map<SourceRoot, DataNode<ModuleData>> modulesForRootsAndInfo = handleCommonRoots(projectInfoDataNode, modules);
 
     // source roots
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
-      if (!modules.containsKey(mainTarget) || targetInfo.roots.isEmpty()) {
+      if (!modules.containsKey(mainTarget) || targetInfo.getRoots().isEmpty()) {
         continue;
       }
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
@@ -104,7 +118,7 @@ public class PantsResolver {
         LOG.warn("no content root for " + mainTarget);
         continue;
       }
-      for (SourceRoot root : targetInfo.roots) {
+      for (SourceRoot root : targetInfo.getRoots()) {
         final DataNode<ModuleData> sourceRootModule = modulesForRootsAndInfo.get(root);
 
         if (moduleDataNode != sourceRootModule && sourceRootModule != null) {
@@ -112,20 +126,20 @@ public class PantsResolver {
           addModuleDependency(moduleDataNode, sourceRootModule, true);
           continue;
         }
-        addSourceRoot(contentRoot, root, targetInfo.target_type);
+        addSourceRoot(contentRoot, root, targetInfo.getTargetType());
       }
     }
 
 
     // add dependencies
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       if (!modules.containsKey(mainTarget)) {
         continue;
       }
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
-      for (String target : targetInfo.targets) {
+      for (String target : targetInfo.getTargets()) {
         if (!modules.containsKey(target)) {
           continue;
         }
@@ -135,14 +149,14 @@ public class PantsResolver {
     }
 
     // add libs
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       if (!modules.containsKey(mainTarget)) {
         continue;
       }
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
-      for (String libraryId : targetInfo.libraries) {
+      for (String libraryId : targetInfo.getLibraries()) {
         // todo: is it always exported?
         createLibraryData(moduleDataNode, libraryId, true);
       }
@@ -222,9 +236,9 @@ public class PantsResolver {
     // source root -> list<(target name, target info)>
     final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets =
       new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.targets.entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final TargetInfo targetInfo = entry.getValue();
-      for (SourceRoot sourceRoot : targetInfo.roots) {
+      for (SourceRoot sourceRoot : targetInfo.getRoots()) {
         List<Pair<String, TargetInfo>> targetInfos = sourceRoot2Targets.get(sourceRoot);
         if (targetInfos == null) {
           targetInfos = new ArrayList<Pair<String, TargetInfo>>();
@@ -245,7 +259,7 @@ public class PantsResolver {
           new Condition<Pair<String, TargetInfo>>() {
             @Override
             public boolean value(Pair<String, TargetInfo> info) {
-              return info.getSecond().roots.size() == 1;
+              return info.getSecond().getRoots().size() == 1;
             }
           }
         );
@@ -261,28 +275,28 @@ public class PantsResolver {
           }
         } else {
           final TargetInfo firstTargetInfo = targetNameAndInfos.iterator().next().getSecond();
-          final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(firstTargetInfo.target_type);
+          final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(firstTargetInfo.getTargetType());
           final String root = FileUtil.getRelativePath(myWorkDirectory, new File(sourceRoot.getSourceRootRegardingSourceType(rootType)));
           final DataNode<ModuleData> rootModuleData =
             createModuleData(
               projectInfoDataNode,
               sourceRoot.getPackagePrefix(),
-              root,
+              StringUtil.notNullize(root),
               Arrays.asList(sourceRoot),
-              PantsUtil.getSourceTypeForTargetType(firstTargetInfo.target_type)
+              PantsUtil.getSourceTypeForTargetType(firstTargetInfo.getTargetType())
             );
 
           final ContentRootData contentRoot = findChildData(rootModuleData, ProjectKeys.CONTENT_ROOT);
           if (contentRoot != null) {
-            addSourceRoot(contentRoot, sourceRoot, firstTargetInfo.target_type);
+            addSourceRoot(contentRoot, sourceRoot, firstTargetInfo.getTargetType());
           }
 
           final Set<String> libDeps = new HashSet<String>();
           final Set<String> targetDeps = new HashSet<String>();
           for (Pair<String, TargetInfo> info : targetNameAndInfos) {
             final TargetInfo targetInfo = info.getSecond();
-            targetDeps.addAll(targetInfo.targets);
-            libDeps.addAll(targetInfo.libraries);
+            targetDeps.addAll(targetInfo.getTargets());
+            libDeps.addAll(targetInfo.getLibraries());
           }
 
           // do not export dependencies so they won't pollute classpaths of dependent modules
@@ -346,7 +360,7 @@ public class PantsResolver {
   private DataNode<ModuleData> createModuleData(
     DataNode<ProjectData> projectInfoDataNode,
     String targetName,
-    String path,
+    @NotNull String path,
     List<SourceRoot> roots,
     @Nullable final PantsSourceType rootType
   ) {
@@ -365,8 +379,9 @@ public class PantsResolver {
       path
     );
 
-    final File BUILDFile = ContainerUtil.find(
-      new File(myWorkDirectory, path).listFiles(),
+    final File[] files = myWorkDirectory != null ? new File(myWorkDirectory, path).listFiles() : null;
+    final File BUILDFile = files == null ? null : ContainerUtil.find(
+      files,
       new Condition<File>() {
         @Override
         public boolean value(File file) {
@@ -473,127 +488,6 @@ public class PantsResolver {
     }
     catch (PantsException exception) {
       throw new ExternalSystemException(exception);
-    }
-  }
-
-  public static class ProjectInfo {
-    private final Logger LOG = Logger.getInstance(getClass());
-    // id(org:name:version) to jars
-    public Map<String, List<String>> libraries;
-    // name to info
-    public Map<String, TargetInfo> targets;
-
-    public List<String> getLibraries(@NotNull String libraryId) {
-      if (libraries.containsKey(libraryId) && libraries.get(libraryId).size() > 0) {
-        return libraries.get(libraryId);
-      }
-      int versionIndex = libraryId.lastIndexOf(':');
-      if (versionIndex == -1) {
-        return Collections.emptyList();
-      }
-      final String libraryName = libraryId.substring(0, versionIndex);
-      for (Map.Entry<String, List<String>> libIdAndJars : libraries.entrySet()) {
-        final String currentLibraryId = libIdAndJars.getKey();
-        if (!StringUtil.startsWith(currentLibraryId, libraryName)) {
-          continue;
-        }
-        final List<String> currentJars = libIdAndJars.getValue();
-        if (!currentJars.isEmpty()) {
-          LOG.info("Using " + currentLibraryId + " instead of " + libraryId);
-          return currentJars;
-        }
-      }
-      return Collections.emptyList();
-    }
-
-    @Override
-    public String toString() {
-      return "ProjectInfo{" +
-             "libraries=" + libraries +
-             ", targets=" + targets +
-             '}';
-    }
-  }
-
-  public static class TargetInfo {
-    /**
-     * List of libraries. Just names.
-     */
-    public List<String> libraries;
-    /**
-     * List of dependencies.
-     */
-    public List<String> targets;
-    /**
-     * List of source roots.
-     */
-    public List<SourceRoot> roots;
-    /**
-     * Target type.
-     */
-    public String target_type;
-
-    public boolean isEmpty() {
-      return libraries.isEmpty() && targets.isEmpty() && roots.isEmpty();
-    }
-
-    @Override
-    public String toString() {
-      return "TargetInfo{" +
-             "libraries=" + libraries +
-             ", targets=" + targets +
-             ", roots=" + roots +
-             ", target_type='" + target_type + '\'' +
-             '}';
-    }
-  }
-
-  public static class SourceRoot {
-    protected String source_root;
-    protected String package_prefix;
-
-    public String getSourceRootRegardingSourceType(@Nullable PantsSourceType rootType) {
-      if (PantsSourceType.isResource(rootType)) {
-        final String resourcesPath = StringUtil.replaceChar(package_prefix, '.', '/');
-        return source_root.endsWith(resourcesPath) ?
-               source_root.substring(0, source_root.length() - resourcesPath.length()) :
-               source_root;
-      }
-      else {
-        return source_root;
-      }
-    }
-
-    public String getPackagePrefix() {
-      return package_prefix;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-
-      SourceRoot root = (SourceRoot)o;
-
-      if (package_prefix != null ? !package_prefix.equals(root.package_prefix) : root.package_prefix != null) return false;
-      if (source_root != null ? !source_root.equals(root.source_root) : root.source_root != null) return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      int result = source_root != null ? source_root.hashCode() : 0;
-      result = 31 * result + (package_prefix != null ? package_prefix.hashCode() : 0);
-      return result;
-    }
-
-    @Override
-    public String toString() {
-      return "SourceRoot{" +
-             "source_root='" + source_root + '\'' +
-             ", package_prefix='" + package_prefix + '\'' +
-             '}';
     }
   }
 }
