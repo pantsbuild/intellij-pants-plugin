@@ -1,5 +1,6 @@
 package com.twitter.intellij.pants.service.scala;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.util.text.StringUtil;
@@ -17,6 +18,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class ScalaFacetResolver implements PantsResolverExtension {
+  private static final Logger LOG = Logger.getInstance(ScalaFacetResolver.class);
+
   @Override
   public void resolve(
     ProjectInfo projectInfo, Map<String, DataNode<ModuleData>> modules
@@ -55,6 +58,9 @@ public class ScalaFacetResolver implements PantsResolverExtension {
     final File compilerFile = new File(StringUtil.replace(jarPath, "scala-library", libName));
     if (compilerFile.exists()) {
       files.add(compilerFile);
+    }
+    else {
+      LOG.warn("Could not find scala library path" + compilerFile);
     }
   }
 }

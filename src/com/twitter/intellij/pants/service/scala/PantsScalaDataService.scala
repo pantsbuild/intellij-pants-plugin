@@ -13,7 +13,6 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs._
 import com.twitter.intellij.pants.service.scala.ScalaPantsDataService._
-import io.netty.util.internal.StringUtil
 import org.jetbrains.plugins.scala.config._
 import org.jetbrains.plugins.scala.util.LibrariesUtil
 

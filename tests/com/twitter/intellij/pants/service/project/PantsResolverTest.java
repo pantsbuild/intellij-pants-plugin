@@ -1,5 +1,8 @@
 package com.twitter.intellij.pants.service.project;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class PantsResolverTest extends PantsResolverTestBase {
   public void testCommonRoots1() {
     addInfo("a:java").
@@ -63,7 +66,30 @@ public class PantsResolverTest extends PantsResolverTestBase {
 
     assertDependency("a_java", "src__common_packages");
     assertDependency("b_scala", "src__common_packages");
-    asserSourceRoot("src__common_packages", "src/com/foo/bar");
-    asserSourceRoot("src__common_packages", "src/com/foo/baz");
+    assertSourceRoot("src__common_packages", "src/com/foo/bar");
+    assertSourceRoot("src__common_packages", "src/com/foo/baz");
   }
+
+  public void testJavaScalaCombined() {
+    addInfo("a:java").
+      withRoot("src/java/foo/bar", "com.foo.bar").
+      withRoot("src/java/foo/baz", "com.foo.baz").
+      withLibrary("com.twitter.foo");
+    addInfo("b:scala").
+      withRoot("src/java/foo/bar", "com.foo.bar").
+      withRoot("src/java/foo/baz", "com.foo.baz").
+      withRoot("src/scala/foo/baz", "com.foo.baz").
+      withLibrary("com.twitter.baz").
+      withLibrary("org.scala-lang:scala-library");
+
+    assertSourceRoot("b_scala", "src/java/foo/bar");
+    assertSourceRoot("b_scala", "src/java/foo/baz");
+    assertSourceRoot("b_scala", "src/scala/foo/baz");
+    assertLibrary("b_scala", "com.twitter.foo");
+    assertLibrary("b_scala", "com.twitter.baz");
+    Set<String> modules = new HashSet<String>();
+    modules.add("b_scala");
+    assertModulesCreated(modules);
+  }
+
 }

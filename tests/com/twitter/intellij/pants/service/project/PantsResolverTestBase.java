@@ -76,6 +76,16 @@ abstract class PantsResolverTestBase extends TestCase {
         }
       )
     );
+
+    Map<String, List<String>> libraries = new HashMap<String, List<String>>();
+    for(TargetInfo targetInfo : result.getTargets().values()) {
+      for (String libraryId : targetInfo.getLibraries()) {
+        List<String> libs = new ArrayList<String>();
+        libs.add(libraryId.replace('.', File.separatorChar));
+        libraries.put(libraryId, libs);
+      }
+    }
+    result.setLibraries(libraries);
     return result;
   }
 
@@ -101,7 +111,7 @@ abstract class PantsResolverTestBase extends TestCase {
     assertNotNull(String.format("%s doesn't have a dependency %s", moduleName, dependencyName), dependencyDataNode);
   }
 
-  public void asserSourceRoot(String moduleName, final String path) {
+  public void assertSourceRoot(String moduleName, final String path) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertNotNull(String.format("Module %s is missing!", moduleName), moduleNode);
     final DataNode<ContentRootData> contentRoot = ExternalSystemApiUtil.find(moduleNode, ProjectKeys.CONTENT_ROOT);
@@ -118,6 +128,22 @@ abstract class PantsResolverTestBase extends TestCase {
     fail(String.format("Source root %s is not found for %s!", path, moduleName));
   }
 
+  public void assertLibrary(String moduleName, final String libraryId) {
+    final DataNode<ModuleData> moduleNode = findModule(moduleName);
+    assertNotNull(String.format("Module %s is missing!", moduleName), moduleNode);
+    final Collection<DataNode<LibraryDependencyData>> lib_dependencies = ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY);
+    final DataNode<LibraryDependencyData> dependencyDataNode = ContainerUtil.find(
+      lib_dependencies,
+      new Condition<DataNode<LibraryDependencyData>>() {
+        @Override
+        public boolean value(DataNode<LibraryDependencyData> node) {
+          return StringUtil.equalsIgnoreCase(libraryId, node.getData().getExternalName());
+        }
+      }
+    );
+    assertNotNull(String.format("%s doesn't have a dependency %s", moduleName, libraryId), dependencyDataNode);
+  }
+
   @Nullable
   private DataNode<ModuleData> findModule(final String moduleName) {
     final Collection<DataNode<ModuleData>> moduleNodes = ExternalSystemApiUtil.findAll(getProjectNode(), ProjectKeys.MODULE);
@@ -132,6 +158,15 @@ abstract class PantsResolverTestBase extends TestCase {
     );
   }
 
+  public void assertModulesCreated(final Set<String> expectedModules) {
+    final Collection<DataNode<ModuleData>> moduleNodes = ExternalSystemApiUtil.findAll(getProjectNode(), ProjectKeys.MODULE);
+    Set <String> actualModules = new HashSet<String>();
+    for (DataNode<ModuleData> moduleDataDataNode : moduleNodes) {
+      actualModules.add(moduleDataDataNode.getData().getExternalName());
+    }
+    assertEquals(expectedModules, actualModules);
+  }
+
   private static interface Builder<T> {
     T build();
   }
@@ -141,15 +176,21 @@ abstract class PantsResolverTestBase extends TestCase {
     private List<String> targets = new ArrayList<String>();
     private List<SourceRoot> roots = new ArrayList<SourceRoot>();
     private String target_type = PantsSourceType.SOURCE.toString();
+    private Boolean is_code_gen = false;
 
     @Override
     public TargetInfo build() {
-      return new TargetInfo(libraries, targets, roots, target_type);
+      return new TargetInfo(libraries, targets, roots, target_type, is_code_gen);
     }
 
     public TargetInfoBuilder withRoot(@Nls String rootRelativePath, @Nullable String packagePrefix) {
       final File root = new File(new File(""), rootRelativePath);
       roots.add(new SourceRoot(root.getAbsolutePath(), packagePrefix));
+      return this;
+    }
+
+    public TargetInfoBuilder withLibrary(@Nls String libraryId) {
+      libraries.add(libraryId);
       return this;
     }
   }

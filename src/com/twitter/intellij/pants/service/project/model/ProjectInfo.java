@@ -5,6 +5,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,8 @@ public class ProjectInfo {
   public void setTargets(Map<String, TargetInfo> targets) {
     this.targets = targets;
   }
+
+  public Map<String, String> combinedTargets = new HashMap<String, String>();
 
   public List<String> getLibraries(@NotNull String libraryId) {
     if (libraries.containsKey(libraryId) && libraries.get(libraryId).size() > 0) {
@@ -60,5 +63,16 @@ public class ProjectInfo {
            "libraries=" + libraries +
            ", targets=" + targets +
            '}';
+  }
+
+  public TargetInfo getTarget(String targetName) {
+    if (combinedTargets.containsKey(targetName))  {
+      return this.targets.get(combinedTargets.get(targetName));
+    }
+    return this.targets.get(targetName);
+  }
+
+  public void setCombinedScalaJavaTargets(Map<String, String> combinedTargets) {
+    this.combinedTargets = combinedTargets;
   }
 }
