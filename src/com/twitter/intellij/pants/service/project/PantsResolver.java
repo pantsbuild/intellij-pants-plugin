@@ -276,6 +276,7 @@ public class PantsResolver {
   }
 
   private void addModuleDependency(DataNode<ModuleData> moduleDataNode, DataNode<ModuleData> submoduleDataNode, boolean exported) {
+
     final List<ModuleDependencyData> subModuleDeps = findChildren(submoduleDataNode, ProjectKeys.MODULE_DEPENDENCY);
     for (ModuleDependencyData dep : subModuleDeps) {
       if (dep.getTarget() == moduleDataNode.getData()) {
@@ -392,21 +393,11 @@ public class PantsResolver {
             }
           }
 
-          // do not export dependencies so they won't pollute classpaths of dependent modules
-          for (String targetName : commonInfo.getTargets()) {
-            final DataNode<ModuleData> dependencyModule = modules.get(targetName);
-            if (dependencyModule != null) {
-              addModuleDependency(rootModuleData, dependencyModule, false);
-            }
-          }
-
-          for (String libraryId : commonInfo.getLibraries()) {
-            createLibraryData(rootModuleData, libraryId, false);
-          }
-
           for (SourceRoot root : commonInfo.getRoots()) {
             result.put(root, rootModuleData);
           }
+          modules.put(commonName, rootModuleData);
+          projectInfo.getTargets().put(commonName, commonInfo);
         }
       }
     }
