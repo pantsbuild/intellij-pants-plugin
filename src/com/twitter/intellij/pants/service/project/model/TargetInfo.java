@@ -3,6 +3,7 @@ package com.twitter.intellij.pants.service.project.model;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.util.PantsTargetType;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -120,7 +121,7 @@ public class TargetInfo {
   }
 
   public boolean is_scala() {
-    return hasScalaLib();
+    return hasScalaLib() || hasScalaCode();
   }
 
   public boolean isCodeGen() {
@@ -137,5 +138,15 @@ public class TargetInfo {
       }
     }
     return hasScalaLib;
+  }
+
+  //Todo (tdesai) https://github.com/pantsbuild/pants/issues/655
+  private boolean hasScalaCode() {
+    for (SourceRoot root : getRoots()) {
+      if (root.getSourceRootRegardingSourceType(PantsUtil.getSourceTypeForTargetType(target_type)).contains("scala/")) {
+         return true;
+      }
+    }
+    return false;
   }
 }

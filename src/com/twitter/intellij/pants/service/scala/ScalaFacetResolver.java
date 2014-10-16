@@ -12,10 +12,7 @@ import com.twitter.intellij.pants.util.PantsScalaUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ScalaFacetResolver implements PantsResolverExtension {
   private static final Logger LOG = Logger.getInstance(ScalaFacetResolver.class);
@@ -24,6 +21,13 @@ public class ScalaFacetResolver implements PantsResolverExtension {
   public void resolve(
     ProjectInfo projectInfo, Map<String, DataNode<ModuleData>> modules
   ) {
+    final List<String> scalaJars = new ArrayList<String>();
+    for (String libId: projectInfo.getLibraries().keySet()) {
+      if (PantsScalaUtil.isScalaLib(libId)) {
+        scalaJars.addAll(projectInfo.getLibraries(libId));
+      }
+    }
+
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
@@ -31,13 +35,11 @@ public class ScalaFacetResolver implements PantsResolverExtension {
       if (moduleDataNode == null) {
         continue; // shouldn't happened because we created all modules for each target
       }
-      for (String libraryId : targetInfo.getLibraries()) {
-        if (projectInfo.getLibraries().containsKey(libraryId) && PantsScalaUtil.isScalaLib(libraryId)) {
+      if (targetInfo.is_scala()) {
           // todo(fkorotkov): provide Scala info from the goal
-          createScalaFacetFromJars(moduleDataNode, projectInfo.getLibraries(libraryId));
+          createScalaFacetFromJars(moduleDataNode, scalaJars);
         }
       }
-    }
   }
 
   private void createScalaFacetFromJars(@NotNull DataNode<ModuleData> moduleDataNode, List<String> scalaLibJars) {
