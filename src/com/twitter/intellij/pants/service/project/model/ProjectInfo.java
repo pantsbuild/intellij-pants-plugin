@@ -66,7 +66,7 @@ public class ProjectInfo {
   }
 
   public TargetInfo getTarget(String targetName) {
-    if (combinedTargets.containsKey(targetName))  {
+    if (combinedTargets.containsKey(targetName)) {
       return this.targets.get(combinedTargets.get(targetName));
     }
     return this.targets.get(targetName);

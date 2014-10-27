@@ -72,6 +72,10 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     );
   }
 
+  protected void setUpPantsExecutable() {
+    myFixture.addFileToProject(PantsUtil.PANTS, ""); // make it pants working dir
+  }
+
   private void checkDependentPlugins(IdeaPluginDescriptor mainPlugin) {
     for (PluginId pluginId : mainPlugin.getDependentPluginIds()) {
       if ("com.intellij.modules.java".equalsIgnoreCase(pluginId.getIdString())) {

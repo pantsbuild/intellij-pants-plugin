@@ -1,7 +1,6 @@
 package com.twitter.intellij.pants.inspections;
 
 import com.intellij.codeInspection.*;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;

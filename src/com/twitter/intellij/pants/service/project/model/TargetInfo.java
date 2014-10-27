@@ -144,7 +144,7 @@ public class TargetInfo {
   private boolean hasScalaCode() {
     for (SourceRoot root : getRoots()) {
       if (root.getSourceRootRegardingSourceType(PantsUtil.getSourceTypeForTargetType(target_type)).contains("scala/")) {
-         return true;
+        return true;
       }
     }
     return false;

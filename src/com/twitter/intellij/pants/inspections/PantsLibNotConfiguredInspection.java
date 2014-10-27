@@ -2,7 +2,6 @@ package com.twitter.intellij.pants.inspections;
 
 import com.intellij.codeInspection.*;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.DependencyScope;
 import com.intellij.openapi.roots.LibraryDependencyScopeSuggester;

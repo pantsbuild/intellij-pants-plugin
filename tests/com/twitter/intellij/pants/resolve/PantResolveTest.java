@@ -15,9 +15,9 @@ public class PantResolveTest extends PantsCodeInsightFixtureTestCase {
   }
 
   protected Collection<PsiElement> doTest(int expectedSize) {
-    PsiFile file = myFixture.getFile();
+    final PsiFile file = myFixture.getFile();
     assertNotNull(file);
-    PsiReference reference = file.findReferenceAt(myFixture.getCaretOffset());
+    final PsiReference reference = file.findReferenceAt(myFixture.getCaretOffset());
     assertNotNull("no reference", reference);
     final Collection<PsiElement> elements = TargetElementUtilBase.getInstance().getTargetCandidates(reference);
     assertNotNull(elements);
@@ -37,6 +37,20 @@ public class PantResolveTest extends PantsCodeInsightFixtureTestCase {
 
   public void testRGlobs() {
     myFixture.configureByText("BUILD", "scala_library(sources=rg<caret>lobs('src/*.java'))");
+    doTest(1);
+  }
+
+  public void testDependencies1() {
+    setUpPantsExecutable();
+    myFixture.addFileToProject("foo/bar/BUILD", "");
+    myFixture.configureByText("BUILD", "scala_library(dependencies=['foo/ba<caret>r']");
+    doTest(1);
+  }
+
+  public void testDependencies2() {
+    setUpPantsExecutable();
+    myFixture.addFileToProject("foo/bar/BUILD", "");
+    myFixture.configureByText("BUILD", "scala_library(dependencies=['fo<caret>o/bar']");
     doTest(1);
   }
 }

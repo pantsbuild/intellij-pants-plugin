@@ -3,10 +3,8 @@ package com.twitter.intellij.pants.util;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ScriptRunnerUtil;
-import com.intellij.ide.actions.OpenProjectFileChooserDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
-import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -18,6 +16,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.psi.PsiFile;
 import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
@@ -51,6 +50,7 @@ public class PantsUtil {
   public static boolean isBUILDFilePath(@NotNull String path) {
     return isBUILDFileName(PathUtil.getFileName(path));
   }
+
   public static boolean isBUILDFileName(@NotNull String name) {
     return BUILD.equals(FileUtil.getNameWithoutExtension(name));
   }
@@ -107,11 +107,11 @@ public class PantsUtil {
     final String filePrefix = "pants-" + pantsVersion;
     return ContainerUtil.find(
       folderWithPex.getChildren(), new Condition<VirtualFile>() {
-      @Override
-      public boolean value(VirtualFile virtualFile) {
-        return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
+        @Override
+        public boolean value(VirtualFile virtualFile) {
+          return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
+        }
       }
-    }
     );
   }
 
@@ -130,6 +130,12 @@ public class PantsUtil {
   @Nullable
   public static VirtualFile findPantsWorkingDir(@NotNull Project project) {
     return findPantsWorkingDir(project.getProjectFile());
+  }
+
+  @Nullable
+  public static VirtualFile findPantsWorkingDir(@NotNull PsiFile psiFile) {
+    final VirtualFile virtualFile = psiFile.getOriginalFile().getVirtualFile();
+    return virtualFile != null ? findPantsWorkingDir(virtualFile) : findPantsWorkingDir(psiFile.getProject());
   }
 
   @Nullable
@@ -188,8 +194,10 @@ public class PantsUtil {
       commandLine.getEnvironment().put("PANTS_DEV", "1");
     }
 
-    final String pantsExecutablePath = StringUtil.notNullize(System.getProperty("pants.executable.path"),
-                                                             pantsExecutable.getPath());
+    final String pantsExecutablePath = StringUtil.notNullize(
+      System.getProperty("pants.executable.path"),
+      pantsExecutable.getPath()
+    );
     commandLine.setExePath(pantsExecutablePath);
     final String workingDir = pantsExecutable.getParent().getPath();
     commandLine.setWorkDirectory(workingDir);
@@ -266,7 +274,8 @@ public class PantsUtil {
     try {
       return targetType == null ? PantsSourceType.SOURCE :
              PantsSourceType.valueOf(StringUtil.toUpperCase(targetType));
-    } catch (IllegalArgumentException e) {
+    }
+    catch (IllegalArgumentException e) {
       LOG.warn("Got invalid source type " + targetType, e);
       return PantsSourceType.SOURCE;
     }
@@ -292,7 +301,7 @@ public class PantsUtil {
     );
   }
 
-  public static <K, V1, V2> Map<K,V2> mapValues(Map<K, V1> map, Function<V1, V2> fun) {
+  public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> map, Function<V1, V2> fun) {
     final HashMap<K, V2> result = new HashMap<K, V2>(map.size());
     for (K key : map.keySet()) {
       final V1 originalValue = map.get(key);

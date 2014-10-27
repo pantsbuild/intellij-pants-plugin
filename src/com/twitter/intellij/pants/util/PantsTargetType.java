@@ -15,7 +15,7 @@ public enum PantsTargetType {
   }
 
   @Override
-  public String toString(){
+  public String toString() {
     return pantsTarget;
   }
 

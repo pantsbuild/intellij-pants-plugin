@@ -2,7 +2,6 @@ package com.twitter.intellij.pants.projectview;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.SelectInTarget;
-import com.intellij.ide.impl.ProjectPaneSelectInTarget;
 import com.intellij.ide.projectView.ViewSettings;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPSIPane;
 import com.intellij.ide.projectView.impl.ProjectAbstractTreeStructureBase;
@@ -53,7 +52,7 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
 
   @Override
   protected ProjectAbstractTreeStructureBase createStructure() {
-    return new ProjectTreeStructure(myProject, ID){
+    return new ProjectTreeStructure(myProject, ID) {
       @Override
       protected AbstractTreeNode createRoot(final Project project, ViewSettings settings) {
         return new ProjectFilesViewProjectNode(project, settings);

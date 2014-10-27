@@ -91,5 +91,4 @@ public class PantsResolverTest extends PantsResolverTestBase {
     modules.add("b_scala");
     assertModulesCreated(modules);
   }
-
 }

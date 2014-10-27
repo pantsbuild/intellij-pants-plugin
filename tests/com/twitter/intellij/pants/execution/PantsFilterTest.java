@@ -4,10 +4,6 @@ import com.twitter.intellij.pants.execution.PantsFilter.PantsFilterInfo;
 import junit.framework.TestCase;
 import org.jetbrains.annotations.Nullable;
 
-
-/**
- * Created by ajohnson on 6/19/14.
- */
 public class PantsFilterTest extends TestCase {//LightCodeInsightFixtureTestCase {
 
   public void doTest(@Nullable PantsFilterInfo expected, @Nullable PantsFilterInfo actual) {
@@ -55,6 +51,6 @@ public class PantsFilterTest extends TestCase {//LightCodeInsightFixtureTestCase
 
   public void testUrlWithErrorInBrackets() {
     PantsFilterInfo info = PantsFilter.parseLine("     [error] /this/is/a/url");
-    doTest(new PantsFilterInfo(13,27, "/this/is/a/url", 0), info);
+    doTest(new PantsFilterInfo(13, 27, "/this/is/a/url", 0), info);
   }
 }

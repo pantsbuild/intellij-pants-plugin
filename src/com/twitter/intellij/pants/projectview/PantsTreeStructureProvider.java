@@ -45,14 +45,15 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
         final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
         final VirtualFile buildFile = pantsExecutable != null ? pantsExecutable.getParent().findFileByRelativePath(buildPath) : null;
 
-        boolean isModuleRoot = ArrayUtil.contains(((PsiDirectoryNode)node).getVirtualFile(), ModuleRootManager.getInstance(module).getContentRoots());
+        boolean isModuleRoot =
+          ArrayUtil.contains(((PsiDirectoryNode)node).getVirtualFile(), ModuleRootManager.getInstance(module).getContentRoots());
         if (buildFile != null && isModuleRoot) {
           // Check if there's already a BUILD file in the directory; if so, we don't add another
           final AbstractTreeNode existingBuildFile = ContainerUtil.find(
             collection.iterator(), new Condition<AbstractTreeNode>() {
               @Override
               public boolean value(AbstractTreeNode node) {
-                return node instanceof PsiFileNode && buildFile.equals(((PsiFileNode) node).getVirtualFile());
+                return node instanceof PsiFileNode && buildFile.equals(((PsiFileNode)node).getVirtualFile());
               }
             }
           );
@@ -80,5 +81,4 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
   public Object getData(Collection<AbstractTreeNode> collection, String s) {
     return null;
   }
-
 }

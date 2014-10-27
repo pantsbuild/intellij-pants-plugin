@@ -15,10 +15,6 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import com.twitter.intellij.pants.util.Target;
 import org.jetbrains.annotations.Nullable;
 
-
-/**
-  Created by ajohnson on 6/10/14.
- */
 public abstract class PantsConfigurationProducerBase extends RunConfigurationProducer<PantsConfiguration> {
 
   final private String arguments;
@@ -75,7 +71,11 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
   }
 
   @Override
-  protected boolean setupConfigurationFromContext(PantsConfiguration configuration,ConfigurationContext context,Ref<PsiElement> sourceElement) {
+  protected boolean setupConfigurationFromContext(
+    PantsConfiguration configuration,
+    ConfigurationContext context,
+    Ref<PsiElement> sourceElement
+  ) {
     PantsRunnerParameters params = getParametersFromContext(context);
     if (params == null) {
       return false;

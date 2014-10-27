@@ -110,10 +110,11 @@ public class PantsResolver {
     }
 
     // IntelliJ doesn't support when several modules have the same source root
-    final Map<SourceRoot, DataNode<ModuleData>> modulesForRootsAndInfo = handleCommonRoots(projectInfoDataNode, modules, sourceRoot2Targets);
+    final Map<SourceRoot, DataNode<ModuleData>> modulesForRootsAndInfo =
+      handleCommonRoots(projectInfoDataNode, modules, sourceRoot2Targets);
 
     // source roots
-    for (String mainTarget: projectInfo.getTargets().keySet()) {
+    for (String mainTarget : projectInfo.getTargets().keySet()) {
       final TargetInfo targetInfo = projectInfo.getTarget(mainTarget);
       if (!modules.containsKey(mainTarget) || targetInfo.getRoots().isEmpty()) {
         continue;
@@ -138,7 +139,7 @@ public class PantsResolver {
 
 
     // add dependencies
-    for (String mainTarget: projectInfo.getTargets().keySet()) {
+    for (String mainTarget : projectInfo.getTargets().keySet()) {
       final TargetInfo targetInfo = projectInfo.getTarget(mainTarget);
       if (!modules.containsKey(mainTarget)) {
         continue;
@@ -154,7 +155,7 @@ public class PantsResolver {
     }
 
     // add libs
-    for (String mainTarget: projectInfo.getTargets().keySet()) {
+    for (String mainTarget : projectInfo.getTargets().keySet()) {
       final TargetInfo targetInfo = projectInfo.getTarget(mainTarget);
       if (!modules.containsKey(mainTarget)) {
         continue;
@@ -180,11 +181,12 @@ public class PantsResolver {
   }
 
   /**
-   *  Finds common roots targets
-   * @return  Map of common source root to list of targets containing the source root.
+   * Finds common roots targets
+   *
+   * @return Map of common source root to list of targets containing the source root.
    */
 
-  private Map<SourceRoot, List<Pair<String, TargetInfo>>>  combineScalaJavaTargets() {
+  private Map<SourceRoot, List<Pair<String, TargetInfo>>> combineScalaJavaTargets() {
     final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets =
       new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
     Map<String, String> combinedScalaJavaTargets = new HashMap<String, String>();
@@ -219,7 +221,7 @@ public class PantsResolver {
               " and " + targetInfos
             );
           }
-        targetInfos.add(Pair.create(targetName, targetInfo));
+          targetInfos.add(Pair.create(targetName, targetInfo));
         }
       }
     }
@@ -228,13 +230,16 @@ public class PantsResolver {
   }
 
   private void addJavaModuleToScala(TargetInfo scalaTarget, TargetInfo javaTarget) {
-    for(SourceRoot sourceRoot: javaTarget.getRoots())
+    for (SourceRoot sourceRoot : javaTarget.getRoots()) {
       scalaTarget.getRoots().add(sourceRoot);
+    }
     //Add libs and targets from java to scala
-    for (String target : javaTarget.getTargets())
+    for (String target : javaTarget.getTargets()) {
       scalaTarget.getTargets().add(target);
-    for (String libraries: javaTarget.getLibraries())
+    }
+    for (String libraries : javaTarget.getLibraries()) {
       scalaTarget.getLibraries().add(libraries);
+    }
   }
 
 

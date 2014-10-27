@@ -78,7 +78,7 @@ abstract class PantsResolverTestBase extends TestCase {
     );
 
     Map<String, List<String>> libraries = new HashMap<String, List<String>>();
-    for(TargetInfo targetInfo : result.getTargets().values()) {
+    for (TargetInfo targetInfo : result.getTargets().values()) {
       for (String libraryId : targetInfo.getLibraries()) {
         List<String> libs = new ArrayList<String>();
         libs.add(libraryId.replace('.', File.separatorChar));
@@ -98,7 +98,8 @@ abstract class PantsResolverTestBase extends TestCase {
   public void assertDependency(String moduleName, final String dependencyName) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertNotNull(String.format("Module %s is missing!", moduleName), moduleNode);
-    final Collection<DataNode<ModuleDependencyData>> dependencies = ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.MODULE_DEPENDENCY);
+    final Collection<DataNode<ModuleDependencyData>> dependencies =
+      ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.MODULE_DEPENDENCY);
     final DataNode<ModuleDependencyData> dependencyDataNode = ContainerUtil.find(
       dependencies,
       new Condition<DataNode<ModuleDependencyData>>() {
@@ -117,7 +118,7 @@ abstract class PantsResolverTestBase extends TestCase {
     final DataNode<ContentRootData> contentRoot = ExternalSystemApiUtil.find(moduleNode, ProjectKeys.CONTENT_ROOT);
     assertNotNull(String.format("No content root for module %s", moduleName), contentRoot);
     final ContentRootData contentRootData = contentRoot.getData();
-    for (PantsSourceType type: PantsSourceType.values()) {
+    for (PantsSourceType type : PantsSourceType.values()) {
       for (ContentRootData.SourceRoot sourceRoot : contentRootData.getRoots(type.toExternalSystemSourceType())) {
         final File expectedFile = new File(new File(""), path);
         if (StringUtil.equalsIgnoreCase(expectedFile.getPath(), sourceRoot.getPath())) {
@@ -131,7 +132,8 @@ abstract class PantsResolverTestBase extends TestCase {
   public void assertLibrary(String moduleName, final String libraryId) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertNotNull(String.format("Module %s is missing!", moduleName), moduleNode);
-    final Collection<DataNode<LibraryDependencyData>> lib_dependencies = ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY);
+    final Collection<DataNode<LibraryDependencyData>> lib_dependencies =
+      ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY);
     final DataNode<LibraryDependencyData> dependencyDataNode = ContainerUtil.find(
       lib_dependencies,
       new Condition<DataNode<LibraryDependencyData>>() {
@@ -160,7 +162,7 @@ abstract class PantsResolverTestBase extends TestCase {
 
   public void assertModulesCreated(final Set<String> expectedModules) {
     final Collection<DataNode<ModuleData>> moduleNodes = ExternalSystemApiUtil.findAll(getProjectNode(), ProjectKeys.MODULE);
-    Set <String> actualModules = new HashSet<String>();
+    final Set<String> actualModules = new HashSet<String>();
     for (DataNode<ModuleData> moduleDataDataNode : moduleNodes) {
       actualModules.add(moduleDataDataNode.getData().getExternalName());
     }

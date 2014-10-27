@@ -22,7 +22,7 @@ public enum PantsSourceType {
   }
 
   @Override
-  public String toString(){
+  public String toString() {
     return myExternalType.toString();
   }
 

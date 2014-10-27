@@ -1,8 +1,5 @@
 package com.twitter.intellij.pants.util;
 
-/**
- * Created by ajohnson on 6/9/14.
- */
 public class Target {
   protected final String name;
   protected final String type;
@@ -25,8 +22,9 @@ public class Target {
   }
 
   public boolean equals(Object o) {
-    if (!(o instanceof Target)) {return false;}
+    if (!(o instanceof Target)) {
+      return false;
+    }
     return ((Target)o).getName().equals(name) && ((Target)o).getType().equals(type);
   }
-
 }

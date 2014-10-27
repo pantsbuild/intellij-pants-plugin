@@ -39,7 +39,7 @@ abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTes
   }
 
   protected void configure(@Nullable String targetPath) throws Throwable {
-    myFixture.addFileToProject(PantsUtil.PANTS, ""); // make it pants working dir
+    setUpPantsExecutable();
     final String buildPath = targetPath == null ? "BUILD" : targetPath + "/BUILD";
     final VirtualFile buildFile = myFixture.copyFileToProject(getTestName(true) + ".py", buildPath);
     myFixture.configureFromExistingVirtualFile(buildFile);

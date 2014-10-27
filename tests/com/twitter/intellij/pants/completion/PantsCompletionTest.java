@@ -51,4 +51,11 @@ public class PantsCompletionTest extends PantsCompletionTestBase {
     configure("foo");
     doCompletionTest('\n');
   }
+
+  public void testTargetPath7() throws Throwable {
+    myFixture.addFileToProject("foo/bar/baz/BUILD", "");
+    myFixture.addFileToProject("foo/baz/BUILD", "");
+    configure("foo");
+    doCompletionTest('\n');
+  }
 }
