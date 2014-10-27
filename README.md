@@ -41,14 +41,14 @@ The plugin will resolve the project dependencies using `pants goal resolve` in b
    <br />![Project Files Tree View](images/project_files_tree_view.png)
 * Build File Auto completion
   <br />The plugin provides auto completion for Build file targets. Cntrl+Space within BUILD file will list all pants targets.
-* Project Regeneration using Intellij Action.
-  <br />If you add a dependency to your project, you can re-resolve project using Intellij Action in background.
+* Project Regeneration using IntelliJ Action.
+  <br />If you add a dependency to your project, you can re-resolve project using IntelliJ Action in background.
   <br />Use Main Menu: Help -> Find Action or Short hand Cmd+Shift+A and select Action "Refresh all External Projects"
   <br />Remember to check "Include non-menu actions"
    <br />![Refresh Project](images/refresh_action.png)
-* Compiling within Intellij
-* Running tests within Intellij
-  You can right click on tests and run tests. There is known bug for running tests which access resources.
+* Compiling within IntelliJ
+* Running tests within IntelliJ
+  You can right click on tests and run tests.
 
 
 ### Whats in near Future?
@@ -61,6 +61,8 @@ The plugin will resolve the project dependencies using `pants goal resolve` in b
 
 ### Report Bugs
 If you see any bugs please file a github issue on the project page.
+Attach your idea.log found here https://intellij-support.jetbrains.com/entries/23352446-Locating-IDE-log-files
+
 For contributing to the project, continue reading below.
 
 
@@ -80,7 +82,7 @@ For contributing to the project, continue reading below.
    git pull
    ./rbt patch -c <RB_ID>
 
-### Intellij project setup:
+### IntelliJ project setup:
 
 * Download and open IntelliJ IDEA 13 Community Edition and install Python Community Edition plugin
 * Use IntelliJ IDEA 13 Community Edition as IDEA IC sdk(Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK)
