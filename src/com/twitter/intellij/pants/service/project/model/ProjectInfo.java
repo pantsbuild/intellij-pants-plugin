@@ -45,7 +45,7 @@ public class ProjectInfo {
     final String libraryName = libraryId.substring(0, versionIndex);
     for (Map.Entry<String, List<String>> libIdAndJars : libraries.entrySet()) {
       final String currentLibraryId = libIdAndJars.getKey();
-      if (!StringUtil.startsWith(currentLibraryId, libraryName)) {
+      if (!StringUtil.startsWith(currentLibraryId, libraryName + ":")) {
         continue;
       }
       final List<String> currentJars = libIdAndJars.getValue();
