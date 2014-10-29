@@ -12,6 +12,7 @@ import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
@@ -125,6 +126,7 @@ public class PantsResolver {
         LOG.warn("no content root for " + mainTarget);
         continue;
       }
+      boolean emptyContentRoot = true;
       for (SourceRoot root : targetInfo.getRoots()) {
         final DataNode<ModuleData> sourceRootModule = modulesForRootsAndInfo.get(root);
 
@@ -133,7 +135,11 @@ public class PantsResolver {
           addModuleDependency(moduleDataNode, sourceRootModule, true);
           continue;
         }
+        emptyContentRoot = false;
         addSourceRoot(contentRoot, root, targetInfo.getTargetType());
+      }
+      if (emptyContentRoot) {
+        removeAllChildren(moduleDataNode, ProjectKeys.CONTENT_ROOT);
       }
     }
 
@@ -270,14 +276,20 @@ public class PantsResolver {
   }
 
   private <T> List<T> findChildren(DataNode<?> dataNode, com.intellij.openapi.externalSystem.model.Key<T> key) {
-    final ArrayList<T> children = new ArrayList<T>();
-    for (DataNode<?> child : dataNode.getChildren()) {
-      T childData = child.getData(key);
-      if (childData != null) {
-        children.add(childData);
+    return ContainerUtil.mapNotNull(
+      ExternalSystemApiUtil.findAll(dataNode, key),
+      new Function<DataNode<T>, T>() {
+        @Override
+        public T fun(DataNode<T> node) {
+          return node.getData();
+        }
       }
-    }
-    return children;
+    );
+  }
+
+  private <T> void removeAllChildren(DataNode<?> dataNode, com.intellij.openapi.externalSystem.model.Key<T> key) {
+    final Collection<DataNode<T>> toRemove = ExternalSystemApiUtil.findAll(dataNode, key);
+    dataNode.getChildren().removeAll(toRemove);
   }
 
   private void addModuleDependency(DataNode<ModuleData> moduleDataNode, DataNode<ModuleData> submoduleDataNode, boolean exported) {

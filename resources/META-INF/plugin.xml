@@ -4,6 +4,10 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.0.2:</p>
+      <ul>
+        <li>Bug fixes</li>
+      </ul>
       <p>1.0.1:</p>
       <ul>
         <li>Project structure improvements</li>
@@ -54,7 +58,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <vendor>Twitter, Inc.</vendor>
   <idea-version since-build="135.1200" until-build="136.1"/>
 

@@ -129,6 +129,17 @@ abstract class PantsResolverTestBase extends TestCase {
     fail(String.format("Source root %s is not found for %s!", path, moduleName));
   }
 
+  public void assertNoContentRoot(String moduleName) {
+    final DataNode<ModuleData> moduleNode = findModule(moduleName);
+    assertNotNull(String.format("Module %s is missing!", moduleName), moduleNode);
+    final DataNode<ContentRootData> contentRoot = ExternalSystemApiUtil.find(moduleNode, ProjectKeys.CONTENT_ROOT);
+    assertNull(
+      String
+        .format("Content root %s is defined for module %s", contentRoot != null ? contentRoot.getData().getRootPath() : null, moduleName),
+      contentRoot
+    );
+  }
+
   public void assertLibrary(String moduleName, final String libraryId) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertNotNull(String.format("Module %s is missing!", moduleName), moduleNode);
