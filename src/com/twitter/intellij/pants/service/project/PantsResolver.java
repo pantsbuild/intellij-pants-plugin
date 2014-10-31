@@ -177,7 +177,7 @@ public class PantsResolver {
       try {
         Object resolver = Class.forName(resolverClassName).newInstance();
         if (resolver instanceof PantsResolverExtension) {
-          ((PantsResolverExtension)resolver).resolve(projectInfo, modules);
+          ((PantsResolverExtension)resolver).resolve(projectInfo, projectInfoDataNode, modules);
         }
       }
       catch (Exception e) {

@@ -119,7 +119,7 @@ abstract class PantsResolverTestBase extends TestCase {
     assertNotNull(String.format("No content root for module %s", moduleName), contentRoot);
     final ContentRootData contentRootData = contentRoot.getData();
     for (PantsSourceType type : PantsSourceType.values()) {
-      for (ContentRootData.SourceRoot sourceRoot : contentRootData.getRoots(type.toExternalSystemSourceType())) {
+      for (ContentRootData.SourceRoot sourceRoot : contentRootData.getPaths(type.toExternalSystemSourceType())) {
         final File expectedFile = new File(new File(""), path);
         if (StringUtil.equalsIgnoreCase(expectedFile.getPath(), sourceRoot.getPath())) {
           return;

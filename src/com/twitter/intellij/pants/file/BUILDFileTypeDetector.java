@@ -15,4 +15,9 @@ public class BUILDFileTypeDetector implements FileTypeRegistry.FileTypeDetector 
   public FileType detect(@NotNull VirtualFile file, @NotNull ByteSequence firstBytes, @Nullable CharSequence firstCharsIfText) {
     return PantsUtil.isBUILDFileName(file.getName()) ? PythonFileType.INSTANCE : null;
   }
+
+  @Override
+  public int getVersion() {
+    return 1;
+  }
 }

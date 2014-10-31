@@ -200,8 +200,7 @@ public class PantsUtil {
     );
     commandLine.setExePath(pantsExecutablePath);
     final String workingDir = pantsExecutable.getParent().getPath();
-    commandLine.setWorkDirectory(workingDir);
-    return commandLine;
+    return commandLine.withWorkDirectory(workingDir);
   }
 
   public static List<String> listAllTargets(@NotNull String projectPath) throws PantsException {
@@ -220,7 +219,7 @@ public class PantsUtil {
 
       commandLine.addParameter(relativePath + "::");
 
-      String commandOutput = ScriptRunnerUtil.getProcessOutput(commandLine);
+      final String commandOutput = ScriptRunnerUtil.getProcessOutput(commandLine);
       if (commandOutput.contains("no such option")) {
         throw new PantsException("Pants doesn't have necessary APIs. Please upgrade you pants!");
       }

@@ -60,7 +60,7 @@
   </change-notes>
   <version>1.0.2</version>
   <vendor>Twitter, Inc.</vendor>
-  <idea-version since-build="135.1200" until-build="136.1"/>
+  <idea-version since-build="139.1" until-build="139.*"/>
 
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
