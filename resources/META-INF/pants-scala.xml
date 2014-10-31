@@ -1,3 +1,6 @@
+<!-- Copyright 2014 Pants project contributors (see CONTRIBUTORS.md). -->
+<!-- Licensed under the Apache License, Version 2.0 (see LICENSE). -->
+
 <idea-plugin version="2">
     <extensions defaultExtensionNs="com.intellij.plugins.pants">
       <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaFacetResolver"/>
