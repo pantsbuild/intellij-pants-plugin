@@ -90,7 +90,6 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
         mainPlugin.getPluginId().getIdString() + " needs it.",
         plugin
       );
-      checkDependentPlugins(plugin);
     }
   }
 

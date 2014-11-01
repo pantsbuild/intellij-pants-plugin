@@ -4,13 +4,13 @@
 package com.twitter.intellij.pants.psi.reference;
 
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiReference;
 import com.intellij.util.PathUtil;
 import com.jetbrains.python.psi.PyStringLiteralExpression;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.generate.tostring.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,13 +39,12 @@ public class PantsTargetReferenceSet {
       return Collections.emptyList();
     }
 
-    final String[] pathAndTarget = expression.getStringValue().split(":");
-    String path = PathUtil.toSystemIndependentName(pathAndTarget[0]);
-    final String target = pathAndTarget.length > 1 ? pathAndTarget[1] : null;
+    final String stringValue = expression.getStringValue();
+    int index = stringValue.indexOf(':');
+    String path = index >= 0 ? PathUtil.toSystemIndependentName(stringValue.substring(0, index)) : stringValue;
+    final String target = index >= 0 ? stringValue.substring(index) : null;
 
     final List<PsiReference> result = new ArrayList<PsiReference>();
-
-    assert path != null;
     if (!StringUtil.isEmpty(path) && !path.endsWith("/")) {
       path = path + "/";
     }
@@ -69,7 +68,18 @@ public class PantsTargetReferenceSet {
       prevIndex = i + 1;
     }
 
-    // todo: add target name ref
+    if (StringUtil.isNotEmpty(target)) {
+      final TextRange range = TextRange.create(
+        expression.valueOffsetToTextOffset(path.length() + 1),
+        expression.valueOffsetToTextOffset(stringValue.length())
+      );
+      result.add(
+        new PantsTargetReference(
+          myStringLiteralExpression,
+          range, target, path
+        )
+      );
+    }
 
     return result;
   }

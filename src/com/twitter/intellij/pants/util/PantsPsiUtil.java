@@ -15,10 +15,13 @@ import static com.intellij.openapi.util.text.StringUtil.unquoteString;
 
 public class PantsPsiUtil {
 
-  public static List<Target> findTargets(@NotNull PsiFile file) {
+  public static List<Target> findTargets(@Nullable PsiFile file) {
+    if (file == null) {
+      return Collections.emptyList();
+    }
     final List<Target> targets = new ArrayList<Target>();
     for (PyExpressionStatement statement : PsiTreeUtil.findChildrenOfType(file, PyExpressionStatement.class)) {
-      Target target = findTarget(statement);
+      final Target target = findTarget(statement);
       if (target != null) {
         targets.add(target);
       }
@@ -28,14 +31,13 @@ public class PantsPsiUtil {
 
   @Nullable
   public static Target findTarget(@NotNull PyExpressionStatement statement) {
-    for (PyCallExpression expression : PsiTreeUtil.findChildrenOfType(statement, PyCallExpression.class)) {
-      for (PyArgumentList args : PsiTreeUtil.findChildrenOfType(expression, PyArgumentList.class)) {
-        final PyKeywordArgument arg = args.getKeywordArgument("name");
-        final PyExpression valueExpression = arg != null ? arg.getValueExpression() : null;
-        if (valueExpression != null) {
-          return new Target(unquoteString(valueExpression.getText()), expression.getFirstChild().getText());
-        }
-      }
+    final PyCallExpression expression = PsiTreeUtil.findChildOfType(statement, PyCallExpression.class);
+    final PyExpression callee = expression != null ? expression.getCallee() : null;
+    final PyArgumentList argumentList = expression != null ? expression.getArgumentList() : null;
+    final PyKeywordArgument nameArgument = argumentList != null ? argumentList.getKeywordArgument("name") : null;
+    final PyExpression valueExpression = nameArgument != null ? nameArgument.getValueExpression() : null;
+    if (valueExpression != null && callee != null) {
+      return new Target(unquoteString(valueExpression.getText()), callee.getText(), expression);
     }
     return null;
   }
@@ -43,7 +45,8 @@ public class PantsPsiUtil {
   @NotNull
   public static Map<String, PyReferenceExpression> findTargetDefinitions(@NotNull PyFile pyFile) {
     final PyFunction buildFileAliases = pyFile.findTopLevelFunction("build_file_aliases");
-    final PyStatement[] statements = buildFileAliases != null ? buildFileAliases.getStatementList().getStatements() : PyStatement.EMPTY_ARRAY;
+    final PyStatement[] statements =
+      buildFileAliases != null ? buildFileAliases.getStatementList().getStatements() : PyStatement.EMPTY_ARRAY;
     final Map<String, PyReferenceExpression> result = new HashMap<String, PyReferenceExpression>();
     for (PyStatement statement : statements) {
       if (!(statement instanceof PyReturnStatement)) {

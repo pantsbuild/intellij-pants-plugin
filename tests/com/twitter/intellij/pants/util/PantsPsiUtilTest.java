@@ -3,13 +3,17 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyReferenceExpression;
 import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -19,11 +23,22 @@ public class PantsPsiUtilTest extends PantsCodeInsightFixtureTestCase {
     return "/util";
   }
 
-  public void doFindTargetsTest(List<Target> actualTargets) {
+  public void doFindTargetsTest(List<Pair<String, String>> actualTargets) {
     final VirtualFile buildFile = myFixture.copyFileToProject(getTestName(true) + ".py", "BUILD");
     myFixture.configureFromExistingVirtualFile(buildFile);
     final List<Target> targets = PantsPsiUtil.findTargets(myFixture.getFile());
-    assertOrderedEquals(actualTargets, targets);
+    assertOrderedEquals(
+      actualTargets,
+      ContainerUtil.map(
+        targets,
+        new Function<Target, Pair<String, String>>() {
+          @Override
+          public Pair<String, String> fun(Target target) {
+            return Pair.create(target.getName(), target.getType());
+          }
+        }
+      )
+    );
   }
 
   public void testSourceTypeForTargetType() {
@@ -59,17 +74,18 @@ public class PantsPsiUtilTest extends PantsCodeInsightFixtureTestCase {
   }
 
   public void testFindTargets() {
-    final List<Target> testTargets = Arrays.asList(new Target("main", "jvm_app"), new Target("main-bin", "jvm_binary"));
+    final List<Pair<String, String>> testTargets =
+      Arrays.asList(Pair.create("main", "jvm_app"), Pair.create("main-bin", "jvm_binary"));
     doFindTargetsTest(testTargets);
   }
 
   public void testWeirdBuildFile() {
-    final List<Target> testTargets = Arrays.asList();
-    doFindTargetsTest(testTargets);
+    doFindTargetsTest(Collections.<Pair<String,String>>emptyList());
   }
 
   public void testTrickyBuildFile() {
-    final List<Target> testTargets = Arrays.asList(new Target("main", "jvm_app"), new Target("main-bin", "jvm_binary"));
+    final List<Pair<String, String>> testTargets =
+      Arrays.asList(Pair.create("main", "jvm_app"), Pair.create("main-bin", "jvm_binary"));
     doFindTargetsTest(testTargets);
   }
 

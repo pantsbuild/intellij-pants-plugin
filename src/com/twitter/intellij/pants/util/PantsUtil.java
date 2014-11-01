@@ -50,6 +50,24 @@ public class PantsUtil {
   private static final String ANTLR_4_EXT = "g4";
   private static final String PROTOBUF_EXT = "proto";
 
+  @Nullable
+  public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
+    if (vFile == null) {
+      return null;
+    } else if (vFile.isDirectory()) {
+      return ContainerUtil.find(
+        vFile.getChildren(),
+        new Condition<VirtualFile>() {
+          @Override
+          public boolean value(VirtualFile file) {
+            return isBUILDFileName(file.getName());
+          }
+        }
+      );
+    }
+    return isBUILDFileName(vFile.getName()) ? vFile : null;
+  }
+
   public static boolean isBUILDFilePath(@NotNull String path) {
     return isBUILDFileName(PathUtil.getFileName(path));
   }

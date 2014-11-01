@@ -8,6 +8,28 @@ public class PantsCompletionTest extends PantsCompletionTestBase {
     super("completion");
   }
 
+  public void testTargetName1() throws Throwable {
+    myFixture.addFileToProject("foo/BUILD", "jar_library(name='bar')\njar_library(name='baz')");
+    configure();
+    doTestVariants();
+  }
+
+  public void testTargetName2() throws Throwable {
+    myFixture.addFileToProject("foo/BUILD", "jar_library(name='bar')\njar_library(name='baz')");
+    configure();
+    doTestVariants();
+  }
+
+  public void testTargetName3() throws Throwable {
+    configure("foo");
+    doTestVariants();
+  }
+
+  public void testTargetName4() throws Throwable {
+    configure("foo");
+    doTestVariants();
+  }
+
   public void testTargets() throws Throwable {
     configure();
     doTestVariants();
