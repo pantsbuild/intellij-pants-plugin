@@ -11,13 +11,13 @@ public class PantsTestUtils {
   /**
    * The root of the test data directory
    */
-  public static final String BASE_TEST_DATA_PATH = findTestDataPath();
+  public static final String BASE_TEST_DATA_PATH = findTestPath("testData").getAbsolutePath();
 
-  private static String findTestDataPath() {
-    File f = new File("testData");
+  public static File findTestPath(String folderName) {
+    final File f = new File(folderName);
     if (f.exists()) {
-      return f.getAbsolutePath();
+      return f.getAbsoluteFile();
     }
-    return PathManager.getHomePath() + "/plugins/thrift/testData";
+    return new File(PathManager.getHomePath() + "/plugins/pants/" + folderName);
   }
 }

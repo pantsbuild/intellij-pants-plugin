@@ -8,6 +8,7 @@ import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
@@ -546,6 +547,11 @@ public class PantsResolver {
         parse(output, processOutput.getStderrLines());
       }
       else {
+        if (ApplicationManager.getApplication().isUnitTestMode()) {
+          System.err.println("Pants execution failure!");
+          System.err.println(processOutput.getStdout());
+          System.err.println(processOutput.getStderr());
+        }
         throw new ExternalSystemException(
           "Failed to update the project!\n\n" + processOutput.getStdout() + "\n\n" + processOutput.getStderr()
         );

@@ -1,10 +1,10 @@
-.idea/scopes/
 .idea/dictionaries/
-.idea/inspectionProfiles/
 .idea/highlighting.xml
-.idea/workspace.xml
-.idea/scala_compiler.xml
+.idea/inspectionProfiles/
+.idea/scopes/
+.idea/shelf/
 .idea/thriftCompiler.xml
+.idea/workspace.xml
 .DS_Store
 *.class
 *~
