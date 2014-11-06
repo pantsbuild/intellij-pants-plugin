@@ -97,11 +97,11 @@ For contributing to the project, continue reading below.
 
 ### IntelliJ project setup:
 
-* Download and open IntelliJ IDEA 13 Community Edition and install Python Community Edition plugin
-* Use IntelliJ IDEA 13 Community Edition as IDEA IC SDK(Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK)
-* Add all jars from `~/Library/Application Support/IdeaIC13/python/lib/` to the SDK's classpath
-* Add `~/Library/Application Support/IdeaIC13/Scala/lib/scala-plugin.jar` to the SDK's classpath
-* A Scala facet is already configured but `SCALA_LIB_HOME` path variable should be configured in Preferences -> Path Variables
+* Download and open IntelliJ IDEA 14 Community Edition and install Python Community Edition plugin
+* Use IntelliJ IDEA 14 Community Edition as IDEA IC SDK(Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK)
+* Install Python, Scala and Gradle Plugins from
+* Add all jars from `~/Library/Application Support/IdeaIC14/python/lib/` to the SDK's classpath
+* Add `/Applications/IntelliJ IDEA 14 CE.app/Contents/plugins/gradle/lib/gradle.jar` to the SDK's classpath
 * Make sure that your project is set to configure bytecode compatible with 1.6  Preferences -> Compiler -> Java Compiler -> Project bytecode version
 * Run tests to verify your installation
 
