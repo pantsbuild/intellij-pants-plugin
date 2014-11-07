@@ -19,5 +19,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" scope="PROVIDED" name="scala-sdk-2.10.3" level="application" />
   </component>
 </module>

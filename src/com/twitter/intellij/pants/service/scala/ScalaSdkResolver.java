@@ -18,14 +18,12 @@ import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsScalaUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.gradle.model.data.ScalaCompileOptionsData;
-import org.jetbrains.plugins.gradle.model.data.ScalaModelData;
 
 import java.io.File;
 import java.util.*;
 
-public class ScalaFacetResolver implements PantsResolverExtension {
-  private static final Logger LOG = Logger.getInstance(ScalaFacetResolver.class);
+public class ScalaSdkResolver implements PantsResolverExtension {
+  private static final Logger LOG = Logger.getInstance(ScalaSdkResolver.class);
 
   @Override
   public void resolve(
@@ -108,8 +106,7 @@ public class ScalaFacetResolver implements PantsResolverExtension {
     }
     if (!files.isEmpty()) {
       // todo(fkorotkov): provide Scala info from the goal
-      scalaModelData.setScalaCompileOptions(new ScalaCompileOptionsData());
-      scalaModelData.setScalaClasspath(files);
+      scalaModelData.setScalaCompilerJars(files);
       moduleDataNode.createChild(ScalaModelData.KEY, scalaModelData);
     }
   }

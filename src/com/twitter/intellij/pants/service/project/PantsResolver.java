@@ -428,7 +428,7 @@ public class PantsResolver {
 
   private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId, boolean exported) {
     if (StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
-      // skip Scala. Will be added by ScalaPantsDataService
+      // skip Scala. Will be added by PantsScalaDataService
       return;
     }
     final List<String> libraryJars = projectInfo.getLibraries(libraryId);

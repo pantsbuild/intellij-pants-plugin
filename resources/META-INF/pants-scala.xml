@@ -3,6 +3,9 @@
 
 <idea-plugin version="2">
     <extensions defaultExtensionNs="com.intellij.plugins.pants">
-      <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaFacetResolver"/>
+      <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaSdkResolver"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+      <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService"/>
     </extensions>
 </idea-plugin>
