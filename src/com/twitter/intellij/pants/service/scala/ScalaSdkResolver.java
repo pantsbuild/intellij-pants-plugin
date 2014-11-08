@@ -36,6 +36,10 @@ public class ScalaSdkResolver implements PantsResolverExtension {
       }
     }
 
+    if (scalaJars.isEmpty()) {
+      return;
+    }
+
     // add some additional
     for (String scalaLibNameToAdd : PantsScalaUtil.getScalaLibNamesToAdd()) {
       for (String jarPath : scalaJars) {
@@ -73,9 +77,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
       libraryData.addPath(LibraryPathType.BINARY, jarPath);
     }
 
-    if (!scalaJars.isEmpty()) {
-      projectDataNode.createChild(ProjectKeys.LIBRARY, libraryData);
-    }
+    projectDataNode.createChild(ProjectKeys.LIBRARY, libraryData);
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
