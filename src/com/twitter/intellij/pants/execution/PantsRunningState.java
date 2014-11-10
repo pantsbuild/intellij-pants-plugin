@@ -47,7 +47,6 @@ public class PantsRunningState extends CommandLineState {
     }
 
     commandLine.setExePath(exePath);
-    commandLine.setWorkDirectory(runnerParameters.getWorkingDir());
     commandLine.setPassParentEnvironment(true);
 
     final String cmdArguments = StringUtil.nullize(runnerParameters.getArguments());
@@ -56,6 +55,6 @@ public class PantsRunningState extends CommandLineState {
       commandLine.addParameter(argument);
     }
 
-    return commandLine;
+    return commandLine.withWorkDirectory(runnerParameters.getWorkingDir());
   }
 }
