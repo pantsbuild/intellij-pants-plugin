@@ -72,7 +72,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return getCompilerTester().findClassFile(className, getModule(moduleName));
   }
 
-  protected void doTest(String projectFolderPathToImport) {
+  protected void doImport(String projectFolderPathToImport) {
     myRelativeProjectPath = projectFolderPathToImport;
     importProject();
   }

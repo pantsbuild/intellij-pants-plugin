@@ -20,7 +20,7 @@ public class OSSPantsExamplesIntegrationTest extends PantsIntegrationTestCase {
   }
 
   public void testHello() throws Throwable {
-    doTest("examples/src/java/com/pants/examples/hello");
+    doImport("examples/src/java/com/pants/examples/hello");
 
     assertModules(
       "examples_src_resources_com_pants_example_hello_hello",
