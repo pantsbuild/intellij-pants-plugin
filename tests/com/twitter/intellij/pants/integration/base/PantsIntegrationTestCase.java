@@ -1,7 +1,7 @@
 // Copyright 2014 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.integration;
+package com.twitter.intellij.pants.integration.base;
 
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.openapi.compiler.CompileScope;
