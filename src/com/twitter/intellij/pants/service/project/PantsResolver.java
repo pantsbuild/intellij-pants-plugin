@@ -86,11 +86,9 @@ public class PantsResolver {
 
   public void addInfo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (projectInfo == null) return;
+    projectInfo.fixCyclicDependencies();
 
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
-
-    //Todo (tdesai) Remove after https://github.com/pantsbuild/pants/issues/670
-    final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets = combineScalaJavaTargets();
 
     // create all modules. no libs, dependencies and source roots
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
@@ -104,19 +102,15 @@ public class PantsResolver {
         LOG.info("Skipping " + targetName + " because it is empty");
         continue;
       }
-      if (projectInfo.combinedTargets.containsKey(targetName)) {
-        LOG.info("Skipping " + targetName + " because it is combined with " + projectInfo.combinedTargets.get(targetName));
-        continue;
-      }
       final DataNode<ModuleData> moduleData = createModuleData(
-        projectInfoDataNode, targetName, targetInfo.getRoots(), PantsUtil.getSourceTypeForTargetType(targetInfo.getTargetType())
+        projectInfoDataNode, targetName, targetInfo.getRoots(), targetInfo.getSourcesType()
       );
       modules.put(targetName, moduleData);
     }
 
     // IntelliJ doesn't support when several modules have the same source root
-    final Map<SourceRoot, DataNode<ModuleData>> modulesForRootsAndInfo =
-      handleCommonRoots(projectInfoDataNode, modules, sourceRoot2Targets);
+
+    final Map<SourceRoot, DataNode<ModuleData>> modulesForRootsAndInfo = handleCommonRoots(projectInfoDataNode, modules);
 
     // source roots
     for (String mainTarget : projectInfo.getTargets().keySet()) {
@@ -190,69 +184,6 @@ public class PantsResolver {
     }
   }
 
-  /**
-   * Finds common roots targets
-   *
-   * @return Map of common source root to list of targets containing the source root.
-   */
-
-  private Map<SourceRoot, List<Pair<String, TargetInfo>>> combineScalaJavaTargets() {
-    final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets =
-      new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
-    Map<String, String> combinedScalaJavaTargets = new HashMap<String, String>();
-    for (String targetName : projectInfo.getTargets().keySet()) {
-      final TargetInfo targetInfo = projectInfo.getTargets().get(targetName);
-      int numOfRoots = targetInfo.getRoots().size();
-      for (int i = 0; i < numOfRoots; ++i) {
-        SourceRoot sourceRoot = targetInfo.getRoots().get(i);
-        if (!sourceRoot2Targets.containsKey(sourceRoot)) {
-          sourceRoot2Targets.put(sourceRoot, new ArrayList<Pair<String, TargetInfo>>());
-        }
-        List<Pair<String, TargetInfo>> targetInfos = sourceRoot2Targets.get(sourceRoot);
-        if (targetInfos.size() == 1 && ((targetInfo.is_java() && targetInfos.get(0).getSecond().is_scala()) ||
-                                        (targetInfo.is_scala() && targetInfos.get(0).getSecond().is_java()))) {
-          //Todo (tdesai) Remove after https://github.com/pantsbuild/pants/issues/670
-          //Common source roots between java scala sources.
-          if (targetInfo.is_scala()) {
-            addJavaModuleToScala(targetInfo, targetInfos.get(0).getSecond());
-            combinedScalaJavaTargets.put(targetInfos.get(0).getFirst(), targetName);
-          }
-          else {
-            addJavaModuleToScala(targetInfos.get(0).getSecond(), targetInfo);
-            combinedScalaJavaTargets.put(targetName, targetInfos.get(0).getFirst());
-          }
-        }
-        else {
-          if (!targetInfo.isCodeGen() && targetInfos.size() > 1) {
-            //consider switching this to error
-            LOG.warn(
-              "Source Root " + sourceRoot.getSourceRootRegardingSourceType(PantsUtil.getSourceTypeForTargetType(targetInfo.getTargetType()))
-              + " is common between targets " + targetName +
-              " and " + targetInfos
-            );
-          }
-          targetInfos.add(Pair.create(targetName, targetInfo));
-        }
-      }
-    }
-    projectInfo.setCombinedScalaJavaTargets(combinedScalaJavaTargets);
-    return sourceRoot2Targets;
-  }
-
-  private void addJavaModuleToScala(TargetInfo scalaTarget, TargetInfo javaTarget) {
-    for (SourceRoot sourceRoot : javaTarget.getRoots()) {
-      scalaTarget.getRoots().add(sourceRoot);
-    }
-    //Add libs and targets from java to scala
-    for (String target : javaTarget.getTargets()) {
-      scalaTarget.getTargets().add(target);
-    }
-    for (String libraries : javaTarget.getLibraries()) {
-      scalaTarget.getLibraries().add(libraries);
-    }
-  }
-
-
   private void addSourceRoot(@NotNull ContentRootData contentRoot, @NotNull SourceRoot root, @Nullable String targetType) {
     try {
       final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetType);
@@ -297,14 +228,9 @@ public class PantsResolver {
   }
 
   private void addModuleDependency(DataNode<ModuleData> moduleDataNode, DataNode<ModuleData> submoduleDataNode, boolean exported) {
-
     final List<ModuleDependencyData> subModuleDeps = findChildren(submoduleDataNode, ProjectKeys.MODULE_DEPENDENCY);
     for (ModuleDependencyData dep : subModuleDeps) {
       if (dep.getTarget() == moduleDataNode.getData()) {
-        LOG.debug(
-          "Found cyclic dependency between " + submoduleDataNode.getData().getInternalName() +
-          " and " + moduleDataNode.getData().getInternalName()
-        );
         return;
       }
     }
@@ -318,10 +244,9 @@ public class PantsResolver {
 
   private Map<SourceRoot, DataNode<ModuleData>> handleCommonRoots(
     DataNode<ProjectData> projectInfoDataNode,
-    Map<String, DataNode<ModuleData>> modules,
-    final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets
+    Map<String, DataNode<ModuleData>> modules
   ) {
-
+    final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets = projectInfo.getSourceRoot2TargetMapping();
     final Map<SourceRoot, DataNode<ModuleData>> result = new HashMap<SourceRoot, DataNode<ModuleData>>();
 
     for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
@@ -378,7 +303,7 @@ public class PantsResolver {
                 }
               }
             );
-          commonInfo.setRoots(filteredCommonRoots);
+          commonInfo.setRoots(new HashSet<SourceRoot>(filteredCommonRoots));
           final PantsSourceType commonSourceRootType = PantsUtil.getSourceTypeForTargetType(commonInfo.getTargetType());
 
           final String commonPath = PantsUtil.findCommonRoot(
@@ -453,10 +378,11 @@ public class PantsResolver {
     moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
   }
 
+  @NotNull
   private DataNode<ModuleData> createModuleData(
     DataNode<ProjectData> projectInfoDataNode,
     String targetName,
-    List<SourceRoot> roots,
+    Collection<SourceRoot> roots,
     @Nullable PantsSourceType rootType
   ) {
     final int index = targetName.lastIndexOf(':');
@@ -464,11 +390,12 @@ public class PantsResolver {
     return createModuleData(projectInfoDataNode, targetName, path, roots, rootType);
   }
 
+  @NotNull
   private DataNode<ModuleData> createModuleData(
     DataNode<ProjectData> projectInfoDataNode,
     String targetName,
     @NotNull String path,
-    List<SourceRoot> roots,
+    Collection<SourceRoot> roots,
     @Nullable final PantsSourceType rootType
   ) {
     final String contentRootPath = StringUtil.notNullize(

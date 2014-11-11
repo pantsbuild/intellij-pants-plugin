@@ -4,13 +4,14 @@
 package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Factory;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ProjectInfo {
   private final Logger LOG = Logger.getInstance(getClass());
@@ -35,8 +36,6 @@ public class ProjectInfo {
     this.targets = targets;
   }
 
-  public Map<String, String> combinedTargets = new HashMap<String, String>();
-
   public List<String> getLibraries(@NotNull String libraryId) {
     if (libraries.containsKey(libraryId) && libraries.get(libraryId).size() > 0) {
       return libraries.get(libraryId);
@@ -60,6 +59,81 @@ public class ProjectInfo {
     return Collections.emptyList();
   }
 
+  public TargetInfo getTarget(String targetName) {
+    return targets.get(targetName);
+  }
+
+  public void addTarget(String targetName, TargetInfo info) {
+    targets.put(targetName, info);
+  }
+
+  public void removeTarget(String targetName) {
+    targets.remove(targetName);
+  }
+
+  public void replaceDependency(String targetName, String newTargetName) {
+    for (TargetInfo targetInfo : targets.values()) {
+      targetInfo.replaceDependency(targetName, newTargetName);
+    }
+  }
+
+  public void fixCyclicDependencies() {
+    final Set<Map.Entry<String, TargetInfo>> originalEntries =
+      new HashSet<Map.Entry<String, TargetInfo>>(getTargets().entrySet());
+    for (Map.Entry<String, TargetInfo> nameAndInfo : originalEntries) {
+      final String targetName = nameAndInfo.getKey();
+      final TargetInfo targetInfo = nameAndInfo.getValue();
+      if (!getTargets().containsKey(targetName)) {
+        // already removed
+        continue;
+      }
+      for (String dependencyTargetName : targetInfo.getTargets()) {
+        TargetInfo dependencyTargetInfo = getTarget(dependencyTargetName);
+        if (dependencyTargetInfo != null && dependencyTargetInfo.dependOn(targetName)) {
+          LOG.info(String.format("Found cyclic dependency between %s and %s", targetName, dependencyTargetName));
+
+          final String combinedTargetName = combinedTargetsName(targetName, dependencyTargetName);
+          final TargetInfo combinedInfo = targetInfo.union(dependencyTargetInfo);
+          combinedInfo.removeDependency(targetName);
+          combinedInfo.removeDependency(dependencyTargetName);
+          addTarget(combinedTargetName, combinedInfo);
+
+          replaceDependency(targetName, combinedTargetName);
+          removeTarget(targetName);
+
+          replaceDependency(dependencyTargetName, combinedTargetName);
+          removeTarget(dependencyTargetName);
+        }
+      }
+    }
+  }
+
+  @NotNull
+  private String combinedTargetsName(String... targetNames) {
+    assert targetNames.length > 0;
+    String commonPrefix = targetNames[0];
+    for (String name : targetNames) {
+      commonPrefix = StringUtil.commonPrefix(commonPrefix, name);
+    }
+    final String finalCommonPrefix = commonPrefix;
+    return
+      commonPrefix +
+      StringUtil.join(
+        ContainerUtil.sorted(
+          ContainerUtil.map(
+            targetNames,
+            new Function<String, String>() {
+              @Override
+              public String fun(String targetName) {
+                return targetName.substring(finalCommonPrefix.length());
+              }
+            }
+          )
+        ),
+        "_and_"
+      );
+  }
+
   @Override
   public String toString() {
     return "ProjectInfo{" +
@@ -68,14 +142,21 @@ public class ProjectInfo {
            '}';
   }
 
-  public TargetInfo getTarget(String targetName) {
-    if (combinedTargets.containsKey(targetName)) {
-      return this.targets.get(combinedTargets.get(targetName));
+  public Map<SourceRoot, List<Pair<String, TargetInfo>>> getSourceRoot2TargetMapping() {
+    final Factory<List<Pair<String, TargetInfo>>> factory = new Factory<List<Pair<String, TargetInfo>>>() {
+      @Override
+      public List<Pair<String, TargetInfo>> create() {
+        return new ArrayList<Pair<String, TargetInfo>>();
+      }
+    };
+    final HashMap<SourceRoot, List<Pair<String, TargetInfo>>> result = new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
+    for (Map.Entry<String, TargetInfo> entry : getTargets().entrySet()) {
+      final String targetName = entry.getKey();
+      final TargetInfo targetInfo = entry.getValue();
+      for (SourceRoot sourceRoot : targetInfo.getRoots()) {
+        ContainerUtil.getOrCreate(result, sourceRoot, factory).add(Pair.create(targetName, targetInfo));
+      }
     }
-    return this.targets.get(targetName);
-  }
-
-  public void setCombinedScalaJavaTargets(Map<String, String> combinedTargets) {
-    this.combinedTargets = combinedTargets;
+    return result;
   }
 }

@@ -174,13 +174,13 @@ abstract class PantsResolverTestBase extends TestCase {
     );
   }
 
-  public void assertModulesCreated(final Set<String> expectedModules) {
+  public void assertModulesCreated(final String... expectedModules) {
     final Collection<DataNode<ModuleData>> moduleNodes = ExternalSystemApiUtil.findAll(getProjectNode(), ProjectKeys.MODULE);
-    final Set<String> actualModules = new HashSet<String>();
+    final List<String> actualModules = new ArrayList<String>();
     for (DataNode<ModuleData> moduleDataDataNode : moduleNodes) {
       actualModules.add(moduleDataDataNode.getData().getExternalName());
     }
-    assertEquals(expectedModules, actualModules);
+    assertEquals(Arrays.asList(expectedModules), actualModules);
   }
 
   private static interface Builder<T> {
@@ -188,9 +188,9 @@ abstract class PantsResolverTestBase extends TestCase {
   }
 
   public static final class TargetInfoBuilder implements Builder<TargetInfo> {
-    private List<String> libraries = new ArrayList<String>();
-    private List<String> targets = new ArrayList<String>();
-    private List<SourceRoot> roots = new ArrayList<SourceRoot>();
+    private Set<String> libraries = new HashSet<String>();
+    private Set<String> targets = new HashSet<String>();
+    private Set<SourceRoot> roots = new HashSet<SourceRoot>();
     private String target_type = PantsSourceType.SOURCE.toString();
     private Boolean is_code_gen = false;
 
@@ -207,6 +207,11 @@ abstract class PantsResolverTestBase extends TestCase {
 
     public TargetInfoBuilder withLibrary(@Nls String libraryId) {
       libraries.add(libraryId);
+      return this;
+    }
+
+    public TargetInfoBuilder withDependency(@Nls String targetName) {
+      targets.add(targetName);
       return this;
     }
   }

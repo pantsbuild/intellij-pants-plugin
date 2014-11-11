@@ -5,22 +5,21 @@ package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.util.PantsSourceType;
 import com.twitter.intellij.pants.util.PantsTargetType;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class TargetInfo {
   public TargetInfo() {
   }
 
   public TargetInfo(
-    List<String> libraries,
-    List<String> targets,
-    List<SourceRoot> roots,
+    Set<String> libraries,
+    Set<String> targets,
+    Set<SourceRoot> roots,
     String target_type,
     Boolean is_code_gen
   ) {
@@ -34,15 +33,15 @@ public class TargetInfo {
   /**
    * List of libraries. Just names.
    */
-  protected List<String> libraries;
+  protected Set<String> libraries;
   /**
    * List of dependencies.
    */
-  protected List<String> targets;
+  protected Set<String> targets;
   /**
    * List of source roots.
    */
-  protected List<SourceRoot> roots;
+  protected Set<SourceRoot> roots;
   /**
    * Target type.
    */
@@ -57,27 +56,27 @@ public class TargetInfo {
 
   private Boolean hasScalaLib;
 
-  public List<String> getLibraries() {
+  public Set<String> getLibraries() {
     return libraries;
   }
 
-  public void setLibraries(List<String> libraries) {
+  public void setLibraries(Set<String> libraries) {
     this.libraries = libraries;
   }
 
-  public List<String> getTargets() {
+  public Set<String> getTargets() {
     return targets;
   }
 
-  public void setTargets(List<String> targets) {
+  public void setTargets(Set<String> targets) {
     this.targets = targets;
   }
 
-  public List<SourceRoot> getRoots() {
+  public Set<SourceRoot> getRoots() {
     return roots;
   }
 
-  public void setRoots(List<SourceRoot> roots) {
+  public void setRoots(Set<SourceRoot> roots) {
     this.roots = roots;
   }
 
@@ -97,11 +96,19 @@ public class TargetInfo {
     final Collection<String> libs = ContainerUtil.intersection(getLibraries(), other.getLibraries());
     final Collection<String> targets = ContainerUtil.intersection(getTargets(), other.getTargets());
     final Collection<SourceRoot> roots = ContainerUtil.intersection(getRoots(), other.getRoots());
-    final Boolean isCodeGen = other.is_code_gen;
     return new TargetInfo(
-      new ArrayList<String>(libs),
-      new ArrayList<String>(targets),
-      new ArrayList<SourceRoot>(roots),
+      new HashSet<String>(libs),
+      new HashSet<String>(targets),
+      new HashSet<SourceRoot>(roots),
+      getTargetType(),
+      is_code_gen
+    );
+  }
+  public TargetInfo union(@NotNull TargetInfo other) {
+    return new TargetInfo(
+      ContainerUtil.union(getLibraries(), other.getLibraries()),
+      ContainerUtil.union(getTargets(), other.getTargets()),
+      ContainerUtil.union(getRoots(), other.getRoots()),
       getTargetType(),
       is_code_gen
     );
@@ -151,5 +158,27 @@ public class TargetInfo {
       }
     }
     return false;
+  }
+
+  public boolean dependOn(@NotNull String targetName) {
+    return targets.contains(targetName);
+  }
+
+  public PantsSourceType getSourcesType() {
+    return PantsUtil.getSourceTypeForTargetType(getTargetType());
+  }
+
+  public void addDependency(String targetName) {
+    getTargets().add(targetName);
+  }
+
+  public boolean removeDependency(String targetName) {
+    return getTargets().remove(targetName);
+  }
+
+  public void replaceDependency(String targetName, String newTargetName) {
+    if (removeDependency(targetName)) {
+      addDependency(newTargetName);
+    }
   }
 }

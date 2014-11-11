@@ -87,25 +87,26 @@ public class PantsResolverTest extends PantsResolverTestBase {
     assertSourceRoot("b_scala", "src/com/foo/bar");
   }
 
-  public void testJavaScalaCombined() {
+  public void testJavaScalaCyclic() {
     addInfo("a:java").
       withRoot("src/java/foo/bar", "com.foo.bar").
       withRoot("src/java/foo/baz", "com.foo.baz").
-      withLibrary("com.twitter.foo");
-    addInfo("b:scala").
-      withRoot("src/java/foo/bar", "com.foo.bar").
-      withRoot("src/java/foo/baz", "com.foo.baz").
+      withDependency("a:scala").
+      withLibrary("com.twitter.baz");
+    addInfo("a:scala").
+      withRoot("src/scala/foo/bar", "com.foo.bar").
       withRoot("src/scala/foo/baz", "com.foo.baz").
-      withLibrary("com.twitter.baz").
-      withLibrary("org.scala-lang:scala-library");
+      withDependency("a:java").
+      withLibrary("com.twitter.bar");
 
-    assertSourceRoot("b_scala", "src/java/foo/bar");
-    assertSourceRoot("b_scala", "src/java/foo/baz");
-    assertSourceRoot("b_scala", "src/scala/foo/baz");
-    assertLibrary("b_scala", "com.twitter.foo");
-    assertLibrary("b_scala", "com.twitter.baz");
-    Set<String> modules = new HashSet<String>();
-    modules.add("b_scala");
-    assertModulesCreated(modules);
+    assertModulesCreated("a_java_and_scala");
+
+    assertLibrary("a_java_and_scala", "com.twitter.baz");
+    assertLibrary("a_java_and_scala", "com.twitter.bar");
+
+    assertSourceRoot("a_java_and_scala", "src/java/foo/bar");
+    assertSourceRoot("a_java_and_scala", "src/java/foo/baz");
+    assertSourceRoot("a_java_and_scala", "src/scala/foo/bar");
+    assertSourceRoot("a_java_and_scala", "src/scala/foo/baz");
   }
 }
