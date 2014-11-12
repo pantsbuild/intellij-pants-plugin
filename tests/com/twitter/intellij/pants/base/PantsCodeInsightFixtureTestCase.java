@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.base;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
@@ -43,17 +44,16 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     super.setUp();
 
     final IdeaPluginDescriptor pyPlugin = PluginManager.getPlugin(PluginId.getId(pyPluginId));
-    assertTrue(
+    assertNotNull(
       "Python Community Edition plugin should be in classpath for tests\n" +
       "You need to include jars from ~/Library/Application Support/IdeaIC14/python/lib/",
-      pyPlugin != null
+      pyPlugin
     );
 
     checkDependentPlugins(pyPlugin);
-    assertTrue(
-      "Python Community Edition plugin should be enabled",
-      pyPlugin.isEnabled()
-    );
+    if (!pyPlugin.isEnabled()) {
+      PluginManagerCore.enablePlugin(pyPluginId);
+    }
 
     final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
     assertNotNull("Folder with pex files should be configured", folderWithPex);

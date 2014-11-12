@@ -15,6 +15,7 @@ import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -132,6 +133,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
     finally {
       super.tearDown();
+      // double check.
+      if (myProject != null && !myProject.isDisposed()) {
+        Disposer.dispose(myProject);
+      }
     }
   }
 
