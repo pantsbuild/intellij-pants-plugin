@@ -41,11 +41,13 @@ public class ScalaSdkResolver implements PantsResolverExtension {
     }
 
     // add some additional
+    final Set<String> addtionalScalaJars = new HashSet<String>();
     for (String scalaLibNameToAdd : PantsScalaUtil.getScalaLibNamesToAdd()) {
       for (String jarPath : scalaJars) {
-        findAndAddScalaLib(scalaJars, jarPath, scalaLibNameToAdd);
+        findAndAddScalaLib(addtionalScalaJars, jarPath, scalaLibNameToAdd);
       }
     }
+    scalaJars.addAll(addtionalScalaJars);
 
     final List<String> libraryNames = ContainerUtil.mapNotNull(
       scalaJars,

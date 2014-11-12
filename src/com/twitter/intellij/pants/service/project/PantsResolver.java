@@ -187,10 +187,11 @@ public class PantsResolver {
   private void addSourceRoot(@NotNull ContentRootData contentRoot, @NotNull SourceRoot root, @Nullable String targetType) {
     try {
       final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetType);
+      final String packagePrefix = PantsUtil.isResource(rootType) ? null : root.getPackagePrefix();
       contentRoot.storePath(
         rootType.toExternalSystemSourceType(),
         root.getSourceRootRegardingSourceType(rootType),
-        StringUtil.nullize(root.getPackagePrefix())
+        StringUtil.nullize(packagePrefix)
       );
     }
     catch (IllegalArgumentException e) {

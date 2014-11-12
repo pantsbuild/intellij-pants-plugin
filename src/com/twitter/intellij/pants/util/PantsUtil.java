@@ -301,6 +301,10 @@ public class PantsUtil {
     }
   }
 
+  public static boolean isResource(PantsSourceType sourceType) {
+    return sourceType == PantsSourceType.RESOURCE  || sourceType == PantsSourceType.TEST_RESOURCE;
+  }
+
   @Nullable
   public static Module findModuleForBUILDFile(@NotNull Project project, @Nullable final VirtualFile file) {
     if (file == null || !isBUILDFileName(file.getName())) return null;
