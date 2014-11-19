@@ -333,4 +333,9 @@ public class PantsUtil {
     }
     return result;
   }
+
+  public static String getRelativeProjectPath(@NotNull String projectPath, @NotNull File workDirectory){
+    final File projectFile = new File(projectPath);
+    return FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
+  }
 }

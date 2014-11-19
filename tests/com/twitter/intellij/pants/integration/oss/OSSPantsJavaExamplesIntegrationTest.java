@@ -10,6 +10,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertModules(
       "examples_src_java_com_pants_examples_annotation_example_example",
       "examples_src_java_com_pants_examples_annotation_main_main",
+      "examples_src_java_com_pants_examples_annotation_main_module",
       "examples_src_java_com_pants_examples_annotation_processor_processor",
       "3rdparty_guava"
     );
@@ -31,6 +32,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertModules(
       "examples_src_java_com_pants_examples_antlr3_antlr3",
+      "examples_src_java_com_pants_examples_antlr3_module",
       "examples_src_antlr_com_pants_examples_exp_exp_antlr3",
       "_antlr-3.4",
       ".pants.d_gen_antlr_antlr3_gen-java_examples_src_antlr_examples.src.antlr.com.pants.examples.exp.exp_antlr3"
@@ -47,6 +49,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertModules(
       "examples_src_java_com_pants_examples_antlr4_antlr4",
+      "examples_src_java_com_pants_examples_antlr4_module",
       "examples_src_antlr_com_pants_examples_exp_exp_antlr4",
       "_antlr-4",
       ".pants.d_gen_antlr_antlr4_gen-java_examples_src_antlr_examples.src.antlr.com.pants.examples.exp.exp_antlr4"
@@ -65,6 +68,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "examples_src_resources_com_pants_example_hello_hello",
       "examples_src_java_com_pants_examples_hello_main_readme",
       "examples_src_java_com_pants_examples_hello_main_main",
+      "examples_src_java_com_pants_examples_hello_module",
       "examples_src_java_com_pants_examples_hello_greet_greet",
       "examples_src_java_com_pants_examples_hello_main_main-bin"
     );
@@ -85,6 +89,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "examples_src_resources_com_pants_example_jaxb_jaxb",
       "examples_src_resources_com_pants_example_names_names",
       "examples_src_java_com_pants_examples_jaxb_main_main",
+      "examples_src_java_com_pants_examples_jaxb_main_module",
       "examples_src_java_com_pants_examples_jaxb_reader_reader",
       ".pants.d_gen_jaxb_gen-java_examples.src.resources.com.pants.example.jaxb.jaxb"
     );
@@ -100,6 +105,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertModules(
       "examples_src_java_com_pants_examples_protobuf_distance_distance",
+      "examples_src_java_com_pants_examples_protobuf_distance_module",
       "examples_src_protobuf_com_pants_examples_distance_distance",
       "3rdparty_protobuf-java",
       ".pants.d_gen_protoc_gen-java_examples.src.protobuf.com.pants.examples.distance.distance"

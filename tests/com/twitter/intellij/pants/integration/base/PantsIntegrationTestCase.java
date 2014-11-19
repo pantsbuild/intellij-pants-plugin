@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.integration.base;
 
 import com.intellij.compiler.impl.ModuleCompileScope;
+import com.intellij.ide.util.gotoByName.GotoFileModel;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompilerMessage;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
@@ -20,6 +21,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.CompilerTester;
+import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.intellij.lang.annotations.Language;
@@ -36,6 +38,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   private PantsProjectSettings myProjectSettings;
   private String myRelativeProjectPath;
   private CompilerTester myCompilerTester;
+  private GotoFileModel myFileModel;
 
   @Override
   public void setUp() throws Exception {
@@ -43,6 +46,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     myProjectSettings = new PantsProjectSettings();
     myProjectSettings.setAllTargets(true);
     myCompilerTester = null;
+    myFileModel = null;
   }
 
   @Override
@@ -76,6 +80,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected void doImport(String projectFolderPathToImport) {
     myRelativeProjectPath = projectFolderPathToImport;
     importProject();
+  }
+
+  protected void assertGotoFileContains(String filename) {
+    if (myFileModel ==null)
+      myFileModel = new GotoFileModel(myProject);
+    assertTrue(ArrayUtil.contains(filename, myFileModel.getNames(false)));
   }
 
   /**

@@ -501,14 +501,11 @@ public class PantsResolver {
       if (generateJars) {
         commandLine.addParameter("resolve");
       }
-      final File workDirectory = commandLine.getWorkDirectory();
-      final File projectFile = new File(projectPath);
-      final String relativeProjectPath =
-        FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
+      String relativeProjectPath = PantsUtil.getRelativeProjectPath(projectPath, myWorkDirectory);
 
       if (relativeProjectPath == null) {
         throw new ExternalSystemException(
-          String.format("Can't find relative path for a target %s from dir %s", projectPath, workDirectory.getPath())
+          String.format("Can't find relative path for a target %s from dir %s", projectPath, myWorkDirectory.getPath())
         );
       }
 

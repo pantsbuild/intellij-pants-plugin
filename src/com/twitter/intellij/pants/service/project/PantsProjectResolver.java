@@ -6,11 +6,14 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
+import com.intellij.openapi.externalSystem.model.project.ContentRootData;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationEvent;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
+import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
@@ -20,6 +23,8 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import java.io.File;
+
 
 public class PantsProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   @Nullable
@@ -64,7 +69,7 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     }
     // todo(fkorotkov): add ability to choose a name for a project
     final String targetsSuffix = settings.isAllTargets() ? ":" : StringUtil.join(settings.getTargetNames(), " :");
-    final String relativeProjectPath = StringUtil.substringAfter(projectDirPath, workingDir.getPath() + "/");
+    final String relativeProjectPath = PantsUtil.getRelativeProjectPath(projectDirPath, new File(workingDir.getPath()));
     final String projectName = relativeProjectPath + "/:" + targetsSuffix;
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
@@ -72,7 +77,24 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
       workingDir.getPath() + "/.idea/pants-projects/" + relativeProjectPath,
       projectPath
     );
-    return new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
+    DataNode<ProjectData> projectInfoDataNode = new DataNode<ProjectData> (ProjectKeys.PROJECT, projectData, null);
+
+    // Add a module with content root as import project directory path.
+    // This will allow all the files in the imported project directory will be indexed by the plugin.
+    final String moduleName = PantsUtil.getCanonicalModuleName(relativeProjectPath) + PantsConstants.PANTS_PROJECT_MODULE_SUFFIX;
+    final ModuleData moduleData = new ModuleData(
+      moduleName,
+      PantsConstants.SYSTEM_ID,
+      ModuleTypeId.JAVA_MODULE,
+      moduleName,
+      projectData.getIdeProjectFileDirectoryPath() + "/" + moduleName,
+      relativeProjectPath
+    );
+    final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
+    final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, projectDirPath);
+    moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
+
+    return projectInfoDataNode ;
   }
 
   @Override
