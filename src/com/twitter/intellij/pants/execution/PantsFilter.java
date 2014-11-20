@@ -55,7 +55,7 @@ public class PantsFilter implements Filter {
   @Override
   public Result applyFilter(final String text, int entireLength) {
     PantsFilterInfo info = parseLine(text);
-    if (info == null || info.getFilePath() == ".") {
+    if (info == null || ".".equals(info.getFilePath())) {
       return null;
     }
     VirtualFile file = LocalFileSystem.getInstance().findFileByPath(info.getFilePath());

@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.execution;
 
+import com.intellij.execution.filters.Filter;
+import com.intellij.openapi.command.impl.DummyProject;
 import com.twitter.intellij.pants.execution.PantsFilter.PantsFilterInfo;
 import junit.framework.TestCase;
 import org.jetbrains.annotations.Nullable;
@@ -55,5 +57,11 @@ public class PantsFilterTest extends TestCase {//LightCodeInsightFixtureTestCase
   public void testUrlWithErrorInBrackets() {
     PantsFilterInfo info = PantsFilter.parseLine("     [error] /this/is/a/url");
     doTest(new PantsFilterInfo(13, 27, "/this/is/a/url", 0), info);
+  }
+
+  public void testDotFilePathHasNullFilterResult() {
+    PantsFilter filter = new PantsFilter(DummyProject.getInstance());
+    Filter.Result result = filter.applyFilter(".: message", 10000);
+    assertNull("result", result);
   }
 }
