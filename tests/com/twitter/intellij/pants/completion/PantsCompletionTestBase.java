@@ -9,7 +9,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.UsefulTestCase;
 import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
-import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -17,24 +16,8 @@ import java.util.*;
 abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTestCase {
   enum CheckType {EQUALS, INCLUDES, EXCLUDES}
 
-  private final String myPath;
-
   public PantsCompletionTestBase(String... path) {
-    myPath = getPath(path);
-  }
-
-  private static String getPath(String... args) {
-    final StringBuilder result = new StringBuilder();
-    for (String folder : args) {
-      result.append("/");
-      result.append(folder);
-    }
-    return result.toString();
-  }
-
-  @Override
-  protected String getBasePath() {
-    return myPath;
+    super(path);
   }
 
   protected void configure() throws Throwable {

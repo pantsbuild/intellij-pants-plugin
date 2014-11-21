@@ -4,9 +4,13 @@
 package com.twitter.intellij.pants.integration.base;
 
 import com.intellij.compiler.impl.ModuleCompileScope;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompilerMessage;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
@@ -20,6 +24,9 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
@@ -35,18 +42,38 @@ import java.util.Arrays;
 import java.util.List;
 
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
+  private static final String PLUGINS_KEY = "idea.load.plugins.id";
+
   private PantsProjectSettings myProjectSettings;
   private String myRelativeProjectPath;
   private CompilerTester myCompilerTester;
-  private GotoFileModel myFileModel;
+  private String defaultPlugins = null;
 
   @Override
   public void setUp() throws Exception {
+    defaultPlugins = System.getProperty(PLUGINS_KEY);
+    final String pluginIdsToInstall = StringUtil.join(getRequiredPluginIds(), ",");
+    if (StringUtil.isNotEmpty(pluginIdsToInstall)) {
+      System.setProperty(PLUGINS_KEY, pluginIdsToInstall + "," + defaultPlugins);
+    }
+
     super.setUp();
+
+    for (String pluginId : getRequiredPluginIds()) {
+      final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
+      assertNotNull(pluginId + " plugin should be in classpath for integration tests", plugin);
+      if (!plugin.isEnabled()) {
+        PluginManagerCore.enablePlugin(pluginId);
+      }
+    }
+
     myProjectSettings = new PantsProjectSettings();
     myProjectSettings.setAllTargets(true);
     myCompilerTester = null;
-    myFileModel = null;
+  }
+
+  protected String[] getRequiredPluginIds() {
+    return new String[]{ "org.intellij.scala" };
   }
 
   @Override
@@ -77,15 +104,26 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return getCompilerTester().findClassFile(className, getModule(moduleName));
   }
 
+  @Nullable
+  protected PsiClass findClass(String className) {
+    PsiClass[] classes = PsiShortNamesCache.getInstance(myProject).getClassesByName(className, GlobalSearchScope.allScope(myProject));
+    assertTrue(classes.length < 2);
+    return classes.length > 0 ? classes[0] : null;
+  }
+
   protected void doImport(String projectFolderPathToImport) {
     myRelativeProjectPath = projectFolderPathToImport;
     importProject();
   }
 
   protected void assertGotoFileContains(String filename) {
-    if (myFileModel ==null)
-      myFileModel = new GotoFileModel(myProject);
-    assertTrue(ArrayUtil.contains(filename, myFileModel.getNames(false)));
+    final GotoFileModel gotoFileModel = new GotoFileModel(myProject);
+    assertTrue(ArrayUtil.contains(filename, gotoFileModel.getNames(false)));
+  }
+
+  @Override
+  protected void compileModules(String... moduleNames) {
+    throw new AssertionError("Please use makeModules method instead!");
   }
 
   /**
@@ -135,6 +173,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Override
   public void tearDown() throws Exception {
+    if (defaultPlugins != null) {
+      System.setProperty(PLUGINS_KEY, defaultPlugins);
+      defaultPlugins = null;
+    }
     try {
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();
@@ -187,7 +229,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     @Nullable
     @Override
     public VirtualFile findClassFile(String className, Module module) {
-      final VirtualFile moduleOutput = ModuleRootManager.getInstance(module).getModuleExtension(CompilerModuleExtension.class).getCompilerOutputPath();
+      final VirtualFile moduleOutput =
+        ModuleRootManager.getInstance(module).getModuleExtension(CompilerModuleExtension.class).getCompilerOutputPath();
       assert moduleOutput != null;
       moduleOutput.refresh(false, true);
       return moduleOutput.findFileByRelativePath(className.replace('.', '/') + ".class");

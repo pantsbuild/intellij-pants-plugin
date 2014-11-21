@@ -6,11 +6,16 @@ package com.twitter.intellij.pants.util;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ScriptRunnerUtil;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
+import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
+import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
@@ -24,6 +29,9 @@ import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.model.PantsTargetAddress;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -160,6 +168,22 @@ public class PantsUtil {
   }
 
   @Nullable
+  public static VirtualFile findPantsWorkingDir(@NotNull Module module) {
+    final VirtualFile moduleFile = module.getModuleFile();
+    if (moduleFile != null) {
+      return findPantsWorkingDir(moduleFile);
+    }
+    final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+    for (VirtualFile contentRoot : rootManager.getContentRoots()) {
+      final VirtualFile pantsWorkingDir = findPantsWorkingDir(contentRoot);
+      if (pantsWorkingDir != null) {
+        return pantsWorkingDir;
+      }
+    }
+    return null;
+  }
+
+  @Nullable
   public static VirtualFile findPantsWorkingDir(@Nullable VirtualFile file) {
     final VirtualFile pantsExecutable = findPantsExecutable(file);
     return pantsExecutable != null ? pantsExecutable.getParent() : null;
@@ -283,10 +307,26 @@ public class PantsUtil {
            FileUtilRt.extensionEquals(path, PROTOBUF_EXT);
   }
 
+  @NotNull @Nls
   public static String getCanonicalModuleName(@NotNull @NonNls String targetName) {
     // Do not use ':' because it is used as a separator in a classpath
     // while running the app. As well as path separators
     return targetName.replace(':', '_').replace('/', '_').replace('\\', '_');
+  }
+
+  @Nullable @NonNls
+  public static PantsTargetAddress getTargetAddressFromModule(@NotNull @Nls Module module) {
+    final String moduleName = module.getName();
+    final int index = moduleName.lastIndexOf('_');
+    if (index < 0) {
+      return null;
+    }
+    final String targetName = moduleName.substring(index + 1);
+    final String linkedPantsBUILD = module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
+    if (linkedPantsBUILD == null) {
+      return null;
+    }
+    return new PantsTargetAddress(PathUtil.getParentPath(linkedPantsBUILD), targetName);
   }
 
   @NotNull
@@ -317,12 +357,23 @@ public class PantsUtil {
       new Condition<Module>() {
         @Override
         public boolean value(Module module) {
-          final String linkedPantsBUILD = module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
-          final VirtualFile moduleBUILDFile = linkedPantsBUILD != null ? workingDir.findFileByRelativePath(linkedPantsBUILD) : null;
+          final VirtualFile moduleBUILDFile = findBUILDFileForModule(module, workingDir);
           return file.equals(moduleBUILDFile);
         }
       }
     );
+  }
+
+  @Nullable
+  public static VirtualFile findBUILDFileForModule(@NotNull Module module) {
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
+    return workingDir == null ? null : findBUILDFileForModule(module, workingDir);
+  }
+
+  @Nullable
+  public static VirtualFile findBUILDFileForModule(@NotNull Module module, @NotNull VirtualFile workingDir) {
+    final String linkedPantsBUILD = module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
+    return linkedPantsBUILD != null ? workingDir.findFileByRelativePath(linkedPantsBUILD) : null;
   }
 
   public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> map, Function<V1, V2> fun) {
@@ -337,5 +388,13 @@ public class PantsUtil {
   public static String getRelativeProjectPath(@NotNull String projectPath, @NotNull File workDirectory){
     final File projectFile = new File(projectPath);
     return FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
+  }
+
+  public static void refreshAllProjects(Project project) {
+    final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
+    if (ApplicationManager.getApplication().isUnitTestMode()) {
+      specBuilder.use(ProgressExecutionMode.MODAL_SYNC);
+    }
+    ExternalSystemUtil.refreshProjects(specBuilder);
   }
 }

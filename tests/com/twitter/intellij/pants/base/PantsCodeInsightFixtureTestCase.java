@@ -26,9 +26,33 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
   private String defaultUserHome = null;
   private String defaultPlugins = null;
 
+  private final String myPath;
+
+  public PantsCodeInsightFixtureTestCase() {
+    myPath = "";
+  }
+
+  public PantsCodeInsightFixtureTestCase(String... path) {
+    myPath = getPath(path);
+  }
+
+  private static String getPath(String... args) {
+    final StringBuilder result = new StringBuilder();
+    for (String folder : args) {
+      result.append("/");
+      result.append(folder);
+    }
+    return result.toString();
+  }
+
   @Override
   protected String getTestDataPath() {
     return PantsTestUtils.BASE_TEST_DATA_PATH + getBasePath();
+  }
+
+  @Override
+  protected String getBasePath() {
+    return myPath;
   }
 
   @Override

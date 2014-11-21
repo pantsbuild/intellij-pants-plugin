@@ -6,16 +6,17 @@ package com.twitter.intellij.pants.execution;
 import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.python.psi.PyCallExpression;
 import com.jetbrains.python.psi.PyExpressionStatement;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
-import com.twitter.intellij.pants.util.Target;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class PantsConfigurationProducerBase extends RunConfigurationProducer<PantsConfiguration> {
@@ -37,11 +38,12 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
     if (statement == null) {
       return null;
     }
-    Target target = PantsPsiUtil.findTarget(statement);
+    final Pair<String, PyCallExpression> target = PantsPsiUtil.findTarget(statement);
     if (target == null) {
       return null;
     }
-    name = goal + " " + target.getName();
+    final String targetName = target.getFirst();
+    name = goal + " " + targetName;
 
     Location location = context.getLocation();
     if (location == null) {
@@ -67,7 +69,7 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
     }
     String relativePath = VfsUtil.getRelativePath(parent, pantsExecutable.getParent(), '/');
     String workingDir = pantsExecutable.getParent().getPath();
-    params.setArguments(arguments + " " + relativePath + ":" + target.getName());
+    params.setArguments(arguments + " " + relativePath + ":" + targetName);
     params.setExecutable(pantsExecutable.getPath());
     params.setWorkingDir(workingDir);
     return params;

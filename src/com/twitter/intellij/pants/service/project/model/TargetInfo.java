@@ -5,8 +5,8 @@ package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.util.PantsSourceType;
-import com.twitter.intellij.pants.util.PantsTargetType;
+import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.model.PantsTargetType;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 

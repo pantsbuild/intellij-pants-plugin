@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.psi.reference;
 
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -15,7 +14,6 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
-import com.twitter.intellij.pants.util.Target;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,11 +41,11 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
   @Override
   public Object[] getVariants() {
     return ContainerUtil.map2Array(
-      PantsPsiUtil.findTargets(findBuildFile()),
-      new Function<Target, Object>() {
+      PantsPsiUtil.findTargets(findBuildFile()).keySet(),
+      new Function<String, Object>() {
         @Override
-        public Object fun(Target target) {
-          return LookupElementBuilder.create(target.getName());
+        public Object fun(String targetName) {
+          return LookupElementBuilder.create(targetName);
         }
       }
     );
@@ -56,15 +54,6 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
   @Nullable
   @Override
   public PsiElement resolve() {
-    final Target target = ContainerUtil.find(
-      PantsPsiUtil.findTargets(findBuildFile()),
-      new Condition<Target>() {
-        @Override
-        public boolean value(Target target) {
-          return StringUtil.equalsIgnoreCase(getText(), target.getName());
-        }
-      }
-    );
-    return target != null ? target.getExpression() : null;
+    return PantsPsiUtil.findTargets(findBuildFile()).get(getText());
   }
 }

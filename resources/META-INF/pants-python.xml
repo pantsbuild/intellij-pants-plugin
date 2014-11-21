@@ -28,6 +28,10 @@
     <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsTestConfigurationProducer"/>
 
     <fileBasedIndex implementation="com.twitter.intellij.pants.index.PantsTargetIndex"/>
+
+    <!--We need python plugin to insert a dependency to a proper BUILD file-->
+    <codeInsight.unresolvedReferenceQuickFixProvider
+        implementation="com.twitter.intellij.quickfix.PantsUnresolvedReferenceQuickFixProvider"/>
   </extensions>
   <extensions defaultExtensionNs="Pythonid">
     <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.psi.resolve.PantsReferenceResolveProvide"/>

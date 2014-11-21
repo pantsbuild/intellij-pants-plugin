@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.intellij.openapi.util.Pair;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.python.psi.*;
@@ -15,29 +16,30 @@ import static com.intellij.openapi.util.text.StringUtil.unquoteString;
 
 public class PantsPsiUtil {
 
-  public static List<Target> findTargets(@Nullable PsiFile file) {
+  @NotNull
+  public static Map<String, PyCallExpression> findTargets(@Nullable PsiFile file) {
     if (file == null) {
-      return Collections.emptyList();
+      return Collections.emptyMap();
     }
-    final List<Target> targets = new ArrayList<Target>();
+    final Map<String, PyCallExpression> result = new HashMap<String, PyCallExpression>();
     for (PyExpressionStatement statement : PsiTreeUtil.findChildrenOfType(file, PyExpressionStatement.class)) {
-      final Target target = findTarget(statement);
-      if (target != null) {
-        targets.add(target);
+      final Pair<String, PyCallExpression> nameExpressionPair = findTarget(statement);
+      if (nameExpressionPair != null) {
+        result.put(nameExpressionPair.getFirst(), nameExpressionPair.getSecond());
       }
     }
-    return targets;
+    return result;
   }
 
   @Nullable
-  public static Target findTarget(@NotNull PyExpressionStatement statement) {
+  public static Pair<String, PyCallExpression> findTarget(@NotNull PyExpressionStatement statement) {
     final PyCallExpression expression = PsiTreeUtil.findChildOfType(statement, PyCallExpression.class);
     final PyExpression callee = expression != null ? expression.getCallee() : null;
     final PyArgumentList argumentList = expression != null ? expression.getArgumentList() : null;
     final PyKeywordArgument nameArgument = argumentList != null ? argumentList.getKeywordArgument("name") : null;
     final PyExpression valueExpression = nameArgument != null ? nameArgument.getValueExpression() : null;
     if (valueExpression != null && callee != null) {
-      return new Target(unquoteString(valueExpression.getText()), callee.getText(), expression);
+      return Pair.create(unquoteString(valueExpression.getText()), expression);
     }
     return null;
   }

@@ -3,19 +3,16 @@
 
 package com.twitter.intellij.pants.util;
 
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyReferenceExpression;
 import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
+import com.twitter.intellij.pants.model.PantsSourceType;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class PantsPsiUtilTest extends PantsCodeInsightFixtureTestCase {
   @Override
@@ -23,21 +20,13 @@ public class PantsPsiUtilTest extends PantsCodeInsightFixtureTestCase {
     return "/util";
   }
 
-  public void doFindTargetsTest(List<Pair<String, String>> actualTargets) {
+  public void doFindTargetsTest(String... actualTargets) {
     final VirtualFile buildFile = myFixture.copyFileToProject(getTestName(true) + ".py", "BUILD");
     myFixture.configureFromExistingVirtualFile(buildFile);
-    final List<Target> targets = PantsPsiUtil.findTargets(myFixture.getFile());
-    assertOrderedEquals(
-      actualTargets,
-      ContainerUtil.map(
-        targets,
-        new Function<Target, Pair<String, String>>() {
-          @Override
-          public Pair<String, String> fun(Target target) {
-            return Pair.create(target.getName(), target.getType());
-          }
-        }
-      )
+    final Set<String> targetNames = PantsPsiUtil.findTargets(myFixture.getFile()).keySet();
+    assertContainsElements(
+      targetNames,
+      Arrays.asList(actualTargets)
     );
   }
 
@@ -74,19 +63,15 @@ public class PantsPsiUtilTest extends PantsCodeInsightFixtureTestCase {
   }
 
   public void testFindTargets() {
-    final List<Pair<String, String>> testTargets =
-      Arrays.asList(Pair.create("main", "jvm_app"), Pair.create("main-bin", "jvm_binary"));
-    doFindTargetsTest(testTargets);
+    doFindTargetsTest("main", "main-bin");
   }
 
   public void testWeirdBuildFile() {
-    doFindTargetsTest(Collections.<Pair<String,String>>emptyList());
+    doFindTargetsTest();
   }
 
   public void testTrickyBuildFile() {
-    final List<Pair<String, String>> testTargets =
-      Arrays.asList(Pair.create("main", "jvm_app"), Pair.create("main-bin", "jvm_binary"));
-    doFindTargetsTest(testTargets);
+    doFindTargetsTest("main", "main-bin");
   }
 
   public void testAliases() {
