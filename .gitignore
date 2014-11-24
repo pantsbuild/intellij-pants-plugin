@@ -8,7 +8,10 @@
 .DS_Store
 *.class
 *~
+*.pyc
 /out/
+.pants.run
+/.pants.d/
 /build-support/*.pex
 /build-support/*.venv
 /build-support/virtualenv-*

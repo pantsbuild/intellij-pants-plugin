@@ -1,0 +1,10 @@
+source build-support/python/libvirtualenv.sh
+
+PIP_OPTIONS=(
+  --allow-external pantsbuild.pants
+  --allow-unverified pantsbuild.pants
+)
+
+setup_virtualenv pants pantsbuild.pants==0.0.24 '--allow-external elementtree --allow-unverified elementtree'
+
+exec pants "$@"

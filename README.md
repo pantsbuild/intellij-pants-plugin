@@ -105,7 +105,6 @@ For contributing to the project, continue reading below.
     * `~/Library/Application Support/IdeaIC14/python/lib/python-community.jar`
     * `~/Library/Application Support/IdeaIC14/Scala/lib/scala-plugin.jar`
     * `~/Library/Application Support/IdeaIC14/Scala/lib/scala-library-2.11.2.jar`
-    * `/Applications/IntelliJ IDEA 14 CE.app/Contents/plugins/gradle/lib/gradle.jar`
 * Make sure that your project is set to configure bytecode compatible with 1.6  Preferences -> Compiler -> Java Compiler -> Project bytecode version
 * Run tests to verify your installation
 
