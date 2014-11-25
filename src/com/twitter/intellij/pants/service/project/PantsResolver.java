@@ -231,7 +231,7 @@ public class PantsResolver {
   private void addModuleDependency(DataNode<ModuleData> moduleDataNode, DataNode<ModuleData> submoduleDataNode, boolean exported) {
     final List<ModuleDependencyData> subModuleDeps = findChildren(submoduleDataNode, ProjectKeys.MODULE_DEPENDENCY);
     for (ModuleDependencyData dep : subModuleDeps) {
-      if (dep.getTarget() == moduleDataNode.getData()) {
+      if (dep.getTarget().equals(moduleDataNode.getData())) {
         return;
       }
     }
