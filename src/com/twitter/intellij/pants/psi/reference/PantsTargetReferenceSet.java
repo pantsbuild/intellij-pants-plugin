@@ -42,7 +42,7 @@ public class PantsTargetReferenceSet {
       return Collections.emptyList();
     }
 
-    final PartialTargetAddress address = new PartialTargetAddress(expression.getStringValue());
+    final PartialTargetAddress address = PartialTargetAddress.parse(expression.getStringValue());
     final List<PsiReference> result = new ArrayList<PsiReference>();
 
     result.addAll(createPathSegments(expression, address.normalizedPath));
@@ -109,13 +109,22 @@ public class PantsTargetReferenceSet {
     @NotNull
     private final String normalizedPath;
     private final int valueLength;
-    private final int myColonIndex;
+    private final int colonIndex;
 
-    PartialTargetAddress(String value) {
-      myColonIndex = value.indexOf(':');
-      explicitTarget = myColonIndex < 0 ? null : value.substring(myColonIndex);
-      valueLength = value.length();
-      final String rawPath = value.substring(0, myColonIndex < 0 ? value.length() : myColonIndex);
+    public PartialTargetAddress(@Nullable String explicitTarget, @NotNull String normalizedPath, int valueLength, int colonIndex) {
+      this.explicitTarget = explicitTarget;
+      this.normalizedPath = normalizedPath;
+      this.valueLength = valueLength;
+      this.colonIndex = colonIndex;
+    }
+
+    @NotNull
+    public static PartialTargetAddress parse(String value) {
+      final int colonIndex = value.indexOf(':');
+      final int valueLength = value.length();
+      final String explicitTarget = colonIndex < 0 ? null : value.substring(colonIndex);
+      final String rawPath = value.substring(0, colonIndex < 0 ? value.length() : colonIndex);
+      String normalizedPath;
       if (rawPath.isEmpty()) {
         normalizedPath = rawPath;
       }
@@ -123,10 +132,12 @@ public class PantsTargetReferenceSet {
         final String normalized = PathUtil.toSystemIndependentName(rawPath);
         normalizedPath = normalized.charAt(normalized.length() - 1) == '/' ? normalized : normalized + "/";
       }
+
+      return new PartialTargetAddress(explicitTarget, normalizedPath, valueLength, colonIndex);
     }
 
     int startOfExplicitTarget() {
-      return myColonIndex + 1;
+      return colonIndex + 1;
     }
   }
 }
