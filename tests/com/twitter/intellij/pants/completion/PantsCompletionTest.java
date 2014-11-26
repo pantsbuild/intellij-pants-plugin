@@ -30,6 +30,12 @@ public class PantsCompletionTest extends PantsCompletionTestBase {
     doTestVariants();
   }
 
+  public void testTargetName5() throws Throwable {
+    myFixture.addFileToProject("foo/BUILD", "jar_library(name='bar')\njar_library(name='baz')");
+    configure();
+    doTestVariants();
+  }
+
   public void testTargets() throws Throwable {
     configure();
     doTestVariants();
@@ -80,6 +86,12 @@ public class PantsCompletionTest extends PantsCompletionTestBase {
   public void testTargetPath7() throws Throwable {
     myFixture.addFileToProject("foo/bar/baz/BUILD", "");
     myFixture.addFileToProject("foo/baz/BUILD", "");
+    configure("foo");
+    doCompletionTest('\n');
+  }
+
+  public void testTargetPath8() throws Throwable {
+    myFixture.addFileToProject("foo/bar/baz/BUILD", "jar_library(name='bar')\njar_library(name='baz')");
     configure("foo");
     doCompletionTest('\n');
   }
