@@ -31,7 +31,7 @@
 
     <!--We need python plugin to insert a dependency to a proper BUILD file-->
     <codeInsight.unresolvedReferenceQuickFixProvider
-        implementation="com.twitter.intellij.quickfix.PantsUnresolvedReferenceQuickFixProvider"/>
+        implementation="com.twitter.intellij.pants.quickfix.PantsUnresolvedJavaReferenceQuickFixProvider"/>
   </extensions>
   <extensions defaultExtensionNs="Pythonid">
     <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.psi.resolve.PantsReferenceResolveProvide"/>

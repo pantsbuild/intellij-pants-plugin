@@ -8,9 +8,9 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiClass;
 import com.intellij.util.ArrayUtil;
-import com.twitter.intellij.quickfix.AddPantsTargetDependencyFix;
+import com.twitter.intellij.pants.quickfix.AddPantsTargetDependencyFix;
 
-public class PantsUnresolvedReferenceQuickFixProviderTest extends PantsHighlightingIntegrationTest {
+public class PantsUnresolvedJavaReferenceQuickFixProviderTest extends PantsHighlightingIntegrationTest {
   @Override
   protected String[] getRequiredPluginIds() {
     return ArrayUtil.append(super.getRequiredPluginIds(), "PythonCore");
@@ -26,7 +26,7 @@ public class PantsUnresolvedReferenceQuickFixProviderTest extends PantsHighlight
       "testprojects_src_java_com_pants_testproject_missingdepswhitelist_module"
     );
 
-    final PsiClass psiClass = findClass("MissingDepsWhitelist2");
+    final PsiClass psiClass = findClass("com.pants.testproject.missingdepswhitelist2.MissingDepsWhitelist2");
     assertNotNull(psiClass);
     final Editor editor = createEditor(psiClass.getContainingFile().getVirtualFile());
     assertNotNull(editor);

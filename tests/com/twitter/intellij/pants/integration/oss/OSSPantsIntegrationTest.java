@@ -8,10 +8,18 @@ import com.twitter.intellij.pants.integration.base.PantsIntegrationTestCase;
 import com.twitter.intellij.pants.util.PantsTestUtils;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
   @Override
-  protected File getProjectFolderToCopy() {
+  protected List<File> getProjectFoldersToCopy() {
+    final File ossFolder = getOSSFolder();
+    final File testProjects = new File(PantsTestUtils.findTestPath("testData"), "testprojects");
+    return Arrays.asList(ossFolder, testProjects);
+  }
+
+  protected File getOSSFolder() {
     final String ossPantsHome = System.getenv("OSS_PANTS_HOME");
     if (!StringUtil.isEmpty(ossPantsHome)) {
       return new File(ossPantsHome);

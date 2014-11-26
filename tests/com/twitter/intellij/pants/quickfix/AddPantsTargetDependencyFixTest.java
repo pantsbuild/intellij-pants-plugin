@@ -6,7 +6,6 @@ package com.twitter.intellij.pants.quickfix;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
-import com.twitter.intellij.quickfix.AddPantsTargetDependencyFix;
 
 public class AddPantsTargetDependencyFixTest extends PantsCodeInsightFixtureTestCase {
   public AddPantsTargetDependencyFixTest() {

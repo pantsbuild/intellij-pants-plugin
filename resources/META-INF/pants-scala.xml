@@ -7,5 +7,6 @@
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
       <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService"/>
+      <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantScalaHighlightVisitor"/>
     </extensions>
 </idea-plugin>

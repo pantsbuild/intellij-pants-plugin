@@ -21,8 +21,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.integration.base.PantsIntegrationTestCase;
-import com.twitter.intellij.pants.util.PantsTestUtils;
+import com.twitter.intellij.pants.integration.oss.OSSPantsIntegrationTest;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.List;
 
-abstract public class PantsHighlightingIntegrationTest extends PantsIntegrationTestCase {
+abstract public class PantsHighlightingIntegrationTest extends OSSPantsIntegrationTest {
   @Override
   public void tearDown() throws Exception {
     final FileEditorManager fileEditorManager = FileEditorManager.getInstance(myProject);
@@ -39,16 +38,6 @@ abstract public class PantsHighlightingIntegrationTest extends PantsIntegrationT
     }
 
     super.tearDown();
-  }
-
-  @Override
-  protected File getProjectFolderToCopy() {
-    final String ossPantsHome = System.getenv("OSS_PANTS_HOME");
-    if (!StringUtil.isEmpty(ossPantsHome)) {
-      return new File(ossPantsHome);
-    }
-    final File workingDir = PantsTestUtils.findTestPath("testData").getParentFile();
-    return new File(workingDir.getParent(), "pants");
   }
 
   @Nullable

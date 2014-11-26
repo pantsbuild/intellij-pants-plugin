@@ -24,15 +24,16 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -79,14 +80,16 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   protected void setUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
-    final File projectTemplateFolder = getProjectFolderToCopy();
-    if (!projectTemplateFolder.exists() || !projectTemplateFolder.isDirectory()) {
-      fail("invalid template project path " + projectTemplateFolder.getAbsolutePath());
+    for (File projectTemplateFolder : getProjectFoldersToCopy()) {
+      if (!projectTemplateFolder.exists() || !projectTemplateFolder.isDirectory()) {
+        fail("invalid template project path " + projectTemplateFolder.getAbsolutePath());
+      }
+
+      FileUtil.copyDirContent(projectTemplateFolder, new File(myProjectRoot.getPath()));
     }
-    FileUtil.copyDirContent(projectTemplateFolder, new File(myProjectRoot.getPath()));
   }
 
-  abstract protected File getProjectFolderToCopy();
+  abstract protected List<File> getProjectFoldersToCopy();
 
   @Override
   protected String getProjectPath() {
@@ -105,8 +108,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @Nullable
-  protected PsiClass findClass(String className) {
-    PsiClass[] classes = PsiShortNamesCache.getInstance(myProject).getClassesByName(className, GlobalSearchScope.allScope(myProject));
+  protected PsiClass findClass(@NonNls @NotNull String qualifiedName) {
+    PsiClass[] classes = JavaPsiFacade.getInstance(myProject).findClasses(qualifiedName, GlobalSearchScope.allScope(myProject));
     assertTrue(classes.length < 2);
     return classes.length > 0 ? classes[0] : null;
   }
