@@ -20,6 +20,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" scope="PROVIDED" name="scala-sdk-2.10.3" level="application" />
+    <orderEntry type="library" name="scala-sdk-2.11.2" level="application" />
   </component>
 </module>

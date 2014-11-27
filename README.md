@@ -104,7 +104,7 @@ For contributing to the project, continue reading below.
   * Add the following to the SDK's classpath
     * `~/Library/Application Support/IdeaIC14/python/lib/python-community.jar`
     * `~/Library/Application Support/IdeaIC14/Scala/lib/scala-plugin.jar`
-    * `~/Library/Application Support/IdeaIC14/Scala/lib/scala-library-2.11.2.jar`
+* Set Scala 2.11.2 as your Scala SDK
 * Make sure that your project is set to configure bytecode compatible with 1.6  Preferences -> Compiler -> Java Compiler -> Project bytecode version
 * Run tests to verify your installation
 
@@ -122,3 +122,7 @@ For contributing to the project, continue reading below.
         /path/to/pants_dev/pants goal goals
 
   This will bootstrap pants and resolve all the dependencies or else you will get an `ExecutionException` exception for exceeding 30s timeout.
+
+# Running tests with Pants
+
+* Execute `./scripts/run-tests-local.sh` from command-line.
