@@ -116,4 +116,21 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       findClassFile("com.pants.examples.protobuf.distance.ExampleProtobuf", "examples_src_java_com_pants_examples_protobuf_distance_distance")
     );
   }
+
+  public void testExcludes() throws Throwable {
+    doImport("intellij-integration/src/java/com/pants/testproject/excludes");
+
+    assertModules(
+      "intellij-integration_src_java_com_pants_testproject_excludes_module",
+      "intellij-integration_src_java_com_pants_testproject_excludes_excludes"
+    );
+
+    makeModules("intellij-integration_src_java_com_pants_testproject_excludes_excludes");
+    assertNotNull(
+      findClassFile(
+        "com.pants.testproject.excludes.Foo",
+        "intellij-integration_src_java_com_pants_testproject_excludes_excludes"
+      )
+    );
+  }
 }

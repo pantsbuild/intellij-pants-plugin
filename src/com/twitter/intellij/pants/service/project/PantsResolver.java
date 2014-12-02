@@ -24,6 +24,7 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
+import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
@@ -124,7 +125,6 @@ public class PantsResolver {
         LOG.warn("no content root for " + mainTarget);
         continue;
       }
-      boolean emptyContentRoot = true;
       for (SourceRoot root : targetInfo.getRoots()) {
         final DataNode<ModuleData> sourceRootModule = modulesForRootsAndInfo.get(root);
 
@@ -133,11 +133,12 @@ public class PantsResolver {
           addModuleDependency(moduleDataNode, sourceRootModule, true);
           continue;
         }
-        emptyContentRoot = false;
         addSourceRoot(contentRoot, root, targetInfo.getTargetType());
       }
-      if (emptyContentRoot) {
+      if (isEmpty(contentRoot)) {
         removeAllChildren(moduleDataNode, ProjectKeys.CONTENT_ROOT);
+      } else {
+        addExcludes(contentRoot);
       }
     }
 
@@ -182,6 +183,45 @@ public class PantsResolver {
         LOG.error(e);
       }
     }
+  }
+
+  private void addExcludes(@NotNull final ContentRootData contentRoot) {
+    final File contentRootFolder = new File(contentRoot.getRootPath());
+
+    if (!contentRootFolder.exists()) {
+      LOG.warn("Bad content root " + contentRoot);
+      return;
+    }
+
+    final Set<String> rootPaths = new HashSet<String>();
+    for (ExternalSystemSourceType sourceType : ExternalSystemSourceType.values()) {
+      for (ContentRootData.SourceRoot sourceRoot : contentRoot.getPaths(sourceType)) {
+        rootPaths.add(sourceRoot.getPath());
+      }
+    }
+
+    FileUtil.processFilesRecursively(
+      contentRootFolder,
+      new Processor<File>() {
+        @Override
+        public boolean process(final File file) {
+          if (file.isDirectory() && !rootPaths.contains(file.getAbsolutePath())) {
+            contentRoot.storePath(ExternalSystemSourceType.EXCLUDED, file.getAbsolutePath());
+          }
+          return true;
+        }
+      }
+    );
+  }
+
+  private boolean isEmpty(@NotNull ContentRootData contentRoot) {
+    for (ExternalSystemSourceType sourceType : ExternalSystemSourceType.values()) {
+      if (!contentRoot.getPaths(sourceType).isEmpty()) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private void addSourceRoot(@NotNull ContentRootData contentRoot, @NotNull SourceRoot root, @Nullable String targetType) {
