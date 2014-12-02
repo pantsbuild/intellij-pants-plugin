@@ -3,6 +3,9 @@
 
 package com.twitter.intellij.pants.service.project;
 
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -14,6 +17,7 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotifica
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
@@ -47,18 +51,25 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
   }
 
   private void resolveUsingNewAPI(
-    ExternalSystemTaskId id,
+    final ExternalSystemTaskId id,
     String projectPath,
     PantsExecutionSettings settings,
-    ExternalSystemTaskNotificationListener listener,
+    final ExternalSystemTaskNotificationListener listener,
     DataNode<ProjectData> projectDataNode,
     boolean isPreviewMode
   ) {
     final PantsResolver dependenciesResolver = new PantsResolver(projectPath, settings, isPreviewMode);
 
     listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
-    dependenciesResolver.resolve(id, listener);
-    dependenciesResolver.addInfo(projectDataNode);
+    dependenciesResolver.resolve(
+      new ProcessAdapter() {
+        @Override
+        public void onTextAvailable(ProcessEvent event, Key outputType) {
+          listener.onTaskOutput(id, event.getText(), outputType == ProcessOutputTypes.STDOUT);
+        }
+      }
+    );
+    dependenciesResolver.addInfoTo(projectDataNode);
   }
 
   private DataNode<ProjectData> getProjectDataNode(String projectPath, PantsExecutionSettings settings) {

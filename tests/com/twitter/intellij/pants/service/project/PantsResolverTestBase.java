@@ -62,7 +62,7 @@ abstract class PantsResolverTestBase extends TestCase {
       PantsConstants.SYSTEM_ID, "test-project", "path/to/fake/project", "path/to/fake/project/BUILD"
     );
     final DataNode<ProjectData> dataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
-    dependenciesResolver.addInfo(dataNode);
+    dependenciesResolver.addInfoTo(dataNode);
     return dataNode;
   }
 

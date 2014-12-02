@@ -8,6 +8,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,6 +18,10 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings {
   private final boolean myAllTargets;
   private List<String> myTargetNames;
   @NotNull private final List<String> myResolverExtensionClassNames = ContainerUtilRt.newArrayList();
+
+  public PantsExecutionSettings() {
+    this(Collections.<String>emptyList(), true);
+  }
 
   public PantsExecutionSettings(List<String> targetNames, boolean allTargets) {
     myTargetNames = targetNames;

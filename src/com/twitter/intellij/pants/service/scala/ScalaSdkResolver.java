@@ -93,7 +93,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
         LibraryLevel.PROJECT
       );
       moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
-      if (targetInfo.is_scala()) {
+      if (targetInfo.isScalaTarget()) {
         createScalaSdkDataFromJars(moduleDataNode, scalaJars);
       }
     }

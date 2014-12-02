@@ -53,13 +53,18 @@ public class PantsResolver {
   protected File myWorkDirectory = null;
   private ProjectInfo projectInfo = null;
 
+  @Nullable
+  public ProjectInfo getProjectInfo() {
+    return projectInfo;
+  }
+
   @TestOnly
-  public void setWorkDirectory(@Nullable File workDirectory) {
+  protected void setWorkDirectory(@Nullable File workDirectory) {
     myWorkDirectory = workDirectory;
   }
 
   @TestOnly
-  public void setProjectInfo(ProjectInfo projectInfo) {
+  protected void setProjectInfo(ProjectInfo projectInfo) {
     this.projectInfo = projectInfo;
   }
 
@@ -85,7 +90,7 @@ public class PantsResolver {
     }
   }
 
-  public void addInfo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
+  public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (projectInfo == null) return;
     projectInfo.fixCyclicDependencies();
 
@@ -492,20 +497,15 @@ public class PantsResolver {
     return moduleDataNode;
   }
 
-  public void resolve(final ExternalSystemTaskId taskId, final ExternalSystemTaskNotificationListener listener) {
+  public void resolve(@Nullable ProcessAdapter processAdapter) {
     try {
       final File outputFile = FileUtil.createTempFile("pants_run", ".out");
       final GeneralCommandLine command = getCommand(outputFile);
       final Process process = command.createProcess();
       final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
-      processHandler.addProcessListener(
-        new ProcessAdapter() {
-          @Override
-          public void onTextAvailable(ProcessEvent event, Key outputType) {
-            listener.onTaskOutput(taskId, event.getText(), outputType == ProcessOutputTypes.STDOUT);
-          }
-        }
-      );
+      if (processAdapter != null) {
+        processHandler.addProcessListener(processAdapter);
+      }
       final ProcessOutput processOutput = processHandler.runProcess();
       if (processOutput.getStdout().contains("no such option")) {
         throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
