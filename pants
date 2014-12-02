@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 source build-support/python/libvirtualenv.sh
 
 PIP_OPTIONS=(

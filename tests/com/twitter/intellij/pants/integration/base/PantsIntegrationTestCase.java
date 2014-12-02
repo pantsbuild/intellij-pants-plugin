@@ -142,10 +142,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       myCompilerTester = new MyCompilerTester(myProject, Arrays.asList(scope.getAffectedModules()));
       final List<CompilerMessage> messages = myCompilerTester.make(scope);
       for (CompilerMessage message : messages) {
+        final VirtualFile virtualFile = message.getVirtualFile();
         final String prettyMessage =
+          virtualFile == null ?
+          message.getMessage() :
           String.format(
-            "%s at %s:%s",
-            message.getMessage(), message.getVirtualFile().getCanonicalPath(), message.getRenderTextPrefix()
+            "%s at %s:%s", message.getMessage(), virtualFile.getCanonicalPath(), message.getRenderTextPrefix()
           );
         switch (message.getCategory()) {
           case ERROR:

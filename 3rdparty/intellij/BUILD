@@ -105,18 +105,18 @@ def _jar_path_in_lib_folder(base_dir, jar_name):
     lib_path = os.path.join(base_dir, 'lib')
     jar_path = os.path.join(lib_path, jar_name)
     if not os.path.exists(jar_path):
-        raise 'Cannot find %s in %s!' % jar_name % lib_path
+        raise Exception('Cannot find %s in %s!' % jar_name % lib_path)
     return jar_path
 
 def _intellij_sdk_classpath():
-    base_dir = os.getenv('INTELLIJ_HOME', '/Applications/IntelliJ IDEA 14 CE EAP.app/Contents/')
+    base_dir = os.environ['INTELLIJ_HOME']
     if not os.path.exists(base_dir):
-        raise 'Directory %s not exists!' % base_dir
+        raise Exception('Directory %s not exists!' % base_dir)
     intellij_jars = [_jar_path_in_lib_folder(base_dir, jar_name) for jar_name in _intellij_sdk_jars]
 
     external_api_jar_path = os.path.join(os.getcwd(), 'testData', 'external-system-test-api-impl.jar')
     if not os.path.exists(external_api_jar_path):
-        raise 'File %s not exists!' % external_api_jar_path
+        raise Exception('File %s not exists!' % external_api_jar_path)
     additional_jars = [external_api_jar_path]
 
     return intellij_jars + additional_jars
@@ -129,7 +129,7 @@ def _find_jars_for_plugin(plugin_name, *jar_names):
     base_dir = os.environ['INTELLIJ_PLUGINS_HOME']
     plugin_home = os.path.join(base_dir, plugin_name)
     if not os.path.exists(plugin_home):
-        raise 'Directory %s not exists!' % plugin_home
+        raise Exception('Directory %s not exists!' % plugin_home)
     return [
         _jar_path_in_lib_folder(plugin_home, jar_name) for jar_name in jar_names
     ]
