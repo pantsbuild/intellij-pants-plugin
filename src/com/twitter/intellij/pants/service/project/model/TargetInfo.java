@@ -78,11 +78,13 @@ public class TargetInfo {
     this.roots = roots;
   }
 
+  @Nullable
   public String getTargetType() {
     return target_type;
   }
 
-  public void setTargetType(String target_type) {
+  @Nullable
+  public void setTargetType(@NotNull String target_type) {
     this.target_type = target_type;
   }
 
@@ -107,19 +109,20 @@ public class TargetInfo {
     return targets.contains(targetName);
   }
 
+  @NotNull
   public PantsSourceType getSourcesType() {
     return PantsUtil.getSourceTypeForTargetType(getTargetType());
   }
 
-  public void addDependency(String targetName) {
+  public void addDependency(@NotNull String targetName) {
     getTargets().add(targetName);
   }
 
-  public boolean removeDependency(String targetName) {
+  public boolean removeDependency(@NotNull String targetName) {
     return getTargets().remove(targetName);
   }
 
-  public void replaceDependency(String targetName, String newTargetName) {
+  public void replaceDependency(@NotNull String targetName, @NotNull String newTargetName) {
     if (removeDependency(targetName)) {
       addDependency(newTargetName);
     }

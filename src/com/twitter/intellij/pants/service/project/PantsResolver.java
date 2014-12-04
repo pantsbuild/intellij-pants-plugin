@@ -14,12 +14,9 @@ import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -33,6 +30,7 @@ import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.util.PantsScalaUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -172,6 +170,10 @@ public class PantsResolver {
       }
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
       for (String libraryId : targetInfo.getLibraries()) {
+        if (targetInfo.isScalaTarget() && PantsScalaUtil.isScalaLib(libraryId)) {
+          // skip Scala. Will be added by PantsScalaDataService
+          continue;
+        }
         // todo: is it always exported?
         createLibraryData(moduleDataNode, libraryId, true);
       }
@@ -398,10 +400,6 @@ public class PantsResolver {
   }
 
   private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId, boolean exported) {
-    if (StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
-      // skip Scala. Will be added by PantsScalaDataService
-      return;
-    }
     final List<String> libraryJars = projectInfo.getLibraries(libraryId);
     if (libraryJars.isEmpty() && generateJars) {
       // log only we tried to resolve libs
