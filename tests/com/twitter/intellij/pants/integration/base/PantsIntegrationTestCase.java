@@ -80,12 +80,14 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   protected void setUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
+
+    final File projectDir = new File(myProjectRoot.getPath());
     for (File projectTemplateFolder : getProjectFoldersToCopy()) {
       if (!projectTemplateFolder.exists() || !projectTemplateFolder.isDirectory()) {
         fail("invalid template project path " + projectTemplateFolder.getAbsolutePath());
       }
 
-      FileUtil.copyDirContent(projectTemplateFolder, new File(myProjectRoot.getPath()));
+      FileUtil.copyDirContent(projectTemplateFolder, projectDir);
     }
   }
 
