@@ -89,6 +89,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
       FileUtil.copyDirContent(projectTemplateFolder, projectDir);
     }
+    // work around copyDirContent's copying of symlinks as hard links causing pants to fail
+    FileUtil.delete(new File(myProjectRoot.getPath() + "/.pants.d/runs/latest"));
+    FileUtil.delete(new File(myProjectRoot.getPath() + "/.pants.d/reports/latest"));
   }
 
   abstract protected List<File> getProjectFoldersToCopy();
