@@ -141,7 +141,18 @@ public class PantsResolver {
       if (isEmpty(contentRoot)) {
         removeAllChildren(moduleDataNode, ProjectKeys.CONTENT_ROOT);
       } else {
-        addExcludes(contentRoot);
+        addExcludes(
+          contentRoot,
+          ContainerUtil.findAll(
+            targetInfo.getRoots(),
+            new Condition<SourceRoot>() {
+              @Override
+              public boolean value(SourceRoot root) {
+                return !modulesForRootsAndInfo.containsKey(root);
+              }
+            }
+          )
+        );
       }
     }
 
@@ -192,33 +203,43 @@ public class PantsResolver {
     }
   }
 
-  private void addExcludes(@NotNull final ContentRootData contentRoot) {
-    final File contentRootFolder = new File(contentRoot.getRootPath());
-
-    if (!contentRootFolder.exists()) {
-      LOG.warn("Bad content root " + contentRoot);
-      return;
+  private void addExcludes(
+    @NotNull final ContentRootData contentRoot,
+    @NotNull List<SourceRoot> roots
+  ) {
+    final Set<File> rootFiles = new HashSet<File>();
+    for (SourceRoot sourceType : roots) {
+      rootFiles.add(new File(sourceType.getSourceRootRegardingSourceType(null)));
     }
 
-    final Set<String> rootPaths = new HashSet<String>();
-    for (ExternalSystemSourceType sourceType : ExternalSystemSourceType.values()) {
-      for (ContentRootData.SourceRoot sourceRoot : contentRoot.getPaths(sourceType)) {
-        rootPaths.add(sourceRoot.getPath());
-      }
-    }
-
-    FileUtil.processFilesRecursively(
-      contentRootFolder,
-      new Processor<File>() {
-        @Override
-        public boolean process(final File file) {
-          if (file.isDirectory() && !rootPaths.contains(file.getAbsolutePath())) {
-            contentRoot.storePath(ExternalSystemSourceType.EXCLUDED, file.getAbsolutePath());
+    for (File root : rootFiles) {
+      PantsUtil.traverseFilesRecursively(
+        root,
+        new Processor<File>() {
+          @Override
+          public boolean process(final File file) {
+            if (file.isDirectory() && !containsSourceRoot(file)) {
+              contentRoot.storePath(ExternalSystemSourceType.EXCLUDED, file.getAbsolutePath());
+              return false;
+            }
+            return true;
           }
-          return true;
+
+          /**
+           * Checks if {@code file} contains or is a source root.
+           */
+          private boolean containsSourceRoot(@NotNull File file) {
+            for (File rootFile : rootFiles) {
+              if (FileUtil.isAncestor(file, rootFile, false)) {
+                return true;
+              }
+            }
+
+            return false;
+          }
         }
-      }
-    );
+      );
+    }
   }
 
   private boolean isEmpty(@NotNull ContentRootData contentRoot) {

@@ -64,7 +64,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
       assertNotNull(pluginId + " plugin should be in classpath for integration tests", plugin);
       if (!plugin.isEnabled()) {
-        PluginManagerCore.enablePlugin(pluginId);
+        assertTrue(PluginManagerCore.enablePlugin(pluginId));
       }
     }
 

@@ -27,6 +27,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
+import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsSourceType;
@@ -38,10 +39,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
@@ -396,5 +394,25 @@ public class PantsUtil {
       specBuilder.use(ProgressExecutionMode.MODAL_SYNC);
     }
     ExternalSystemUtil.refreshProjects(specBuilder);
+  }
+
+  /**
+   * {@code processor} should return false if we don't want to step into the file.
+   */
+  public static void traverseFilesRecursively(@NotNull File root, @NotNull Processor<File> processor) {
+    final LinkedList<File> queue = new LinkedList<File>();
+    queue.add(root);
+    while (!queue.isEmpty()) {
+      final File file = queue.removeFirst();
+
+      if (!processor.process(file)) {
+        continue;
+      }
+
+      final File[] children = file.listFiles();
+      if (children != null) {
+        ContainerUtil.addAll(queue, children);
+      }
+    }
   }
 }

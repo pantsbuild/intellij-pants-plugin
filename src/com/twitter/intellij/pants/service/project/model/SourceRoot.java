@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.model.PantsSourceType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SourceRoot {
@@ -14,11 +15,12 @@ public class SourceRoot {
   public SourceRoot() {
   }
 
-  public SourceRoot(String source_root, String package_prefix) {
+  public SourceRoot(@NotNull String source_root, String package_prefix) {
     this.source_root = source_root;
     this.package_prefix = package_prefix;
   }
 
+  @NotNull
   public String getSourceRootRegardingSourceType(@Nullable PantsSourceType rootType) {
     if (PantsSourceType.isResource(rootType)) {
       final String resourcesPath = StringUtil.replaceChar(package_prefix, '.', '/');

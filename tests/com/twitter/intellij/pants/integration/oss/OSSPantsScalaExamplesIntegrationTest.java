@@ -24,4 +24,24 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     //Assert if README file under a sub directory is indexed.
     assertGotoFileContains("README_DOCS");
   }
+
+  public void testExcludes1() throws Throwable {
+    doImport("intellij-integration/src/scala/com/pants/testproject/excludes1");
+
+    assertModules(
+      "intellij-integration_src_scala_com_pants_testproject_excludes1_excludes1",
+      "intellij-integration_src_scala_com_pants_testproject_excludes1_nested_foo_foo"
+    );
+
+    makeModules("intellij-integration_src_scala_com_pants_testproject_excludes1_excludes1");
+
+    assertNotNull(findClass("com.pants.testproject.excludes1.nested.foo.Foo"));
+
+    assertNotNull(
+      findClassFile(
+        "com.pants.testproject.excludes1.nested.foo.Foo",
+        "intellij-integration_src_scala_com_pants_testproject_excludes1_nested_foo_foo"
+      )
+    );
+  }
 }

@@ -16,6 +16,7 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationEvent;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
@@ -43,14 +44,60 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     if (projectPath.startsWith(".pants.d")) {
       return null;
     }
-    final DataNode<ProjectData> projectDataNode = getProjectDataNode(projectPath, settings);
+    boolean allTargets = settings == null || settings.isAllTargets();
+    final String projectDirPath = allTargets ? projectPath : PathUtil.getParentPath(projectPath);
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(projectDirPath);
+    if (workingDir == null) {
+      throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", projectDirPath));
+    }
+    // todo(fkorotkov): add ability to choose a name for a project
+    final String targetsSuffix = allTargets ? ":" : StringUtil.join(settings.getTargetNames(), " :");
+    final String relativeProjectPath = PantsUtil.getRelativeProjectPath(projectDirPath, new File(workingDir.getPath()));
+    final String projectName = relativeProjectPath + "/:" + targetsSuffix;
+    final ProjectData projectData = new ProjectData(
+      PantsConstants.SYSTEM_ID,
+      projectName,
+      workingDir.getPath() + "/.idea/pants-projects/" + relativeProjectPath,
+      projectPath
+    );
+    final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData> (ProjectKeys.PROJECT, projectData, null);
 
-    resolveUsingNewAPI(id, projectPath, settings, listener, projectDataNode, isPreviewMode);
+    resolveUsingPantsGoal(id, projectPath, settings, listener, projectDataNode, isPreviewMode);
+
+    if (!containsContentRoot(projectDataNode, projectDirPath)) {
+      // Add a module with content root as import project directory path.
+      // This will allow all the files in the imported project directory will be indexed by the plugin.
+      final String moduleName = PantsUtil.getCanonicalModuleName(relativeProjectPath) + PantsConstants.PANTS_PROJECT_MODULE_SUFFIX;
+      final ModuleData moduleData = new ModuleData(
+        moduleName,
+        PantsConstants.SYSTEM_ID,
+        ModuleTypeId.JAVA_MODULE,
+        moduleName,
+        projectData.getIdeProjectFileDirectoryPath() + "/" + moduleName,
+        relativeProjectPath
+      );
+      final DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
+      final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, projectDirPath);
+      moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
+    }
 
     return projectDataNode;
   }
 
-  private void resolveUsingNewAPI(
+  private boolean containsContentRoot(@NotNull DataNode<ProjectData> projectDataNode, @NotNull String path) {
+    for (DataNode<ModuleData> moduleDataNode : ExternalSystemApiUtil.findAll(projectDataNode, ProjectKeys.MODULE)) {
+      for (DataNode<ContentRootData> contentRootDataNode : ExternalSystemApiUtil.findAll(moduleDataNode, ProjectKeys.CONTENT_ROOT)) {
+        final ContentRootData contentRootData = contentRootDataNode.getData();
+        if (StringUtil.equalsIgnoreCase(path, contentRootData.getRootPath())) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private void resolveUsingPantsGoal(
     final ExternalSystemTaskId id,
     String projectPath,
     PantsExecutionSettings settings,
@@ -70,42 +117,6 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
       }
     );
     dependenciesResolver.addInfoTo(projectDataNode);
-  }
-
-  private DataNode<ProjectData> getProjectDataNode(String projectPath, PantsExecutionSettings settings) {
-    final String projectDirPath = settings.isAllTargets() ? projectPath : PathUtil.getParentPath(projectPath);
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(projectDirPath);
-    if (workingDir == null) {
-      throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", projectDirPath));
-    }
-    // todo(fkorotkov): add ability to choose a name for a project
-    final String targetsSuffix = settings.isAllTargets() ? ":" : StringUtil.join(settings.getTargetNames(), " :");
-    final String relativeProjectPath = PantsUtil.getRelativeProjectPath(projectDirPath, new File(workingDir.getPath()));
-    final String projectName = relativeProjectPath + "/:" + targetsSuffix;
-    final ProjectData projectData = new ProjectData(
-      PantsConstants.SYSTEM_ID,
-      projectName,
-      workingDir.getPath() + "/.idea/pants-projects/" + relativeProjectPath,
-      projectPath
-    );
-    DataNode<ProjectData> projectInfoDataNode = new DataNode<ProjectData> (ProjectKeys.PROJECT, projectData, null);
-
-    // Add a module with content root as import project directory path.
-    // This will allow all the files in the imported project directory will be indexed by the plugin.
-    final String moduleName = PantsUtil.getCanonicalModuleName(relativeProjectPath) + PantsConstants.PANTS_PROJECT_MODULE_SUFFIX;
-    final ModuleData moduleData = new ModuleData(
-      moduleName,
-      PantsConstants.SYSTEM_ID,
-      ModuleTypeId.JAVA_MODULE,
-      moduleName,
-      projectData.getIdeProjectFileDirectoryPath() + "/" + moduleName,
-      relativeProjectPath
-    );
-    final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
-    final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, projectDirPath);
-    moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
-
-    return projectInfoDataNode ;
   }
 
   @Override

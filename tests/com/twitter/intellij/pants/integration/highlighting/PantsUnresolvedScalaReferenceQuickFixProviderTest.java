@@ -22,7 +22,6 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     assertModules(
       "intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist_missingdepswhitelist",
       "intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2",
-      "intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist_module",
       "testprojects_src_java_com_pants_testproject_publish_hello_greet_greet"
     );
 

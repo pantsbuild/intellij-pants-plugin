@@ -22,8 +22,7 @@ public class PantsUnresolvedJavaReferenceQuickFixProviderTest extends PantsHighl
     assertModules(
       "testprojects_src_java_com_pants_testproject_missingdepswhitelist_missingdepswhitelist",
       "testprojects_src_java_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2",
-      "testprojects_src_java_com_pants_testproject_publish_hello_greet_greet",
-      "testprojects_src_java_com_pants_testproject_missingdepswhitelist_module"
+      "testprojects_src_java_com_pants_testproject_publish_hello_greet_greet"
     );
 
     final PsiClass psiClass = findClass("com.pants.testproject.missingdepswhitelist2.MissingDepsWhitelist2");
