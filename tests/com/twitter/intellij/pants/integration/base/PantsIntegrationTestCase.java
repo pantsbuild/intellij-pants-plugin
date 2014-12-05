@@ -23,6 +23,7 @@ import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -40,15 +41,31 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+/**
+ * If your integration test modifies any source files
+ * please set {@link PantsIntegrationTestCase#needToCopyProjectToTempDir} to true.
+ *
+ * @see com.twitter.intellij.pants.integration.highlighting.PantsHighlightingIntegrationTest
+ */
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
   private static final String PLUGINS_KEY = "idea.load.plugins.id";
 
+  private final boolean needToCopyProjectToTempDir;
   private PantsProjectSettings myProjectSettings;
   private String myRelativeProjectPath;
   private CompilerTester myCompilerTester;
   private String defaultPlugins = null;
+
+  protected PantsIntegrationTestCase() {
+    this(false);
+  }
+
+  protected PantsIntegrationTestCase(boolean needToCopyProjectToTempDir) {
+    this.needToCopyProjectToTempDir = needToCopyProjectToTempDir;
+  }
 
   @Override
   public void setUp() throws Exception {
@@ -81,20 +98,41 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected void setUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
 
+    final List<File> foldersToCopy = new ArrayList<File>(getProjectFoldersToCopy());
+    final File projectFolder = getProjectFolder();
+    if (needToCopyProjectToTempDir && projectFolder != null) {
+      foldersToCopy.add(projectFolder);
+    } else if (projectFolder != null) {
+      myProjectRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(projectFolder);
+      assertNotNull(myProjectRoot);
+    }
+
     final File projectDir = new File(myProjectRoot.getPath());
-    for (File projectTemplateFolder : getProjectFoldersToCopy()) {
+    for (File projectTemplateFolder : foldersToCopy) {
       if (!projectTemplateFolder.exists() || !projectTemplateFolder.isDirectory()) {
         fail("invalid template project path " + projectTemplateFolder.getAbsolutePath());
       }
 
       FileUtil.copyDirContent(projectTemplateFolder, projectDir);
     }
+    cleanProjectRoot();
+  }
+
+  private void cleanProjectRoot() {
     // work around copyDirContent's copying of symlinks as hard links causing pants to fail
     FileUtil.delete(new File(myProjectRoot.getPath() + "/.pants.d/runs/latest"));
     FileUtil.delete(new File(myProjectRoot.getPath() + "/.pants.d/reports/latest"));
+    // and IJ data
+    FileUtil.delete(new File(myProjectRoot.getPath() + "/.idea"));
   }
 
-  abstract protected List<File> getProjectFoldersToCopy();
+  @Nullable
+  abstract protected File getProjectFolder();
+
+  @NotNull
+  protected List<File> getProjectFoldersToCopy() {
+    return Collections.emptyList();
+  }
 
   @Override
   protected String getProjectPath() {
@@ -188,6 +226,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       defaultPlugins = null;
     }
     try {
+      cleanProjectRoot();
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();
       }

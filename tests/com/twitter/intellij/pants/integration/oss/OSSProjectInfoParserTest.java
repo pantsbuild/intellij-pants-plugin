@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {
   @NotNull
   public ProjectInfo resolveProjectInfo(@NotNull String relativeProjectPath) {
-    final String absoluteProjectPath = FileUtil.join(getOSSFolder().getAbsolutePath(), relativeProjectPath);
+    final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), relativeProjectPath);
     final PantsResolver resolver = new PantsResolver(absoluteProjectPath, new PantsExecutionSettings(), true);
     resolver.resolve(null);
     final ProjectInfo projectInfo = resolver.getProjectInfo();
