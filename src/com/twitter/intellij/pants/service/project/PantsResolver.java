@@ -492,7 +492,7 @@ public class PantsResolver {
     final String moduleName = PantsUtil.getCanonicalModuleName(targetName);
 
     final ModuleData moduleData = new ModuleData(
-      moduleName,
+      targetName,
       PantsConstants.SYSTEM_ID,
       ModuleTypeId.JAVA_MODULE,
       moduleName,
