@@ -7,7 +7,7 @@ import com.intellij.codeInsight.TargetElementUtilBase;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
-import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
+import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 
 import java.util.Collection;
 

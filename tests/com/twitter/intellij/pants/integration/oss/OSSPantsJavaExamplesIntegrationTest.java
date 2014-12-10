@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.integration.oss;
 
+import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+
 public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest {
   public void testAnnotation() throws Throwable {
     doImport("examples/src/java/com/pants/examples/annotation/main");

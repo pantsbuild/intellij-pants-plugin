@@ -5,5 +5,12 @@ notifications:
   email:
     - fkorotkov@twitter.com
     - tdesai@twitter.com
-install: ./scripts/prepare-ci-environment.sh
-script: ./scripts/run-tests-ci.sh
+install: ./scripts/setup-ci-environment.sh
+
+env:
+  OSS_PANTS_HOME=./.pants.d/intellij/pants
+script:
+  - ./scripts/run-tests-ci.sh
+  - ./scripts/run-custom-integration.sh
+      -r $OSS_PANTS_HOME
+      -t examples/src/scala/com/pants/example/hello,examples/src/java/com/pants/examples/hello

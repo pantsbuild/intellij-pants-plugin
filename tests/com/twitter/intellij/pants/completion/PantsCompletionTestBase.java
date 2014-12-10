@@ -8,7 +8,7 @@ import com.intellij.openapi.util.text.CharFilter;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.UsefulTestCase;
-import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
+import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;

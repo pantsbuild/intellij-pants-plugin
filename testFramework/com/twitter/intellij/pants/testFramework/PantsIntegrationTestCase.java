@@ -1,7 +1,7 @@
 // Copyright 2014 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.integration.base;
+package com.twitter.intellij.pants.testFramework;
 
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
@@ -15,6 +15,7 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -30,6 +31,8 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.util.ArrayUtil;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.intellij.lang.annotations.Language;
@@ -178,6 +181,18 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
    */
   protected void makeModules(final String... moduleNames) {
     make(createModulesCompileScope(moduleNames));
+  }
+
+  protected void compileProject() {
+    final Module[] modules = ModuleManager.getInstance(myProject).getModules();
+    List<String> moduleNamesList = ContainerUtil.map(
+      modules, new Function<Module, String>() {
+        @Override
+        public String fun(Module module) {
+          return module.getName();
+        }
+      });
+    makeModules(moduleNamesList.toArray(new String[moduleNamesList.size()]));
   }
 
   private void make(final CompileScope scope) {

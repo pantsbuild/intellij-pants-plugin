@@ -7,7 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyReferenceExpression;
-import com.twitter.intellij.pants.base.PantsCodeInsightFixtureTestCase;
+import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.model.PantsSourceType;
 
 import java.util.Arrays;

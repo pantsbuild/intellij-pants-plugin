@@ -8,6 +8,7 @@ import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
+import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import org.jetbrains.annotations.NotNull;
 
 public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {

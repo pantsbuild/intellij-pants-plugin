@@ -1,11 +1,9 @@
 // Copyright 2014 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.integration.oss;
+package com.twitter.intellij.pants.testFramework;
 
 import com.intellij.openapi.util.text.StringUtil;
-import com.twitter.intellij.pants.integration.base.PantsIntegrationTestCase;
-import com.twitter.intellij.pants.util.PantsTestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

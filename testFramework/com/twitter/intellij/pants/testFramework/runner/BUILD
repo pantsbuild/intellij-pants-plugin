@@ -1,5 +1,5 @@
 junit_tests(
-    name = 'tests',
+    name = 'runner',
     dependencies = [
         '3rdparty/intellij:sdk',
         '3rdparty/intellij:python-plugin',
@@ -7,5 +7,5 @@ junit_tests(
         'src:pants-intellij-plugin-scala',
         'testFramework:test-lib'
     ],
-    sources = rglobs('*.java')
+    sources = globs('*.java')
 )
