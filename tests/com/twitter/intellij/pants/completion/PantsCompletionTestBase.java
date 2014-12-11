@@ -33,6 +33,7 @@ abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTes
 
   protected void doCompletionTest(char ch) {
     myFixture.complete(CompletionType.BASIC);
+    assertNotNull("There was no lookup!", myFixture.getLookup());
     myFixture.finishLookup(ch);
     myFixture.checkResultByFile(getTestName(true) + "_expected.py");
   }
