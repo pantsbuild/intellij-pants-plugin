@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection;
 import com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
@@ -94,12 +95,12 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     );
     assertNotNull(
       "Pants lib not configured!",
-      ProjectLibraryTable.getInstance(myFixture.getProject()).getLibraryByName(PantsUtil.PANTS_LIBRARY_NAME)
+      ProjectLibraryTable.getInstance(myFixture.getProject()).getLibraryByName(PantsConstants.PANTS_LIBRARY_NAME)
     );
   }
 
   protected void setUpPantsExecutable() {
-    myFixture.addFileToProject(PantsUtil.PANTS, ""); // make it pants working dir
+    myFixture.addFileToProject(PantsConstants.PANTS, ""); // make it pants working dir
   }
 
   private void checkDependentPlugins(IdeaPluginDescriptor mainPlugin) {
@@ -128,7 +129,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     }
 
     final LibraryTable libraryTable = ProjectLibraryTable.getInstance(myFixture.getProject());
-    final Library libraryByName = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRARY_NAME);
+    final Library libraryByName = libraryTable.getLibraryByName(PantsConstants.PANTS_LIBRARY_NAME);
     if (libraryByName != null) {
       ApplicationManager.getApplication().runWriteAction(
         new Runnable() {

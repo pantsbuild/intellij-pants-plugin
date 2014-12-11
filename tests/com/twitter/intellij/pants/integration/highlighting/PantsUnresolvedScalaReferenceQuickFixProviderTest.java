@@ -36,6 +36,10 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
 
     assertModuleModuleDeps("intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
+    // we should also be able to compile it even with a missing dependency
+    // because we are compiling via compile goal
+    makeModules("intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
+
     WriteCommandAction.Simple.runWriteCommandAction(
       myProject,
       new Runnable() {

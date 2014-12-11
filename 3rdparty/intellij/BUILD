@@ -173,5 +173,5 @@ jar_library(
 
 jar_library(
     name = 'scala-plugin',
-    jars = [ _intellij_plugin_jar(path) for path in _find_jars_for_plugin('Scala', 'scala-plugin.jar') ]
+    jars = [ _intellij_plugin_jar(path) for path in _find_jars_for_plugin('Scala', 'scala-plugin.jar', 'jps/scala-jps-plugin.jar') ]
 )

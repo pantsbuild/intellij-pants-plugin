@@ -17,6 +17,7 @@ import com.intellij.openapi.roots.libraries.LibraryUtil;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiFile;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -59,12 +60,12 @@ public class PantsLibNotConfiguredInspection extends LocalInspectionTool {
       return ProblemDescriptor.EMPTY_ARRAY;
     }
 
-    if (LibraryUtil.findLibrary(module, PantsUtil.PANTS_LIBRARY_NAME) != null) {
+    if (LibraryUtil.findLibrary(module, PantsConstants.PANTS_LIBRARY_NAME) != null) {
       return ProblemDescriptor.EMPTY_ARRAY;
     }
 
     final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
-    final Library libraryByName = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRARY_NAME);
+    final Library libraryByName = libraryTable.getLibraryByName(PantsConstants.PANTS_LIBRARY_NAME);
     if (libraryByName == null) {
       // skip util project lib is configured
       return ProblemDescriptor.EMPTY_ARRAY;
@@ -107,7 +108,7 @@ public class PantsLibNotConfiguredInspection extends LocalInspectionTool {
 
     public static void applyFix(@NotNull Project project, @NotNull Module myModule) {
       final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
-      final Library pantsLib = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRARY_NAME);
+      final Library pantsLib = libraryTable.getLibraryByName(PantsConstants.PANTS_LIBRARY_NAME);
       if (pantsLib == null) {
         // not possible
         Messages.showErrorDialog(

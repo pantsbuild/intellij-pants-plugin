@@ -5,13 +5,13 @@ package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.filters.Filter;
 import com.intellij.openapi.command.impl.DummyProject;
-import com.twitter.intellij.pants.execution.PantsFilter.PantsFilterInfo;
+import com.twitter.intellij.pants.util.PantsOutputMessage;
 import junit.framework.TestCase;
 import org.jetbrains.annotations.Nullable;
 
-public class PantsFilterTest extends TestCase {//LightCodeInsightFixtureTestCase {
+public class PantsFilterTest extends TestCase {
 
-  public void doTest(@Nullable PantsFilterInfo expected, @Nullable PantsFilterInfo actual) {
+  public void doTest(@Nullable PantsOutputMessage expected, @Nullable PantsOutputMessage actual) {
     if (expected == null) {
       assertNull(actual);
     }
@@ -24,39 +24,44 @@ public class PantsFilterTest extends TestCase {//LightCodeInsightFixtureTestCase
     }
   }
 
+  public void testBadMessage() {
+    PantsOutputMessage info = PantsOutputMessage.parseMessage("bla bla bla", true, false);
+    assertNull(info);
+  }
+
   public void testUrl() {
-    PantsFilterInfo info = PantsFilter.parseLine("/this/is/a/url");
-    doTest(new PantsFilterInfo(0, 14, "/this/is/a/url", 0), info);
+    PantsOutputMessage info = PantsOutputMessage.parseOutputMessage("/this/is/a/url");
+    doTest(new PantsOutputMessage(0, 14, "/this/is/a/url", 0), info);
   }
 
   public void testUrlWithSpaces() {
-    PantsFilterInfo info = PantsFilter.parseLine("     /this/is/a/url");
-    doTest(new PantsFilterInfo(5, 19, "/this/is/a/url", 0), info);
+    PantsOutputMessage info = PantsOutputMessage.parseOutputMessage("     /this/is/a/url");
+    doTest(new PantsOutputMessage(5, 19, "/this/is/a/url", 0), info);
   }
 
   public void testUrlWithLineNumber() {
-    PantsFilterInfo info = PantsFilter.parseLine("/this/is/a/url:23");
-    doTest(new PantsFilterInfo(0, 17, "/this/is/a/url", 22), info);
+    PantsOutputMessage info = PantsOutputMessage.parseOutputMessage("/this/is/a/url:23");
+    doTest(new PantsOutputMessage(0, 17, "/this/is/a/url", 22), info);
   }
 
   public void testUrlWithLineNumberAndMessage() {
-    PantsFilterInfo info = PantsFilter.parseLine("/this/is/a/url:23: error: ...");
-    doTest(new PantsFilterInfo(0, 17, "/this/is/a/url", 22), info);
+    PantsOutputMessage info = PantsOutputMessage.parseOutputMessage("/this/is/a/url:23: error: ...");
+    doTest(new PantsOutputMessage(0, 17, "/this/is/a/url", 22), info);
   }
 
   public void testUrlWithSpaceAndNumberAndMessage() {
-    PantsFilterInfo info = PantsFilter.parseLine("     /this/is/a/url:23: message ...");
-    doTest(new PantsFilterInfo(5, 22, "/this/is/a/url", 22), info);
+    PantsOutputMessage info = PantsOutputMessage.parseOutputMessage("     /this/is/a/url:23: message ...");
+    doTest(new PantsOutputMessage(5, 22, "/this/is/a/url", 22), info);
   }
 
   public void testUrlWithTabsAndNumberAndMessage() {
-    PantsFilterInfo info = PantsFilter.parseLine("\t/this/is/a/url:23: message ...");
-    doTest(new PantsFilterInfo(1, 18, "/this/is/a/url", 22), info);
+    PantsOutputMessage info = PantsOutputMessage.parseOutputMessage("\t/this/is/a/url:23: message ...");
+    doTest(new PantsOutputMessage(1, 18, "/this/is/a/url", 22), info);
   }
 
   public void testUrlWithErrorInBrackets() {
-    PantsFilterInfo info = PantsFilter.parseLine("     [error] /this/is/a/url");
-    doTest(new PantsFilterInfo(13, 27, "/this/is/a/url", 0), info);
+    PantsOutputMessage info = PantsOutputMessage.parseOutputMessage("     [error] /this/is/a/url");
+    doTest(new PantsOutputMessage(13, 27, "/this/is/a/url", 0), info);
   }
 
   public void testDotFilePathHasNullFilterResult() {

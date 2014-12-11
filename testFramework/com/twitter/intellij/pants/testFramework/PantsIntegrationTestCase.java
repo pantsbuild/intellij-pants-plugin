@@ -25,6 +25,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -100,6 +101,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   protected void setUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
+    cleanProjectRoot();
 
     final List<File> foldersToCopy = new ArrayList<File>(getProjectFoldersToCopy());
     final File projectFolder = getProjectFolder();
@@ -118,15 +120,28 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
       FileUtil.copyDirContent(projectTemplateFolder, projectDir);
     }
-    cleanProjectRoot();
   }
 
   private void cleanProjectRoot() {
     // work around copyDirContent's copying of symlinks as hard links causing pants to fail
-    FileUtil.delete(new File(myProjectRoot.getPath() + "/.pants.d/runs/latest"));
-    FileUtil.delete(new File(myProjectRoot.getPath() + "/.pants.d/reports/latest"));
+    FileUtil.delete(new File(myProjectRoot.getPath() + "/.pants.d"));
     // and IJ data
     FileUtil.delete(new File(myProjectRoot.getPath() + "/.idea"));
+    final File projectDir = new File(myProjectRoot.getPath());
+    if (!needToCopyProjectToTempDir && projectDir.exists()) {
+      for (File file : getProjectFoldersToCopy()) {
+        final File[] children = file.listFiles();
+        if (children == null) {
+          continue;
+        }
+        for (File child : children) {
+          final File copiedChild = new File(projectDir, child.getName());
+          if (copiedChild.exists()) {
+            FileUtil.delete(copiedChild);
+          }
+        }
+      }
+    }
   }
 
   @Nullable
@@ -148,9 +163,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @Nullable
-  protected VirtualFile findClassFile(String className, String moduleName) {
+  protected File findClassFile(String className, String moduleName) {
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
-    return getCompilerTester().findClassFile(className, getModule(moduleName));
+    final String compilerOutputUrl =
+      ModuleRootManager.getInstance(getModule(moduleName)).getModuleExtension(CompilerModuleExtension.class).getCompilerOutputUrl();
+    final File classFile = new File(new File(VfsUtil.urlToPath(compilerOutputUrl)), className.replace('.', '/') + ".class");
+    return classFile.exists() ? classFile : null;
   }
 
   @Nullable
@@ -197,7 +215,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   private void make(final CompileScope scope) {
     try {
-      myCompilerTester = new MyCompilerTester(myProject, Arrays.asList(scope.getAffectedModules()));
+      myCompilerTester = new CompilerTester(myProject, Arrays.asList(scope.getAffectedModules()));
       final List<CompilerMessage> messages = myCompilerTester.make(scope);
       for (CompilerMessage message : messages) {
         final VirtualFile virtualFile = message.getVirtualFile();
@@ -279,25 +297,5 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   protected String getExternalSystemConfigFileName() {
     return "BUILD";
-  }
-
-  private static class MyCompilerTester extends CompilerTester {
-    public MyCompilerTester(Project project, List<Module> modules) throws Exception {
-      super(project, modules);
-    }
-
-    /**
-     * Override because the super method is incorrect.
-     * Super method uses findChild instead of findFileByRelativePath.
-     */
-    @Nullable
-    @Override
-    public VirtualFile findClassFile(String className, Module module) {
-      final VirtualFile moduleOutput =
-        ModuleRootManager.getInstance(module).getModuleExtension(CompilerModuleExtension.class).getCompilerOutputPath();
-      assert moduleOutput != null;
-      moduleOutput.refresh(false, true);
-      return moduleOutput.findFileByRelativePath(className.replace('.', '/') + ".class");
-    }
   }
 }

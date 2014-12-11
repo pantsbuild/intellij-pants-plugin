@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +52,7 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
     }
     final Project project = file.getProject();
     final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
-    final Library libraryByName = libraryTable.getLibraryByName(PantsUtil.PANTS_LIBRARY_NAME);
+    final Library libraryByName = libraryTable.getLibraryByName(PantsConstants.PANTS_LIBRARY_NAME);
     if (libraryByName != null) {
       return ProblemDescriptor.EMPTY_ARRAY;
     }
@@ -124,7 +125,7 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
       assert jar != null;
 
       final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
-      final Library library = libraryTable.createLibrary(PantsUtil.PANTS_LIBRARY_NAME);
+      final Library library = libraryTable.createLibrary(PantsConstants.PANTS_LIBRARY_NAME);
       final Library.ModifiableModel modifiableModel = library.getModifiableModel();
       modifiableModel.addRoot(jar, OrderRootType.CLASSES);
       modifiableModel.commit();

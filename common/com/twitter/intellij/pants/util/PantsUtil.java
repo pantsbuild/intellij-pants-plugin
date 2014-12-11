@@ -45,17 +45,6 @@ import java.util.regex.Pattern;
 public class PantsUtil {
   private static final Logger LOG = Logger.getInstance(PantsUtil.class);
 
-  public static final String PANTS = "pants";
-  public static final String PANTS_LIBRARY_NAME = "pants";
-
-  public static final String PANTS_INI = "pants.ini";
-
-  private static final String BUILD = "BUILD";
-  private static final String THRIFT_EXT = "thrift";
-  private static final String ANTLR_EXT = "g";
-  private static final String ANTLR_4_EXT = "g4";
-  private static final String PROTOBUF_EXT = "proto";
-
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
     if (vFile == null) {
@@ -78,8 +67,12 @@ public class PantsUtil {
     return isBUILDFileName(PathUtil.getFileName(path));
   }
 
+  private static boolean isBUILDFile(@NotNull VirtualFile virtualFile) {
+    return !virtualFile.isDirectory() && isBUILDFileName(virtualFile.getName());
+  }
+
   public static boolean isBUILDFileName(@NotNull String name) {
-    return BUILD.equals(FileUtil.getNameWithoutExtension(name));
+    return PantsConstants.BUILD.equals(FileUtil.getNameWithoutExtension(name));
   }
 
   /**
@@ -106,7 +99,7 @@ public class PantsUtil {
   @Nullable
   public static VirtualFile findPantsIniFile(@NotNull Project project) {
     final VirtualFile pantsWorkingDir = findPantsWorkingDir(project);
-    return pantsWorkingDir != null ? pantsWorkingDir.findChild(PANTS_INI) : null;
+    return pantsWorkingDir != null ? pantsWorkingDir.findChild(PantsConstants.PANTS_INI) : null;
   }
 
   @Nullable
@@ -191,12 +184,30 @@ public class PantsUtil {
   public static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
     if (file == null) return null;
     if (file.isDirectory()) {
-      final VirtualFile pantsFile = file.findChild(PantsUtil.PANTS);
+      final VirtualFile pantsFile = file.findChild(PantsConstants.PANTS);
       if (pantsFile != null && !pantsFile.isDirectory()) {
         return pantsFile;
       }
     }
     return findPantsExecutable(file.getParent());
+  }
+
+  @Nullable
+  public static File findPantsWorkingDir(@Nullable File file) {
+    final File pantsExecutable = findPantsExecutable(file);
+    return pantsExecutable != null ? pantsExecutable.getParentFile() : null;
+  }
+
+  @Nullable
+  public static File findPantsExecutable(@Nullable File file) {
+    if (file == null) return null;
+    if (file.isDirectory()) {
+      final File pantsFile = new File(file, PantsConstants.PANTS);
+      if (pantsFile.exists() && !pantsFile.isDirectory()) {
+        return pantsFile;
+      }
+    }
+    return findPantsExecutable(file.getParentFile());
   }
 
   @Nullable
@@ -223,15 +234,20 @@ public class PantsUtil {
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
-    final GeneralCommandLine commandLine = new GeneralCommandLine();
-    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
-    if (buildFile == null) {
+    final File buildFile = new File(projectPath);
+    if (!buildFile.exists()) {
       throw new PantsException("Couldn't find BUILD file: " + projectPath);
     }
-    final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
+    final File pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
     if (pantsExecutable == null) {
       throw new PantsException("Couldn't find pants executable for: " + projectPath);
     }
+    return defaultCommandLine(pantsExecutable);
+  }
+
+  @NotNull
+  public static GeneralCommandLine defaultCommandLine(@NotNull File pantsExecutable) {
+    final GeneralCommandLine commandLine = new GeneralCommandLine();
     boolean runFromSources = Boolean.valueOf(System.getProperty("pants.dev.run"));
     if (runFromSources) {
       commandLine.getEnvironment().put("PANTS_DEV", "1");
@@ -239,10 +255,10 @@ public class PantsUtil {
 
     final String pantsExecutablePath = StringUtil.notNullize(
       System.getProperty("pants.executable.path"),
-      pantsExecutable.getPath()
+      pantsExecutable.getAbsolutePath()
     );
     commandLine.setExePath(pantsExecutablePath);
-    final String workingDir = pantsExecutable.getParent().getPath();
+    final String workingDir = pantsExecutable.getParentFile().getAbsolutePath();
     return commandLine.withWorkDirectory(workingDir);
   }
 
@@ -299,10 +315,10 @@ public class PantsUtil {
     // maybe mark target as a target that generates sources and
     // we need to refresh the project for any change in the corresponding module
     // https://github.com/pantsbuild/intellij-pants-plugin/issues/13
-    return FileUtilRt.extensionEquals(path, THRIFT_EXT) ||
-           FileUtilRt.extensionEquals(path, ANTLR_EXT) ||
-           FileUtilRt.extensionEquals(path, ANTLR_4_EXT) ||
-           FileUtilRt.extensionEquals(path, PROTOBUF_EXT);
+    return FileUtilRt.extensionEquals(path, PantsConstants.THRIFT_EXT) ||
+           FileUtilRt.extensionEquals(path, PantsConstants.ANTLR_EXT) ||
+           FileUtilRt.extensionEquals(path, PantsConstants.ANTLR_4_EXT) ||
+           FileUtilRt.extensionEquals(path, PantsConstants.PROTOBUF_EXT);
   }
 
   @NotNull @Nls
@@ -354,7 +370,7 @@ public class PantsUtil {
       new Condition<Module>() {
         @Override
         public boolean value(Module module) {
-          final VirtualFile moduleBUILDFile = findBUILDFileForModule(module, workingDir);
+          final VirtualFile moduleBUILDFile = findBUILDFileForModule(module);
           return file.equals(moduleBUILDFile);
         }
       }
@@ -363,14 +379,13 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findBUILDFileForModule(@NotNull Module module) {
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
-    return workingDir == null ? null : findBUILDFileForModule(module, workingDir);
-  }
-
-  @Nullable
-  public static VirtualFile findBUILDFileForModule(@NotNull Module module, @NotNull VirtualFile workingDir) {
     final String linkedPantsBUILD = module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
-    return linkedPantsBUILD != null ? workingDir.findFileByRelativePath(linkedPantsBUILD) : null;
+    final String linkedPantsBUILDUrl = linkedPantsBUILD != null ? VfsUtil.pathToUrl(linkedPantsBUILD) : null;
+    final VirtualFile virtualFile = linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().refreshAndFindFileByUrl(linkedPantsBUILDUrl) : null;
+    if (virtualFile == null) {
+      return null;
+    }
+    return isBUILDFile(virtualFile) ? virtualFile : findBUILDFile(virtualFile);
   }
 
   public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> map, Function<V1, V2> fun) {

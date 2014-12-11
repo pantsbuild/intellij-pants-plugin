@@ -7,6 +7,10 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.1:</p>
+      <ul>
+        <li>Compilation via compile goal</li>
+      </ul>
       <p>1.0.2:</p>
       <ul>
         <li>Quickfix to add a missing dependency to BUILD files on unresolved symbols</li>
@@ -62,7 +66,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.0.2</version>
+  <version>1.1</version>
   <vendor>Twitter, Inc.</vendor>
   <idea-version since-build="139.650" until-build="139.*"/>
 
@@ -82,6 +86,9 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
+    <compileServer.plugin classpath="pants-jps-plugin.jar"/>
+    <compiler.buildTargetScopeProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildTargetScopeProvider"/>
+    <buildProcess.parametersProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildProcessParametersProvider"/>
     <!--<moduleBuilder builderClass="com.twitter.intellij.pants.service.project.wizard.PantsModuleBuilder"/>-->
     <projectImportProvider
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider"/>

@@ -161,6 +161,16 @@ public class PantsResolver {
             }
           )
         );
+        String compilerOutputRelativePath = ".pants.d/compile/jvm/java/classes";
+        if (targetInfo.isScalaTarget() || targetInfo.hasScalaLib()) {
+          compilerOutputRelativePath = ".pants.d/compile/jvm/scala/classes";
+        } else if (targetInfo.isAnnotationProcessorTarget()) {
+          compilerOutputRelativePath = ".pants.d/compile/jvm/apt/classes";
+        }
+        final String absoluteCompilerOutputPath = new File(myWorkDirectory, compilerOutputRelativePath).getPath();
+        final ModuleData moduleData = moduleDataNode.getData();
+        moduleData.setInheritProjectCompileOutputPath(false);
+        moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, absoluteCompilerOutputPath);
       }
     }
   }
@@ -462,7 +472,7 @@ public class PantsResolver {
     DataNode<ProjectData> projectInfoDataNode,
     String targetName,
     Collection<SourceRoot> roots,
-    @Nullable PantsSourceType rootType
+    @NotNull PantsSourceType rootType
   ) {
     final int index = targetName.lastIndexOf(':');
     final String path = targetName.substring(0, index);
@@ -475,7 +485,7 @@ public class PantsResolver {
     String targetName,
     @NotNull String path,
     Collection<SourceRoot> roots,
-    @Nullable final PantsSourceType rootType
+    @NotNull final PantsSourceType rootType
   ) {
     final String contentRootPath = StringUtil.notNullize(
       PantsUtil.findCommonRoot(
@@ -492,17 +502,6 @@ public class PantsResolver {
       path
     );
 
-    final File[] files = myWorkDirectory != null ? new File(myWorkDirectory, path).listFiles() : null;
-    final File BUILDFile = files == null ? null : ContainerUtil.find(
-      files,
-      new Condition<File>() {
-        @Override
-        public boolean value(File file) {
-          return PantsUtil.isBUILDFileName(file.getName());
-        }
-      }
-    );
-
     final String moduleName = PantsUtil.getCanonicalModuleName(targetName);
 
     final ModuleData moduleData = new ModuleData(
@@ -511,10 +510,7 @@ public class PantsResolver {
       ModuleTypeId.JAVA_MODULE,
       moduleName,
       projectInfoDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
-      StringUtil.notNullize(
-        BUILDFile == null ? null : FileUtil.getRelativePath(myWorkDirectory, BUILDFile),
-        path
-      )
+      new File(myWorkDirectory, path).getAbsolutePath()
     );
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
@@ -571,7 +567,10 @@ public class PantsResolver {
       final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
       myWorkDirectory = commandLine.getWorkDirectory();
       commandLine.addParameter("goal");
-      if (generateJars) {
+      // in unit test mode it's always preview but we need to know libraries
+      // because some jvm_binary targets are actually Scala ones and we need to
+      // set a proper com.twitter.intellij.pants.compiler output folder
+      if (generateJars || ApplicationManager.getApplication().isUnitTestMode()) {
         commandLine.addParameter("resolve");
       }
       String relativeProjectPath = PantsUtil.getRelativeProjectPath(projectPath, myWorkDirectory);

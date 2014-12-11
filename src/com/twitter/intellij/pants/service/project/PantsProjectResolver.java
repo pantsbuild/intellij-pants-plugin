@@ -74,7 +74,7 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
         ModuleTypeId.JAVA_MODULE,
         moduleName,
         projectData.getIdeProjectFileDirectoryPath() + "/" + moduleName,
-        relativeProjectPath
+        projectDirPath
       );
       final DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
       final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, projectDirPath);
