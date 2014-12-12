@@ -3,8 +3,6 @@
 set -e
 
 CWD=$(pwd)
-IJ_VERSION="14"
-IJ_BUILD="IC-139.223"
 
 SCALA_PLUGIN_ID="org.intellij.scala"
 PYTHON_CE_PLUGIN_ID="PythonCore"
@@ -22,10 +20,9 @@ fi
 
 if [ ! -d .pants.d/intellij/plugins ]; then
   echo "Loading $SCALA_PLUGIN_ID and $PYTHON_CE_PLUGIN_ID for $IJ_BUILD..."
-  mkdir plugins
+  mkdir -p plugins
   pushd plugins
 
-  wget -O availables.xml "https://plugins.jetbrains.com/plugins/list/?build=$IJ_BUILD"
   wget -O Scala.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$SCALA_PLUGIN_ID&build=$IJ_BUILD"
   unzip Scala.zip
   rm -rf Scala.zip

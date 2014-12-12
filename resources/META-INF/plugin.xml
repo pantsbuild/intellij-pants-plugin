@@ -68,7 +68,9 @@
   </change-notes>
   <version>1.1</version>
   <vendor>Twitter, Inc.</vendor>
-  <idea-version since-build="139.650" until-build="139.*"/>
+
+  <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
+  <idea-version since-build="139.233" until-build="139.*"/>
 
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
