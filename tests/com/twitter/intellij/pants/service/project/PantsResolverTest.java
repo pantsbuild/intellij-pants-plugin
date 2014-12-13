@@ -87,6 +87,22 @@ public class PantsResolverTest extends PantsResolverTestBase {
     assertSourceRoot("b_scala", "src/com/foo/bar");
   }
 
+  public void testCommonCalculatedRoots() {
+    addInfo("a:scala").
+      withRoot("src/com/foo/a_bar", "com.foo.a_bar").
+      withRoot("src/com/foo/a_baz", "com.foo.a_baz");
+    addInfo("b:scala").
+      withRoot("src/com/foo/b_bar", "com.foo.b_bar").
+      withRoot("src/com/foo/b_baz", "com.foo.b_baz");
+
+    assertContentRoots("a_scala",
+                       "/src/com/foo/a_bar",
+                       "/src/com/foo/a_baz");
+    assertContentRoots("b_scala",
+                       "/src/com/foo/b_bar",
+                       "/src/com/foo/b_baz");
+  }
+
   public void testJavaScalaCyclic() {
     addInfo("a:java").
       withRoot("src/java/foo/bar", "com.foo.bar").

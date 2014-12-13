@@ -33,6 +33,10 @@ public class SourceRoot {
     }
   }
 
+  public String getRawSourceRoot() {
+    return source_root;
+  }
+
   public String getPackagePrefix() {
     return package_prefix;
   }
