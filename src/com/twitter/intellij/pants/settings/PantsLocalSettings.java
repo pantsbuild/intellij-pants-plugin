@@ -11,9 +11,6 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Created by fedorkorotkov
- */
 @State(name = "PantsLocalSettings", storages = {@Storage(file = StoragePathMacros.WORKSPACE_FILE)})
 public class PantsLocalSettings extends AbstractExternalSystemLocalSettings
   implements PersistentStateComponent<AbstractExternalSystemLocalSettings.State> {

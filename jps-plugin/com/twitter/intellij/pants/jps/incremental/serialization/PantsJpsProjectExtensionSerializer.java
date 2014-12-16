@@ -20,10 +20,11 @@ import java.util.List;
 
 public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSerializer {
 
+  private static final String COMPILE_WITH_INTELLIJ   = "compileWithIntellij";
   private static final String LINKED_PROJECT_SETTINGS = "linkedExternalProjectsSettings";
-  private static final String EXTERNAL_PROJECT_PATH = "externalProjectPath";
-  private static final String TARGETS = "targets";
-  private static final String PantsProjectSettings = "PantsProjectSettings";
+  private static final String EXTERNAL_PROJECT_PATH   = "externalProjectPath";
+  private static final String TARGETS                 = "targets";
+  private static final String PROJECT_SETTINGS        = "PantsProjectSettings";
 
   @Nullable
   public static JpsPantsProjectExtension findPantsProjectExtension(@NotNull JpsProject project) {
@@ -37,7 +38,7 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
   @Override
   public void loadExtension(@NotNull JpsProject project, @NotNull Element componentTag) {
     final Element linkedSettings = JDOMExternalizerUtil.getOption(componentTag, LINKED_PROJECT_SETTINGS);
-    final Element projectSettings = linkedSettings != null ? linkedSettings.getChild(PantsProjectSettings) : null;
+    final Element projectSettings = linkedSettings != null ? linkedSettings.getChild(PROJECT_SETTINGS) : null;
     if (projectSettings == null) {
       return;
     }
@@ -45,6 +46,9 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     if (projectPath == null) {
       return;
     }
+    final boolean compileWithIntellij =
+      Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
+
     final Element targetsList = JDOMExternalizerUtil.getOption(projectSettings, TARGETS);
     final Element listOfTargetNames = targetsList != null ? targetsList.getChild("list") : null;
     final List<Element> targetNameOptions = listOfTargetNames != null ? JDOMUtil.getChildren(listOfTargetNames, "option") : Collections.<Element>emptyList();
@@ -58,7 +62,8 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
             return element.getAttributeValue("value");
           }
         }
-      )
+      ),
+      compileWithIntellij
     );
 
     project.getContainer().setChild(JpsPantsProjectExtension.ROLE, projectExtension);

@@ -8,17 +8,20 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
-import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompilerMessage;
+import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ModuleRootModificationUtil;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Disposer;
@@ -32,9 +35,8 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.util.ArrayUtil;
-import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
+import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NonNls;
@@ -56,6 +58,7 @@ import java.util.List;
  */
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
   private static final String PLUGINS_KEY = "idea.load.plugins.id";
+  private static final String PANTS_COMPILER_ENABLED = "pants.compiler.enabled";
 
   private final boolean needToCopyProjectToTempDir;
   private PantsProjectSettings myProjectSettings;
@@ -89,6 +92,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       }
     }
 
+    final boolean usePantsToCompile = Boolean.valueOf(System.getProperty(PANTS_COMPILER_ENABLED, "true"));
+    PantsSettings.getInstance(myProject).setCompileWithIntellij(!usePantsToCompile);
+
     myProjectSettings = new PantsProjectSettings();
     myProjectSettings.setAllTargets(true);
     myCompilerTester = null;
@@ -101,6 +107,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   protected void setUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
+
+    final Sdk sdk = JavaAwareProjectJdkTableImpl.getInstanceEx().getInternalJdk();
+    ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
+
     cleanProjectRoot();
 
     final List<File> foldersToCopy = new ArrayList<File>(getProjectFoldersToCopy());
@@ -157,13 +167,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return super.getProjectPath() + "/" + StringUtil.notNullize(myRelativeProjectPath);
   }
 
-  @Nullable
-  public CompilerTester getCompilerTester() {
+  @NotNull
+  public CompilerTester getCompilerTester() throws Exception {
+    if (myCompilerTester == null) {
+      final List<Module> allModules = Arrays.asList(ModuleManager.getInstance(myProject).getModules());
+      myCompilerTester = new CompilerTester(myProject, allModules);
+    }
     return myCompilerTester;
   }
 
   @Nullable
-  protected File findClassFile(String className, String moduleName) {
+  protected File findClassFile(String className, String moduleName) throws Exception {
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
     final String compilerOutputUrl =
       ModuleRootManager.getInstance(getModule(moduleName)).getModuleExtension(CompilerModuleExtension.class).getCompilerOutputUrl();
@@ -193,63 +207,64 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     throw new AssertionError("Please use makeModules method instead!");
   }
 
+  protected void assertCompilationFailed(final String... moduleNames) throws Exception {
+    for (CompilerMessage message : compileAndGetMessages(getModules(moduleNames))) {
+      if (message.getCategory() == CompilerMessageCategory.ERROR) {
+        return;
+      }
+    }
+    fail("Compilation didn't fail!");
+  }
+
   /**
    * We don't use com.intellij.openapi.externalSystem.test.ExternalSystemTestCase#compileModules
    * because we want to do some assertions on myCompilerTester
    */
-  protected void makeModules(final String... moduleNames) {
-    make(createModulesCompileScope(moduleNames));
+  protected void makeModules(final String... moduleNames) throws Exception {
+    compile(getModules(moduleNames));
   }
 
-  protected void compileProject() {
+  protected void makeProject() throws Exception {
     final Module[] modules = ModuleManager.getInstance(myProject).getModules();
-    List<String> moduleNamesList = ContainerUtil.map(
-      modules, new Function<Module, String>() {
-        @Override
-        public String fun(Module module) {
-          return module.getName();
-        }
-      });
-    makeModules(moduleNamesList.toArray(new String[moduleNamesList.size()]));
+    compile(modules);
   }
 
-  private void make(final CompileScope scope) {
-    try {
-      myCompilerTester = new CompilerTester(myProject, Arrays.asList(scope.getAffectedModules()));
-      final List<CompilerMessage> messages = myCompilerTester.make(scope);
-      for (CompilerMessage message : messages) {
-        final VirtualFile virtualFile = message.getVirtualFile();
-        final String prettyMessage =
-          virtualFile == null ?
-          message.getMessage() :
-          String.format(
-            "%s at %s:%s", message.getMessage(), virtualFile.getCanonicalPath(), message.getRenderTextPrefix()
-          );
-        switch (message.getCategory()) {
-          case ERROR:
-            fail("Compilation failed with error: " + prettyMessage);
-            break;
-          case WARNING:
-            System.out.println("Compilation warning: " + prettyMessage);
-            break;
-          case INFORMATION:
-            break;
-          case STATISTICS:
-            break;
-        }
+  protected void compile(Module... modules) throws Exception {
+    final List<CompilerMessage> messages = compileAndGetMessages(modules);
+    for (CompilerMessage message : messages) {
+      final VirtualFile virtualFile = message.getVirtualFile();
+      final String prettyMessage =
+        virtualFile == null ?
+        message.getMessage() :
+        String.format(
+          "%s at %s:%s", message.getMessage(), virtualFile.getCanonicalPath(), message.getRenderTextPrefix()
+        );
+      switch (message.getCategory()) {
+        case ERROR:
+          fail("Compilation failed with error: " + prettyMessage);
+          break;
+        case WARNING:
+          System.out.println("Compilation warning: " + prettyMessage);
+          break;
+        case INFORMATION:
+          break;
+        case STATISTICS:
+          break;
       }
     }
-    catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
-  private CompileScope createModulesCompileScope(final String... moduleNames) {
+  private List<CompilerMessage> compileAndGetMessages(Module... modules) throws Exception {
+    final ModuleCompileScope scope = new ModuleCompileScope(myProject, modules, true);
+    return getCompilerTester().make(scope);
+  }
+
+  private Module[] getModules(final String... moduleNames) {
     final List<Module> modules = new ArrayList<Module>();
     for (String name : moduleNames) {
       modules.add(getModule(name));
     }
-    return new ModuleCompileScope(myProject, modules.toArray(new Module[modules.size()]), true);
+    return modules.toArray(new Module[modules.size()]);
   }
 
   @Override

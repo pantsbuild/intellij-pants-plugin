@@ -337,6 +337,18 @@ public class PantsUtil {
     return targetAddress != null ? PantsTargetAddress.fromString(targetAddress) : null;
   }
 
+  public static boolean isPantsProject(@NotNull Project project) {
+    return ContainerUtil.exists(
+      ModuleManager.getInstance(project).getModules(),
+      new Condition<Module>() {
+        @Override
+        public boolean value(Module module) {
+          return isPantsModule(module);
+        }
+      }
+    );
+  }
+
   public static boolean isPantsModule(@NotNull @Nls Module module) {
     final String systemId = module.getOptionValue(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY);
     return StringUtil.equals(systemId, PantsConstants.SYSTEM_ID.getId());
@@ -402,11 +414,14 @@ public class PantsUtil {
     return FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
   }
 
-  public static void refreshAllProjects(Project project) {
-    final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
-    if (ApplicationManager.getApplication().isUnitTestMode()) {
-      specBuilder.use(ProgressExecutionMode.MODAL_SYNC);
+  public static void refreshAllProjects(@NotNull Project project) {
+    if (!PantsUtil.isPantsProject(project)) {
+      return;
     }
+    final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
+    ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
+                                          ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
+    specBuilder.use(executionMode);
     ExternalSystemUtil.refreshProjects(specBuilder);
   }
 

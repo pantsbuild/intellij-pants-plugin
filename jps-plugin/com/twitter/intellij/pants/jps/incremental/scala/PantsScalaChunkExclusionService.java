@@ -3,16 +3,30 @@
 
 package com.twitter.intellij.pants.jps.incremental.scala;
 
+import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsModelSerializerExtension;
+import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
 import org.jetbrains.jps.ModuleChunk;
 import org.jetbrains.jps.incremental.scala.ChunkExclusionService;
-import org.jetbrains.jps.model.JpsGlobal;
 import org.jetbrains.jps.model.module.JpsModule;
+
+import java.util.Set;
 
 public class PantsScalaChunkExclusionService extends ChunkExclusionService {
   @Override
   public boolean isExcluded(ModuleChunk chunk) {
-    for (JpsModule module : chunk.getModules()) {
+    final Set<JpsModule> modules = chunk.getModules();
+    if (modules.isEmpty()) {
+      return false;
+    }
+
+    final JpsPantsProjectExtension pantsProjectExtension =
+      PantsJpsProjectExtensionSerializer.findPantsProjectExtension(modules.iterator().next().getProject());
+    if (pantsProjectExtension == null || pantsProjectExtension.isCompileWithIntellij()) {
+      return false;
+    }
+
+    for (JpsModule module : modules) {
       if (PantsJpsModelSerializerExtension.findPantsModuleExtension(module) != null) {
         return true;
       }

@@ -91,12 +91,14 @@
     <compileServer.plugin classpath="pants-jps-plugin.jar"/>
     <compiler.buildTargetScopeProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildTargetScopeProvider"/>
     <buildProcess.parametersProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildProcessParametersProvider"/>
-    <!--<moduleBuilder builderClass="com.twitter.intellij.pants.service.project.wizard.PantsModuleBuilder"/>-->
+
+    <projectConfigurable instance="com.twitter.intellij.pants.config.PantsProjectCompilerConfigurable"
+                         id="intellij-pants" displayName="Pants" parentId="project.propCompiler"/>
+
     <projectImportProvider
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider"/>
     <projectImportBuilder
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportBuilder"/>
-
 
     <configurationType implementation="com.twitter.intellij.pants.execution.PantsConfigurationType"/>
     <programRunner implementation="com.twitter.intellij.pants.run.PantsRunner"/>

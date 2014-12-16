@@ -14,9 +14,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
-/**
- * Created by fedorkorotkov
- */
 @State(
   name = "PantsSettings",
   storages = {
@@ -27,8 +24,18 @@ import java.util.Set;
 public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings, PantsProjectSettings, PantsSettingsListener>
   implements PersistentStateComponent<PantsSettings.MyState> {
 
+  protected boolean myCompileWithIntellij = false;
+
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
+  }
+
+  public boolean isCompileWithIntellij() {
+    return myCompileWithIntellij;
+  }
+
+  public void setCompileWithIntellij(boolean compileWithIntellij) {
+    myCompileWithIntellij = compileWithIntellij;
   }
 
   @NotNull
@@ -43,12 +50,11 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
   @Override
   protected void copyExtraSettingsFrom(@NotNull PantsSettings settings) {
-
+    setCompileWithIntellij(settings.isCompileWithIntellij());
   }
 
   @Override
   protected void checkSettings(@NotNull PantsProjectSettings old, @NotNull PantsProjectSettings current) {
-
   }
 
   @SuppressWarnings("unchecked")
@@ -56,6 +62,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   @Override
   public MyState getState() {
     final MyState state = new MyState();
+    state.setCompileWithIntellij(isCompileWithIntellij());
     fillState(state);
     return state;
   }
@@ -68,15 +75,23 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public static class MyState implements State<PantsProjectSettings> {
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
+    boolean myCompileWithIntellij = false;
+
     @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
     public Set<PantsProjectSettings> getLinkedExternalProjectsSettings() {
       return myLinkedExternalProjectsSettings;
     }
 
     public void setLinkedExternalProjectsSettings(Set<PantsProjectSettings> settings) {
-      if (settings != null) {
-        myLinkedExternalProjectsSettings.addAll(settings);
-      }
+      myLinkedExternalProjectsSettings = settings;
+    }
+
+    public boolean isCompileWithIntellij() {
+      return myCompileWithIntellij;
+    }
+
+    public void setCompileWithIntellij(boolean compileWithIntellij) {
+      myCompileWithIntellij = compileWithIntellij;
     }
   }
 }

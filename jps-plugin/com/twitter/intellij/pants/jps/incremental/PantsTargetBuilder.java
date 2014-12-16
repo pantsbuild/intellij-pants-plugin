@@ -9,6 +9,7 @@ import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
+import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTarget;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
@@ -51,7 +52,9 @@ public class PantsTargetBuilder extends TargetBuilder<JavaSourceRootDescriptor, 
   public void buildStarted(CompileContext context) {
     super.buildStarted(context);
     final JpsProject project = context.getProjectDescriptor().getProject();
-    if (PantsJpsProjectExtensionSerializer.findPantsProjectExtension(project) != null) {
+    final JpsPantsProjectExtension pantsProjectExtension =
+      PantsJpsProjectExtensionSerializer.findPantsProjectExtension(project);
+    if (pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij()) {
       // disable only for imported projects
       JavaBuilder.IS_ENABLED.set(context, Boolean.FALSE);
     }

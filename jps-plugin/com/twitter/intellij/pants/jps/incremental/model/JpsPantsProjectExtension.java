@@ -17,4 +17,6 @@ public interface JpsPantsProjectExtension extends JpsElement, PantsCompileOption
   void setTargetPath(@NotNull String path);
 
   void setTargetNames(@NotNull List<String> names);
+
+  boolean isCompileWithIntellij();
 }

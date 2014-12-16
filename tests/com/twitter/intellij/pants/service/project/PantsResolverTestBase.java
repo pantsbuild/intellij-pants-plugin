@@ -54,8 +54,7 @@ abstract class PantsResolverTestBase extends TestCase {
   }
 
   private DataNode<ProjectData> createProjectNode() {
-    final PantsResolver dependenciesResolver =
-      new PantsResolver("", new PantsExecutionSettings(Collections.<String>emptyList(), true), false);
+    final PantsResolver dependenciesResolver = new PantsResolver("", new PantsExecutionSettings(), false);
     dependenciesResolver.setProjectInfo(getProjectInfo());
     dependenciesResolver.setWorkDirectory(new File(""));
     final ProjectData projectData = new ProjectData(

@@ -136,9 +136,10 @@ public class PantsManager implements
                                      ((PantsProjectSettings)projectSettings).getTargets() : Collections.<String>emptyList();
         final boolean allTargets = projectSettings instanceof PantsProjectSettings &&
                                    ((PantsProjectSettings)projectSettings).isAllTargets();
-        final PantsExecutionSettings executionSettings = new PantsExecutionSettings(targets, allTargets);
+        boolean compileWithIntellij = PantsSettings.getInstance(ideProject).isCompileWithIntellij();
+        final PantsExecutionSettings executionSettings = new PantsExecutionSettings(targets, allTargets, compileWithIntellij);
         for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
-          executionSettings.addResolverExtensionClassNams(resolver.getClass().getName());
+          executionSettings.addResolverExtensionClassName(resolver.getClass().getName());
         }
         return executionSettings;
       }
