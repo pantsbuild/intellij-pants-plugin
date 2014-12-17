@@ -6,6 +6,12 @@
         <element id="archive" name="pants.jar">
           <element id="module-output" name="intellij-pants-plugin" />
         </element>
+        <element id="archive" name="pants-jps-plugin.jar">
+          <element id="module-output" name="jps-plugin" />
+        </element>
+        <element id="archive" name="pants-common.jar">
+          <element id="module-output" name="common" />
+        </element>
       </element>
     </root>
   </artifact>
