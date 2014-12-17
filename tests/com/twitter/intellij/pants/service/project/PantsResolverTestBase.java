@@ -111,20 +111,32 @@ abstract class PantsResolverTestBase extends TestCase {
         }
       }
     );
-    assertNotNull(String.format("%s doesn't have a dependency %s", moduleName, dependencyName), dependencyDataNode);
+    List<String> actualDependencyNames = ContainerUtil.map(
+      dependencies, new Function<DataNode<ModuleDependencyData>, String>() {
+        @Override
+        public String fun(DataNode<ModuleDependencyData> node) {
+          return node.getData().getExternalName();
+        }
+      }
+    );
+    assertNotNull(
+      String.format("%s doesn't have a dependency %s in list %s", moduleName, dependencyName, actualDependencyNames.toString()), dependencyDataNode
+    );
   }
 
   public void assertSourceRoot(String moduleName, final String path) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertModuleExists(moduleName, moduleNode);
-    final DataNode<ContentRootData> contentRoot = ExternalSystemApiUtil.find(moduleNode, ProjectKeys.CONTENT_ROOT);
-    assertNotNull(String.format("No content root for module %s", moduleName), contentRoot);
-    final ContentRootData contentRootData = contentRoot.getData();
-    for (PantsSourceType type : PantsSourceType.values()) {
-      for (ContentRootData.SourceRoot sourceRoot : contentRootData.getPaths(type.toExternalSystemSourceType())) {
-        final File expectedFile = new File(new File(""), path);
-        if (StringUtil.equalsIgnoreCase(expectedFile.getPath(), sourceRoot.getPath())) {
-          return;
+    final Collection<DataNode<ContentRootData>> contentRoots = ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.CONTENT_ROOT);
+    assertFalse(String.format("No content root for module %s", moduleName), contentRoots.isEmpty());
+    for (DataNode<ContentRootData> contentRoot : contentRoots) {
+      final ContentRootData contentRootData = contentRoot.getData();
+      for (PantsSourceType type : PantsSourceType.values()) {
+        for (ContentRootData.SourceRoot sourceRoot : contentRootData.getPaths(type.toExternalSystemSourceType())) {
+          final File expectedFile = new File(new File(""), path);
+          if (StringUtil.equalsIgnoreCase(expectedFile.getPath(), sourceRoot.getPath())) {
+            return;
+          }
         }
       }
     }
@@ -134,12 +146,14 @@ abstract class PantsResolverTestBase extends TestCase {
   public void assertNoContentRoot(String moduleName) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertModuleExists(moduleName, moduleNode);
-    final DataNode<ContentRootData> contentRoot = ExternalSystemApiUtil.find(moduleNode, ProjectKeys.CONTENT_ROOT);
-    assertNull(
-      String
-        .format("Content root %s is defined for module %s", contentRoot != null ? contentRoot.getData().getRootPath() : null, moduleName),
-      contentRoot
-    );
+    final Collection<DataNode<ContentRootData>> contentRoots = ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.CONTENT_ROOT);
+    for (DataNode<ContentRootData> contentRoot : contentRoots) {
+      assertNull(
+        String
+          .format("Content root %s is defined for module %s", contentRoot.getData().getRootPath(), moduleName),
+        contentRoot
+      );
+    }
   }
 
   public void assertContentRoots(String moduleName, String... roots) {
@@ -154,7 +168,10 @@ abstract class PantsResolverTestBase extends TestCase {
         }
       }
     );
-    assertEquals("Content roots", Arrays.asList(roots), actualRootPaths);
+    List<String> expected = Arrays.asList(roots);
+    Collections.sort(expected);
+    Collections.sort(actualRootPaths);
+    assertEquals("Content roots", expected, actualRootPaths);
   }
 
   private void assertModuleExists(String moduleName, DataNode<ModuleData> moduleNode) {

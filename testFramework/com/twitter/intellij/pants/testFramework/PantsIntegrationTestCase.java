@@ -20,7 +20,6 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
@@ -35,6 +34,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.util.ArrayUtil;
+import com.intellij.util.Processor;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -313,4 +313,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected String getExternalSystemConfigFileName() {
     return "BUILD";
   }
+
+  protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
+    assertNotNull(
+      String.format("didn't find class: %s in module: %s",className,moduleName),
+      findClassFile(className, moduleName)
+    );
+  }
+
 }

@@ -4,16 +4,21 @@
 package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Factory;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class ProjectInfo {
+  public static final String COMMON_SOURCES_TARGET_NAME = "common_sources";
   private final Logger LOG = Logger.getInstance(getClass());
   // id(org:name:version) to jars
   protected Map<String, List<String>> libraries;
@@ -108,6 +113,138 @@ public class ProjectInfo {
     }
   }
 
+
+  public void fixCommonRoots() {
+    // IntelliJ doesn't support when several modules have the same source root
+    // so, for source roots that point at multiple targets, we need to convert those so that
+    // they have only one target that owns them.
+    // to do that, we
+    // - find or create a target to own the source root
+    // - for each target that depends on that root,
+    //   we replace the root with a dependency on the new target
+
+    final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets = getSourceRoot2TargetMapping();
+    final String pantsWorkingDirPath = findPantsWorkingDirPath(sourceRoot2Targets);
+
+    for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
+      final List<Pair<String, TargetInfo>> targetNameAndInfos = entry.getValue();
+      final SourceRoot originalSourceRoot = entry.getKey();
+      if (targetNameAndInfos.size() <= 1) {
+        continue;
+      }
+
+      final Pair<String, TargetInfo> commonTargetNameAndInfo =
+        findOrCreateTargetForCommonSourceRoot(pantsWorkingDirPath, targetNameAndInfos, originalSourceRoot);
+
+      addTarget(commonTargetNameAndInfo.getFirst(), commonTargetNameAndInfo.getSecond());
+      for (Pair<String, TargetInfo> nameAndInfo : targetNameAndInfos) {
+        nameAndInfo.getSecond().getRoots().remove(originalSourceRoot);
+        nameAndInfo.getSecond().addDependency(commonTargetNameAndInfo.getFirst());
+      }
+    }
+  }
+
+  @Override
+  public String toString() {
+    return "ProjectInfo{" +
+           "libraries=" + libraries +
+           ", targets=" + targets +
+           '}';
+  }
+
+  @NotNull
+  public Map<SourceRoot, List<Pair<String, TargetInfo>>> getSourceRoot2TargetMapping() {
+    final Map<SourceRoot, List<Pair<String, TargetInfo>>> result = new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
+    for (Map.Entry<String, TargetInfo> entry : getTargets().entrySet()) {
+      final String targetName = entry.getKey();
+      final TargetInfo targetInfo = entry.getValue();
+      for (SourceRoot sourceRoot : targetInfo.getRoots()) {
+        ContainerUtil.getOrCreate(result, sourceRoot, new Factory<List<Pair<String, TargetInfo>>>() {
+          @Override
+          public List<Pair<String, TargetInfo>> create() {
+            return new ArrayList<Pair<String, TargetInfo>>();
+          }
+        }
+        ).add(Pair.create(targetName, targetInfo));
+      }
+    }
+    return result;
+  }
+
+  @NotNull
+  private String findPantsWorkingDirPath(@NotNull Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets) {
+    final Set<Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>>> entries = sourceRoot2Targets.entrySet();
+    final String root = entries.iterator().next().getKey().getRawSourceRoot();
+    final VirtualFile dir = entries.isEmpty() || StringUtil.isEmpty(root)? null : PantsUtil.findPantsWorkingDir(root);
+
+    return dir != null ? dir.getPath(): "/";
+  }
+
+  @NotNull
+  private Pair<String, TargetInfo> findOrCreateTargetForCommonSourceRoot(
+    @NotNull String path,
+    @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
+    @NotNull SourceRoot originalSourceRoot
+  ) {
+    Pair<String, TargetInfo> existingTarget = findSingleTargetWithOnlyThisRoot(targetNameAndInfos);
+    if (existingTarget != null) {
+      return existingTarget;
+    }
+    TargetInfo commonInfo = createTargetForSourceRootIntersectingDeps(targetNameAndInfos, originalSourceRoot);
+
+    final String commonTargetAddress = createTargetAddressForCommonSource(path, originalSourceRoot);
+    return Pair.create(commonTargetAddress, commonInfo);
+  }
+
+  @Nullable
+  private Pair<String, TargetInfo> findSingleTargetWithOnlyThisRoot(@NotNull List<Pair<String, TargetInfo>> targetNameAndInfos) {
+    final List<Pair<String, TargetInfo>> singleRootTargets = ContainerUtil.findAll(
+      targetNameAndInfos, new Condition<Pair<String, TargetInfo>>() {
+        @Override
+        public boolean value(Pair<String, TargetInfo> nameAndInfo) {
+          final TargetInfo info = nameAndInfo.getSecond();
+          final int commonSourceTargetDependencyCount = ContainerUtil.findAll(
+            info.getTargets(), new Condition<String>() {
+              @Override
+              public boolean value(String s) {
+                return s.contains(COMMON_SOURCES_TARGET_NAME);
+              }
+            }
+          ).size();
+          return commonSourceTargetDependencyCount + info.getRoots().size() == 1;
+        }
+      }
+    );
+    if (singleRootTargets.size() == 1) {
+      return singleRootTargets.get(0);
+    } else {
+      LOG.debug("had more than one target with one source root: " + singleRootTargets);
+      return null;
+    }
+  }
+
+  @NotNull
+  private String createTargetAddressForCommonSource(@NotNull String projectPath, @NotNull SourceRoot originalSourceRoot) {
+    final String commonPath = originalSourceRoot.getRawSourceRoot();
+    String relativePath = commonPath.substring(projectPath.length());
+    return relativePath + ":" + COMMON_SOURCES_TARGET_NAME;
+  }
+
+  @NotNull
+  private TargetInfo createTargetForSourceRootIntersectingDeps(
+    @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
+    @NotNull SourceRoot originalSourceRoot
+  ) {
+    final Iterator<Pair<String, TargetInfo>> iterator = targetNameAndInfos.iterator();
+    TargetInfo commonInfo = iterator.next().getSecond();
+    while (iterator.hasNext()) {
+      commonInfo = commonInfo.intersect(iterator.next().getSecond());
+    }
+    final Set<SourceRoot> newRoots = ContainerUtil.newHashSet(originalSourceRoot);
+    commonInfo.setRoots(newRoots);
+    return commonInfo;
+  }
+
   @NotNull
   private String combinedTargetsName(String... targetNames) {
     assert targetNames.length > 0;
@@ -132,31 +269,5 @@ public class ProjectInfo {
         ),
         "_and_"
       );
-  }
-
-  @Override
-  public String toString() {
-    return "ProjectInfo{" +
-           "libraries=" + libraries +
-           ", targets=" + targets +
-           '}';
-  }
-
-  public Map<SourceRoot, List<Pair<String, TargetInfo>>> getSourceRoot2TargetMapping() {
-    final Factory<List<Pair<String, TargetInfo>>> factory = new Factory<List<Pair<String, TargetInfo>>>() {
-      @Override
-      public List<Pair<String, TargetInfo>> create() {
-        return new ArrayList<Pair<String, TargetInfo>>();
-      }
-    };
-    final HashMap<SourceRoot, List<Pair<String, TargetInfo>>> result = new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
-    for (Map.Entry<String, TargetInfo> entry : getTargets().entrySet()) {
-      final String targetName = entry.getKey();
-      final TargetInfo targetInfo = entry.getValue();
-      for (SourceRoot sourceRoot : targetInfo.getRoots()) {
-        ContainerUtil.getOrCreate(result, sourceRoot, factory).add(Pair.create(targetName, targetInfo));
-      }
-    }
-    return result;
   }
 }
