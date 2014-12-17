@@ -3,10 +3,16 @@
 
 package com.twitter.intellij.pants.jps.incremental.model;
 
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.util.Processor;
 import com.twitter.intellij.pants.util.PantsConstants;
+import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jps.builders.*;
+import org.jetbrains.jps.builders.BuildRootIndex;
+import org.jetbrains.jps.builders.BuildTarget;
+import org.jetbrains.jps.builders.BuildTargetRegistry;
+import org.jetbrains.jps.builders.TargetOutputIndex;
 import org.jetbrains.jps.builders.java.JavaModuleBuildTargetType;
 import org.jetbrains.jps.builders.java.JavaSourceRootDescriptor;
 import org.jetbrains.jps.builders.storage.BuildDataPaths;
@@ -15,15 +21,13 @@ import org.jetbrains.jps.incremental.ModuleBuildTarget;
 import org.jetbrains.jps.indices.IgnoredFileIndex;
 import org.jetbrains.jps.indices.ModuleExcludeIndex;
 import org.jetbrains.jps.model.JpsModel;
+import org.jetbrains.jps.model.JpsProject;
 import org.jetbrains.jps.model.module.JpsModule;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-public class PantsBuildTarget extends BuildTarget<JavaSourceRootDescriptor> implements PantsCompileOptions {
+public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> implements PantsCompileOptions {
   private final String myTargetPath;
   private final List<String> targetNames;
 
@@ -51,30 +55,69 @@ public class PantsBuildTarget extends BuildTarget<JavaSourceRootDescriptor> impl
 
   @NotNull
   @Override
-  public List<JavaSourceRootDescriptor> computeRootDescriptors(
-    JpsModel model,
-    ModuleExcludeIndex index,
-    IgnoredFileIndex ignoredFileIndex,
-    BuildDataPaths dataPaths
+  public List<PantsSourceRootDescriptor> computeRootDescriptors(
+    final JpsModel model,
+    final ModuleExcludeIndex index,
+    final IgnoredFileIndex ignoredFileIndex,
+    final BuildDataPaths dataPaths
   ) {
-    final List<JavaSourceRootDescriptor> result = new ArrayList<JavaSourceRootDescriptor>();
-    for (JpsModule module : model.getProject().getModules()) {
-      final ModuleBuildTarget moduleBuildTarget = new ModuleBuildTarget(module, JavaModuleBuildTargetType.PRODUCTION);
-      result.addAll(moduleBuildTarget.computeRootDescriptors(model, index, ignoredFileIndex, dataPaths));
-    }
-    return result;
-  }
-
-  @Nullable
-  @Override
-  public JavaSourceRootDescriptor findRootDescriptor(String rootId, BuildRootIndex rootIndex) {
-    return null;
+    final Set<PantsSourceRootDescriptor> result = new HashSet<PantsSourceRootDescriptor>();
+    processJavaModuleTargets(
+      model.getProject(),
+      new Processor<ModuleBuildTarget>() {
+        @Override
+        public boolean process(ModuleBuildTarget target) {
+          List<JavaSourceRootDescriptor> descriptors = target.computeRootDescriptors(model, index, ignoredFileIndex, dataPaths);
+          for (JavaSourceRootDescriptor javaSourceRootDescriptor : descriptors) {
+            result.add(
+              new PantsSourceRootDescriptor(
+                PantsBuildTarget.this,
+                javaSourceRootDescriptor.getRootFile(),
+                javaSourceRootDescriptor.isGenerated(),
+                javaSourceRootDescriptor.getExcludedRoots()
+              )
+            );
+          }
+          return true;
+        }
+      }
+    );
+    return new ArrayList<PantsSourceRootDescriptor>(result);
   }
 
   @NotNull
   @Override
-  public Collection<File> getOutputRoots(CompileContext context) {
-    return Collections.emptyList();
+  public Collection<File> getOutputRoots(final CompileContext context) {
+    final Set<File> result = new THashSet<File>(FileUtil.FILE_HASHING_STRATEGY);
+    final JpsProject jpsProject = context.getProjectDescriptor().getProject();
+    processJavaModuleTargets(
+      jpsProject,
+      new Processor<ModuleBuildTarget>() {
+        @Override
+        public boolean process(ModuleBuildTarget target) {
+          result.addAll(target.getOutputRoots(context));
+          return true;
+        }
+      }
+    );
+    return result;
+  }
+
+  private void processJavaModuleTargets(@NotNull JpsProject jpsProject, @NotNull Processor<ModuleBuildTarget> processor) {
+    for (JpsModule module : jpsProject.getModules()) {
+      for (JavaModuleBuildTargetType buildTargetType : JavaModuleBuildTargetType.ALL_TYPES) {
+        final ModuleBuildTarget moduleBuildTarget = new ModuleBuildTarget(module, buildTargetType);
+        if (!processor.process(moduleBuildTarget)) {
+          return;
+        }
+      }
+    }
+  }
+
+  @Nullable
+  @Override
+  public PantsSourceRootDescriptor findRootDescriptor(String rootId, BuildRootIndex rootIndex) {
+    return null;
   }
 
   @NotNull

@@ -12,7 +12,9 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTarget;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
+import com.twitter.intellij.pants.jps.incremental.model.PantsSourceRootDescriptor;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
+import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -21,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.builders.BuildOutputConsumer;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
 import org.jetbrains.jps.builders.java.JavaBuilderUtil;
-import org.jetbrains.jps.builders.java.JavaSourceRootDescriptor;
 import org.jetbrains.jps.incremental.CompileContext;
 import org.jetbrains.jps.incremental.ProjectBuildException;
 import org.jetbrains.jps.incremental.TargetBuilder;
@@ -35,7 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
-public class PantsTargetBuilder extends TargetBuilder<JavaSourceRootDescriptor, PantsBuildTarget> {
+public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
 
   public PantsTargetBuilder() {
@@ -51,10 +52,10 @@ public class PantsTargetBuilder extends TargetBuilder<JavaSourceRootDescriptor, 
   @Override
   public void buildStarted(CompileContext context) {
     super.buildStarted(context);
-    final JpsProject project = context.getProjectDescriptor().getProject();
-    final JpsPantsProjectExtension pantsProjectExtension =
-      PantsJpsProjectExtensionSerializer.findPantsProjectExtension(project);
-    if (pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij()) {
+    final JpsProject jpsProject = context.getProjectDescriptor().getProject();
+    final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
+    final boolean compileWithPants = pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij();
+    if (compileWithPants && PantsJpsUtil.containsPantsModules(jpsProject.getModules())) {
       // disable only for imported projects
       JavaBuilder.IS_ENABLED.set(context, Boolean.FALSE);
     }
@@ -63,12 +64,17 @@ public class PantsTargetBuilder extends TargetBuilder<JavaSourceRootDescriptor, 
   @Override
   public void build(
     @NotNull PantsBuildTarget target,
-    @NotNull DirtyFilesHolder<JavaSourceRootDescriptor, PantsBuildTarget> holder,
+    @NotNull DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder,
     @NotNull BuildOutputConsumer outputConsumer,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
     final String targetAbsolutePath = target.getTargetPath();
     final File pantsExecutable = findPantsExecutable(targetAbsolutePath);
+
+    if (!holder.hasDirtyFiles() && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
+      context.processMessage(new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, "No changes to compile."));
+      return;
+    }
 
     if (pantsExecutable == null) {
       context.processMessage(new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.ERROR, "Failed to find Pants executable!"));

@@ -17,10 +17,14 @@ import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsScalaUtil;
+import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ScalaSdkResolver implements PantsResolverExtension {
   private static final Logger LOG = Logger.getInstance(ScalaSdkResolver.class);
@@ -101,7 +105,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
 
   private void createScalaSdkDataFromJars(@NotNull DataNode<ModuleData> moduleDataNode, Set<String> scalaLibJars) {
     final ScalaModelData scalaModelData = new ScalaModelData(PantsConstants.SYSTEM_ID);
-    final Set<File> files = new HashSet<File>();
+    final Set<File> files = new THashSet<File>(FileUtil.FILE_HASHING_STRATEGY);
     for (String jarPath : scalaLibJars) {
       final File jarFile = new File(jarPath);
       if (jarFile.exists()) {
