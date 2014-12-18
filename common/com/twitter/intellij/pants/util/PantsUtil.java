@@ -264,7 +264,6 @@ public class PantsUtil {
 
   public static List<String> listAllTargets(@NotNull String projectPath) throws PantsException {
     final GeneralCommandLine commandLine = defaultCommandLine(projectPath);
-    commandLine.addParameter("goal");
     commandLine.addParameter("list");
     try {
       final File temporaryFile = FileUtil.createTempFile("pants_run", ".out");

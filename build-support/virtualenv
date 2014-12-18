@@ -2,13 +2,11 @@
 # Wrapper for self-bootstrapping virtualenv
 # This file is copy of https://github.com/twitter/commons/blob/master/build-support/virtualenv
 set -e
-VIRTUALENV_VERSION=1.11.4
+VIRTUALENV_VERSION=1.11.6
 
 if [[ -z "$PY" ]]; then
   if which python2.7 >/dev/null; then
     PY=`which python2.7`
-  elif which python2.6 >/dev/null; then
-    PY=`which python2.6`
   else
     echo 'No python interpreter found on the path.  Python will not work!' 1>&2
     exit 1
