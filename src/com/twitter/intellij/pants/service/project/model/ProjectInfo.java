@@ -154,17 +154,21 @@ public class ProjectInfo {
 
   @NotNull
   public Map<SourceRoot, List<Pair<String, TargetInfo>>> getSourceRoot2TargetMapping() {
+    final Factory<List<Pair<String, TargetInfo>>> listFactory = new Factory<List<Pair<String, TargetInfo>>>() {
+      @Override
+      public List<Pair<String, TargetInfo>> create() {
+        return new ArrayList<Pair<String, TargetInfo>>();
+      }
+    };
     final Map<SourceRoot, List<Pair<String, TargetInfo>>> result = new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
     for (Map.Entry<String, TargetInfo> entry : getTargets().entrySet()) {
       final String targetName = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       for (SourceRoot sourceRoot : targetInfo.getRoots()) {
-        ContainerUtil.getOrCreate(result, sourceRoot, new Factory<List<Pair<String, TargetInfo>>>() {
-          @Override
-          public List<Pair<String, TargetInfo>> create() {
-            return new ArrayList<Pair<String, TargetInfo>>();
-          }
-        }
+        ContainerUtil.getOrCreate(
+          result,
+          sourceRoot,
+          listFactory
         ).add(Pair.create(targetName, targetInfo));
       }
     }
@@ -175,9 +179,9 @@ public class ProjectInfo {
   private String findPantsWorkingDirPath(@NotNull Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets) {
     final Set<Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>>> entries = sourceRoot2Targets.entrySet();
     final String root = entries.iterator().next().getKey().getRawSourceRoot();
-    final VirtualFile dir = entries.isEmpty() || StringUtil.isEmpty(root)? null : PantsUtil.findPantsWorkingDir(root);
+    final VirtualFile dir = entries.isEmpty() || StringUtil.isEmpty(root) ? null : PantsUtil.findPantsWorkingDir(root);
 
-    return dir != null ? dir.getPath(): "/";
+    return dir != null ? dir.getPath(): "_";
   }
 
   @NotNull
@@ -186,11 +190,11 @@ public class ProjectInfo {
     @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
     @NotNull SourceRoot originalSourceRoot
   ) {
-    Pair<String, TargetInfo> existingTarget = findSingleTargetWithOnlyThisRoot(targetNameAndInfos);
+    final Pair<String, TargetInfo> existingTarget = findSingleTargetWithOnlyThisRoot(targetNameAndInfos);
     if (existingTarget != null) {
       return existingTarget;
     }
-    TargetInfo commonInfo = createTargetForSourceRootIntersectingDeps(targetNameAndInfos, originalSourceRoot);
+    final TargetInfo commonInfo = createTargetForSourceRootIntersectingDeps(targetNameAndInfos, originalSourceRoot);
 
     final String commonTargetAddress = createTargetAddressForCommonSource(path, originalSourceRoot);
     return Pair.create(commonTargetAddress, commonInfo);
@@ -226,7 +230,7 @@ public class ProjectInfo {
   @NotNull
   private String createTargetAddressForCommonSource(@NotNull String projectPath, @NotNull SourceRoot originalSourceRoot) {
     final String commonPath = originalSourceRoot.getRawSourceRoot();
-    String relativePath = commonPath.substring(projectPath.length());
+    final String relativePath = commonPath.substring(projectPath.length());
     return relativePath + ":" + COMMON_SOURCES_TARGET_NAME;
   }
 
