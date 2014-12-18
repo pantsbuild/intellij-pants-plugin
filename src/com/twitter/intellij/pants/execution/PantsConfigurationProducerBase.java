@@ -25,9 +25,9 @@ public abstract class PantsConfigurationProducerBase extends RunConfigurationPro
   final private String goal;
   private String name;
 
-  public PantsConfigurationProducerBase(String goal, String arguments) {
+  public PantsConfigurationProducerBase(String goal) {
     super(PantsConfigurationType.getInstance().getFactory());
-    this.arguments = arguments;
+    this.arguments = goal;
     this.goal = goal;
     this.name = goal;
   }
