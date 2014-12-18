@@ -572,7 +572,6 @@ public class PantsResolver {
     try {
       final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
       myWorkDirectory = commandLine.getWorkDirectory();
-      commandLine.addParameter("goal");
       // in unit test mode it's always preview but we need to know libraries
       // because some jvm_binary targets are actually Scala ones and we need to
       // set a proper com.twitter.intellij.pants.compiler output folder
