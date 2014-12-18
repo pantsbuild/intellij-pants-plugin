@@ -8,6 +8,6 @@ package com.twitter.intellij.pants.execution;
  */
 public class PantsTestConfigurationProducer extends PantsConfigurationProducerBase {
   public PantsTestConfigurationProducer() {
-    super("test");
+    super("test", "goal test");
   }
 }
