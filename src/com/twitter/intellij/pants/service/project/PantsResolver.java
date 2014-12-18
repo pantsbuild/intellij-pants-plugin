@@ -242,12 +242,12 @@ public class PantsResolver {
     }
 
     for (File root : rootFiles) {
-      PantsUtil.traverseFilesRecursively(
+      PantsUtil.traverseDirectoriesRecursively(
         root,
         new Processor<File>() {
           @Override
           public boolean process(final File file) {
-            if (file.isDirectory() && !containsSourceRoot(file)) {
+            if (!containsSourceRoot(file)) {
               contentRoot.storePath(ExternalSystemSourceType.EXCLUDED, file.getAbsolutePath());
               return false;
             }

@@ -425,14 +425,16 @@ public class PantsUtil {
   }
 
   /**
-   * {@code processor} should return false if we don't want to step into the file.
+   * {@code processor} should return false if we don't want to step into the directory.
    */
-  public static void traverseFilesRecursively(@NotNull File root, @NotNull Processor<File> processor) {
+  public static void traverseDirectoriesRecursively(@NotNull File root, @NotNull Processor<File> processor) {
     final LinkedList<File> queue = new LinkedList<File>();
     queue.add(root);
     while (!queue.isEmpty()) {
       final File file = queue.removeFirst();
-
+      if (file.isFile()) {
+        continue;
+      }
       if (!processor.process(file)) {
         continue;
       }
