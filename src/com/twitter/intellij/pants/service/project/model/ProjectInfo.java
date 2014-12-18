@@ -220,9 +220,9 @@ public class ProjectInfo {
       }
     );
     if (singleRootTargets.size() == 1) {
-      return singleRootTargets.get(0);
+      return singleRootTargets.iterator().next();
     } else {
-      LOG.debug("had more than one target with one source root: " + singleRootTargets);
+      LOG.warn("had more than one target with one source root: " + singleRootTargets);
       return null;
     }
   }
