@@ -70,6 +70,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   @Override
   public void loadState(MyState state) {
     super.loadState(state);
+    setCompileWithIntellij(state.isCompileWithIntellij());
   }
 
   public static class MyState implements State<PantsProjectSettings> {
