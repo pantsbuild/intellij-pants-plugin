@@ -137,6 +137,10 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findPantsExecutable(@NotNull String projectPath) {
+    // guard against VirtualFileManager throwing an NPE in tests that don't stand up an IDEA instance
+    if (ApplicationManager.getApplication() == null) {
+      return null;
+    }
     final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     return findPantsExecutable(buildFile);
   }
