@@ -14,12 +14,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
+import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
@@ -93,18 +93,22 @@ public class PantsResolver {
 
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (projectInfo == null) return;
+
     projectInfo.fixCyclicDependencies();
+    projectInfo.fixCommonRoots();
 
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
-
-    createAllModulesNoLibsDepsOrSourceRoots(projectInfoDataNode, modules);
-    addSourceRootsToModules(projectInfoDataNode, modules);
+    createAllEmptyModules(projectInfoDataNode, modules);
+    addSourceRootsToModules(modules);
     addDependenciesToModules(modules);
     addLibsToModules(modules);
     runResolverExtensions(projectInfoDataNode, modules);
   }
 
-  private void createAllModulesNoLibsDepsOrSourceRoots(@NotNull DataNode<ProjectData> projectInfoDataNode, @NotNull Map<String, DataNode<ModuleData>> modules) {
+  private void createAllEmptyModules(
+    @NotNull DataNode<ProjectData> projectInfoDataNode,
+    @NotNull Map<String, DataNode<ModuleData>> modules
+  ) {
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String targetName = entry.getKey();
       if (StringUtil.startsWith(targetName, ":scala-library")) {
@@ -116,69 +120,110 @@ public class PantsResolver {
         LOG.info("Skipping " + targetName + " because it is empty");
         continue;
       }
-      final DataNode<ModuleData> moduleData = createModuleData(
-        projectInfoDataNode, targetName, targetInfo.getRoots(), targetInfo.getSourcesType()
-      );
+      final DataNode<ModuleData> moduleData =
+        createModuleData(
+          projectInfoDataNode,
+          targetName,
+          pathFromTargetAddress(targetName),
+          targetInfo.getRoots(),
+          targetInfo.getSourcesType()
+        );
       modules.put(targetName, moduleData);
     }
   }
 
-  private void addSourceRootsToModules(@NotNull DataNode<ProjectData> projectInfoDataNode, @NotNull Map<String, DataNode<ModuleData>> modules) {
-    // IntelliJ doesn't support when several modules have the same source root
-    final Map<SourceRoot, DataNode<ModuleData>> modulesForRootsAndInfo = handleCommonRoots(projectInfoDataNode, modules);
-
+  private void addSourceRootsToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
-      final String mainTarget = entry.getKey();
+      final String targetAddress = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
-      if (!modules.containsKey(mainTarget) || targetInfo.getRoots().isEmpty()) {
+      if (!modules.containsKey(targetAddress) || targetInfo.getRoots().isEmpty()) {
         continue;
       }
-      final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
-      final ContentRootData contentRoot = findChildData(moduleDataNode, ProjectKeys.CONTENT_ROOT);
-      if (contentRoot == null) {
-        LOG.warn("no content root for " + mainTarget);
-        continue;
-      }
-      for (SourceRoot root : targetInfo.getRoots()) {
-        final DataNode<ModuleData> sourceRootModule = modulesForRootsAndInfo.get(root);
+      final DataNode<ModuleData> moduleDataNode = modules.get(targetAddress);
 
-        if (moduleDataNode != sourceRootModule && sourceRootModule != null) {
-          // todo: is it always exported?
-          addModuleDependency(moduleDataNode, sourceRootModule, true);
-          continue;
-        }
-        addSourceRoot(contentRoot, root, targetInfo.getTargetType());
+      final List<ContentRootData> contentRoots = findChildren(moduleDataNode, ProjectKeys.CONTENT_ROOT);
+      if (contentRoots.isEmpty()) {
+        continue;
       }
-      if (isEmpty(contentRoot)) {
-        removeAllChildren(moduleDataNode, ProjectKeys.CONTENT_ROOT);
-      } else {
-        addExcludes(
-          contentRoot,
-          ContainerUtil.findAll(
-            targetInfo.getRoots(),
-            new Condition<SourceRoot>() {
-              @Override
-              public boolean value(SourceRoot root) {
-                return !modulesForRootsAndInfo.containsKey(root);
-              }
-            }
-          )
-        );
-        if (!settings.isCompileWithIntellij()) {
-          String compilerOutputRelativePath = ".pants.d/compile/jvm/java/classes";
-          if (targetInfo.isScalaTarget() || targetInfo.hasScalaLib()) {
-            compilerOutputRelativePath = ".pants.d/compile/jvm/scala/classes";
-          }
-          else if (targetInfo.isAnnotationProcessorTarget()) {
-            compilerOutputRelativePath = ".pants.d/compile/jvm/apt/classes";
-          }
-          final String absoluteCompilerOutputPath = new File(myWorkDirectory, compilerOutputRelativePath).getPath();
-          final ModuleData moduleData = moduleDataNode.getData();
-          moduleData.setInheritProjectCompileOutputPath(false);
-          moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, absoluteCompilerOutputPath);
-        }
+
+      addSourceRootsToContentRoots(targetAddress, targetInfo, contentRoots);
+      addExcludesToContentRoots(targetInfo, contentRoots);
+
+      if (!settings.isCompileWithIntellij()) {
+        addPantsJpsCompileOutputs(targetInfo, moduleDataNode);
       }
     }
+  }
+
+  private void addExcludesToContentRoots(@NotNull final TargetInfo targetInfo, @NotNull List<ContentRootData> remainingContentRoots) {
+    if (targetInfo.getSourcesType() == PantsSourceType.RESOURCE) {
+      return; // don't exclude subdirectories of resource sources
+    }
+    for (final ContentRootData contentRoot : remainingContentRoots) {
+      addExcludes(
+        targetInfo,
+        contentRoot,
+        ContainerUtil.findAll(
+          targetInfo.getRoots(),
+          new Condition<SourceRoot>() {
+            @Override
+            public boolean value(SourceRoot root) {
+              return FileUtil.isAncestor(
+                contentRoot.getRootPath(),
+                root.getSourceRootRegardingSourceType(targetInfo.getSourcesType()),
+                false
+              );
+            }
+          }
+        )
+      );
+    }
+  }
+
+  private void addSourceRootsToContentRoots(
+    @NotNull String targetAddress,
+    @NotNull final TargetInfo targetInfo,
+    @NotNull List<ContentRootData> contentRoots
+  ) {
+    for (final SourceRoot root : targetInfo.getRoots()) {
+      final ContentRootData contentRootAncestorOfRoot = ContainerUtil.find(
+        contentRoots, new Condition<ContentRootData>() {
+          @Override
+          public boolean value(ContentRootData contentRoot) {
+            return FileUtil.isAncestor(contentRoot.getRootPath(), root.getSourceRootRegardingSourceType(targetInfo.getSourcesType()), false);
+          }
+        }
+      );
+      if (contentRootAncestorOfRoot == null) {
+        List<String> contentRootPaths = ContainerUtil.map(
+          contentRoots, new Function<ContentRootData, String>() {
+            @Override
+            public String fun(ContentRootData contentRootData) {
+              return contentRootData.getRootPath();
+            }
+          }
+        );
+        LOG.error(targetAddress + ": found source root: " +
+                  root.getSourceRootRegardingSourceType(targetInfo.getSourcesType()) + " outside content roots: " + contentRootPaths);
+        continue;
+      }
+
+      addSourceRoot(contentRootAncestorOfRoot, root, targetInfo.getTargetType());
+    }
+  }
+
+  private void addPantsJpsCompileOutputs(@NotNull TargetInfo targetInfo, @NotNull DataNode<ModuleData> moduleDataNode) {
+    String compilerOutputRelativePath = ".pants.d/compile/jvm/java/classes";
+    if (targetInfo.isScalaTarget() || targetInfo.hasScalaLib()) {
+      compilerOutputRelativePath = ".pants.d/compile/jvm/scala/classes";
+    }
+    else if (targetInfo.isAnnotationProcessorTarget()) {
+      compilerOutputRelativePath = ".pants.d/compile/jvm/apt/classes";
+    }
+    final String absoluteCompilerOutputPath = new File(myWorkDirectory, compilerOutputRelativePath).getPath();
+    final ModuleData moduleData = moduleDataNode.getData();
+    moduleData.setInheritProjectCompileOutputPath(false);
+    moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, absoluteCompilerOutputPath);
   }
 
   private void addDependenciesToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
@@ -233,12 +278,13 @@ public class PantsResolver {
   }
 
   private void addExcludes(
+    @NotNull TargetInfo targetInfo,
     @NotNull final ContentRootData contentRoot,
     @NotNull List<SourceRoot> roots
   ) {
     final Set<File> rootFiles = new THashSet<File>(FileUtil.FILE_HASHING_STRATEGY);
-    for (SourceRoot sourceType : roots) {
-      rootFiles.add(new File(sourceType.getSourceRootRegardingSourceType(null)));
+    for (SourceRoot sourceRoot : roots) {
+      rootFiles.add(new File(sourceRoot.getSourceRootRegardingSourceType(targetInfo.getSourcesType())));
     }
 
     for (File root : rootFiles) {
@@ -271,16 +317,6 @@ public class PantsResolver {
     }
   }
 
-  private boolean isEmpty(@NotNull ContentRootData contentRoot) {
-    for (ExternalSystemSourceType sourceType : ExternalSystemSourceType.values()) {
-      if (!contentRoot.getPaths(sourceType).isEmpty()) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   private void addSourceRoot(@NotNull ContentRootData contentRoot, @NotNull SourceRoot root, @Nullable String targetType) {
     try {
       final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetType);
@@ -297,18 +333,8 @@ public class PantsResolver {
     }
   }
 
-  @Nullable
-  private <T> T findChildData(DataNode<?> dataNode, com.intellij.openapi.externalSystem.model.Key<T> key) {
-    for (DataNode<?> child : dataNode.getChildren()) {
-      T childData = child.getData(key);
-      if (childData != null) {
-        return childData;
-      }
-    }
-    return null;
-  }
-
-  private <T> List<T> findChildren(DataNode<?> dataNode, com.intellij.openapi.externalSystem.model.Key<T> key) {
+  @NotNull
+  private <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
     return ContainerUtil.mapNotNull(
       ExternalSystemApiUtil.findAll(dataNode, key),
       new Function<DataNode<T>, T>() {
@@ -318,11 +344,6 @@ public class PantsResolver {
         }
       }
     );
-  }
-
-  private <T> void removeAllChildren(DataNode<?> dataNode, com.intellij.openapi.externalSystem.model.Key<T> key) {
-    final Collection<DataNode<T>> toRemove = ExternalSystemApiUtil.findAll(dataNode, key);
-    dataNode.getChildren().removeAll(toRemove);
   }
 
   private void addModuleDependency(DataNode<ModuleData> moduleDataNode, DataNode<ModuleData> submoduleDataNode, boolean exported) {
@@ -338,116 +359,6 @@ public class PantsResolver {
     );
     moduleDependencyData.setExported(exported);
     moduleDataNode.createChild(ProjectKeys.MODULE_DEPENDENCY, moduleDependencyData);
-  }
-
-  private Map<SourceRoot, DataNode<ModuleData>> handleCommonRoots(
-    DataNode<ProjectData> projectInfoDataNode,
-    Map<String, DataNode<ModuleData>> modules
-  ) {
-    final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets = projectInfo.getSourceRoot2TargetMapping();
-    final Map<SourceRoot, DataNode<ModuleData>> result = new HashMap<SourceRoot, DataNode<ModuleData>>();
-
-    for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
-      final List<Pair<String, TargetInfo>> targetNameAndInfos = entry.getValue();
-      if (targetNameAndInfos.size() <= 1) {
-        continue;
-      }
-      final SourceRoot originalSourceRoot = entry.getKey();
-      final Pair<String, TargetInfo> firstTargetWithOneRoot = ContainerUtil.find(
-        targetNameAndInfos,
-        new Condition<Pair<String, TargetInfo>>() {
-          @Override
-          public boolean value(Pair<String, TargetInfo> info) {
-            return info.getSecond().getRoots().size() == 1;
-          }
-        }
-      );
-
-      if (firstTargetWithOneRoot != null) {
-        final DataNode<ModuleData> moduleDataForFirstTarget = modules.get(firstTargetWithOneRoot.getFirst());
-        if (moduleDataForFirstTarget != null) {
-          LOG.debug("Found common source root target " + firstTargetWithOneRoot.getFirst());
-          result.put(originalSourceRoot, moduleDataForFirstTarget);
-        }
-        else {
-          LOG.warn("Bad common source root " + originalSourceRoot + " for " + firstTargetWithOneRoot.getFirst());
-        }
-      }
-      else {
-        final Iterator<Pair<String, TargetInfo>> iterator = targetNameAndInfos.iterator();
-        TargetInfo commonInfo = iterator.next().getSecond();
-        while (iterator.hasNext()) {
-          commonInfo = commonInfo.intersect(iterator.next().getSecond());
-        }
-
-        // we need to check that all other modules for all other common roots
-        // have this root in their roots
-        final List<SourceRoot> filteredCommonRoots =
-          ContainerUtil.findAll(
-            commonInfo.getRoots(),
-            new Condition<SourceRoot>() {
-              @Override
-              public boolean value(SourceRoot root) {
-                for (Pair<String, TargetInfo> pair : sourceRoot2Targets.get(root)) {
-                  final TargetInfo targetInfo = pair.getSecond();
-                  if (!targetInfo.getRoots().contains(originalSourceRoot)) {
-                    // Example:
-                    // Target A has roots a and b, Target B has a and b too
-                    // but Target C has b only and c only. Then we can't extract a and b.
-                    // a and b should be in a separate module
-                    return false;
-                  }
-                }
-
-                return true;
-              }
-            }
-          );
-        commonInfo.setRoots(new HashSet<SourceRoot>(filteredCommonRoots));
-        final PantsSourceType commonSourceRootType = PantsUtil.getSourceTypeForTargetType(commonInfo.getTargetType());
-
-        final String commonPath = PantsUtil.findCommonRoot(
-          ContainerUtil.map(
-            commonInfo.getRoots(), new Function<SourceRoot, String>() {
-              @Override
-              public String fun(SourceRoot root) {
-                // get as a resource to get a pretty name
-                final String path = root.getSourceRootRegardingSourceType(PantsSourceType.RESOURCE);
-                return myWorkDirectory == null ? path :
-                       FileUtil.getRelativePath(myWorkDirectory.getPath(), path, File.separatorChar);
-              }
-            }
-          )
-        );
-
-        final String commonRootsFakeTargetName = commonInfo.getRoots().size() == 1 ?
-                                                 commonInfo.getRoots().iterator().next().getPackagePrefix() :
-                                                 "common_packages";
-        final String commonName = commonPath + ":" + commonRootsFakeTargetName;
-        final DataNode<ModuleData> rootModuleData =
-          createModuleData(
-            projectInfoDataNode,
-            commonName,
-            commonInfo.getRoots(),
-            commonSourceRootType
-          );
-
-        final ContentRootData contentRoot = findChildData(rootModuleData, ProjectKeys.CONTENT_ROOT);
-        if (contentRoot != null) {
-          for (SourceRoot sourceRoot : commonInfo.getRoots()) {
-            addSourceRoot(contentRoot, sourceRoot, commonInfo.getTargetType());
-          }
-        }
-
-        for (SourceRoot root : commonInfo.getRoots()) {
-          result.put(root, rootModuleData);
-        }
-        modules.put(commonName, rootModuleData);
-        projectInfo.getTargets().put(commonName, commonInfo);
-      }
-    }
-
-    return result;
   }
 
   private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId, boolean exported) {
@@ -473,41 +384,19 @@ public class PantsResolver {
     moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
   }
 
-  @NotNull
-  private DataNode<ModuleData> createModuleData(
-    DataNode<ProjectData> projectInfoDataNode,
-    String targetName,
-    Collection<SourceRoot> roots,
-    @NotNull PantsSourceType rootType
-  ) {
+  private String pathFromTargetAddress(String targetName) {
     final int index = targetName.lastIndexOf(':');
-    final String path = targetName.substring(0, index);
-    return createModuleData(projectInfoDataNode, targetName, path, roots, rootType);
+    return targetName.substring(0, index);
   }
 
   @NotNull
   private DataNode<ModuleData> createModuleData(
-    DataNode<ProjectData> projectInfoDataNode,
-    String targetName,
-    @NotNull String path,
-    Collection<SourceRoot> roots,
+    @NotNull DataNode<ProjectData> projectInfoDataNode,
+    @NotNull String targetName,
+    @NotNull String relativePath,
+    @NotNull Collection<SourceRoot> roots,
     @NotNull final PantsSourceType rootType
   ) {
-    final String contentRootPath = StringUtil.notNullize(
-      PantsUtil.findCommonRoot(
-        ContainerUtil.map(
-          roots,
-          new Function<SourceRoot, String>() {
-            @Override
-            public String fun(SourceRoot root) {
-              return root.getSourceRootRegardingSourceType(rootType);
-            }
-          }
-        )
-      ),
-      path
-    );
-
     final String moduleName = PantsUtil.getCanonicalModuleName(targetName);
 
     final ModuleData moduleData = new ModuleData(
@@ -516,20 +405,56 @@ public class PantsResolver {
       ModuleTypeId.JAVA_MODULE,
       moduleName,
       projectInfoDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
-      new File(myWorkDirectory, path).getAbsolutePath()
+      new File(myWorkDirectory, relativePath).getAbsolutePath()
     );
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
     if (!roots.isEmpty()) {
-      final ContentRootData contentRoot = new ContentRootData(
-        PantsConstants.SYSTEM_ID,
-        contentRootPath
-      );
-      moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
+      final Collection<SourceRoot> baseSourceRoots = new ArrayList<SourceRoot>();
+      for (SourceRoot root : sortRootsAsPaths(roots, rootType)) {
+        if (hasAnAncestorRoot(baseSourceRoots, root, rootType)) continue;
+        baseSourceRoots.add(root);
+      }
+
+      for (SourceRoot baseRoot : baseSourceRoots) {
+        final ContentRootData contentRoot = new ContentRootData(
+          PantsConstants.SYSTEM_ID,
+          baseRoot.getSourceRootRegardingSourceType(rootType)
+        );
+        moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
+      }
     }
 
     return moduleDataNode;
+  }
+
+  @NotNull
+  private static List<SourceRoot> sortRootsAsPaths(
+    @NotNull Collection<SourceRoot> sourceRoots,
+    @NotNull final PantsSourceType rootType
+  ) {
+    final List<SourceRoot> sortedRoots = new ArrayList<SourceRoot>(sourceRoots);
+    Collections.sort(
+      sortedRoots, new Comparator<SourceRoot>() {
+        @Override
+        public int compare(SourceRoot o1, SourceRoot o2) {
+          final String rootPath1 = o1.getSourceRootRegardingSourceType(rootType);
+          final String rootPath2 = o2.getSourceRootRegardingSourceType(rootType);
+          return FileUtil.comparePaths(rootPath1, rootPath2);
+        }
+      }
+    );
+    return sortedRoots;
+  }
+
+  private boolean hasAnAncestorRoot(@NotNull Collection<SourceRoot> baseSourceRoots, @NotNull SourceRoot root, PantsSourceType rootType) {
+    for (SourceRoot sourceRoot : baseSourceRoots) {
+      if (FileUtil.isAncestor(sourceRoot.getSourceRootRegardingSourceType(rootType), root.getSourceRootRegardingSourceType(rootType), false)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void resolve(@Nullable ProcessAdapter processAdapter) {

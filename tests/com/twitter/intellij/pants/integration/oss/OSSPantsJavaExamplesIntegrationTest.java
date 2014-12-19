@@ -69,7 +69,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "examples_src_java_com_pants_examples_hello_main_main",
       "examples_src_java_com_pants_examples_hello_module",
       "examples_src_java_com_pants_examples_hello_greet_greet",
-      "examples_src_java_com_pants_examples_hello_main_main-bin"
+      "examples_src_java_com_pants_examples_hello_main_main-bin",
+      "_examples_src_java_com_pants_examples_hello_main_common_sources"
     );
 
     makeModules("examples_src_java_com_pants_examples_hello_main_main");
@@ -77,7 +78,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       findClassFile("com.pants.examples.hello.greet.Greeting", "examples_src_java_com_pants_examples_hello_greet_greet")
     );
     assertNotNull(
-      findClassFile("com.pants.examples.hello.main.HelloMain", "examples_src_java_com_pants_examples_hello_main_main-bin")
+      findClassFile("com.pants.examples.hello.main.HelloMain", "_examples_src_java_com_pants_examples_hello_main_common_sources")
     );
   }
 
@@ -134,7 +135,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     doImport("intellij-integration/src/java/com/pants/testproject/excludes2");
 
     assertModules(
-      "intellij-integration_src_java_com_pants_testproject_excludes2_excludes2"
+      "intellij-integration_src_java_com_pants_testproject_excludes2_excludes2",
+      "intellij-integration_src_java_com_pants_testproject_excludes2_module"
     );
 
     makeModules("intellij-integration_src_java_com_pants_testproject_excludes2_excludes2");

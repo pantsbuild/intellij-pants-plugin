@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PantsResolverTest extends PantsResolverTestBase {
-  public void testCommonRoots1() {
+  public void testOneCommonRootOwnedBySingleTargetOneNot() {
     addInfo("a:java").
       withRoot("src/com/foo/bar", "com.foo.bar").
       withRoot("src/com/foo/baz", "com.foo.baz");
@@ -17,13 +17,13 @@ public class PantsResolverTest extends PantsResolverTestBase {
     addInfo("c:tests").
       withRoot("src/com/foo/baz", "com.foo.baz");
 
-    assertDependency("a_java", "src__com.foo.bar");
+    assertDependency("a_java", "src_com_foo_bar_common_sources");
     assertDependency("a_java", "c_tests");
-    assertDependency("b_scala", "src__com.foo.bar");
+    assertDependency("b_scala", "src_com_foo_bar_common_sources");
     assertDependency("b_scala", "c_tests");
   }
 
-  public void testCommonRoots2() {
+  public void testTargetsWithMultipleCommonRootsEachUseSyntheticTargets() {
     addInfo("a:java").
       withRoot("src/com/foo/bar", "com.foo.bar").
       withRoot("src/com/foo/baz", "com.foo.baz");
@@ -34,14 +34,16 @@ public class PantsResolverTest extends PantsResolverTestBase {
       withRoot("src/com/foo/bar", "com.foo.bar").
       withRoot("src/com/foo/qwerty", "com.foo.qwerty");
 
-    assertDependency("a_java", "src__com.foo.bar");
-    assertDependency("a_java", "src__com.foo.baz");
-    assertDependency("b_scala", "src__com.foo.bar");
-    assertDependency("b_scala", "src__com.foo.baz");
-    assertDependency("c_tests", "src__com.foo.bar");
+    assertDependency("a_java", "src_com_foo_bar_common_sources");
+    assertDependency("a_java", "src_com_foo_baz_common_sources");
+
+    assertDependency("b_scala", "src_com_foo_bar_common_sources");
+    assertDependency("b_scala", "src_com_foo_baz_common_sources");
+
+    assertDependency("c_tests", "src_com_foo_bar_common_sources");
   }
 
-  public void testCommonRoots3() {
+  public void testTargetsWithMultipleCommonRootsEachUseSyntheticTargets2() {
     addInfo("a:java").
       withRoot("src/com/foo/bar", "com.foo.bar").
       withRoot("src/com/foo/baz", "com.foo.baz");
@@ -52,14 +54,16 @@ public class PantsResolverTest extends PantsResolverTestBase {
       withRoot("src/com/foo/baz", "com.foo.baz").
       withRoot("src/com/foo/qwerty", "com.foo.qwerty");
 
-    assertDependency("a_java", "src__com.foo.bar");
-    assertDependency("a_java", "src__com.foo.baz");
-    assertDependency("b_scala", "src__com.foo.bar");
-    assertDependency("b_scala", "src__com.foo.baz");
-    assertDependency("c_tests", "src__com.foo.baz");
+    assertDependency("a_java", "src_com_foo_bar_common_sources");
+    assertDependency("a_java", "src_com_foo_baz_common_sources");
+
+    assertDependency("b_scala", "src_com_foo_bar_common_sources");
+    assertDependency("b_scala", "src_com_foo_baz_common_sources");
+
+    assertDependency("c_tests", "src_com_foo_baz_common_sources");
   }
 
-  public void testCommonRoots4() {
+  public void testTwoTargetsWithTwoCommonRootsHaveNoContentRootsAndDependOnSyntheticTargets() {
     addInfo("a:java").
       withRoot("src/com/foo/bar", "com.foo.bar").
       withRoot("src/com/foo/baz", "com.foo.baz");
@@ -67,24 +71,42 @@ public class PantsResolverTest extends PantsResolverTestBase {
       withRoot("src/com/foo/bar", "com.foo.bar").
       withRoot("src/com/foo/baz", "com.foo.baz");
 
-    assertDependency("a_java", "src__common_packages");
-    assertDependency("b_scala", "src__common_packages");
-    assertSourceRoot("src__common_packages", "src/com/foo/bar");
-    assertSourceRoot("src__common_packages", "src/com/foo/baz");
+    assertDependency("a_java", "src_com_foo_bar_common_sources");
+    assertDependency("b_scala", "src_com_foo_bar_common_sources");
+    assertSourceRoot("src_com_foo_bar_common_sources", "src/com/foo/bar");
+    assertSourceRoot("src_com_foo_baz_common_sources", "src/com/foo/baz");
 
     assertNoContentRoot("a_java");
     assertNoContentRoot("b_scala");
   }
 
-  public void testCommonRoots5() {
+  public void testTargetsWithSingleCommonRootsDependOnSyntheticTarget() {
     addInfo("a:scala").
       withRoot("src/com/foo/bar", "com.foo.bar");
     addInfo("b:scala").
       withRoot("src/com/foo/bar", "com.foo.bar");
 
     assertNoContentRoot("a_scala");
-    assertDependency("a_scala", "b_scala");
-    assertSourceRoot("b_scala", "src/com/foo/bar");
+    assertNoContentRoot("b_scala");
+    assertDependency("a_scala", "src_com_foo_bar_common_sources");
+    assertDependency("b_scala", "src_com_foo_bar_common_sources");
+    assertSourceRoot("src_com_foo_bar_common_sources", "src/com/foo/bar");
+  }
+
+  public void testCommonAncestorRoots() {
+    addInfo("a:scala").
+      withRoot("src/com/foo/a_bar", "com.foo.a_bar").
+      withRoot("src/com/foo/a_baz", "com.foo.a_baz");
+    addInfo("b:scala").
+      withRoot("src/com/foo/b_bar", "com.foo.b_bar").
+      withRoot("src/com/foo/b_baz", "com.foo.b_baz");
+
+    assertContentRoots("a_scala",
+                       "/src/com/foo/a_bar",
+                       "/src/com/foo/a_baz");
+    assertContentRoots("b_scala",
+                       "/src/com/foo/b_bar",
+                       "/src/com/foo/b_baz");
   }
 
   public void testJavaScalaCyclic() {
