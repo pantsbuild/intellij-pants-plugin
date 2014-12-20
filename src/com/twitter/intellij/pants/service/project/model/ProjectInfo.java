@@ -134,9 +134,8 @@ public class ProjectInfo {
       }
 
       final Pair<String, TargetInfo> commonTargetNameAndInfo =
-        findOrCreateTargetForCommonSourceRoot(pantsWorkingDirPath, targetNameAndInfos, originalSourceRoot);
+        createTargetForCommonSourceRoot(pantsWorkingDirPath, targetNameAndInfos, originalSourceRoot);
 
-      addTarget(commonTargetNameAndInfo.getFirst(), commonTargetNameAndInfo.getSecond());
       for (Pair<String, TargetInfo> nameAndInfo : targetNameAndInfos) {
         nameAndInfo.getSecond().getRoots().remove(originalSourceRoot);
         nameAndInfo.getSecond().addDependency(commonTargetNameAndInfo.getFirst());
@@ -185,46 +184,17 @@ public class ProjectInfo {
   }
 
   @NotNull
-  private Pair<String, TargetInfo> findOrCreateTargetForCommonSourceRoot(
+  private Pair<String, TargetInfo> createTargetForCommonSourceRoot(
     @NotNull String path,
     @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
     @NotNull SourceRoot originalSourceRoot
   ) {
-    final Pair<String, TargetInfo> existingTarget = findSingleTargetWithOnlyThisRoot(targetNameAndInfos);
-    if (existingTarget != null) {
-      return existingTarget;
-    }
-    final TargetInfo commonInfo = createTargetForSourceRootIntersectingDeps(targetNameAndInfos, originalSourceRoot);
-
     final String commonTargetAddress = createTargetAddressForCommonSource(path, originalSourceRoot);
-    return Pair.create(commonTargetAddress, commonInfo);
-  }
+    final TargetInfo commonInfo = createTargetForSourceRootUnioningDeps(targetNameAndInfos, originalSourceRoot);
+    final Pair<String, TargetInfo> commonTargetNameAndInfo = Pair.create(commonTargetAddress, commonInfo);
 
-  @Nullable
-  private Pair<String, TargetInfo> findSingleTargetWithOnlyThisRoot(@NotNull List<Pair<String, TargetInfo>> targetNameAndInfos) {
-    final List<Pair<String, TargetInfo>> singleRootTargets = ContainerUtil.findAll(
-      targetNameAndInfos, new Condition<Pair<String, TargetInfo>>() {
-        @Override
-        public boolean value(Pair<String, TargetInfo> nameAndInfo) {
-          final TargetInfo info = nameAndInfo.getSecond();
-          final int commonSourceTargetDependencyCount = ContainerUtil.findAll(
-            info.getTargets(), new Condition<String>() {
-              @Override
-              public boolean value(String s) {
-                return s.contains(COMMON_SOURCES_TARGET_NAME);
-              }
-            }
-          ).size();
-          return commonSourceTargetDependencyCount + info.getRoots().size() == 1;
-        }
-      }
-    );
-    if (singleRootTargets.size() == 1) {
-      return singleRootTargets.iterator().next();
-    } else {
-      LOG.warn("had more than one target with one source root: " + singleRootTargets);
-      return null;
-    }
+    addTarget(commonTargetNameAndInfo.getFirst(), commonTargetNameAndInfo.getSecond());
+    return commonTargetNameAndInfo;
   }
 
   @NotNull
@@ -235,14 +205,14 @@ public class ProjectInfo {
   }
 
   @NotNull
-  private TargetInfo createTargetForSourceRootIntersectingDeps(
+  private TargetInfo createTargetForSourceRootUnioningDeps(
     @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
     @NotNull SourceRoot originalSourceRoot
   ) {
     final Iterator<Pair<String, TargetInfo>> iterator = targetNameAndInfos.iterator();
     TargetInfo commonInfo = iterator.next().getSecond();
     while (iterator.hasNext()) {
-      commonInfo = commonInfo.intersect(iterator.next().getSecond());
+      commonInfo = commonInfo.union(iterator.next().getSecond());
     }
     final Set<SourceRoot> newRoots = ContainerUtil.newHashSet(originalSourceRoot);
     commonInfo.setRoots(newRoots);

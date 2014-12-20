@@ -18,9 +18,10 @@ public class PantsResolverTest extends PantsResolverTestBase {
       withRoot("src/com/foo/baz", "com.foo.baz");
 
     assertDependency("a_java", "src_com_foo_bar_common_sources");
-    assertDependency("a_java", "c_tests");
+    assertDependency("a_java", "src_com_foo_baz_common_sources");
     assertDependency("b_scala", "src_com_foo_bar_common_sources");
-    assertDependency("b_scala", "c_tests");
+    assertDependency("b_scala", "src_com_foo_baz_common_sources");
+    assertDependency("c_tests", "src_com_foo_baz_common_sources");
   }
 
   public void testTargetsWithMultipleCommonRootsEachUseSyntheticTargets() {
