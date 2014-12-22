@@ -404,10 +404,25 @@ public class PantsUtil {
   }
 
   public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> map, Function<V1, V2> fun) {
-    final HashMap<K, V2> result = new HashMap<K, V2>(map.size());
+    final Map<K, V2> result = new HashMap<K, V2>(map.size());
     for (K key : map.keySet()) {
       final V1 originalValue = map.get(key);
-      result.put(key, fun.fun(originalValue));
+      final V2 newValue = fun.fun(originalValue);
+      if (newValue != null) {
+        result.put(key, newValue);
+      }
+    }
+    return result;
+  }
+
+  public static <K, V> Map<K, V> filterByValue(Map<K, V> map, Condition<V> condition) {
+    final Map<K, V> result = new HashMap<K, V>(map.size());
+    for (Map.Entry<K, V> entry : map.entrySet()) {
+      final K key = entry.getKey();
+      final V value = entry.getValue();
+      if (condition.value(value)) {
+        result.put(key, value);
+      }
     }
     return result;
   }

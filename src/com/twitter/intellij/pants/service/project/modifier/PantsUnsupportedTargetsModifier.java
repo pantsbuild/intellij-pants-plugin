@@ -1,0 +1,32 @@
+// Copyright 2014 Pants project contributors (see CONTRIBUTORS.md).
+// Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+package com.twitter.intellij.pants.service.project.modifier;
+
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.text.StringUtil;
+import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
+import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.service.project.model.TargetInfo;
+import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
+
+public class PantsUnsupportedTargetsModifier implements PantsProjectInfoModifierExtension {
+  private static final Condition<TargetInfo> SUPPORTED_TARGET_TYPES_CONDITION =
+    new Condition<TargetInfo>() {
+      @Override
+      public boolean value(TargetInfo info) {
+        final String internalPantsTargetType = info.getInternalPantsTargetType();
+        // internalPantsTargetType is empty for old depmap version
+        return StringUtil.isEmpty(internalPantsTargetType) ||
+               PantsConstants.SUPPORTED_TARGET_TYPES.contains(internalPantsTargetType);
+      }
+    };
+
+  @Override
+  public void modify(@NotNull ProjectInfo projectInfo, Logger log) {
+    projectInfo.setTargets(PantsUtil.filterByValue(projectInfo.getTargets(), SUPPORTED_TARGET_TYPES_CONDITION));
+  }
+}

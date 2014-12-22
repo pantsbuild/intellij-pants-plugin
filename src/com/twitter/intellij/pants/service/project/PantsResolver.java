@@ -94,8 +94,10 @@ public class PantsResolver {
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (projectInfo == null) return;
 
-    projectInfo.fixCyclicDependencies();
-    projectInfo.fixCommonRoots();
+    for (PantsProjectInfoModifierExtension modifier : PantsProjectInfoModifierExtension.EP_NAME.getExtensions()) {
+      modifier.modify(projectInfo, LOG);
+    }
+
 
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
     createAllEmptyModules(projectInfoDataNode, modules);

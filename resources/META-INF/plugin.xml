@@ -85,7 +85,14 @@
 
   <extensionPoints>
     <extensionPoint name="projectResolver" interface="com.twitter.intellij.pants.service.project.PantsResolverExtension"/>
+    <extensionPoint name="projectInfoModifier" interface="com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension"/>
   </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij.plugins.pants">
+    <projectInfoModifier order="first" implementation="com.twitter.intellij.pants.service.project.modifier.PantsUnsupportedTargetsModifier"/>
+    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCyclicDependenciesModifier"/>
+    <projectInfoModifier order="last" implementation="com.twitter.intellij.pants.service.project.modifier.PantsCommonSourceRootModifier"/>
+  </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <compileServer.plugin classpath="pants-jps-plugin.jar;pants-common.jar"/>

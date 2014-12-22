@@ -65,12 +65,10 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertModules(
       "examples_src_resources_com_pants_example_hello_hello",
-      "examples_src_java_com_pants_examples_hello_main_readme",
       "examples_src_java_com_pants_examples_hello_main_main",
-      "examples_src_java_com_pants_examples_hello_module",
       "examples_src_java_com_pants_examples_hello_greet_greet",
       "examples_src_java_com_pants_examples_hello_main_main-bin",
-      "_examples_src_java_com_pants_examples_hello_main_common_sources"
+      "examples_src_java_com_pants_examples_hello_module"
     );
 
     makeModules("examples_src_java_com_pants_examples_hello_main_main");
@@ -78,7 +76,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       findClassFile("com.pants.examples.hello.greet.Greeting", "examples_src_java_com_pants_examples_hello_greet_greet")
     );
     assertNotNull(
-      findClassFile("com.pants.examples.hello.main.HelloMain", "_examples_src_java_com_pants_examples_hello_main_common_sources")
+      findClassFile("com.pants.examples.hello.main.HelloMain", "examples_src_java_com_pants_examples_hello_main_main-bin")
     );
   }
 
