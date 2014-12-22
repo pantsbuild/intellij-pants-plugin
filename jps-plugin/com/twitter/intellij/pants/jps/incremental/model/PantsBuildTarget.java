@@ -144,4 +144,24 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> imp
            ", targetNames=" + targetNames +
            '}';
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    PantsBuildTarget target = (PantsBuildTarget)o;
+
+    if (!myTargetPath.equals(target.myTargetPath)) return false;
+    if (!targetNames.equals(target.targetNames)) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = myTargetPath.hashCode();
+    result = 31 * result + targetNames.hashCode();
+    return result;
+  }
 }

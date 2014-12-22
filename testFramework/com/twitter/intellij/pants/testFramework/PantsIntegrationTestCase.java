@@ -208,7 +208,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void assertCompilationFailed(final String... moduleNames) throws Exception {
-    for (CompilerMessage message : compileAndGetMessages(getModules(moduleNames))) {
+    assertCompilationFailed(getModules(moduleNames));
+  }
+
+  protected void assertCompilationFailed(final Module... modules) throws Exception {
+    for (CompilerMessage message : compileAndGetMessages(modules)) {
       if (message.getCategory() == CompilerMessageCategory.ERROR) {
         return;
       }
@@ -254,7 +258,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
   }
 
-  private List<CompilerMessage> compileAndGetMessages(Module... modules) throws Exception {
+  protected List<CompilerMessage> compileAndGetMessages(Module... modules) throws Exception {
     final ModuleCompileScope scope = new ModuleCompileScope(myProject, modules, true);
     return getCompilerTester().make(scope);
   }
