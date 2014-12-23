@@ -119,7 +119,7 @@ public class PantsUtil {
   @Nullable
   public static VirtualFile findFolderWithPex() {
     final VirtualFile userHomeDir = VfsUtil.getUserHomeDir();
-    return userHomeDir != null ? userHomeDir.findFileByRelativePath(PEX_RELATIVE_PATH) : null;
+    return findFileRelativeToDirectory(PEX_RELATIVE_PATH, userHomeDir);
   }
 
   @Nullable
@@ -441,6 +441,35 @@ public class PantsUtil {
                                           ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
     specBuilder.use(executionMode);
     ExternalSystemUtil.refreshProjects(specBuilder);
+  }
+
+  @Nullable
+  public static VirtualFile findFileByAbsoluteOrRelativePath(
+    @NotNull String fileOrDirPath,
+    @NotNull Project project
+  ) {
+    final VirtualFile absoluteVirtualFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(fileOrDirPath));
+    if (absoluteVirtualFile != null) {
+      return absoluteVirtualFile;
+    }
+    return findFileRelativeToPantsWorkingDir(project, fileOrDirPath);
+  }
+
+  @Nullable
+  public static VirtualFile findFileRelativeToPantsWorkingDir(@NotNull Project project, @NotNull String fileOrDirPath) {
+    final VirtualFile workingDir = findPantsWorkingDir(project);
+    return findFileRelativeToDirectory(fileOrDirPath, workingDir);
+  }
+
+  @Nullable
+  public static VirtualFile findFileRelativeToPantsWorkingDir(@NotNull PsiFile psiFile, @NotNull String fileOrDirPath) {
+    final VirtualFile workingDir = findPantsWorkingDir(psiFile);
+    return findFileRelativeToDirectory(fileOrDirPath, workingDir);
+  }
+
+  @Nullable
+  private static VirtualFile findFileRelativeToDirectory(@NotNull @Nls String fileOrDirPath, @Nullable VirtualFile directory) {
+    return directory != null ? directory.findFileByRelativePath(fileOrDirPath) : null;
   }
 
   /**

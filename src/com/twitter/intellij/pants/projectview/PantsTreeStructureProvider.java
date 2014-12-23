@@ -45,8 +45,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
       final Module module = ModuleUtil.findModuleForPsiElement(((PsiDirectoryNode)node).getValue());
       final String buildPath = module != null ? module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : null;
       if (buildPath != null) {
-        final VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
-        final VirtualFile buildFile = pantsExecutable != null ? pantsExecutable.getParent().findFileByRelativePath(buildPath) : null;
+        final VirtualFile buildFile = PantsUtil.findFileRelativeToPantsWorkingDir(project, buildPath);
 
         boolean isModuleRoot =
           ArrayUtil.contains(((PsiDirectoryNode)node).getVirtualFile(), ModuleRootManager.getInstance(module).getContentRoots());
