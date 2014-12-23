@@ -117,5 +117,10 @@
 
     <treeStructureProvider implementation="com.twitter.intellij.pants.projectview.PantsTreeStructureProvider"/>
     <projectViewPane implementation="com.twitter.intellij.pants.projectview.ProjectFilesViewPane"/>
+
+    <toolWindow id="Pants" anchor="right" icon="PantsIcons.Icon"
+                factoryClass="com.twitter.intellij.pants.ui.PantsToolWindowFactory"
+                conditionClass="com.twitter.intellij.pants.ui.PantsToolWindowFactoryCondition"/>
+    <externalSystemNotificationExtension implementation="com.twitter.intellij.pants.notification.PantsNotificationCustomizer"/>
   </extensions>
 </idea-plugin>

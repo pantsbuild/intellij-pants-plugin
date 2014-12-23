@@ -26,7 +26,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.PantsExecutionException;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
@@ -126,7 +126,6 @@ public class PantsResolver {
         createModuleData(
           projectInfoDataNode,
           targetName,
-          pathFromTargetAddress(targetName),
           targetInfo.getRoots(),
           targetInfo.getSourcesType()
         );
@@ -401,17 +400,10 @@ public class PantsResolver {
     library.setExported(exported);
     moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
   }
-
-  private String pathFromTargetAddress(String targetName) {
-    final int index = targetName.lastIndexOf(':');
-    return targetName.substring(0, index);
-  }
-
   @NotNull
   private DataNode<ModuleData> createModuleData(
     @NotNull DataNode<ProjectData> projectInfoDataNode,
     @NotNull String targetName,
-    @NotNull String relativePath,
     @NotNull Collection<SourceRoot> roots,
     @NotNull final PantsSourceType rootType
   ) {
@@ -423,7 +415,7 @@ public class PantsResolver {
       ModuleTypeId.JAVA_MODULE,
       moduleName,
       projectInfoDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
-      new File(myWorkDirectory, relativePath).getAbsolutePath()
+      new File(myWorkDirectory, targetName).getAbsolutePath()
     );
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
@@ -502,14 +494,13 @@ public class PantsResolver {
         parse(output, processOutput.getStderrLines());
       }
       else {
-        if (ApplicationManager.getApplication().isUnitTestMode()) {
+        if (ApplicationManager.getApplication().isUnitTestMode() || ApplicationManager.getApplication().isInternal()) {
           System.err.println("Pants execution failure!");
           System.err.println(processOutput.getStdout());
           System.err.println(processOutput.getStderr());
         }
-        throw new ExternalSystemException(
-          "Failed to update the project!\n\n" + processOutput.getStdout() + "\n\n" + processOutput.getStderr()
-        );
+
+        throw new PantsExecutionException("Failed to update the project!", processOutput);
       }
     }
     catch (ExecutionException e) {
@@ -521,40 +512,35 @@ public class PantsResolver {
   }
 
   protected GeneralCommandLine getCommand(final File outputFile) {
-    try {
-      final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
-      myWorkDirectory = commandLine.getWorkDirectory();
-      commandLine.addParameter("goal");
-      // in unit test mode it's always preview but we need to know libraries
-      // because some jvm_binary targets are actually Scala ones and we need to
-      // set a proper com.twitter.intellij.pants.compiler output folder
-      if (generateJars || ApplicationManager.getApplication().isUnitTestMode()) {
-        commandLine.addParameter("resolve");
-      }
-      String relativeProjectPath = PantsUtil.getRelativeProjectPath(projectPath, myWorkDirectory);
-
-      if (relativeProjectPath == null) {
-        throw new ExternalSystemException(
-          String.format("Can't find relative path for a target %s from dir %s", projectPath, myWorkDirectory.getPath())
-        );
-      }
-
-      commandLine.addParameter("depmap");
-      if (settings.isAllTargets()) {
-        commandLine.addParameter(relativeProjectPath + File.separator + "::");
-      }
-      else {
-        for (String targetName : settings.getTargetNames()) {
-          commandLine.addParameter(relativeProjectPath + File.separator + ":" + targetName);
-        }
-      }
-      commandLine.addParameter("--depmap-project-info");
-      commandLine.addParameter("--depmap-project-info-formatted");
-      commandLine.addParameter("--depmap-output-file=" + outputFile.getPath());
-      return commandLine;
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
+    myWorkDirectory = commandLine.getWorkDirectory();
+    commandLine.addParameter("goal");
+    // in unit test mode it's always preview but we need to know libraries
+    // because some jvm_binary targets are actually Scala ones and we need to
+    // set a proper com.twitter.intellij.pants.compiler output folder
+    if (generateJars || ApplicationManager.getApplication().isUnitTestMode()) {
+      commandLine.addParameter("resolve");
     }
-    catch (PantsException exception) {
-      throw new ExternalSystemException(exception);
+    String relativeProjectPath = PantsUtil.getRelativeProjectPath(projectPath, myWorkDirectory);
+
+    if (relativeProjectPath == null) {
+      throw new ExternalSystemException(
+        String.format("Can't find relative path for a target %s from dir %s", projectPath, myWorkDirectory.getPath())
+      );
     }
+
+    commandLine.addParameter("depmap");
+    if (settings.isAllTargets()) {
+      commandLine.addParameter(relativeProjectPath + File.separator + "::");
+    }
+    else {
+      for (String targetName : settings.getTargetNames()) {
+        commandLine.addParameter(relativeProjectPath + File.separator + ":" + targetName);
+      }
+    }
+    commandLine.addParameter("--depmap-project-info");
+    commandLine.addParameter("--depmap-project-info-formatted");
+    commandLine.addParameter("--depmap-output-file=" + outputFile.getPath());
+    return commandLine;
   }
 }

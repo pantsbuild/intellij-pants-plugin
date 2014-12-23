@@ -4,11 +4,9 @@
 package com.twitter.intellij.pants;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 
-/**
- * Created by fedorkorotkov
- */
-public class PantsException extends Exception {
+public class PantsException extends ExternalSystemException {
   public PantsException(String message) {
     super(message);
   }

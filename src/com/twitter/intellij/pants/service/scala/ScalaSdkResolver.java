@@ -125,7 +125,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
       files.add(compilerFile.getAbsolutePath());
     }
     else {
-      LOG.warn("Could not find scala library path" + compilerFile);
+      LOG.warn("Could not find scala library path: " + compilerFile);
     }
   }
 }

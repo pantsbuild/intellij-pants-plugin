@@ -32,10 +32,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
-import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -197,12 +194,6 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static File findPantsWorkingDir(@Nullable File file) {
-    final File pantsExecutable = findPantsExecutable(file);
-    return pantsExecutable != null ? pantsExecutable.getParentFile() : null;
-  }
-
-  @Nullable
   public static File findPantsExecutable(@Nullable File file) {
     if (file == null) return null;
     if (file.isDirectory()) {
@@ -212,29 +203,6 @@ public class PantsUtil {
       }
     }
     return findPantsExecutable(file.getParentFile());
-  }
-
-  @Nullable
-  public static String findCommonRoot(List<String> roots) {
-    final Iterator<String> iterator = roots.iterator();
-    if (!iterator.hasNext()) {
-      return null;
-    }
-    String result = pathWithTrailingSeparator(iterator.next());
-    while (iterator.hasNext()) {
-      result = StringUtil.commonPrefix(result, pathWithTrailingSeparator(iterator.next()));
-      if (!result.endsWith("/")) {
-        // means something like
-        // foo/bar/
-        // foo/barjava/
-        result = pathWithTrailingSeparator(VfsUtil.getParentDir(result));
-      }
-    }
-    return result;
-  }
-
-  private static String pathWithTrailingSeparator(@Nullable String path) {
-    return path == null || path.endsWith("/") ? path : (path + "/");
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
@@ -394,9 +362,9 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findBUILDFileForModule(@NotNull Module module) {
-    final String linkedPantsBUILD = module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
+    final String linkedPantsBUILD = getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
     final String linkedPantsBUILDUrl = linkedPantsBUILD != null ? VfsUtil.pathToUrl(linkedPantsBUILD) : null;
-    final VirtualFile virtualFile = linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().refreshAndFindFileByUrl(linkedPantsBUILDUrl) : null;
+    final VirtualFile virtualFile = linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
     if (virtualFile == null) {
       return null;
     }
@@ -492,5 +460,11 @@ public class PantsUtil {
         ContainerUtil.addAll(queue, children);
       }
     }
+  }
+
+  @Contract(value = "_, null -> null", pure = true)
+  public static String getPathFromAddress(@NotNull Module module, @Nullable String key) {
+    final String address = key != null ? module.getOptionValue(key) : null;
+    return PantsTargetAddress.extractPath(address);
   }
 }

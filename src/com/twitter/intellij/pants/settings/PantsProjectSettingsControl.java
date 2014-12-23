@@ -110,11 +110,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
                 }
               }
             );
-          }
-          catch (PantsException e) {
-            LOG.warn(e);
-          }
-          finally {
+          } finally {
             myTargets.setPaintBusy(false);
           }
         }

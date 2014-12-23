@@ -29,9 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Created by ajohnson on 7/30/14.
- */
 public class PantsTreeStructureProvider implements TreeStructureProvider {
   @NotNull
   @Override
@@ -43,7 +40,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
     final Project project = node.getProject();
     if (node instanceof PsiDirectoryNode && project != null) {
       final Module module = ModuleUtil.findModuleForPsiElement(((PsiDirectoryNode)node).getValue());
-      final String buildPath = module != null ? module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : null;
+      final String buildPath = module != null ? PantsUtil.getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : null;
       if (buildPath != null) {
         final VirtualFile buildFile = PantsUtil.findFileRelativeToPantsWorkingDir(project, buildPath);
 

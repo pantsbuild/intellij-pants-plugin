@@ -44,6 +44,11 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     if (projectPath.startsWith(".pants.d")) {
       return null;
     }
+    final int targetNameDelimiterIndex = projectPath.indexOf(':');
+    if (targetNameDelimiterIndex > 0) {
+      // normalizing. we don't have per module settings and a linked project path of a module contains target name.
+      projectPath = projectPath.substring(0, targetNameDelimiterIndex);
+    }
     boolean allTargets = settings == null || settings.isAllTargets();
     final String projectDirPath = allTargets ? projectPath : PathUtil.getParentPath(projectPath);
     final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(projectDirPath);
