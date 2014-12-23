@@ -15,10 +15,10 @@ import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
+import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.util.PantsUtil;
-import junit.framework.TestCase;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.*;
 
-abstract class PantsResolverTestBase extends TestCase {
+abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   private Map<String, TargetInfoBuilder> myInfoBuilders = null;
   @Nullable
   private DataNode<ProjectData> myProjectNode;
@@ -160,7 +160,7 @@ abstract class PantsResolverTestBase extends TestCase {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertModuleExists(moduleName, moduleNode);
     final Collection<DataNode<ContentRootData>> contentRoots = ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.CONTENT_ROOT);
-    List<String> actualRootPaths = ContainerUtil.map(
+    final List<String> actualRootPaths = ContainerUtil.map(
       contentRoots, new Function<DataNode<ContentRootData>, String>() {
         @Override
         public String fun(DataNode<ContentRootData> node) {
@@ -174,18 +174,22 @@ abstract class PantsResolverTestBase extends TestCase {
     assertEquals("Content roots", expected, actualRootPaths);
   }
 
-  private void assertModuleExists(String moduleName, DataNode<ModuleData> moduleNode) {
+  private void assertModuleExists(@NotNull String moduleName, @Nullable DataNode<ModuleData> moduleNode) {
     assertNotNull(String.format("Module %s is missing!", moduleName), moduleNode);
   }
 
 
   public void assertLibrary(String moduleName, final String libraryId) {
+    final DataNode<LibraryDependencyData> dependencyDataNode = findLibraryDependency(moduleName, libraryId);
+    assertNotNull(String.format("%s doesn't have a dependency %s", moduleName, libraryId), dependencyDataNode);
+  }
+
+  @Nullable
+  public DataNode<LibraryDependencyData> findLibraryDependency(String moduleName, final String libraryId) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertModuleExists(moduleName, moduleNode);
-    final Collection<DataNode<LibraryDependencyData>> lib_dependencies =
-      ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY);
-    final DataNode<LibraryDependencyData> dependencyDataNode = ContainerUtil.find(
-      lib_dependencies,
+    return ContainerUtil.find(
+      ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY),
       new Condition<DataNode<LibraryDependencyData>>() {
         @Override
         public boolean value(DataNode<LibraryDependencyData> node) {
@@ -193,7 +197,6 @@ abstract class PantsResolverTestBase extends TestCase {
         }
       }
     );
-    assertNotNull(String.format("%s doesn't have a dependency %s", moduleName, libraryId), dependencyDataNode);
   }
 
   @Nullable

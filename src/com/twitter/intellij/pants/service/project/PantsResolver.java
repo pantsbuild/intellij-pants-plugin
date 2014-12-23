@@ -20,6 +20,7 @@ import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Factory;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
@@ -98,12 +99,11 @@ public class PantsResolver {
       modifier.modify(projectInfo, LOG);
     }
 
-
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
     createAllEmptyModules(projectInfoDataNode, modules);
     addSourceRootsToModules(modules);
     addDependenciesToModules(modules);
-    addLibsToModules(modules);
+    addLibrariesToModules(modules);
     runResolverExtensions(projectInfoDataNode, modules);
   }
 
@@ -246,7 +246,8 @@ public class PantsResolver {
     }
   }
 
-  private void addLibsToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
+  private void addLibrariesToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
+    final Map<String, LibraryData> idToLibraryData = new HashMap<String, LibraryData>();
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
@@ -254,13 +255,37 @@ public class PantsResolver {
         continue;
       }
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
-      for (String libraryId : targetInfo.getLibraries()) {
+      for (final String libraryId : targetInfo.getLibraries()) {
         if (targetInfo.isScalaTarget() && PantsScalaUtil.isScalaLib(libraryId)) {
           // skip Scala. Will be added by PantsScalaDataService
           continue;
         }
-        // todo: is it always exported?
-        createLibraryData(moduleDataNode, libraryId, true);
+        final List<String> libraryJars = getLibraryJars(libraryId);
+        if (libraryJars.isEmpty()) {
+          // no library jars by that id
+          continue;
+        }
+        final LibraryData libraryData =
+          ContainerUtil.getOrCreate(
+            idToLibraryData,
+            libraryId,
+            new Factory<LibraryData>() {
+              @Override
+              public LibraryData create() {
+                final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
+                for (String jarPath : libraryJars) {
+                  // todo: sources + docs
+                  libraryData.addPath(LibraryPathType.BINARY, jarPath);
+                }
+                return libraryData;
+              }
+            }
+          );
+        addLibraryDependencyToModule(
+          moduleDataNode,
+          libraryData,
+          true // todo: is it always exported?
+        );
       }
     }
   }
@@ -363,23 +388,14 @@ public class PantsResolver {
     moduleDataNode.createChild(ProjectKeys.MODULE_DEPENDENCY, moduleDependencyData);
   }
 
-  private void createLibraryData(@NotNull DataNode<ModuleData> moduleDataNode, String libraryId, boolean exported) {
-    final List<String> libraryJars = projectInfo.getLibraries(libraryId);
-    if (libraryJars.isEmpty() && generateJars) {
-      // log only we tried to resolve libs
-      LOG.warn("No info for library: " + libraryId);
-    }
-    if (libraryJars.isEmpty()) {
-      return;
-    }
-    final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
-    for (String jarPath : libraryJars) {
-      // todo: sources + docs
-      libraryData.addPath(LibraryPathType.BINARY, jarPath);
-    }
+  private static void addLibraryDependencyToModule(
+    @NotNull DataNode<ModuleData> moduleDataNode,
+    @NotNull LibraryData data,
+    boolean exported
+  ) {
     final LibraryDependencyData library = new LibraryDependencyData(
       moduleDataNode.getData(),
-      libraryData,
+      data,
       LibraryLevel.MODULE
     );
     library.setExported(exported);
@@ -432,6 +448,15 @@ public class PantsResolver {
   }
 
   @NotNull
+  private List<String> getLibraryJars(@NotNull String libraryId) {
+    final List<String> libraryJars = projectInfo.getLibraries(libraryId);
+    if (libraryJars.isEmpty() && generateJars) {
+      // log only we tried to resolve libs
+      LOG.warn("No info for library: " + libraryId);
+    }
+    return libraryJars;
+  }
+
   private static List<SourceRoot> sortRootsAsPaths(
     @NotNull Collection<SourceRoot> sourceRoots,
     @NotNull final PantsSourceType rootType

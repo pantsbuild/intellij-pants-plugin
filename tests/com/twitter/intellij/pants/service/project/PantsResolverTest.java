@@ -3,8 +3,8 @@
 
 package com.twitter.intellij.pants.service.project;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.intellij.openapi.externalSystem.model.DataNode;
+import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
 
 public class PantsResolverTest extends PantsResolverTestBase {
   public void testOneCommonRootOwnedBySingleTargetOneNot() {
@@ -102,12 +102,28 @@ public class PantsResolverTest extends PantsResolverTestBase {
       withRoot("src/com/foo/b_bar", "com.foo.b_bar").
       withRoot("src/com/foo/b_baz", "com.foo.b_baz");
 
-    assertContentRoots("a_scala",
-                       "/src/com/foo/a_bar",
-                       "/src/com/foo/a_baz");
-    assertContentRoots("b_scala",
-                       "/src/com/foo/b_bar",
-                       "/src/com/foo/b_baz");
+    assertContentRoots(
+      "a_scala",
+      "/src/com/foo/a_bar",
+      "/src/com/foo/a_baz"
+    );
+    assertContentRoots(
+      "b_scala",
+      "/src/com/foo/b_bar",
+      "/src/com/foo/b_baz"
+    );
+  }
+
+  public void testOnlyOneInstanceOfLibraryDataCreatedForSameLibrary() {
+    addInfo("a:scala").withLibrary("mycoollibrary:1.2.3");
+    addInfo("b:scala").withLibrary("mycoollibrary:1.2.3");
+
+    final DataNode<LibraryDependencyData> aLib = findLibraryDependency("a_scala", "mycoollibrary:1.2.3");
+    assertNotNull(aLib);
+    final DataNode<LibraryDependencyData> bLib = findLibraryDependency("b_scala", "mycoollibrary:1.2.3");
+    assertNotNull(bLib);
+
+    assertSame(aLib.getData().getTarget(), bLib.getData().getTarget());
   }
 
   public void testJavaScalaCyclic() {
