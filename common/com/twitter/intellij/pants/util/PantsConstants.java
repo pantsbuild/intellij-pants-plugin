@@ -23,6 +23,7 @@ public class PantsConstants {
   public static final String PANTS_LIBRARY_NAME = "pants";
 
   public static final String PANTS_INI = "pants.ini";
+  public static final String PANTS_PEX = "pants.pex";
 
   protected static final String BUILD = "BUILD";
   protected static final String THRIFT_EXT = "thrift";

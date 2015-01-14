@@ -119,9 +119,13 @@ public class PantsLibNotConfiguredInspection extends LocalInspectionTool {
         return;
       }
 
-      ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(myModule).getModifiableModel();
-      DependencyScope defaultScope = LibraryDependencyScopeSuggester.getDefaultScope(pantsLib);
-      modifiableModel.addLibraryEntry(pantsLib).setScope(defaultScope);
+      addLibraryDependency(myModule, pantsLib);
+    }
+
+    public static void addLibraryDependency(Module module, Library library) {
+      final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
+      final DependencyScope defaultScope = LibraryDependencyScopeSuggester.getDefaultScope(library);
+      modifiableModel.addLibraryEntry(library).setScope(defaultScope);
       modifiableModel.commit();
     }
   }

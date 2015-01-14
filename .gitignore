@@ -12,6 +12,7 @@
 /out/
 .pants.run
 /.pants.d/
+/.cache/
 /build-support/*.pex
 /build-support/*.venv
 /build-support/virtualenv-*

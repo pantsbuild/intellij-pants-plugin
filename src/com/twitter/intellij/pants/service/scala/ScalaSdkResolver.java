@@ -31,7 +31,9 @@ public class ScalaSdkResolver implements PantsResolverExtension {
 
   @Override
   public void resolve(
-    ProjectInfo projectInfo, DataNode<ProjectData> projectDataNode, Map<String, DataNode<ModuleData>> modules
+    @NotNull ProjectInfo projectInfo,
+    @NotNull DataNode<ProjectData> projectDataNode,
+    @NotNull Map<String, DataNode<ModuleData>> modules
   ) {
     final Set<String> scalaJars = new HashSet<String>();
     for (String libId : projectInfo.getLibraries().keySet()) {
@@ -120,12 +122,12 @@ public class ScalaSdkResolver implements PantsResolverExtension {
   }
 
   private void findAndAddScalaLib(Set<String> files, String jarPath, String libName) {
-    final File compilerFile = new File(StringUtil.replace(jarPath, "scala-library", libName));
-    if (compilerFile.exists()) {
-      files.add(compilerFile.getAbsolutePath());
+    final File libFile = PantsScalaUtil.getScalaLibFile(jarPath, libName);
+    if (libFile.exists()) {
+      files.add(libFile.getAbsolutePath());
     }
     else {
-      LOG.warn("Could not find scala library path: " + compilerFile);
+      LOG.warn("Could not find scala library path: " + libFile);
     }
   }
 }

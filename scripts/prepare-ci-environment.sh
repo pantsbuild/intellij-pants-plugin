@@ -2,7 +2,7 @@
 
 prepare_ci_env() {
   CWD=$(pwd)
-  export INTELLIJ_PLUGINS_HOME="$CWD/.pants.d/intellij/plugins"
-  export OSS_PANTS_HOME="$CWD/.pants.d/intellij/pants"
-  export INTELLIJ_HOME="$CWD/.pants.d/intellij/ideaIC"
+  export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/plugins"
+  export OSS_PANTS_HOME="$CWD/.cache/intellij/pants"
+  export INTELLIJ_HOME="$CWD/.cache/intellij/ideaIC"
 }

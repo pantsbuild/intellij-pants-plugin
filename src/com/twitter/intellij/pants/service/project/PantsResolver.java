@@ -80,7 +80,7 @@ public class PantsResolver {
     return new Gson().fromJson(data, ProjectInfo.class);
   }
 
-  private void parse(final String output, List<String> err) {
+  private void parse(final String output) {
     projectInfo = null;
     if (output.isEmpty()) throw new ExternalSystemException("Not output from pants");
     try {
@@ -480,21 +480,29 @@ public class PantsResolver {
     try {
       final File outputFile = FileUtil.createTempFile("pants_run", ".out");
       final GeneralCommandLine command = getCommand(outputFile);
-      final Process process = command.createProcess();
-      final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
-      if (processAdapter != null) {
-        processHandler.addProcessListener(processAdapter);
-      }
-      final ProcessOutput processOutput = processHandler.runProcess();
+      final ProcessOutput processOutput = getCmdOutput(command, processAdapter);
       if (processOutput.getStdout().contains("no such option")) {
         throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
       }
+      final boolean stdOutDebugInfo = ApplicationManager.getApplication().isUnitTestMode() ||
+                                      ApplicationManager.getApplication().isInternal();
       if (processOutput.checkSuccess(LOG)) {
         final String output = FileUtil.loadFile(outputFile);
-        parse(output, processOutput.getStderrLines());
+        parse(output);
+
+        final File bootstrapBuildFile = new File(command.getWorkDirectory(), "BUILD");
+        if (bootstrapBuildFile.exists() && projectInfo != null && PantsScalaUtil.hasMissingScalaCompilerLibs(projectInfo)) {
+          // need to bootstrap tools
+          final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(bootstrapBuildFile.getPath());
+          commandLine.addParameters("goal", "resolve", "BUILD:");
+          final boolean bootstrapped = getCmdOutput(commandLine, null).checkSuccess(LOG);
+          if (bootstrapped && stdOutDebugInfo) {
+            System.out.println("Bootstrapped Pants successfully!");
+          }
+        }
       }
       else {
-        if (ApplicationManager.getApplication().isUnitTestMode() || ApplicationManager.getApplication().isInternal()) {
+        if (stdOutDebugInfo) {
           System.err.println("Pants execution failure!");
           System.err.println(processOutput.getStdout());
           System.err.println(processOutput.getStderr());
@@ -509,6 +517,18 @@ public class PantsResolver {
     catch (IOException ioException) {
       throw new ExternalSystemException(ioException);
     }
+  }
+
+  protected ProcessOutput getCmdOutput(
+    @NotNull GeneralCommandLine command,
+    @Nullable ProcessAdapter processAdapter
+  ) throws ExecutionException {
+    final Process process = command.createProcess();
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
+    if (processAdapter != null) {
+      processHandler.addProcessListener(processAdapter);
+    }
+    return processHandler.runProcess();
   }
 
   protected GeneralCommandLine getCommand(final File outputFile) {

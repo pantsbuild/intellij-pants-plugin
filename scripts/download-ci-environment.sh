@@ -7,18 +7,18 @@ CWD=$(pwd)
 SCALA_PLUGIN_ID="org.intellij.scala"
 PYTHON_CE_PLUGIN_ID="PythonCore"
 
-mkdir -p .pants.d/intellij
+mkdir -p .cache/intellij
 
-if [ ! -d .pants.d/intellij/ideaIC ]; then
+if [ ! -d .cache/intellij/ideaIC ]; then
   echo "Loading IntelliJ Community Edition $IJ_VERSION..."
   wget http://download-cf.jetbrains.com/idea/ideaIC-${IJ_VERSION}.tar.gz
   tar zxf ideaIC-${IJ_VERSION}.tar.gz
   rm -rf ideaIC-${IJ_VERSION}.tar.gz
   UNPACKED_IDEA=$(find . -name 'idea-IC*' | head -n 1)
-  mv "$UNPACKED_IDEA" ".pants.d/intellij/ideaIC"
+  mv "$UNPACKED_IDEA" ".cache/intellij/ideaIC"
 fi
 
-if [ ! -d .pants.d/intellij/plugins ]; then
+if [ ! -d .cache/intellij/plugins ]; then
   echo "Loading $SCALA_PLUGIN_ID and $PYTHON_CE_PLUGIN_ID for $IJ_BUILD..."
   mkdir -p plugins
   pushd plugins
@@ -31,12 +31,12 @@ if [ ! -d .pants.d/intellij/plugins ]; then
   rm -rf python.zip
 
   popd
-  mv plugins ".pants.d/intellij/plugins"
+  mv plugins ".cache/intellij/plugins"
 fi
 
-if [ ! -d .pants.d/intellij/pants ]; then
+if [ ! -d .cache/intellij/pants ]; then
   echo "Getting latest Pants..."
-  pushd .pants.d/intellij/
+  pushd .cache/intellij/
   git clone https://github.com/pantsbuild/pants
   popd
 fi

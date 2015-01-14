@@ -11,7 +11,7 @@ install: ./scripts/download-ci-environment.sh
 
 env:
   global:
-    - OSS_PANTS_HOME=./.pants.d/intellij/pants
+    - OSS_PANTS_HOME=./.cache/intellij/pants
   matrix:
     - IJ_VERSION="14" IJ_BUILD="IC-139.223" USE_PANTS_TO_COMPILE="true"
     - IJ_VERSION="14" IJ_BUILD="IC-139.223" USE_PANTS_TO_COMPILE="false"

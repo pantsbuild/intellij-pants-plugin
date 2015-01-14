@@ -112,8 +112,9 @@ Compilation options can be configured in Preferences -> Build, Execution, Deploy
   The Plugin provides a custom view "Project Files Tree View". This view adheres to your repository file hierarchy.
   You can switch to this view as follows:
   ![Project Files Tree View](images/project_files_tree_view.png)
-* Build File Auto completion
-  The plugin provides auto completion for Build file targets. Cntrl+Space within BUILD file will list all pants targets.
+* BUILD File code assistance
+  The plugin provides auto completion for target names in a BUILD file such as `jar_library`, `scala_library`, etc.
+  As well as completion for dependencies' addresses.
 * Project Regeneration using IntelliJ Action.
   If you add a dependency to your project, you can re-resolve project using IntelliJ Action in background.
   Use Main Menu: Help -> Find Action or Short hand Cmd+Shift+A and select Action "Refresh all External Projects"

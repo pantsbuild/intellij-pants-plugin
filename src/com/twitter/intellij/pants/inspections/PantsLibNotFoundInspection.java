@@ -4,8 +4,10 @@
 package com.twitter.intellij.pants.inspections;
 
 import com.intellij.codeInspection.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
@@ -88,6 +90,15 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
     }
 
     public static void applyFix(@NotNull Project project) {
+      final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(project);
+      final VirtualFile bootstrappedPants = workingDir != null ? workingDir.findChild(PantsConstants.PANTS_PEX) : null;
+      final VirtualFile pexFile = bootstrappedPants != null ? bootstrappedPants : findSpecificPexVersionInHomeDirectory(project);
+      if (pexFile == null) return;
+      configureByFile(project, pexFile);
+    }
+
+    @Nullable
+    public static VirtualFile findSpecificPexVersionInHomeDirectory(Project project) {
       final String pantsVersion = PantsUtil.findPantsVersion(project);
       if (pantsVersion == null) {
         Messages.showErrorDialog(
@@ -95,7 +106,7 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
           PantsBundle.message("pants.inspection.library.no.version"),
           PantsBundle.message("pants.error.title")
         );
-        return;
+        return null;
       }
 
       final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
@@ -105,7 +116,7 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
           PantsBundle.message("pants.inspection.library.no.pex.folder"),
           PantsBundle.message("pants.error.title")
         );
-        return;
+        return null;
       }
 
       final VirtualFile pexFile = PantsUtil.findPexVersionFile(folderWithPex, pantsVersion);
@@ -115,9 +126,9 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
           PantsBundle.message("pants.inspection.library.no.pex.file", pantsVersion),
           PantsBundle.message("pants.error.title")
         );
-        return;
+        return null;
       }
-      configureByFile(project, pexFile);
+      return pexFile;
     }
 
     public static void configureByFile(@NotNull Project project, @NotNull VirtualFile pexFile) {
@@ -129,6 +140,10 @@ public class PantsLibNotFoundInspection extends LocalInspectionTool {
       final Library.ModifiableModel modifiableModel = library.getModifiableModel();
       modifiableModel.addRoot(jar, OrderRootType.CLASSES);
       modifiableModel.commit();
+
+      for (Module module : ModuleManager.getInstance(project).getModules()) {
+        PantsLibNotConfiguredInspection.ConfigureLibFix.addLibraryDependency(module, library);
+      }
     }
   }
 }
