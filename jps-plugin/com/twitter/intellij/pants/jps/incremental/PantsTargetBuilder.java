@@ -83,6 +83,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     }
 
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
+    commandLine.addParameters("goal");
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameter("clean-all");
     }
