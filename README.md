@@ -1,8 +1,7 @@
 # intellij-pants-plugin
 
-
-The intelliJ-pants-plugin supports importing, compiling and testing [pants](http://pantsbuild.github.io/) projects.
-Current 1.0.* version of plugin supports Scala and Java projects.
+The intellij-pants-plugin supports importing, compiling and testing [pants](http://pantsbuild.github.io/) projects.
+Current 1.* version of plugin supports Scala and Java projects only.
 
 ## User documentation
 
@@ -29,13 +28,83 @@ Using this plugin you can import entire project or specific targets in a BUILD f
 
 Once you import the project using above steps, you will see the "Project View" with multiple modules configured.
 
-Each module represents BUILD target. You can now start navigating through the project files and editing files.
+### How the plugin works
 
-The plugin will resolve the project dependencies in background using `pants goal resolve` and configure all the modules' dependencies.
+The plugin uses `pants goal resolve depmap --depmap-project-info <list of imported targets>` command to get an information
+about an imported project. `pants goal resolve depmap --depmap-project-info <list of imported targets>` command returns information
+about all targets that are needed to be imported for the project in JSON format. It contains information about all dependencies of a target
+as well as the same information for each dependency. Then the plugin creates an IntelliJ module for each target, configures
+dependencies(modules and libraries) and source roots.
 
-Once the resolve is done, you can compile the entire project using Main menu: Build -> Compile.
+Let's check an output of `./pants goal resolve depmap --depmap-project-info examples/src/java/com/pants/examples/hello/main:main-bin` command:
 
-You can also compile individual modules by Right clicking on the module in "Project View" and Choose "Make Module" option.
+```json
+{
+    "libraries": {},
+    "targets": {
+        "examples/src/java/com/pants/examples/hello/main:main-bin": {
+            "is_code_gen": false,
+            "target_type": "SOURCE",
+            "libraries": [],
+            "pants_target_type": "jvm_binary",
+            "targets": [
+                "examples/src/java/com/pants/examples/hello/greet:greet",
+                "examples/src/resources/com/pants/example/hello:hello"
+            ],
+            "roots": [
+                {
+                    "source_root": "/Users/fkorotkov/workspace/pants/examples/src/java/com/pants/examples/hello/main",
+                    "package_prefix": "com.pants.examples.hello.main"
+                }
+            ]
+        },
+        "examples/src/java/com/pants/examples/hello/greet:greet": {
+            "is_code_gen": false,
+            "target_type": "SOURCE",
+            "libraries": [],
+            "pants_target_type": "java_library",
+            "targets": [],
+            "roots": [
+                {
+                    "source_root": "/Users/fkorotkov/workspace/pants/examples/src/java/com/pants/examples/hello/greet",
+                    "package_prefix": "com.pants.examples.hello.greet"
+                }
+            ]
+        },
+        "examples/src/resources/com/pants/example/hello:hello": {
+            "is_code_gen": false,
+            "target_type": "RESOURCE",
+            "libraries": [],
+            "pants_target_type": "resources",
+            "targets": [],
+            "roots": [
+                {
+                    "source_root": "/Users/fkorotkov/workspace/pants/examples/src/resources/com/pants/example/hello",
+                    "package_prefix": "com.pants.example.hello"
+                }
+            ]
+        }
+    }
+}
+```
+
+The plugin will create three modules. One for the imported target, examples/src/java/com/pants/examples/hello/main:main-bin
+and two for the targets it depends on. It also will configure source roots for the modules and will use `target_type`
+and `is_code_gen` fields to figure out types of source roots(there are several types of source roots: sources,
+test sources, resources, test resources, generated sources, etc).
+
+### Compilation
+The plugin provides two ways to compile your project:
+* via pants' compile goal (Default)
+  The plugin will use `pants goal compile <list of targets>` to compile your project once a `Make` command is invoked.
+  ![Compilation via compile goal ](images/compilation_via_compile_goal.png)
+* via IntelliJ's scala/java compilers
+  Because the plugin configured all modules' dependencies IntelliJ can use this information to build and run your project without
+  invoking pants. Using just internal representation of the project's model. We recommend to use first option to be consistent with
+  command line invocation.
+
+Compilation options can be configured in Preferences -> Build, Execution, Deployment -> Compiler -> Pants:
+![Compilation Options](images/compilation_options.png)
 
 ### Plugin Features.
 * Project File Tree View.
@@ -53,15 +122,6 @@ You can also compile individual modules by Right clicking on the module in "Proj
 * Compiling within IntelliJ
 * Running tests within IntelliJ
   You can right click on tests and run tests.
-
-
-### Whats in near Future?
-* Right click on `target` definition within BUILD file will navigate to pants target definition.
-* Multiple project imports in the same window.
-  <br />Right now, importing/adding another target or project to an imported project is not supported.
-* Automatic regeneration of project on changes in files used for code generation.
-  <br />Pants provides code generation for thrift, antrl and protobuf.
-  Changing a thrift file or protobug file in source will run pants resolve in background.
 
 ### Report Bugs
 If you see any bugs please file a github issue on the project page.
@@ -81,6 +141,10 @@ For contributing to the project, continue reading below.
         git checkout -b $FEATURE_BRANCH
 
 * Run tests to verify your installation
+
+        IJ_VERSION="14.0.2" IJ_BUILD="IC-139.659" ./scripts/download-ci-environment.sh
+        ./scripts/run-tests-ci.sh
+
 * Post your first review ([setup instructions](http://pantsbuild.github.io/howto_contribute.html#code-review))
 
         ./rbt post -o -g
