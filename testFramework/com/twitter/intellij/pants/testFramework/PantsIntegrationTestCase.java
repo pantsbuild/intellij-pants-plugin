@@ -62,7 +62,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   private final boolean needToCopyProjectToTempDir;
   private PantsProjectSettings myProjectSettings;
-  private String myRelativeProjectPath;
+  private String myRelativeProjectPath = null;
   private CompilerTester myCompilerTester;
   private String defaultPlugins = null;
 
@@ -96,7 +96,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     PantsSettings.getInstance(myProject).setCompileWithIntellij(!usePantsToCompile);
 
     myProjectSettings = new PantsProjectSettings();
-    myProjectSettings.setAllTargets(true);
     myCompilerTester = null;
   }
 
@@ -192,8 +191,14 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return classes.length > 0 ? classes[0] : null;
   }
 
-  protected void doImport(String projectFolderPathToImport) {
+  protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {
     myRelativeProjectPath = projectFolderPathToImport;
+    if (targetNames.length == 0) {
+      myProjectSettings.setAllTargets(true);
+    } else {
+      myProjectSettings.setAllTargets(false);
+      myProjectSettings.setTargets(Arrays.asList(targetNames));
+    }
     importProject();
   }
 

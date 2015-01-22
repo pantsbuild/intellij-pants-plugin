@@ -3,11 +3,17 @@
 
 package com.twitter.intellij.pants.integration.oss;
 
+import com.intellij.openapi.compiler.CompilerMessage;
+import com.intellij.openapi.compiler.CompilerMessageCategory;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
+import java.util.List;
+
 public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTest {
-  public void testHello() throws Throwable {
-    doImport("examples/src/scala/com/pants/example/hello");
+  public void testHelloByTargetName() throws Throwable {
+    doImport("examples/src/scala/com/pants/example/hello/BUILD", "hello");
 
     assertModules(
       "examples_src_resources_com_pants_example_hello_hello",
@@ -52,5 +58,31 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     assertClassFileInModuleOutput(
       "com.pants.testproject.excludes1.nested.foo.Foo", "intellij-integration_src_scala_com_pants_testproject_excludes1_nested_foo_foo"
     );
+  }
+
+  public void testError1() throws Throwable {
+    doImport("intellij-integration/src/scala/com/pants/testproject/error1");
+
+    assertModules(
+      "intellij-integration_src_scala_com_pants_testproject_error1_error1"
+    );
+
+    final List<CompilerMessage> compilerMessages =
+      compileAndGetMessages(getModule("intellij-integration_src_scala_com_pants_testproject_error1_error1"));
+    final List<String> errorMessages =
+      ContainerUtil.mapNotNull(
+        compilerMessages,
+        new Function<CompilerMessage, String>() {
+          @Override
+          public String fun(CompilerMessage message) {
+            if (message.getCategory() == CompilerMessageCategory.ERROR) {
+              return message.getMessage();
+            }
+            return null;
+          }
+        }
+      );
+    assertNotEmpty(errorMessages);
+    assertContainsElements(errorMessages, "pants: FAILURE");
   }
 }

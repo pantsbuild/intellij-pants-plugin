@@ -8,7 +8,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTarget;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
@@ -89,7 +89,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     }
     commandLine.addParameters("compile");
     final String targetRelativePath =
-      FileUtil.getRelativePath(pantsExecutable.getParentFile(), new File(targetAbsolutePath));
+      PantsUtil.getRelativeProjectPath(pantsExecutable.getParentFile(), new File(targetAbsolutePath));
     if (target.isAllTargets()) {
       commandLine.addParameter(targetRelativePath + "::");
     } else {
@@ -108,7 +108,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     catch (ExecutionException e) {
       throw new ProjectBuildException(e);
     }
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
+    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
     processHandler.addProcessListener(
       new ProcessAdapter() {
         @Override
@@ -126,7 +126,14 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   public CompilerMessage getCompilerMessage(ProcessEvent event, Key outputType) {
     final PantsOutputMessage message = PantsOutputMessage.parseCompilerMessage(event.getText());
     if (message == null) {
-      return new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, event.getText());
+      final String outputMessage = StringUtil.trim(event.getText());
+      final boolean isError = PantsOutputMessage.isError(outputMessage) || StringUtil.startsWith(outputMessage, "FAILURE");
+      final boolean isWarning = PantsOutputMessage.isWarning(outputMessage);
+      return new CompilerMessage(
+        PantsConstants.PANTS,
+        isError ? BuildMessage.Kind.ERROR : isWarning ? BuildMessage.Kind.WARNING : BuildMessage.Kind.INFO,
+        outputMessage
+      );
     }
 
     final boolean isError = outputType == ProcessOutputTypes.STDERR || message.getLevel() == PantsOutputMessage.Level.ERROR;

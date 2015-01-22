@@ -7,6 +7,10 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.1.1:</p>
+      <ul>
+        <li>Bug fixes</li>
+      </ul>
       <p>1.1:</p>
       <ul>
         <li>Compilation via compile goal</li>
@@ -66,7 +70,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.1</version>
+  <version>1.1.1</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->

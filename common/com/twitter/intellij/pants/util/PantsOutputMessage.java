@@ -77,8 +77,8 @@ public class PantsOutputMessage {
   @Nullable
   public static PantsOutputMessage parseMessage(@NotNull String line, boolean onlyCompilerMessages, boolean checkFileExistence) {
     int i = 0;
-    final boolean isError = line.contains("[error]");
-    final boolean isWarning = line.contains("[warning]") || line.contains("[warn]");
+    final boolean isError = isError(line);
+    final boolean isWarning = isWarning(line);
     if (isError || isWarning || line.contains("[debug]")) {
       i = line.indexOf(']') + 1;
     } else if (onlyCompilerMessages) {
@@ -109,6 +109,14 @@ public class PantsOutputMessage {
     }
     final Level level = isError ? Level.ERROR : isWarning ? Level.WARNING : Level.INFO;
     return new PantsOutputMessage(start, end, filePath, lineNumber, level);
+  }
+
+  public static boolean isWarning(@NotNull String line) {
+    return line.contains("[warning]") || line.contains("[warn]");
+  }
+
+  public static boolean isError(@NotNull String line) {
+    return line.contains("[error]");
   }
 
   public static enum Level {

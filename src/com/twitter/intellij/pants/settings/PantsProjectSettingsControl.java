@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.settings;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
 import com.intellij.openapi.externalSystem.util.PaintAwarePanel;
@@ -13,7 +12,6 @@ import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -23,9 +21,9 @@ import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -37,8 +35,6 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private JLabel myTargetsLabel;
   private CheckBoxList<String> myTargets;
   private JBCheckBox myAllTargetsCheckBox;
-  @Nullable
-  private VirtualFile myCurrentFile;
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
     super(settings);
@@ -71,7 +67,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     }
   }
 
-  public void onProjectPathChanged(@NotNull final String projectPath) throws ExternalSystemException {
+  public void onProjectPathChanged(@NotNull final String projectPath) {
     myTargets.clear();
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     if (file == null || !PantsUtil.isPantsProjectFolder(file)) {
@@ -81,17 +77,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       return;
     }
 
-    if (file.equals(myCurrentFile)) {
-      LOG.warn("Same file: " + projectPath + " Skipping... ");
-      return;
-    }
-
-    myCurrentFile = file;
-
-    if (myCurrentFile.isDirectory()) {
+    if (file.isDirectory()) {
       myAllTargetsCheckBox.setEnabled(true);
       myAllTargetsCheckBox.setSelected(true);
-      myTargets.clear();
       myTargets.setEnabled(false);
     } else {
       myAllTargetsCheckBox.setEnabled(false);
@@ -100,7 +88,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     }
   }
 
-  private void loadTargets(final String projectPath) throws ExternalSystemException {
+  private void loadTargets(final String projectPath) {
     myTargets.setPaintBusy(true);
     ProgressManager.getInstance().run(
       new Task.Backgroundable(
@@ -115,18 +103,15 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
               new Runnable() {
                 @Override
                 public void run() {
-                  myTargets.setPaintBusy(false);
                   myTargets.clear();
                   for (String target : targets) {
                     myTargets.addItem(target, target, false);
                   }
-                  myTargets.invalidate();
                 }
               }
             );
-          } catch (Throwable e) {
+          } finally {
             myTargets.setPaintBusy(false);
-            Messages.showOkCancelDialog(e.getMessage(), "Failed to Load Targets", null);
           }
         }
       }

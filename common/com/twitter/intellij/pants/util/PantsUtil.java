@@ -5,9 +5,7 @@ package com.twitter.intellij.pants.util;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.CapturingProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.process.ScriptRunnerUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
@@ -252,11 +250,8 @@ public class PantsUtil {
 
       commandLine.addParameter(relativePath + "::");
 
-      final ProcessOutput commandOutput = getCmdOutput(commandLine, null);
-      if (!commandOutput.checkSuccess(LOG)) {
-        throw new PantsException(commandOutput.getStderr());
-      }
-      if (commandOutput.getStderr().contains("no such option")) {
+      final String commandOutput = ScriptRunnerUtil.getProcessOutput(commandLine);
+      if (commandOutput.contains("no such option")) {
         throw new PantsException("Pants doesn't have necessary APIs. Please upgrade you pants!");
       }
       final String processOutput = FileUtil.loadFile(temporaryFile);
@@ -401,8 +396,14 @@ public class PantsUtil {
     return result;
   }
 
-  public static String getRelativeProjectPath(@NotNull String projectPath, @NotNull File workDirectory){
+  @Nullable
+  public static String getRelativeProjectPath(@NotNull File workDirectory, @NotNull String projectPath){
     final File projectFile = new File(projectPath);
+    return getRelativeProjectPath(workDirectory, projectFile);
+  }
+
+  @Nullable
+  public static String getRelativeProjectPath(@NotNull File workDirectory, @NotNull File projectFile){
     return FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
   }
 
@@ -472,18 +473,5 @@ public class PantsUtil {
   public static String getPathFromAddress(@NotNull Module module, @Nullable String key) {
     final String address = key != null ? module.getOptionValue(key) : null;
     return PantsTargetAddress.extractPath(address);
-  }
-
-  @NotNull
-  public static ProcessOutput getCmdOutput(
-    @NotNull GeneralCommandLine command,
-    @Nullable ProcessAdapter processAdapter
-  ) throws ExecutionException {
-    final Process process = command.createProcess();
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
-    if (processAdapter != null) {
-      processHandler.addProcessListener(processAdapter);
-    }
-    return processHandler.runProcess();
   }
 }

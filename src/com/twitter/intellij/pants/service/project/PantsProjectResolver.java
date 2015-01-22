@@ -57,7 +57,7 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     }
     // todo(fkorotkov): add ability to choose a name for a project
     final String targetsSuffix = allTargets ? ":" : StringUtil.join(settings.getTargetNames(), " :");
-    final String relativeProjectPath = PantsUtil.getRelativeProjectPath(projectDirPath, new File(workingDir.getPath()));
+    final String relativeProjectPath = PantsUtil.getRelativeProjectPath(new File(workingDir.getPath()), projectDirPath);
     final String projectName = relativeProjectPath + "/:" + targetsSuffix;
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
