@@ -1,12 +1,13 @@
 // Copyright 2014 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.integration.oss;
+package com.twitter.intellij.pants.integration;
 
 import com.intellij.openapi.compiler.CompilerMessage;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 import java.util.List;
@@ -83,6 +84,11 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
         }
       );
     assertNotEmpty(errorMessages);
-    assertContainsElements(errorMessages, "pants: FAILURE");
+    final boolean compileWithIntellij = PantsSettings.getInstance(myTestFixture.getProject()).isCompileWithIntellij();
+    if (compileWithIntellij) {
+      assertNotEmpty(errorMessages);
+    } else {
+      assertContainsElements(errorMessages, "pants: FAILURE");
+    }
   }
 }

@@ -6,5 +6,5 @@ CWD=$(pwd)
   --jvm-options="-Didea.home.path=$CWD/.pants.d/intellij/plugins-sandbox/test" \
   --jvm-options="-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java" \
   --jvm-options="-Dpants.jps.plugin.classpath=$CWD/.pants.d/resources/prepare/jps-plugin.services" \
-  tests \
+  tests:${TEST_SET:-all} \
   $@

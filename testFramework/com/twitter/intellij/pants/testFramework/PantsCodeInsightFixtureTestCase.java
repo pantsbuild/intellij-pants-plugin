@@ -74,9 +74,8 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
       pyPlugin
     );
 
-    checkDependentPlugins(pyPlugin);
     if (!pyPlugin.isEnabled()) {
-      PluginManagerCore.enablePlugin(pyPluginId);
+      assertTrue("Failed to enable Python plugin!", PluginManagerCore.enablePlugin(pyPluginId));
     }
 
     final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
@@ -101,20 +100,6 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
 
   protected void setUpPantsExecutable() {
     myFixture.addFileToProject(PantsConstants.PANTS, ""); // make it pants working dir
-  }
-
-  private void checkDependentPlugins(IdeaPluginDescriptor mainPlugin) {
-    for (PluginId pluginId : mainPlugin.getDependentPluginIds()) {
-      if ("com.intellij.modules.java".equalsIgnoreCase(pluginId.getIdString())) {
-        continue;
-      }
-      final IdeaPluginDescriptor plugin = PluginManager.getPlugin(pluginId);
-      assertNotNull(
-        pluginId.getIdString() + " plugin should be in classpath. " +
-        mainPlugin.getPluginId().getIdString() + " needs it.",
-        plugin
-      );
-    }
   }
 
   @Override

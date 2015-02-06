@@ -34,7 +34,6 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.util.ArrayUtil;
-import com.intellij.util.Processor;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -54,7 +53,7 @@ import java.util.List;
  * If your integration test modifies any source files
  * please set {@link PantsIntegrationTestCase#needToCopyProjectToTempDir} to true.
  *
- * @see com.twitter.intellij.pants.integration.highlighting.PantsHighlightingIntegrationTest
+ * @see com.twitter.intellij.pants.highlighting.PantsHighlightingIntegrationTest
  */
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
   private static final String PLUGINS_KEY = "idea.load.plugins.id";

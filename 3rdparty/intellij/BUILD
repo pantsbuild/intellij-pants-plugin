@@ -105,7 +105,7 @@ def _jar_path_in_lib_folder(base_dir, jar_name):
     lib_path = os.path.join(base_dir, 'lib')
     jar_path = os.path.join(lib_path, jar_name)
     if not os.path.exists(jar_path):
-        raise Exception('Cannot find %s in %s!' % jar_name % lib_path)
+        raise Exception('Cannot find %s in %s!' % (jar_name, lib_path))
     return jar_path
 
 def _intellij_sdk_classpath():
