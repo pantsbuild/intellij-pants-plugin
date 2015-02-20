@@ -102,7 +102,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
     final Process process;
     try {
-      commandLine.addParameters("--no-color");
+      commandLine.addParameters("--no-colors");
       process = commandLine.createProcess();
     }
     catch (ExecutionException e) {
