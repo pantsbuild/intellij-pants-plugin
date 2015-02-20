@@ -45,6 +45,10 @@ if [ ! -d .cache/intellij/pants ]; then
   echo "Getting latest Pants..."
   pushd .cache/intellij/
   git clone https://github.com/pantsbuild/pants
+  echo "Bootstrapping Pants..."
+  pushd pants
+  ./pants goal resolve examples/src/scala/:: examples/src/java/::
+  popd
   popd
 fi
 

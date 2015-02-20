@@ -7,7 +7,7 @@ notifications:
     - fkorotkov@twitter.com
     - tdesai@twitter.com
 
-install: ./scripts/download-ci-environment.sh
+install: ./scripts/setup-ci-environment.sh
 
 env:
   global:
