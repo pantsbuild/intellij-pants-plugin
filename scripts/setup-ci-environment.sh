@@ -52,3 +52,5 @@ if [ ! -d .cache/intellij/pants ]; then
   popd
 fi
 
+echo "Bootstrapping Pants..."
+./pants goal goals

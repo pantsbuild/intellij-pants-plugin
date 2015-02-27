@@ -15,8 +15,8 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
   public OSSPantsIntegrationTest() {
   }
 
-  public OSSPantsIntegrationTest(boolean needToCopyProjectToTempDir) {
-    super(needToCopyProjectToTempDir);
+  public OSSPantsIntegrationTest(boolean readOnly) {
+    super(readOnly);
   }
 
   @NotNull

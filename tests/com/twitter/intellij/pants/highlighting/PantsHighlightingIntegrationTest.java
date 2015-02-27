@@ -31,7 +31,7 @@ import java.util.List;
 abstract public class PantsHighlightingIntegrationTest extends OSSPantsIntegrationTest {
   public PantsHighlightingIntegrationTest() {
     // we do some code modifications in the tests.
-    super(true);
+    super(false);
   }
 
   @Override

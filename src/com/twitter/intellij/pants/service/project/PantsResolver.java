@@ -7,7 +7,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.application.ApplicationManager;
@@ -483,7 +482,7 @@ public class PantsResolver {
     try {
       final File outputFile = FileUtil.createTempFile("pants_run", ".out");
       final GeneralCommandLine command = getCommand(outputFile);
-      final ProcessOutput processOutput = getCmdOutput(command, processAdapter);
+      final ProcessOutput processOutput = PantsUtil.getCmdOutput(command, processAdapter);
       if (processOutput.getStdout().contains("no such option")) {
         throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
       }
@@ -498,7 +497,7 @@ public class PantsResolver {
           // need to bootstrap tools
           final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(bootstrapBuildFile.getPath());
           commandLine.addParameters("goal", "resolve", "BUILD:");
-          final boolean bootstrapped = getCmdOutput(commandLine, null).checkSuccess(LOG);
+          final boolean bootstrapped = PantsUtil.getCmdOutput(commandLine, null).checkSuccess(LOG);
           if (bootstrapped && stdOutDebugInfo) {
             System.out.println("Bootstrapped Pants successfully!");
           }
@@ -520,18 +519,6 @@ public class PantsResolver {
     catch (IOException ioException) {
       throw new ExternalSystemException(ioException);
     }
-  }
-
-  protected ProcessOutput getCmdOutput(
-    @NotNull GeneralCommandLine command,
-    @Nullable ProcessAdapter processAdapter
-  ) throws ExecutionException {
-    final Process process = command.createProcess();
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
-    if (processAdapter != null) {
-      processHandler.addProcessListener(processAdapter);
-    }
-    return processHandler.runProcess();
   }
 
   protected GeneralCommandLine getCommand(final File outputFile) {

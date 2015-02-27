@@ -5,6 +5,9 @@ package com.twitter.intellij.pants.util;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.CapturingProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.process.ScriptRunnerUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -25,9 +28,7 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiFile;
-import com.intellij.util.Function;
-import com.intellij.util.PathUtil;
-import com.intellij.util.Processor;
+import com.intellij.util.*;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsSourceType;
@@ -473,5 +474,30 @@ public class PantsUtil {
   public static String getPathFromAddress(@NotNull Module module, @Nullable String key) {
     final String address = key != null ? module.getOptionValue(key) : null;
     return PantsTargetAddress.extractPath(address);
+  }
+
+  public static void copyDirContent(@NotNull File fromDir, @NotNull File toDir) throws IOException {
+    final File[] children = ObjectUtils.notNull(fromDir.listFiles(), ArrayUtil.EMPTY_FILE_ARRAY);
+    for (File child : children) {
+      final File target = new File(toDir, child.getName());
+      if (child.isFile()) {
+        FileUtil.copy(child, target);
+      }
+      else {
+        FileUtil.copyDir(child, target, false);
+      }
+    }
+  }
+
+  public static ProcessOutput getCmdOutput(
+    @NotNull GeneralCommandLine command,
+    @Nullable ProcessAdapter processAdapter
+  ) throws ExecutionException {
+    final Process process = command.createProcess();
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
+    if (processAdapter != null) {
+      processHandler.addProcessListener(processAdapter);
+    }
+    return processHandler.runProcess();
   }
 }
