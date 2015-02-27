@@ -157,7 +157,7 @@ public class PantsResolver {
   }
 
   private void addExcludesToContentRoots(@NotNull final TargetInfo targetInfo, @NotNull List<ContentRootData> remainingContentRoots) {
-    if (targetInfo.getSourcesType() == PantsSourceType.RESOURCE) {
+    if (PantsUtil.isResource(targetInfo.getSourcesType())) {
       return; // don't exclude subdirectories of resource sources
     }
     for (final ContentRootData contentRoot : remainingContentRoots) {
@@ -214,6 +214,9 @@ public class PantsResolver {
   }
 
   private void addPantsJpsCompileOutputs(@NotNull TargetInfo targetInfo, @NotNull DataNode<ModuleData> moduleDataNode) {
+    if (PantsUtil.isResource(targetInfo.getSourcesType())) {
+      return;
+    }
     String compilerOutputRelativePath = ".pants.d/compile/jvm/java/classes";
     if (targetInfo.isScalaTarget() || targetInfo.hasScalaLib()) {
       compilerOutputRelativePath = ".pants.d/compile/jvm/scala/classes";
