@@ -9,6 +9,7 @@
     <![CDATA[
       <p>1.1.2:</p>
       <ul>
+        <li>Auto-import option is removed due to performance issues</li>
         <li>Bug fixes</li>
       </ul>
       <p>1.1.1:</p>

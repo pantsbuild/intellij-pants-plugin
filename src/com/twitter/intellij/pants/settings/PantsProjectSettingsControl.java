@@ -38,6 +38,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
     super(settings);
+    hideUseAutoImportBox();
   }
 
   @Override

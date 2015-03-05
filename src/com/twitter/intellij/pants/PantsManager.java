@@ -7,7 +7,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.SimpleJavaParameters;
 import com.intellij.ide.actions.OpenProjectFileChooserDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.externalSystem.ExternalSystemAutoImportAware;
 import com.intellij.openapi.externalSystem.ExternalSystemConfigurableAware;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.ExternalSystemUiAware;
@@ -19,8 +18,6 @@ import com.intellij.openapi.externalSystem.task.ExternalSystemTaskManager;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
@@ -44,12 +41,8 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by fedorkorotkov
- */
 public class PantsManager implements
                           ExternalSystemConfigurableAware,
-                          ExternalSystemAutoImportAware,
                           ExternalSystemUiAware,
                           StartupActivity,
                           ExternalSystemManager<
@@ -203,32 +196,5 @@ public class PantsManager implements
 
   @Override
   public void runActivity(@NotNull Project project) {
-  }
-
-  @Nullable
-  @Override
-  public String getAffectedExternalProjectPath(@NotNull String changedFileOrDirPath, @NotNull Project project) {
-    final VirtualFile virtualFile = PantsUtil.findFileByAbsoluteOrRelativePath(changedFileOrDirPath, project);
-    if (virtualFile == null) {
-      return null;
-    }
-    final String pathKey = getPathKeyForFile(changedFileOrDirPath, virtualFile);
-    if (pathKey == null) {
-      return null;
-    }
-
-    final Module module = ModuleUtil.findModuleForFile(virtualFile, project);
-    return module != null ? module.getOptionValue(pathKey) : null;
-  }
-
-  @Nullable
-  private static String getPathKeyForFile(@NotNull String changedFileOrDirPath, @NotNull VirtualFile virtualFile) {
-    if (virtualFile.isDirectory()) {
-      return ExternalSystemConstants.ROOT_PROJECT_PATH_KEY;
-    } else if (PantsUtil.isBUILDFilePath(changedFileOrDirPath) || PantsUtil.isGeneratableFile(changedFileOrDirPath)) {
-      return ExternalSystemConstants.LINKED_PROJECT_PATH_KEY;
-    } else {
-      return null;
-    }
   }
 }
