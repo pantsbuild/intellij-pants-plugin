@@ -23,9 +23,11 @@ public class SourceRoot {
   @NotNull
   public String getSourceRootRegardingSourceType(@Nullable PantsSourceType rootType) {
     if (PantsSourceType.isResource(rootType)) {
-      final String resourcesPath = StringUtil.replaceChar(package_prefix, '.', '/');
-      return source_root.endsWith(resourcesPath) ?
-             source_root.substring(0, source_root.length() - resourcesPath.length()) :
+      // source_root might contain '.' in the path.
+      final boolean sourceRootMatchesPackage =
+        StringUtil.endsWith(StringUtil.replaceChar(source_root, '/', '.'), package_prefix);
+      return sourceRootMatchesPackage ?
+             source_root.substring(0, source_root.length() - package_prefix.length()) :
              source_root;
     }
     else {
