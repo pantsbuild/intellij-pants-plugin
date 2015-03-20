@@ -548,6 +548,7 @@ public class PantsResolver {
         commandLine.addParameter(relativeProjectPath + File.separator + ":" + targetName);
       }
     }
+    commandLine.addParameter("--thrift-linter-skip");
     commandLine.addParameter("--depmap-project-info");
     commandLine.addParameter("--depmap-project-info-formatted");
     commandLine.addParameter("--depmap-output-file=" + outputFile.getPath());
