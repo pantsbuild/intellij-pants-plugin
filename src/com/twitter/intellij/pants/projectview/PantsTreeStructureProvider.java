@@ -45,7 +45,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
         final VirtualFile buildFile = PantsUtil.findFileRelativeToPantsWorkingDir(project, buildPath);
 
         boolean isModuleRoot =
-          ArrayUtil.contains(((PsiDirectoryNode)node).getVirtualFile(), ModuleRootManager.getInstance(module).getContentRoots());
+          ArrayUtil.indexOf(ModuleRootManager.getInstance(module).getContentRoots(), ((PsiDirectoryNode)node).getVirtualFile()) >= 0;
         if (buildFile != null && isModuleRoot) {
           // Check if there's already a BUILD file in the directory; if so, we don't add another
           final AbstractTreeNode existingBuildFile = ContainerUtil.find(

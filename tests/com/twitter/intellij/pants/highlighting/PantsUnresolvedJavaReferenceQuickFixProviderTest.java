@@ -36,7 +36,7 @@ public class PantsUnresolvedJavaReferenceQuickFixProviderTest extends PantsHighl
 
     assertModuleModuleDeps("testprojects_src_java_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
-    WriteCommandAction.Simple.runWriteCommandAction(
+    WriteCommandAction.runWriteCommandAction(
       myProject,
       new Runnable() {
         @Override

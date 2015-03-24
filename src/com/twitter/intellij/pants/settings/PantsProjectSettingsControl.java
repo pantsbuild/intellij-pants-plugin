@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.settings;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
+import com.intellij.openapi.externalSystem.service.settings.ExternalSystemSettingsControlCustomizer;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
 import com.intellij.openapi.externalSystem.util.PaintAwarePanel;
 import com.intellij.openapi.options.ConfigurationException;
@@ -32,18 +33,16 @@ import java.util.List;
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
   private static final Logger LOG = Logger.getInstance(PantsProjectSettingsControl.class);
 
-  private JLabel myTargetsLabel;
   private CheckBoxList<String> myTargets;
   private JBCheckBox myAllTargetsCheckBox;
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
-    super(settings);
-    hideUseAutoImportBox();
+    super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
   }
 
   @Override
   protected void fillExtraControls(@NotNull PaintAwarePanel content, int indentLevel) {
-    myTargetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
+    final JLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
     myTargets = new CheckBoxList<String>();
 
     myAllTargetsCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.all.targets"));
@@ -51,7 +50,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
     content.add(myAllTargetsCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
-    content.add(myTargetsLabel, ExternalSystemUiUtil.getLabelConstraints(indentLevel));
+    content.add(targetsLabel, ExternalSystemUiUtil.getLabelConstraints(indentLevel));
     content.add(myTargets, ExternalSystemUiUtil.getFillLineConstraints(0));
   }
 

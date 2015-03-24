@@ -62,7 +62,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
   ) throws Exception {
     assertCompilationFailed("intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
-    WriteCommandAction.Simple.runWriteCommandAction(
+    WriteCommandAction.runWriteCommandAction(
       myProject,
       new Runnable() {
         @Override
@@ -89,7 +89,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     // because we are compiling via compile goal
     makeModules("intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
-    WriteCommandAction.Simple.runWriteCommandAction(
+    WriteCommandAction.runWriteCommandAction(
       myProject,
       new Runnable() {
         @Override

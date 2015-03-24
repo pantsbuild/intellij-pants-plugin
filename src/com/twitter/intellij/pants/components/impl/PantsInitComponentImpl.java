@@ -9,10 +9,10 @@ import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.util.registry.Registry;
+import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.generate.tostring.util.StringUtil;
 
 import java.io.File;
 
