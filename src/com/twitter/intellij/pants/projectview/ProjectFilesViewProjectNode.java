@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 public class ProjectFilesViewProjectNode extends AbstractProjectNode {
 
@@ -43,16 +44,20 @@ public class ProjectFilesViewProjectNode extends AbstractProjectNode {
   @NotNull
   @Override
   public Collection<? extends AbstractTreeNode> getChildren() {
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(myProject.getBaseDir());
-    final AbstractTreeNode root =
-      new VirtualFileTreeNode(myProject, workingDir != null ? workingDir : myProject.getBaseDir(), getSettings());
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(myProject);
+    final VirtualFile projectDir = workingDir != null ? workingDir : myProject.getBaseDir();
+    if (projectDir == null) {
+      LOG.warn(String.format("Couldn't find project directory for project '%s'", myProject.getName()));
+      return Collections.emptyList();
+    }
+    final AbstractTreeNode root = new VirtualFileTreeNode(myProject, projectDir, getSettings());
     if (getSettings().isShowLibraryContents()) {
       return Arrays.asList(
         root,
         new ExternalLibrariesNode(getProject(), getSettings())
       );
     }
-    return Arrays.asList(root);
+    return Collections.singletonList(root);
   }
 
   @Override
