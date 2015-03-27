@@ -9,8 +9,11 @@ import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.process.ScriptRunnerUtil;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
 import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
@@ -499,5 +502,11 @@ public class PantsUtil {
       processHandler.addProcessListener(processAdapter);
     }
     return processHandler.runProcess();
+  }
+
+  public static boolean isPythonAvailable() {
+    final PluginId pyPluginId = PluginId.findId("Pythonid", "PythonCore");
+    final IdeaPluginDescriptor plugin = pyPluginId != null ? PluginManager.getPlugin(pyPluginId) : null;
+    return plugin != null && plugin.isEnabled();
   }
 }

@@ -504,13 +504,15 @@ public class PantsResolver {
         }
       }
       else {
+        final PantsExecutionException executionException =
+          new PantsExecutionException("Failed to update the project!", command.getCommandLineString("pants"), processOutput);
+
         if (stdOutDebugInfo) {
           System.err.println("Pants execution failure!");
-          System.err.println(processOutput.getStdout());
-          System.err.println(processOutput.getStderr());
+          System.err.println(executionException.getExecutionDetails());
         }
 
-        throw new PantsExecutionException("Failed to update the project!", processOutput);
+        throw executionException;
       }
     }
     catch (ExecutionException e) {

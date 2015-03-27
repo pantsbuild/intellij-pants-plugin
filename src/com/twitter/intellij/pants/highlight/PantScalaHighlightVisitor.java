@@ -14,6 +14,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.twitter.intellij.pants.quickfix.PantsQuickFix;
 import com.twitter.intellij.pants.quickfix.PantsUnresolvedReferenceFixFinder;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.scala.annotator.createFromUsage.CreateTypeDefinitionQuickFix;
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile;
@@ -21,14 +22,14 @@ import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile;
 import java.util.List;
 
 /**
- * A hack to extend fixes in Scala code. I(@fkorotkov) asked JetBrains to add an extension point as we have for Java
+ * A hack to extend fixes in Scala code. @fkorotkov asked JetBrains to add an extension point as we have for Java
  */
 public class PantScalaHighlightVisitor implements HighlightVisitor {
   private HighlightInfoHolder myHolder;
 
   @Override
   public boolean suitableForFile(@NotNull PsiFile file) {
-    return file instanceof ScalaFile;
+    return PantsUtil.isPythonAvailable() && file instanceof ScalaFile;
   }
 
   @Override

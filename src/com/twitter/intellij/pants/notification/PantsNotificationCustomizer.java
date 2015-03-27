@@ -26,6 +26,6 @@ public class PantsNotificationCustomizer implements ExternalSystemNotificationEx
   }
 
   public void customizeExecutionException(@NotNull NotificationData notificationData, @NotNull PantsExecutionException ex) {
-    notificationData.setMessage(ex.getProcessOutput().getStderr());
+    notificationData.setMessage(ex.getExecutionDetails());
   }
 }
