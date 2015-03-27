@@ -8,7 +8,6 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
-import com.intellij.execution.process.ScriptRunnerUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationManager;
@@ -40,7 +39,10 @@ import org.jetbrains.annotations.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
@@ -254,8 +256,8 @@ public class PantsUtil {
 
       commandLine.addParameter(relativePath + "::");
 
-      final String commandOutput = ScriptRunnerUtil.getProcessOutput(commandLine);
-      if (commandOutput.contains("no such option")) {
+      final ProcessOutput commandOutput = PantsUtil.getCmdOutput(commandLine, null);
+      if (commandOutput.getStdout().contains("no such option")) {
         throw new PantsException("Pants doesn't have necessary APIs. Please upgrade you pants!");
       }
       final String processOutput = FileUtil.loadFile(temporaryFile);
