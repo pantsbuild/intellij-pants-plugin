@@ -103,6 +103,9 @@ _jdk_jars = [
 
 def _jar_path_in_lib_folder(base_dir, jar_name):
     lib_path = os.path.join(base_dir, 'lib')
+    return _jar_path_in_folder(lib_path, jar_name)
+
+def _jar_path_in_folder(lib_path, jar_name):
     jar_path = os.path.join(lib_path, jar_name)
     if not os.path.exists(jar_path):
         raise Exception('Cannot find %s in %s!' % (jar_name, lib_path))
@@ -122,8 +125,8 @@ def _intellij_sdk_classpath():
     return intellij_jars + additional_jars
 
 def _jdk_classpath():
-    java_home = os.environ['JAVA_HOME']
-    return [ _jar_path_in_lib_folder(java_home, jdk_jar) for jdk_jar in _jdk_jars ]
+    jdk_libs_home = os.environ['JDK_LIBS_HOME']
+    return [ _jar_path_in_folder(jdk_libs_home, jdk_jar) for jdk_jar in _jdk_jars ]
 
 def _find_jars_for_plugin(plugin_name, *jar_names):
     base_dir = os.environ['INTELLIJ_PLUGINS_HOME']
@@ -153,7 +156,7 @@ def _intellij_plugin_jar(path):
 
 def _jdk_jar(path):
     return jar(
-        org='com.java',
+        org='jdk',
         name=os.path.basename(path),
         rev='latest',
         url='file://%s' % path,

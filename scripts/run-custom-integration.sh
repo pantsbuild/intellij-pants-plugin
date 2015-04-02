@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-source scripts/prepare-local-environment.sh
 source scripts/prepare-ci-environment.sh
 
 function usage() {
@@ -8,7 +7,6 @@ function usage() {
   echo
   echo "Usage: $0 (-h|-bsrdpceat)"
   echo " -h        print out this help message"
-  echo " -l        run the tests locally"
   echo " -r        path to your test repo"
   echo " -f        file containing list of targets"
   echo " -t        comma separated list of targets"
@@ -20,10 +18,9 @@ function usage() {
   fi
 }
 
-while getopts "hlf:t:r:" opt; do
+while getopts "hf:t:r:" opt; do
   case ${opt} in
     h) usage ;;
-    l) local_run="true" ;;
     f) target_list_file=$OPTARG ;;
     t) targets_list=$OPTARG ;;
     r) repo=$OPTARG ;;
@@ -48,11 +45,7 @@ if [ ! -z "$target_list_file" ]; then
   targets_list_args="$target_list_file"
 fi
 
-if [ "$local_run" == "true" ]; then
-  prepare_local_env
-else
-  prepare_ci_env
-fi
+prepare_ci_env
 
 CWD=$(pwd)
 ./pants test.junit \

@@ -52,5 +52,11 @@ if [ ! -d .cache/intellij/pants ]; then
   popd
 fi
 
+if [ ! -d .cache/intellij/jdk-libs ]; then
+  echo "Copying JDK libs..."
+  mkdir -p .cache/intellij/jdk-libs
+  cp "$JAVA_HOME/lib/sa-jdi.jar" "$JAVA_HOME/lib/tools.jar" .cache/intellij/jdk-libs
+fi
+
 echo "Bootstrapping Pants..."
 ./pants goal goals

@@ -48,6 +48,8 @@ import java.util.regex.Pattern;
 public class PantsUtil {
   private static final Logger LOG = Logger.getInstance(PantsUtil.class);
 
+  private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
+
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
     if (vFile == null) {
@@ -507,8 +509,13 @@ public class PantsUtil {
   }
 
   public static boolean isPythonAvailable() {
-    final PluginId pyPluginId = PluginId.findId("Pythonid", "PythonCore");
-    final IdeaPluginDescriptor plugin = pyPluginId != null ? PluginManager.getPlugin(pyPluginId) : null;
-    return plugin != null && plugin.isEnabled();
+    for (String pluginId : PYTHON_PLUGIN_IDS) {
+      final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
+      if (plugin != null && plugin.isEnabled()) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
