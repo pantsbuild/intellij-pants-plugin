@@ -143,7 +143,7 @@ For contributing to the project, continue reading below.
 
 * Run tests to verify your installation
 
-        IJ_VERSION="14.0.2" IJ_BUILD="IC-139.659" ./scripts/download-ci-environment.sh
+        IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" ./scripts/download-ci-environment.sh
         ./scripts/run-tests-ci.sh
 
 * Post your first review ([setup instructions](http://pantsbuild.github.io/howto_contribute.html#code-review))
