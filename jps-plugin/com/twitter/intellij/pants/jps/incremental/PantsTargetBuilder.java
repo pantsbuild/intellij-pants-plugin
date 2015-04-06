@@ -7,8 +7,11 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTarget;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
@@ -22,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.builders.BuildOutputConsumer;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
+import org.jetbrains.jps.builders.FileProcessor;
 import org.jetbrains.jps.builders.java.JavaBuilderUtil;
 import org.jetbrains.jps.incremental.CompileContext;
 import org.jetbrains.jps.incremental.ProjectBuildException;
@@ -34,7 +38,10 @@ import org.jetbrains.jps.model.JpsProject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
@@ -68,10 +75,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull BuildOutputConsumer outputConsumer,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
-    final String targetAbsolutePath = target.getTargetPath();
+    final String targetAbsolutePath = target.getRootTarget();
     final File pantsExecutable = findPantsExecutable(targetAbsolutePath);
 
-    if (!holder.hasDirtyFiles() && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
+    if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       context.processMessage(new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, "No changes to compile."));
       return;
     }
@@ -85,20 +92,31 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
     commandLine.addParameters("goal");
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
+      final Set<String> suitableTargetsToCompile = filterGenTargets(target.getTargetAddresses());
+      final String recompileMessage = String.format("Recompiling all %s targets", suitableTargetsToCompile.size());
+      context.processMessage(
+        new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
+      );
+      context.processMessage(new ProgressMessage(recompileMessage));
       commandLine.addParameter("clean-all");
-    }
-    commandLine.addParameters("compile");
-    final String targetRelativePath =
-      PantsUtil.getRelativeProjectPath(pantsExecutable.getParentFile(), new File(targetAbsolutePath));
-    if (target.isAllTargets()) {
-      commandLine.addParameter(targetRelativePath + "::");
+      commandLine.addParameter("compile");
+      for (String targetAddress : suitableTargetsToCompile) {
+        commandLine.addParameter(targetAddress);
+      }
     } else {
-      for (String targetName : target.getTargetNames()) {
-        commandLine.addParameter(targetRelativePath + ":" + targetName);
+      final Set<String> targetAddresses = filterGenTargets(findTargetAddresses(holder));
+      final String recompileMessage = targetAddresses.size() == 1 ?
+                                      String.format("Recompiling %s", targetAddresses.iterator().next()) :
+                                      String.format("Recompiling %s targets", targetAddresses.size());
+      context.processMessage(
+        new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage
+      ));
+      context.processMessage(new ProgressMessage(recompileMessage));
+      commandLine.addParameter("compile");
+      for (String targetAddress : targetAddresses) {
+        commandLine.addParameter(targetAddress);
       }
     }
-
-    context.processMessage(new ProgressMessage(commandLine.getCommandLineString("pants")));
 
     final Process process;
     try {
@@ -120,6 +138,54 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     );
     final ProcessOutput processOutput = processHandler.runProcess();
     processOutput.checkSuccess(LOG);
+  }
+
+  private boolean hasDirtyTargets(DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder) throws IOException {
+    final Ref<Boolean> hasDirtyTargets = Ref.create(false);
+    holder.processDirtyFiles(
+      new FileProcessor<PantsSourceRootDescriptor, PantsBuildTarget>() {
+        @Override
+        public boolean apply(PantsBuildTarget target, File file, PantsSourceRootDescriptor root) throws IOException {
+          if (!PantsJpsUtil.containsGenTarget(root.getTargetAddresses())) {
+            hasDirtyTargets.set(true);
+            return false;
+          }
+          return true;
+        }
+      }
+    );
+    return hasDirtyTargets.get();
+
+  }
+
+  private Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
+    return new HashSet<String>(
+      ContainerUtil.filter(
+        addresses,
+        new Condition<String>() {
+          @Override
+          public boolean value(String targetAddress) {
+            return !PantsJpsUtil.isGenTarget(targetAddress);
+          }
+        }
+      )
+    );
+  }
+
+  @NotNull
+  private Set<String> findTargetAddresses(@NotNull DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder)
+    throws IOException {
+    final Set<String> addresses = new HashSet<String>();
+    holder.processDirtyFiles(
+      new FileProcessor<PantsSourceRootDescriptor, PantsBuildTarget>() {
+        @Override
+        public boolean apply(PantsBuildTarget target, File file, PantsSourceRootDescriptor root) throws IOException {
+          addresses.addAll(root.getTargetAddresses());
+          return true;
+        }
+      }
+    );
+    return addresses;
   }
 
   @NotNull

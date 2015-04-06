@@ -13,7 +13,9 @@ import org.jetbrains.jps.builders.BuildTargetType;
 import org.jetbrains.jps.model.JpsModel;
 import org.jetbrains.jps.model.JpsProject;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   public static PantsBuildTargetType INSTANCE = new PantsBuildTargetType();
@@ -33,8 +35,14 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
     final JpsProject jpsProject = model.getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
     final boolean compileWithPants = pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij();
+
+    final Set<String> allTargetAddresses = new HashSet<String>();
+    for (JpsPantsModuleExtension moduleExtension : PantsJpsUtil.findPantsModules(jpsProject.getModules())) {
+      allTargetAddresses.addAll(moduleExtension.getTargetAddresses());
+    }
+
     return compileWithPants && PantsJpsUtil.containsPantsModules(jpsProject.getModules()) ?
-           new PantsBuildTarget(pantsProjectExtension.getTargetPath(), pantsProjectExtension.getTargetNames()) : null;
+           new PantsBuildTarget(pantsProjectExtension.getTargetPath(), new HashSet<String>(allTargetAddresses)) : null;
   }
 
   @NotNull

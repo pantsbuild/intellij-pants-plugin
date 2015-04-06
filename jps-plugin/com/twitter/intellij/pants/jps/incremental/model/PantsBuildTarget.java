@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.jps.incremental.model;
 
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.Processor;
+import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsModelSerializerExtension;
 import com.twitter.intellij.pants.util.PantsConstants;
 import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
@@ -27,14 +28,16 @@ import org.jetbrains.jps.model.module.JpsModule;
 import java.io.File;
 import java.util.*;
 
-public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> implements PantsCompileOptions {
-  private final String myTargetPath;
-  private final List<String> targetNames;
+public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
+  @NotNull
+  private final Set<String> myTargetAddresses;
+  @NotNull
+  private final String myRootTarget;
 
-  protected PantsBuildTarget(@NotNull String path, @NotNull List<String> names) {
+  protected PantsBuildTarget(@NotNull String rootTarget, @NotNull Set<String> addresses) {
     super(PantsBuildTargetType.INSTANCE);
-    myTargetPath = path;
-    targetNames = names;
+    myRootTarget = rootTarget;
+    myTargetAddresses = addresses;
   }
 
   @Override
@@ -67,11 +70,15 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> imp
       new Processor<ModuleBuildTarget>() {
         @Override
         public boolean process(ModuleBuildTarget target) {
-          List<JavaSourceRootDescriptor> descriptors = target.computeRootDescriptors(model, index, ignoredFileIndex, dataPaths);
+          final JpsPantsModuleExtension moduleExtension = PantsJpsModelSerializerExtension.findPantsModuleExtension(target.getModule());
+          final Set<String> targetAddresses = moduleExtension != null ?
+                                              moduleExtension.getTargetAddresses() : Collections.<String>emptySet();
+          final List<JavaSourceRootDescriptor> descriptors = target.computeRootDescriptors(model, index, ignoredFileIndex, dataPaths);
           for (JavaSourceRootDescriptor javaSourceRootDescriptor : descriptors) {
             result.add(
               new PantsSourceRootDescriptor(
                 PantsBuildTarget.this,
+                targetAddresses,
                 javaSourceRootDescriptor.getRootFile(),
                 javaSourceRootDescriptor.isGenerated(),
                 javaSourceRootDescriptor.getExcludedRoots()
@@ -121,27 +128,20 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> imp
   }
 
   @NotNull
-  @Override
-  public String getTargetPath() {
-    return myTargetPath;
+  public String getRootTarget() {
+    return myRootTarget;
   }
 
   @NotNull
-  @Override
-  public List<String> getTargetNames() {
-    return targetNames;
-  }
-
-  @Override
-  public boolean isAllTargets() {
-    return targetNames.isEmpty();
+  public Set<String> getTargetAddresses() {
+    return myTargetAddresses;
   }
 
   @Override
   public String toString() {
     return "PantsBuildTarget{" +
-           "myTargetPath='" + myTargetPath + '\'' +
-           ", targetNames=" + targetNames +
+           "myTargetAddresses=" + myTargetAddresses +
+           ", myRootTarget='" + myRootTarget + '\'' +
            '}';
   }
 
@@ -152,16 +152,14 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> imp
 
     PantsBuildTarget target = (PantsBuildTarget)o;
 
-    if (!myTargetPath.equals(target.myTargetPath)) return false;
-    if (!targetNames.equals(target.targetNames)) return false;
-
-    return true;
+    if (!myTargetAddresses.equals(target.myTargetAddresses)) return false;
+    return myRootTarget.equals(target.myRootTarget);
   }
 
   @Override
   public int hashCode() {
-    int result = myTargetPath.hashCode();
-    result = 31 * result + targetNames.hashCode();
+    int result = myTargetAddresses.hashCode();
+    result = 31 * result + myRootTarget.hashCode();
     return result;
   }
 }

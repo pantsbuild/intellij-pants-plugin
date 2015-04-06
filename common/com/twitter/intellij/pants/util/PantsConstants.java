@@ -19,6 +19,7 @@ public class PantsConstants {
   @NotNull
   public static final ProjectSystemId SYSTEM_ID = new ProjectSystemId(PANTS);
   public static final String PANTS_PROJECT_MODULE_SUFFIX = "_module";
+  public static final String PANTS_PROJECT_MODULE_ID_PREFIX = ".root.module.for.pants_";
 
   public static final String PANTS_LIBRARY_NAME = "pants";
 
@@ -30,6 +31,8 @@ public class PantsConstants {
   protected static final String ANTLR_EXT = "g";
   protected static final String ANTLR_4_EXT = "g4";
   protected static final String PROTOBUF_EXT = "proto";
+
+  public static final String PANTS_TARGET_ADDRESSES_KEY = "pants.target.addresses";
 
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(

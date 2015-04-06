@@ -9,13 +9,15 @@ import org.jetbrains.jps.model.JpsElement;
 import org.jetbrains.jps.model.JpsElementChildRole;
 import org.jetbrains.jps.model.ex.JpsElementChildRoleBase;
 
+import java.util.Set;
+
 public interface JpsPantsModuleExtension extends JpsElement {
-  public static final JpsElementChildRole<JpsPantsModuleExtension> ROLE = JpsElementChildRoleBase.create(PantsConstants.PANTS);
+  JpsElementChildRole<JpsPantsModuleExtension> ROLE = JpsElementChildRoleBase.create(PantsConstants.PANTS);
 
   @NotNull
-  String getTargetAddress();
+  Set<String> getTargetAddresses();
 
-  void setTargetAddress(@NotNull String address);
+  void setTargetAddresses(@NotNull Set<String> addresses);
 
   /**
    * @return path to a linked BUILD file or folder that contains it

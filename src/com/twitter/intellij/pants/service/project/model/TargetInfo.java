@@ -23,11 +23,23 @@ public class TargetInfo {
     String target_type,
     Boolean is_code_gen
   ) {
+    this(libraries, targets, roots, target_type, is_code_gen, new HashSet<String>());
+  }
+
+  public TargetInfo(
+    Set<String> libraries,
+    Set<String> targets,
+    Set<SourceRoot> roots,
+    String target_type,
+    Boolean is_code_gen,
+    Set<String> targetAddresses
+  ) {
     this.libraries = libraries;
     this.targets = targets;
     this.roots = roots;
     this.target_type = target_type;
     this.is_code_gen = is_code_gen;
+    myTargetAddresses = targetAddresses;
   }
 
   /**
@@ -46,6 +58,10 @@ public class TargetInfo {
    * Target type.
    */
   protected String target_type;
+  /**
+   * Target addresses.
+   */
+  private Set<String> myTargetAddresses;
 
   /**
    * Pants target type
@@ -54,6 +70,7 @@ public class TargetInfo {
 
   private Boolean is_code_gen;
 
+  @NotNull
   public Set<String> getLibraries() {
     return libraries;
   }
@@ -62,6 +79,7 @@ public class TargetInfo {
     this.libraries = libraries;
   }
 
+  @NotNull
   public Set<String> getTargets() {
     return targets;
   }
@@ -70,6 +88,7 @@ public class TargetInfo {
     this.targets = targets;
   }
 
+  @NotNull
   public Set<SourceRoot> getRoots() {
     return roots;
   }
@@ -83,9 +102,17 @@ public class TargetInfo {
     return target_type;
   }
 
-  @Nullable
   public void setTargetType(@NotNull String target_type) {
     this.target_type = target_type;
+  }
+
+  @NotNull
+  public Set<String> getTargetAddresses() {
+    return myTargetAddresses;
+  }
+
+  public void setTargetAddresses(Set<String> targetAddresses) {
+    myTargetAddresses = targetAddresses;
   }
 
   @Nullable
@@ -141,26 +168,14 @@ public class TargetInfo {
     }
   }
 
-  public TargetInfo intersect(@NotNull TargetInfo other) {
-    final Collection<String> libs = ContainerUtil.intersection(getLibraries(), other.getLibraries());
-    final Collection<String> targets = ContainerUtil.intersection(getTargets(), other.getTargets());
-    final Collection<SourceRoot> roots = ContainerUtil.intersection(getRoots(), other.getRoots());
-    return new TargetInfo(
-      new HashSet<String>(libs),
-      new HashSet<String>(targets),
-      new HashSet<SourceRoot>(roots),
-      getTargetType(),
-      is_code_gen
-    );
-  }
-
   public TargetInfo union(@NotNull TargetInfo other) {
     return new TargetInfo(
       ContainerUtil.union(getLibraries(), other.getLibraries()),
       ContainerUtil.union(getTargets(), other.getTargets()),
       ContainerUtil.union(getRoots(), other.getRoots()),
       getTargetType(),
-      is_code_gen
+      is_code_gen,
+      ContainerUtil.union(getTargetAddresses(), other.getTargetAddresses())
     );
   }
 
@@ -172,6 +187,7 @@ public class TargetInfo {
            ", roots=" + roots +
            ", target_type='" + target_type + '\'' +
            ", is_code_gen=" + is_code_gen +
+           ", targetAddresses=" + myTargetAddresses +
            '}';
   }
 }

@@ -3,15 +3,28 @@
 
 package com.twitter.intellij.pants.service.project.model;
 
+import com.google.gson.Gson;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public class ProjectInfo {
+  public static ProjectInfo fromJson(@NotNull String data) {
+    final ProjectInfo projectInfo = new Gson().fromJson(data, ProjectInfo.class);
+    projectInfo.initTargetAddresses();
+    return projectInfo;
+  }
+
+  @TestOnly
+  public ProjectInfo() {
+  }
+
   private final Logger LOG = Logger.getInstance(getClass());
   // id(org:name:version) to jars
   protected Map<String, List<String>> libraries;
@@ -72,6 +85,14 @@ public class ProjectInfo {
   public void replaceDependency(String targetName, String newTargetName) {
     for (TargetInfo targetInfo : targets.values()) {
       targetInfo.replaceDependency(targetName, newTargetName);
+    }
+  }
+
+  private void initTargetAddresses() {
+    for (Map.Entry<String, TargetInfo> entry : targets.entrySet()) {
+      final TargetInfo info = entry.getValue();
+      final String address = entry.getKey();
+      info.setTargetAddresses(ContainerUtil.set(address));
     }
   }
 

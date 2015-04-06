@@ -72,12 +72,12 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     if (!containsContentRoot(projectDataNode, projectDirPath)) {
       // Add a module with content root as import project directory path.
       // This will allow all the files in the imported project directory will be indexed by the plugin.
-      final String moduleName = PantsUtil.getCanonicalModuleName(relativeProjectPath) + PantsConstants.PANTS_PROJECT_MODULE_SUFFIX;
+      final String moduleName = PantsUtil.getCanonicalModuleName(relativeProjectPath);
       final ModuleData moduleData = new ModuleData(
-        moduleName,
+        PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX + moduleName,
         PantsConstants.SYSTEM_ID,
         ModuleTypeId.JAVA_MODULE,
-        moduleName,
+        moduleName + PantsConstants.PANTS_PROJECT_MODULE_SUFFIX,
         projectData.getIdeProjectFileDirectoryPath() + "/" + moduleName,
         projectDirPath
       );

@@ -11,6 +11,7 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.compiler.CompilerMessage;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.extensions.PluginId;
@@ -32,11 +33,12 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiClass;
+import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.util.ArrayUtil;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -191,6 +193,23 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return classFile.exists() ? classFile : null;
   }
 
+  protected void modify(@NonNls @NotNull String qualifiedName) {
+    final PsiClass psiClass = findClass(qualifiedName);
+    assertNotNull("Failed to find " + qualifiedName, psiClass);
+    final PsiFile psiFile = psiClass.getContainingFile();
+    final PsiParserFacade parserFacade = PsiParserFacade.SERVICE.getInstance(myProject);
+    final PsiComment comment = parserFacade.createBlockCommentFromText(psiFile.getLanguage(), "Foo");
+    WriteCommandAction.runWriteCommandAction(
+      myProject,
+      new Runnable() {
+        @Override
+        public void run() {
+          psiFile.add(comment);
+        }
+      }
+    );
+  }
+
   @Nullable
   protected PsiClass findClass(@NonNls @NotNull String qualifiedName) {
     PsiClass[] classes = JavaPsiFacade.getInstance(myProject).findClasses(qualifiedName, GlobalSearchScope.allScope(myProject));
@@ -236,17 +255,19 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
    * We don't use com.intellij.openapi.externalSystem.test.ExternalSystemTestCase#compileModules
    * because we want to do some assertions on myCompilerTester
    */
-  protected void makeModules(final String... moduleNames) throws Exception {
-    compile(getModules(moduleNames));
+  protected List<String> makeModules(final String... moduleNames) throws Exception {
+    return compile(getModules(moduleNames));
   }
 
-  protected void makeProject() throws Exception {
-    final Module[] modules = ModuleManager.getInstance(myProject).getModules();
-    compile(modules);
+  protected List<String> makeProject() throws Exception {
+    return assertCompilerMessages(getCompilerTester().make());
   }
 
-  protected void compile(Module... modules) throws Exception {
-    final List<CompilerMessage> messages = compileAndGetMessages(modules);
+  protected List<String> compile(Module... modules) throws Exception {
+    return assertCompilerMessages(compileAndGetMessages(modules));
+  }
+
+  private List<String> assertCompilerMessages(List<CompilerMessage> messages) {
     for (CompilerMessage message : messages) {
       final VirtualFile virtualFile = message.getVirtualFile();
       final String prettyMessage =
@@ -268,6 +289,21 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
           break;
       }
     }
+    final List<String> rawMessages = ContainerUtil.map(
+      messages,
+      new Function<CompilerMessage, String>() {
+        @Override
+        public String fun(CompilerMessage message) {
+          return message.getMessage();
+        }
+      }
+    );
+    if (!PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
+      final String noChanges = "pants: No changes to compile.";
+      final String compiledSuccessfully = "pants: SUCCESS";
+      assertTrue("Compilation wasn't successful!", rawMessages.contains(noChanges) || rawMessages.contains(compiledSuccessfully));
+    }
+    return rawMessages;
   }
 
   protected List<CompilerMessage> compileAndGetMessages(Module... modules) throws Exception {

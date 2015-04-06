@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.service.project;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -27,6 +26,7 @@ import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsExecutionException;
 import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
@@ -76,7 +76,7 @@ public class PantsResolver {
   }
 
   public static ProjectInfo parseProjectInfoFromJSON(String data) throws JsonSyntaxException {
-    return new Gson().fromJson(data, ProjectInfo.class);
+    return ProjectInfo.fromJson(data);
   }
 
   private void parse(final String output) {
@@ -125,8 +125,7 @@ public class PantsResolver {
         createModuleData(
           projectInfoDataNode,
           targetName,
-          targetInfo.getRoots(),
-          targetInfo.getSourcesType()
+          targetInfo
         );
       modules.put(targetName, moduleData);
     }
@@ -402,13 +401,15 @@ public class PantsResolver {
     library.setExported(exported);
     moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
   }
+
   @NotNull
   private DataNode<ModuleData> createModuleData(
     @NotNull DataNode<ProjectData> projectInfoDataNode,
     @NotNull String targetName,
-    @NotNull Collection<SourceRoot> roots,
-    @NotNull final PantsSourceType rootType
+    @NotNull TargetInfo targetInfo
   ) {
+    final Collection<SourceRoot> roots = targetInfo.getRoots();
+    final PantsSourceType rootType = targetInfo.getSourcesType();
     final String moduleName = PantsUtil.getCanonicalModuleName(targetName);
 
     final ModuleData moduleData = new ModuleData(
@@ -437,6 +438,11 @@ public class PantsResolver {
         moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
       }
     }
+
+    final TargetMetadata metadata = new TargetMetadata(PantsConstants.SYSTEM_ID);
+    metadata.setModuleName(moduleName);
+    metadata.setTargetAddresses(targetInfo.getTargetAddresses());
+    moduleDataNode.createChild(TargetMetadata.KEY, metadata);
 
     return moduleDataNode;
   }

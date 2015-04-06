@@ -39,6 +39,20 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     assertGotoFileContains("README_DOCS");
   }
 
+  public void testScalaWithJavaSources() throws Throwable {
+    doImport("examples/src/scala/com/pants/example/scala_with_java_sources");
+
+    final String moduleName =
+      "examples_src_java_com_pants_examples_java_sources_java_sources_and_scala_com_pants_example_scala_with_java_sources_scala_with_java_sources";
+
+    assertModules(moduleName);
+    makeProject();
+
+    assertClassFileInModuleOutput(
+      "com.pants.examples.scala_with_java_sources.GreetEverybody", moduleName
+    );
+  }
+
   public void testExcludes1() throws Throwable {
     doImport("intellij-integration/src/scala/com/pants/testproject/excludes1");
 

@@ -186,6 +186,10 @@ For contributing to the project, continue reading below.
 
         -Dpants.executable.path=/path/to/pants_dev/pants
 
+* To debug JPS compiler use:
+
+        -Dcompiler.process.debug.port=PORT        
+
 * Remember to bootstrap pants in the project repository inside which you want to test the plugin.
 
         cd ~/workspace/example_project

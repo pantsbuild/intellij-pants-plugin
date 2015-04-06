@@ -14,19 +14,29 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
   @NotNull
   public final File myRoot;
   public final boolean myGeneratedSources;
+  @NotNull
   private final Set<File> myExcludes;
+  private final Set<String> myTargetAddress;
+  @NotNull
   private final PantsBuildTarget myTarget;
 
   public PantsSourceRootDescriptor(
     @NotNull PantsBuildTarget target,
+    @NotNull Set<String> targetAddress,
     @NotNull File root,
     boolean isGenerated,
     @NotNull Set<File> excludes
   ) {
     myTarget = target;
+    myTargetAddress = targetAddress;
     myRoot = root;
     myGeneratedSources = isGenerated;
     myExcludes = excludes;
+  }
+
+  @NotNull
+  public Set<String> getTargetAddresses() {
+    return myTargetAddress;
   }
 
   @NotNull
@@ -68,18 +78,18 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
     PantsSourceRootDescriptor that = (PantsSourceRootDescriptor)o;
 
     if (myGeneratedSources != that.myGeneratedSources) return false;
+    if (!myRoot.equals(that.myRoot)) return false;
     if (!myExcludes.equals(that.myExcludes)) return false;
-    if (!FileUtil.filesEqual(myRoot, that.myRoot)) return false;
-    if (!myTarget.equals(that.myTarget)) return false;
-
-    return true;
+    if (myTargetAddress != null ? !myTargetAddress.equals(that.myTargetAddress) : that.myTargetAddress != null) return false;
+    return myTarget.equals(that.myTarget);
   }
 
   @Override
   public int hashCode() {
-    int result = FileUtil.fileHashCode(myRoot);
+    int result = myRoot.hashCode();
     result = 31 * result + (myGeneratedSources ? 1 : 0);
     result = 31 * result + myExcludes.hashCode();
+    result = 31 * result + (myTargetAddress != null ? myTargetAddress.hashCode() : 0);
     result = 31 * result + myTarget.hashCode();
     return result;
   }
