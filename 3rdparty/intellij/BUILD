@@ -30,6 +30,7 @@ _intellij_sdk_jars = [
     'httpmime-4.3.6.jar',
     'icons.jar',
     'idea.jar',
+    'idea-jsp-openapi.jar',
     'idea_rt.jar',
     'isorelax.jar',
     'javac2.jar',
