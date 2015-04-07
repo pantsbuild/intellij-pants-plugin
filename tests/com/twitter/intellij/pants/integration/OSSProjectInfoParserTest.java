@@ -23,13 +23,13 @@ public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {
   }
 
   public void testTargetType() {
-    final ProjectInfo info = resolveProjectInfo("examples/src/scala/com/pants/example/hello/");
+    final ProjectInfo info = resolveProjectInfo("examples/src/scala/org/pantsbuild/example/hello/");
 
-    final TargetInfo welcomeTarget = info.getTarget("examples/src/scala/com/pants/example/hello/welcome:welcome");
+    final TargetInfo welcomeTarget = info.getTarget("examples/src/scala/org/pantsbuild/example/hello/welcome:welcome");
     assertNotNull(welcomeTarget);
     assertTrue(welcomeTarget.isScalaTarget());
 
-    final TargetInfo greetTarget = info.getTarget("examples/src/java/com/pants/examples/hello/greet:greet");
+    final TargetInfo greetTarget = info.getTarget("examples/src/java/org/pantsbuild/example/hello/greet:greet");
     assertNotNull(greetTarget);
     assertFalse(greetTarget.isScalaTarget());
   }

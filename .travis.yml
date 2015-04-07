@@ -20,4 +20,4 @@ script:
   - ./scripts/run-tests-ci.sh --test-junit-jvm-options="-Dpants.compiler.enabled=${USE_PANTS_TO_COMPILE:-true}"
   - ./scripts/run-custom-integration.sh
       -r $OSS_PANTS_HOME
-      -t examples/src/scala/com/pants/example/hello,examples/src/java/com/pants/examples/hello
+      -t examples/src/scala/org/pantsbuild/example/hello,examples/src/java/org/pantsbuild/example/hello

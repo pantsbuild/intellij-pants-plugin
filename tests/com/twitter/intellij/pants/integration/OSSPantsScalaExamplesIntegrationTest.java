@@ -14,25 +14,25 @@ import java.util.List;
 
 public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTest {
   public void testHelloByTargetName() throws Throwable {
-    doImport("examples/src/scala/com/pants/example/hello/BUILD", "hello");
+    doImport("examples/src/scala/org/pantsbuild/example/hello/BUILD", "hello");
 
     assertModules(
-      "examples_src_resources_com_pants_example_hello_hello",
-      "examples_src_scala_com_pants_example_hello_module",
-      "examples_src_scala_com_pants_example_hello_hello",
-      "examples_src_scala_com_pants_example_hello_welcome_welcome",
-      "examples_src_java_com_pants_examples_hello_greet_greet",
-      "examples_src_scala_com_pants_example_hello_exe_exe"
+      "examples_src_resources_org_pantsbuild_example_hello_hello",
+      "examples_src_scala_org_pantsbuild_example_hello_module",
+      "examples_src_scala_org_pantsbuild_example_hello_hello",
+      "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
+      "examples_src_java_org_pantsbuild_example_hello_greet_greet",
+      "examples_src_scala_org_pantsbuild_example_hello_exe_exe"
     );
 
     assertModuleModuleDeps(
-      "examples_src_scala_com_pants_example_hello_exe_exe",
-      "examples_src_scala_com_pants_example_hello_welcome_welcome"
+      "examples_src_scala_org_pantsbuild_example_hello_exe_exe",
+      "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
     );
-    makeModules("examples_src_scala_com_pants_example_hello_exe_exe");
+    makeModules("examples_src_scala_org_pantsbuild_example_hello_exe_exe");
 
     assertClassFileInModuleOutput(
-      "com.pants.example.hello.welcome.WelcomeEverybody", "examples_src_scala_com_pants_example_hello_welcome_welcome"
+      "org.pantsbuild.example.hello.welcome.WelcomeEverybody", "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
     );
     assertGotoFileContains("README");
     //Assert if README file under a sub directory is indexed.
@@ -40,50 +40,50 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
   }
 
   public void testScalaWithJavaSources() throws Throwable {
-    doImport("examples/src/scala/com/pants/example/scala_with_java_sources");
+    doImport("examples/src/scala/org/pantsbuild/example/scala_with_java_sources");
 
     final String moduleName =
-      "examples_src_java_com_pants_examples_java_sources_java_sources_and_scala_com_pants_example_scala_with_java_sources_scala_with_java_sources";
+      "examples_src_java_org_pantsbuild_example_java_sources_java_sources_and_scala_org_pantsbuild_example_scala_with_java_sources_scala_with_java_sources";
 
     assertModules(moduleName);
     makeProject();
 
     assertClassFileInModuleOutput(
-      "com.pants.examples.scala_with_java_sources.GreetEverybody", moduleName
+      "org.pantsbuild.example.scala_with_java_sources.GreetEverybody", moduleName
     );
   }
 
   public void testExcludes1() throws Throwable {
-    doImport("intellij-integration/src/scala/com/pants/testproject/excludes1");
+    doImport("intellij-integration/src/scala/org/pantsbuild/testproject/excludes1");
 
     assertModules(
-      "intellij-integration_src_scala_com_pants_testproject_excludes1_excludes1",
-      "intellij-integration_src_scala_com_pants_testproject_excludes1_nested_foo_foo"
+      "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1",
+      "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_nested_foo_foo"
     );
 
 
     assertModuleModuleDeps(
-      "intellij-integration_src_scala_com_pants_testproject_excludes1_excludes1",
-      "intellij-integration_src_scala_com_pants_testproject_excludes1_nested_foo_foo"
+      "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1",
+      "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_nested_foo_foo"
     );
-    makeModules("intellij-integration_src_scala_com_pants_testproject_excludes1_excludes1");
+    makeModules("intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1");
 
-    assertNotNull(findClass("com.pants.testproject.excludes1.nested.foo.Foo"));
+    assertNotNull(findClass("org.pantsbuild.testproject.excludes1.nested.foo.Foo"));
 
     assertClassFileInModuleOutput(
-      "com.pants.testproject.excludes1.nested.foo.Foo", "intellij-integration_src_scala_com_pants_testproject_excludes1_nested_foo_foo"
+      "org.pantsbuild.testproject.excludes1.nested.foo.Foo", "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_nested_foo_foo"
     );
   }
 
   public void testError1() throws Throwable {
-    doImport("intellij-integration/src/scala/com/pants/testproject/error1");
+    doImport("intellij-integration/src/scala/org/pantsbuild/testproject/error1");
 
     assertModules(
-      "intellij-integration_src_scala_com_pants_testproject_error1_error1"
+      "intellij-integration_src_scala_org_pantsbuild_testproject_error1_error1"
     );
 
     final List<CompilerMessage> compilerMessages =
-      compileAndGetMessages(getModule("intellij-integration_src_scala_com_pants_testproject_error1_error1"));
+      compileAndGetMessages(getModule("intellij-integration_src_scala_org_pantsbuild_testproject_error1_error1"));
     final List<String> errorMessages =
       ContainerUtil.mapNotNull(
         compilerMessages,

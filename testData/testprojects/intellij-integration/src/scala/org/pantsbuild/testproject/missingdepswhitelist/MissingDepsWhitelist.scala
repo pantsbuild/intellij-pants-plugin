@@ -1,10 +1,10 @@
 // Copyright 2014 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.pants.testproject.missingdepswhitelist
+package org.pantsbuild.testproject.missingdepswhitelist
 
-import com.pants.testproject.publish.hello.greet.Greeting
-import com.pants.testproject.missingdepswhitelist2.MissingDepsWhitelist2
+import org.pantsbuild.testproject.publish.hello.greet.Greeting
+import org.pantsbuild.testproject.missingdepswhitelist2.MissingDepsWhitelist2
 
 object MissingDepsWhitelist {
   def doStuff() = {

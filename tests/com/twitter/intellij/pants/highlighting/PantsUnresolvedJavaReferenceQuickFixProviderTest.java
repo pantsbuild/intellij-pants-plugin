@@ -17,15 +17,15 @@ public class PantsUnresolvedJavaReferenceQuickFixProviderTest extends PantsHighl
   }
 
   public void testMissingDepsWhiteList() throws Throwable {
-    doImport("testprojects/src/java/com/pants/testproject/missingdepswhitelist");
+    doImport("testprojects/src/java/org/pantsbuild/testproject/missingdepswhitelist");
 
     assertModules(
-      "testprojects_src_java_com_pants_testproject_missingdepswhitelist_missingdepswhitelist",
-      "testprojects_src_java_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2",
-      "testprojects_src_java_com_pants_testproject_publish_hello_greet_greet"
+      "testprojects_src_java_org_pantsbuild_testproject_missingdepswhitelist_missingdepswhitelist",
+      "testprojects_src_java_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
+      "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
 
-    final PsiClass psiClass = findClass("com.pants.testproject.missingdepswhitelist2.MissingDepsWhitelist2");
+    final PsiClass psiClass = findClass("org.pantsbuild.testproject.missingdepswhitelist2.MissingDepsWhitelist2");
     assertNotNull(psiClass);
     final Editor editor = createEditor(psiClass.getContainingFile().getVirtualFile());
     assertNotNull(editor);
@@ -34,7 +34,7 @@ public class PantsUnresolvedJavaReferenceQuickFixProviderTest extends PantsHighl
     final AddPantsTargetDependencyFix intention = findIntention(info, AddPantsTargetDependencyFix.class);
     assertNotNull(intention);
 
-    assertModuleModuleDeps("testprojects_src_java_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertModuleModuleDeps("testprojects_src_java_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     WriteCommandAction.runWriteCommandAction(
       myProject,
@@ -47,16 +47,16 @@ public class PantsUnresolvedJavaReferenceQuickFixProviderTest extends PantsHighl
     );
 
     assertModuleModuleDeps(
-      "testprojects_src_java_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2",
-      "testprojects_src_java_com_pants_testproject_publish_hello_greet_greet"
+      "testprojects_src_java_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
+      "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
 
-    makeModules("testprojects_src_java_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    makeModules("testprojects_src_java_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     assertNotNull(
       findClassFile(
-        "com.pants.testproject.missingdepswhitelist2.MissingDepsWhitelist2",
-        "testprojects_src_java_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2"
+        "org.pantsbuild.testproject.missingdepswhitelist2.MissingDepsWhitelist2",
+        "testprojects_src_java_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2"
       )
     );
   }

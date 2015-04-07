@@ -7,153 +7,154 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest {
   public void testAnnotation() throws Throwable {
-    doImport("examples/src/java/com/pants/examples/annotation/main");
+    doImport("examples/src/java/org/pantsbuild/example/annotation/main");
 
     assertModules(
-      "examples_src_java_com_pants_examples_annotation_example_example",
-      "examples_src_java_com_pants_examples_annotation_main_main",
-      "examples_src_java_com_pants_examples_annotation_processor_processor",
+      "examples_src_java_org_pantsbuild_example_annotation_example_example",
+      "examples_src_java_org_pantsbuild_example_annotation_main_main",
+      "examples_src_java_org_pantsbuild_example_annotation_processor_processor",
       "3rdparty_guava"
     );
 
-    makeModules("examples_src_java_com_pants_examples_annotation_main_main");
+    makeModules("examples_src_java_org_pantsbuild_example_annotation_main_main");
     assertNotNull(
-      findClassFile("com.pants.examples.annotation.main.Main", "examples_src_java_com_pants_examples_annotation_main_main")
+      findClassFile("org.pantsbuild.example.annotation.main.Main", "examples_src_java_org_pantsbuild_example_annotation_main_main")
     );
     assertNotNull(
-      findClassFile("com.pants.examples.annotation.example.Example", "examples_src_java_com_pants_examples_annotation_example_example")
+      findClassFile("org.pantsbuild.example.annotation.example.Example", "examples_src_java_org_pantsbuild_example_annotation_example_example")
     );
     assertNotNull(
-      findClassFile("com.pants.examples.annotation.processor.ExampleProcessor", "examples_src_java_com_pants_examples_annotation_processor_processor")
+      findClassFile("org.pantsbuild.example.annotation.processor.ExampleProcessor", "examples_src_java_org_pantsbuild_example_annotation_processor_processor")
     );
   }
 
   public void testAntl3() throws Throwable {
-    doImport("examples/src/java/com/pants/examples/antlr3");
+    doImport("examples/src/java/org/pantsbuild/example/antlr3");
 
     assertModules(
-      "examples_src_java_com_pants_examples_antlr3_antlr3",
-      "examples_src_antlr_com_pants_examples_exp_exp_antlr3",
+      "examples_src_java_org_pantsbuild_example_antlr3_antlr3",
+      "examples_src_antlr_org_pantsbuild_example_exp_exp_antlr3",
       "_antlr-3.4",
-      ".pants.d_gen_antlr_antlr3_gen-java_examples_src_antlr_examples.src.antlr.com.pants.examples.exp.exp_antlr3"
+      ".pants.d_gen_antlr_antlr3_gen-java_examples_src_antlr_examples.src.antlr.org.pantsbuild.example.exp.exp_antlr3"
     );
 
-    makeModules("examples_src_java_com_pants_examples_antlr3_antlr3");
+    makeModules("examples_src_java_org_pantsbuild_example_antlr3_antlr3");
     assertNotNull(
-      findClassFile("com.pants.examples.antlr3.ExampleAntlr3", "examples_src_java_com_pants_examples_antlr3_antlr3")
+      findClassFile("org.pantsbuild.example.antlr3.ExampleAntlr3", "examples_src_java_org_pantsbuild_example_antlr3_antlr3")
     );
   }
 
   public void testAntl4() throws Throwable {
-    doImport("examples/src/java/com/pants/examples/antlr4");
+    doImport("examples/src/java/org/pantsbuild/example/antlr4");
 
     assertModules(
-      "examples_src_java_com_pants_examples_antlr4_antlr4",
-      "examples_src_antlr_com_pants_examples_exp_exp_antlr4",
+      "examples_src_java_org_pantsbuild_example_antlr4_antlr4",
+      "examples_src_antlr_org_pantsbuild_example_exp_exp_antlr4",
       "_antlr-4",
-      ".pants.d_gen_antlr_antlr4_gen-java_examples_src_antlr_examples.src.antlr.com.pants.examples.exp.exp_antlr4"
+      ".pants.d_gen_antlr_antlr4_gen-java_examples_src_antlr_examples.src.antlr.org.pantsbuild.example.exp.exp_antlr4"
     );
 
-    makeModules("examples_src_java_com_pants_examples_antlr4_antlr4");
+    makeModules("examples_src_java_org_pantsbuild_example_antlr4_antlr4");
     assertNotNull(
-      findClassFile("com.pants.examples.antlr4.ExampleAntlr4", "examples_src_java_com_pants_examples_antlr4_antlr4")
+      findClassFile("org.pantsbuild.example.antlr4.ExampleAntlr4", "examples_src_java_org_pantsbuild_example_antlr4_antlr4")
     );
   }
 
   public void testHello() throws Throwable {
-    doImport("examples/src/java/com/pants/examples/hello");
+    doImport("examples/src/java/org/pantsbuild/example/hello");
 
     assertModules(
-      "examples_src_resources_com_pants_example_hello_hello",
-      "examples_src_java_com_pants_examples_hello_main_main",
-      "examples_src_java_com_pants_examples_hello_greet_greet",
-      "examples_src_java_com_pants_examples_hello_main_main-bin",
-      "examples_src_java_com_pants_examples_hello_module"
+      "examples_src_resources_org_pantsbuild_example_hello_hello",
+      "examples_src_java_org_pantsbuild_example_hello_main_main",
+      "examples_src_java_org_pantsbuild_example_hello_greet_greet",
+      "examples_src_java_org_pantsbuild_example_hello_simple_simple",
+      "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
+      "examples_src_java_org_pantsbuild_example_hello_module"
     );
 
-    makeModules("examples_src_java_com_pants_examples_hello_main_main");
+    makeModules("examples_src_java_org_pantsbuild_example_hello_main_main");
     assertNotNull(
-      findClassFile("com.pants.examples.hello.greet.Greeting", "examples_src_java_com_pants_examples_hello_greet_greet")
+      findClassFile("org.pantsbuild.example.hello.greet.Greeting", "examples_src_java_org_pantsbuild_example_hello_greet_greet")
     );
     assertNotNull(
-      findClassFile("com.pants.examples.hello.main.HelloMain", "examples_src_java_com_pants_examples_hello_main_main-bin")
+      findClassFile("org.pantsbuild.example.hello.main.HelloMain", "examples_src_java_org_pantsbuild_example_hello_main_main-bin")
     );
   }
 
   public void testJaxb() throws Throwable {
-    doImport("examples/src/java/com/pants/examples/jaxb/main");
+    doImport("examples/src/java/org/pantsbuild/example/jaxb/main");
 
     assertModules(
-      "examples_src_resources_com_pants_example_jaxb_jaxb",
-      "examples_src_resources_com_pants_example_names_names",
-      "examples_src_java_com_pants_examples_jaxb_main_main",
-      "examples_src_java_com_pants_examples_jaxb_reader_reader",
-      ".pants.d_gen_jaxb_gen-java_examples.src.resources.com.pants.example.jaxb.jaxb"
+      "examples_src_resources_org_pantsbuild_example_jaxb_jaxb",
+      "examples_src_resources_org_pantsbuild_example_names_names",
+      "examples_src_java_org_pantsbuild_example_jaxb_main_main",
+      "examples_src_java_org_pantsbuild_example_jaxb_reader_reader",
+      ".pants.d_gen_jaxb_gen-java_examples.src.resources.org.pantsbuild.example.jaxb.jaxb"
     );
 
-    makeModules("examples_src_java_com_pants_examples_jaxb_main_main");
+    makeModules("examples_src_java_org_pantsbuild_example_jaxb_main_main");
     assertNotNull(
-      findClassFile("com.pants.examples.jaxb.main.ExampleJaxb", "examples_src_java_com_pants_examples_jaxb_main_main")
+      findClassFile("org.pantsbuild.example.jaxb.main.ExampleJaxb", "examples_src_java_org_pantsbuild_example_jaxb_main_main")
     );
   }
 
   public void testProtobuf() throws Throwable {
-    doImport("examples/src/java/com/pants/examples/protobuf/distance");
+    doImport("examples/src/java/org/pantsbuild/example/protobuf/distance");
 
     assertModules(
-      "examples_src_java_com_pants_examples_protobuf_distance_distance",
-      "examples_src_protobuf_com_pants_examples_distance_distance",
+      "examples_src_java_org_pantsbuild_example_protobuf_distance_distance",
+      "examples_src_protobuf_org_pantsbuild_example_distance_distance",
       "3rdparty_protobuf-java",
-      ".pants.d_gen_protoc_gen-java_examples.src.protobuf.com.pants.examples.distance.distance"
+      ".pants.d_gen_protoc_gen-java_examples.src.protobuf.org.pantsbuild.example.distance.distance"
     );
 
-    makeModules("examples_src_java_com_pants_examples_protobuf_distance_distance");
+    makeModules("examples_src_java_org_pantsbuild_example_protobuf_distance_distance");
     assertNotNull(
-      findClassFile("com.pants.examples.protobuf.distance.ExampleProtobuf", "examples_src_java_com_pants_examples_protobuf_distance_distance")
+      findClassFile("org.pantsbuild.example.protobuf.distance.ExampleProtobuf", "examples_src_java_org_pantsbuild_example_protobuf_distance_distance")
     );
   }
 
   public void testExcludes1() throws Throwable {
-    doImport("intellij-integration/src/java/com/pants/testproject/excludes1");
+    doImport("intellij-integration/src/java/org/pantsbuild/testproject/excludes1");
 
     assertModules(
-      "intellij-integration_src_java_com_pants_testproject_excludes1_excludes1"
+      "intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1"
     );
 
-    makeModules("intellij-integration_src_java_com_pants_testproject_excludes1_excludes1");
+    makeModules("intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1");
     assertNotNull(
       findClassFile(
-        "com.pants.testproject.excludes1.Foo",
-        "intellij-integration_src_java_com_pants_testproject_excludes1_excludes1"
+        "org.pantsbuild.testproject.excludes1.Foo",
+        "intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1"
       )
     );
   }
 
   public void testExcludes2() throws Throwable {
-    doImport("intellij-integration/src/java/com/pants/testproject/excludes2");
+    doImport("intellij-integration/src/java/org/pantsbuild/testproject/excludes2");
 
     assertModules(
-      "intellij-integration_src_java_com_pants_testproject_excludes2_excludes2",
-      "intellij-integration_src_java_com_pants_testproject_excludes2_module"
+      "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2",
+      "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_module"
     );
 
-    makeModules("intellij-integration_src_java_com_pants_testproject_excludes2_excludes2");
+    makeModules("intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2");
     assertNotNull(
       findClassFile(
-        "com.pants.testproject.excludes2.foo.Foo",
-        "intellij-integration_src_java_com_pants_testproject_excludes2_excludes2"
+        "org.pantsbuild.testproject.excludes2.foo.Foo",
+        "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2"
       )
     );
   }
 
   public void testResources1() throws Throwable {
     // test if we handle resources with '.' in path and don't override resources
-    doImport("intellij-integration/src/java/com/pants/testproject/resources1");
+    doImport("intellij-integration/src/java/org/pantsbuild/testproject/resources1");
 
     assertModules(
-      "intellij-integration_src_java_com_pants_testproject_resources1_resources1"
+      "intellij-integration_src_java_org_pantsbuild_testproject_resources1_resources1"
     );
 
-    makeModules("intellij-integration_src_java_com_pants_testproject_resources1_resources1");
+    makeModules("intellij-integration_src_java_org_pantsbuild_testproject_resources1_resources1");
   }
 }

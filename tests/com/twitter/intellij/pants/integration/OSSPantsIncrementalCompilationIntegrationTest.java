@@ -15,26 +15,26 @@ public class OSSPantsIncrementalCompilationIntegrationTest extends OSSPantsInteg
     if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
       return;
     }
-    doImport("examples/src/scala/com/pants/example/hello/BUILD", "hello");
+    doImport("examples/src/scala/org/pantsbuild/example/hello/BUILD", "hello");
 
     assertModules(
-      "examples_src_resources_com_pants_example_hello_hello",
-      "examples_src_scala_com_pants_example_hello_module",
-      "examples_src_scala_com_pants_example_hello_hello",
-      "examples_src_scala_com_pants_example_hello_welcome_welcome",
-      "examples_src_java_com_pants_examples_hello_greet_greet",
-      "examples_src_scala_com_pants_example_hello_exe_exe"
+      "examples_src_resources_org_pantsbuild_example_hello_hello",
+      "examples_src_scala_org_pantsbuild_example_hello_module",
+      "examples_src_scala_org_pantsbuild_example_hello_hello",
+      "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
+      "examples_src_java_org_pantsbuild_example_hello_greet_greet",
+      "examples_src_scala_org_pantsbuild_example_hello_exe_exe"
     );
 
     assertContain(makeProject(), "pants: Recompiling all 5 targets");
     assertContain(makeProject(), "pants: No changes to compile.");
 
-    modify("com.pants.example.hello.exe.Exe");
+    modify("org.pantsbuild.example.hello.exe.Exe");
 
-    assertContain(makeProject(), "pants: Recompiling examples/src/scala/com/pants/example/hello/exe:exe");
+    assertContain(makeProject(), "pants: Recompiling examples/src/scala/org/pantsbuild/example/hello/exe:exe");
 
-    modify("com.pants.example.hello.exe.Exe");
-    modify("com.pants.example.hello.welcome.WelcomeEverybody");
+    modify("org.pantsbuild.example.hello.exe.Exe");
+    modify("org.pantsbuild.example.hello.welcome.WelcomeEverybody");
 
     assertContain(makeProject(), "pants: Recompiling 2 targets");
   }

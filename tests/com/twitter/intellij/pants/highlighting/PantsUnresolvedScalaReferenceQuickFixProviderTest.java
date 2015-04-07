@@ -25,15 +25,15 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
   }
 
   public void testMissingDepsWhiteList() throws Throwable {
-    doImport("intellij-integration/src/scala/com/pants/testproject/missingdepswhitelist");
+    doImport("intellij-integration/src/scala/org/pantsbuild/testproject/missingdepswhitelist");
 
     assertModules(
-      "intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist_missingdepswhitelist",
-      "intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2",
-      "testprojects_src_java_com_pants_testproject_publish_hello_greet_greet"
+      "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist_missingdepswhitelist",
+      "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
+      "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
 
-    final PsiClass psiClass = findClass("com.pants.testproject.missingdepswhitelist2.MissingDepsWhitelist2");
+    final PsiClass psiClass = findClass("org.pantsbuild.testproject.missingdepswhitelist2.MissingDepsWhitelist2");
     assertNotNull(psiClass);
     final Editor editor = createEditor(psiClass.getContainingFile().getVirtualFile());
     assertNotNull(editor);
@@ -42,7 +42,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     final AddPantsTargetDependencyFix intention = findIntention(info, AddPantsTargetDependencyFix.class);
     assertNotNull(intention);
 
-    assertModuleModuleDeps("intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertModuleModuleDeps("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     // In CI we run all tests with both compiler options. See .travis.yml
     // But in this test we also checking the difference between compiler options.
@@ -60,7 +60,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     @NotNull final Editor editor,
     @NotNull final PsiClass psiClass
   ) throws Exception {
-    assertCompilationFailed("intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertCompilationFailed("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     WriteCommandAction.runWriteCommandAction(
       myProject,
@@ -73,8 +73,8 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     );
 
     assertModuleModuleDeps(
-      "intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2",
-      "testprojects_src_java_com_pants_testproject_publish_hello_greet_greet"
+      "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
+      "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
 
     makeProject();
@@ -87,7 +87,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
   ) throws Exception {
     // we should be able to compile it even with a missing dependency
     // because we are compiling via compile goal
-    makeModules("intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    makeModules("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     WriteCommandAction.runWriteCommandAction(
       myProject,
@@ -100,13 +100,13 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     );
 
     assertModuleModuleDeps(
-      "intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2",
-      "testprojects_src_java_com_pants_testproject_publish_hello_greet_greet"
+      "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
+      "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
 
     makeProject();
 
-    final Module module = getModule("intellij-integration_src_scala_com_pants_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    final Module module = getModule("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
     final List<String> messages =
       ContainerUtil.map(
         compileAndGetMessages(module),
