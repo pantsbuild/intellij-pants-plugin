@@ -13,11 +13,16 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import org.jetbrains.annotations.NotNull;
 
 public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {
+  private static Consumer<String> STRING_CONSUMER = new Consumer<String>() {
+    public void consume(final String t) {
+    }
+  };
+
   @NotNull
   public ProjectInfo resolveProjectInfo(@NotNull String relativeProjectPath) {
     final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), relativeProjectPath);
     final PantsResolver resolver = new PantsResolver(absoluteProjectPath, new PantsExecutionSettings(), true);
-    resolver.resolve(Consumer.EMPTY_CONSUMER, null);
+    resolver.resolve(STRING_CONSUMER, null);
     final ProjectInfo projectInfo = resolver.getProjectInfo();
     assertNotNull(projectInfo);
     return projectInfo;

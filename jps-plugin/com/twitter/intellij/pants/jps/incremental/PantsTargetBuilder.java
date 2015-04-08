@@ -189,7 +189,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   }
 
   @NotNull
-  public CompilerMessage getCompilerMessage(ProcessEvent event, Key outputType) {
+  public CompilerMessage getCompilerMessage(ProcessEvent event, Key<?> outputType) {
     final PantsOutputMessage message = PantsOutputMessage.parseCompilerMessage(event.getText());
     if (message == null) {
       final String outputMessage = StringUtil.trim(event.getText());
