@@ -13,26 +13,29 @@ import java.util.List;
 
 public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProjectExtensionImpl> implements JpsPantsProjectExtension {
   private boolean myCompileWithIntellij;
+  private boolean myWithDependees;
   private String myTargetPath;
   private List<String> myTargetNames;
 
-  public JpsPantsProjectExtensionImpl(@NotNull String path, @NotNull List<String> names, boolean compileWithIntellij) {
+  public JpsPantsProjectExtensionImpl(@NotNull String path, @NotNull List<String> names, boolean withDependees, boolean compileWithIntellij) {
     myTargetPath = path;
     myTargetNames = names;
+    myWithDependees = withDependees;
     myCompileWithIntellij = compileWithIntellij;
   }
 
   @NotNull
   @Override
   public JpsPantsProjectExtensionImpl createCopy() {
-    return new JpsPantsProjectExtensionImpl(myTargetPath, myTargetNames, myCompileWithIntellij);
+    return new JpsPantsProjectExtensionImpl(myTargetPath, myTargetNames, myWithDependees, myCompileWithIntellij);
   }
 
   @Override
   public void applyChanges(@NotNull JpsPantsProjectExtensionImpl modified) {
-    setTargetPath(modified.getTargetPath());
+    setExternalProjectPath(modified.getExternalProjectPath());
     setTargetNames(modified.getTargetNames());
     setCompileWithIntellij(modified.isCompileWithIntellij());
+    setWithDependees(modified.isWithDependees());
   }
 
   @Override
@@ -40,14 +43,24 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
     return myTargetNames.isEmpty();
   }
 
+  @Override
+  public boolean isWithDependees() {
+    return myWithDependees;
+  }
+
+  @Override
+  public void setWithDependees(boolean withDependees) {
+    myWithDependees = withDependees;
+  }
+
   @NotNull
   @Override
-  public String getTargetPath() {
+  public String getExternalProjectPath() {
     return myTargetPath;
   }
 
   @Override
-  public void setTargetPath(@NotNull String path) {
+  public void setExternalProjectPath(@NotNull String path) {
     myTargetPath = PantsUtil.isBUILDFilePath(path) ? PathUtil.getParentPath(path) : path;
   }
 
@@ -67,6 +80,7 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
     return myCompileWithIntellij;
   }
 
+  @Override
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     myCompileWithIntellij = compileWithIntellij;
   }

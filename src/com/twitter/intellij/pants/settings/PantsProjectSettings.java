@@ -5,13 +5,15 @@ package com.twitter.intellij.pants.settings;
 
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.util.containers.ContainerUtilRt;
+import com.twitter.intellij.pants.model.PantsCompileOptions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class PantsProjectSettings extends ExternalProjectSettings {
+public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargets = ContainerUtilRt.newArrayList();
   private boolean myAllTargets;
+  private boolean myWithDependees;
 
   @NotNull
   @Override
@@ -26,15 +28,18 @@ public class PantsProjectSettings extends ExternalProjectSettings {
     super.copyTo(receiver);
     if (receiver instanceof PantsProjectSettings) {
       ((PantsProjectSettings)receiver).setAllTargets(isAllTargets());
-      ((PantsProjectSettings)receiver).setTargets(getTargets());
+      ((PantsProjectSettings)receiver).setWithDependees(isWithDependees());
+      ((PantsProjectSettings)receiver).setTargetNames(getTargetNames());
     }
   }
 
-  public List<String> getTargets() {
+  @NotNull
+  @Override
+  public List<String> getTargetNames() {
     return myTargets;
   }
 
-  public void setTargets(List<String> targets) {
+  public void setTargetNames(List<String> targets) {
     myTargets = targets;
   }
 
@@ -42,7 +47,17 @@ public class PantsProjectSettings extends ExternalProjectSettings {
     myAllTargets = allTargets;
   }
 
+  public void setWithDependees(boolean withDependees) {
+    myWithDependees = withDependees;
+  }
+
+  @Override
   public boolean isAllTargets() {
     return myAllTargets;
+  }
+
+  @Override
+  public boolean isWithDependees() {
+    return myWithDependees;
   }
 }

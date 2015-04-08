@@ -21,6 +21,7 @@ import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.Consumer;
 import com.intellij.util.PathUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -31,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 
 
-public class PantsProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
+public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   @Nullable
   @Override
   public DataNode<ProjectData> resolveProjectInfo(
@@ -111,9 +112,13 @@ public class PantsProjectResolver implements ExternalSystemProjectResolver<Pants
     boolean isPreviewMode
   ) {
     final PantsResolver dependenciesResolver = new PantsResolver(projectPath, settings, isPreviewMode);
-
-    listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, "Resolving dependencies..."));
     dependenciesResolver.resolve(
+      new Consumer<String>() {
+        @Override
+        public void consume(String status) {
+          listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, status));
+        }
+      },
       new ProcessAdapter() {
         @Override
         public void onTextAvailable(ProcessEvent event, Key outputType) {

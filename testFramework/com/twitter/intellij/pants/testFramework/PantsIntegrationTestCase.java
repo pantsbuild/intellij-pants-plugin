@@ -217,13 +217,18 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return classes.length > 0 ? classes[0] : null;
   }
 
+  protected void doImportWithDependees(@NotNull String projectFolderPathToImport) {
+    myProjectSettings.setWithDependees(true);
+    doImport(projectFolderPathToImport);
+  }
+
   protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {
     myRelativeProjectPath = projectFolderPathToImport;
     if (targetNames.length == 0) {
       myProjectSettings.setAllTargets(true);
     } else {
       myProjectSettings.setAllTargets(false);
-      myProjectSettings.setTargets(Arrays.asList(targetNames));
+      myProjectSettings.setTargetNames(Arrays.asList(targetNames));
     }
     importProject();
   }

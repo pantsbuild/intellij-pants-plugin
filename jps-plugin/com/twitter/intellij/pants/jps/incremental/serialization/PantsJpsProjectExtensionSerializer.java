@@ -21,6 +21,7 @@ import java.util.List;
 public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSerializer {
 
   private static final String COMPILE_WITH_INTELLIJ   = "compileWithIntellij";
+  private static final String WITH_DEPENDEES          = "withDependees";
   private static final String LINKED_PROJECT_SETTINGS = "linkedExternalProjectsSettings";
   private static final String EXTERNAL_PROJECT_PATH   = "externalProjectPath";
   private static final String TARGETS                 = "targets";
@@ -48,6 +49,8 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     }
     final boolean compileWithIntellij =
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
+    final boolean withDependees =
+      Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, WITH_DEPENDEES, "false"));
 
     final Element targetsList = JDOMExternalizerUtil.getOption(projectSettings, TARGETS);
     final Element listOfTargetNames = targetsList != null ? targetsList.getChild("list") : null;
@@ -63,6 +66,7 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
           }
         }
       ),
+      withDependees,
       compileWithIntellij
     );
 

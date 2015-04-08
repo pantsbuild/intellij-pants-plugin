@@ -81,6 +81,28 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
   }
 
+  public void testHelloWithDependees() throws Throwable {
+    doImportWithDependees("examples/src/java/org/pantsbuild/example/hello");
+
+    assertModules(
+      "examples_src_resources_org_pantsbuild_example_hello_hello",
+      "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
+      "examples_src_java_org_pantsbuild_example_hello_module",
+      "examples_src_java_org_pantsbuild_example_hello_simple_simple",
+      "examples_src_java_org_pantsbuild_example_hello_main_main",
+      "examples_src_java_org_pantsbuild_example_hello_greet_greet",
+      "3rdparty_junit",
+      "3rdparty_hamcrest-core",
+      "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome", // dependee
+      "examples_tests_java_org_pantsbuild_example_hello_greet_greet"     // dependee
+    );
+
+    makeProject();
+    assertNotNull(
+      findClassFile("org.pantsbuild.example.hello.greet.GreetingTest", "examples_tests_java_org_pantsbuild_example_hello_greet_greet")
+    );
+  }
+
   public void testJaxb() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/jaxb/main");
 

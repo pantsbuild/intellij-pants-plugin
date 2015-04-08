@@ -10,6 +10,7 @@
       <p>1.2:</p>
       <ul>
         <li>Incremental compilation of targets that were changed</li>
+        <li>Open dependees of targets</li>
       </ul>
       <p>1.1.3:</p>
       <ul>

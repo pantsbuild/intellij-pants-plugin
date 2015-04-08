@@ -25,8 +25,8 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
-import com.twitter.intellij.pants.service.project.PantsProjectResolver;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
+import com.twitter.intellij.pants.service.project.PantsSystemProjectResolver;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
 import com.twitter.intellij.pants.settings.*;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -137,7 +137,7 @@ public class PantsManager implements
 
         if (absoluteTargetAddress != null) {
           return new PantsExecutionSettings(
-            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, compileWithIntellij
+            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, false, compileWithIntellij
           );
         }
 
@@ -145,11 +145,13 @@ public class PantsManager implements
         final ExternalProjectSettings projectSettings = systemSettings.getLinkedProjectSettings(projectPath);
 
         final List<String> targets = projectSettings instanceof PantsProjectSettings ?
-                                     ((PantsProjectSettings)projectSettings).getTargets() : Collections.<String>emptyList();
+                                     ((PantsProjectSettings)projectSettings).getTargetNames() : Collections.<String>emptyList();
         final boolean allTargets = projectSettings instanceof PantsProjectSettings &&
                                    ((PantsProjectSettings)projectSettings).isAllTargets();
+        final boolean withDependees = projectSettings instanceof PantsProjectSettings &&
+                                      ((PantsProjectSettings)projectSettings).isWithDependees();
 
-        return new PantsExecutionSettings(targets, allTargets, compileWithIntellij);
+        return new PantsExecutionSettings(targets, allTargets, withDependees, compileWithIntellij);
       }
     };
   }
@@ -157,7 +159,7 @@ public class PantsManager implements
   @NotNull
   @Override
   public Class<? extends ExternalSystemProjectResolver<PantsExecutionSettings>> getProjectResolverClass() {
-    return PantsProjectResolver.class;
+    return PantsSystemProjectResolver.class;
   }
 
   @Override

@@ -22,7 +22,6 @@ import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,6 +34,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   private CheckBoxList<String> myTargets;
   private JBCheckBox myAllTargetsCheckBox;
+  private JBCheckBox myWithDependeesCheckBox;
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
     super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
@@ -48,7 +48,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myAllTargetsCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.all.targets"));
     myAllTargetsCheckBox.setEnabled(false);
 
+    myWithDependeesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.dependees"));
+
     content.add(myAllTargetsCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+    content.add(myWithDependeesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
     content.add(targetsLabel, ExternalSystemUiUtil.getLabelConstraints(indentLevel));
     content.add(myTargets, ExternalSystemUiUtil.getFillLineConstraints(0));
@@ -121,7 +124,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
     final List<String> result = new ArrayList<String>();
-    if (myAllTargetsCheckBox.isEnabled()) {
+    settings.setWithDependees(myWithDependeesCheckBox.isSelected());
+    if (myAllTargetsCheckBox.isEnabled() && myAllTargetsCheckBox.isSelected()) {
       settings.setAllTargets(true);
     }
     else {
@@ -131,7 +135,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
           result.add(target);
         }
       }
-      settings.setTargets(result);
+      settings.setTargetNames(result);
     }
   }
 

@@ -3,15 +3,7 @@
 
 package com.twitter.intellij.pants.service.project;
 
-import com.google.gson.JsonSyntaxException;
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessOutput;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
-import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
@@ -24,10 +16,8 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.PantsExecutionException;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
-import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -37,65 +27,21 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.TestOnly;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
-public class PantsResolver {
-  private static final Logger LOG = Logger.getInstance(PantsResolver.class);
-
-  private final boolean generateJars;
-  private final String projectPath;
-  private final PantsExecutionSettings settings;
-
-  @Nullable
-  protected File myWorkDirectory = null;
-  private ProjectInfo projectInfo = null;
-
-  @Nullable
-  public ProjectInfo getProjectInfo() {
-    return projectInfo;
-  }
-
-  @TestOnly
-  protected void setWorkDirectory(@Nullable File workDirectory) {
-    myWorkDirectory = workDirectory;
-  }
-
-  @TestOnly
-  protected void setProjectInfo(ProjectInfo projectInfo) {
-    this.projectInfo = projectInfo;
-  }
-
+public class PantsResolver extends PantsResolverBase {
   public PantsResolver(@NotNull String projectPath, @NotNull PantsExecutionSettings settings, boolean isPreviewMode) {
-    this.projectPath = projectPath;
-    this.settings = settings;
-    generateJars = !isPreviewMode;
+    super(projectPath, settings, isPreviewMode);
   }
 
-  public static ProjectInfo parseProjectInfoFromJSON(String data) throws JsonSyntaxException {
-    return ProjectInfo.fromJson(data);
-  }
-
-  private void parse(final String output) {
-    projectInfo = null;
-    if (output.isEmpty()) throw new ExternalSystemException("Not output from pants");
-    try {
-      projectInfo = parseProjectInfoFromJSON(output);
-    }
-    catch (JsonSyntaxException e) {
-      LOG.warn("Can't parse output\n" + output, e);
-      throw new ExternalSystemException("Can't parse project structure!");
-    }
-  }
-
+  @Override
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
-    if (projectInfo == null) return;
+    if (myProjectInfo == null) return;
 
     for (PantsProjectInfoModifierExtension modifier : PantsProjectInfoModifierExtension.EP_NAME.getExtensions()) {
-      modifier.modify(projectInfo, LOG);
+      modifier.modify(myProjectInfo, LOG);
     }
 
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
@@ -110,7 +56,7 @@ public class PantsResolver {
     @NotNull DataNode<ProjectData> projectInfoDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules
   ) {
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
       final String targetName = entry.getKey();
       if (StringUtil.startsWith(targetName, ":scala-library")) {
         // we already have it in libs
@@ -132,7 +78,7 @@ public class PantsResolver {
   }
 
   private void addSourceRootsToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
       final String targetAddress = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       if (!modules.containsKey(targetAddress) || targetInfo.getRoots().isEmpty()) {
@@ -148,7 +94,7 @@ public class PantsResolver {
       addSourceRootsToContentRoots(targetAddress, targetInfo, contentRoots);
       addExcludesToContentRoots(targetInfo, contentRoots);
 
-      if (!settings.isCompileWithIntellij()) {
+      if (!mySettings.isCompileWithIntellij()) {
         addPantsJpsCompileOutputs(targetInfo, moduleDataNode);
       }
     }
@@ -189,7 +135,8 @@ public class PantsResolver {
         contentRoots, new Condition<ContentRootData>() {
           @Override
           public boolean value(ContentRootData contentRoot) {
-            return FileUtil.isAncestor(contentRoot.getRootPath(), root.getSourceRootRegardingSourceType(targetInfo.getSourcesType()), false);
+            return FileUtil
+              .isAncestor(contentRoot.getRootPath(), root.getSourceRootRegardingSourceType(targetInfo.getSourcesType()), false);
           }
         }
       );
@@ -229,7 +176,7 @@ public class PantsResolver {
   }
 
   private void addDependenciesToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       if (!modules.containsKey(mainTarget)) {
@@ -248,7 +195,7 @@ public class PantsResolver {
 
   private void addLibrariesToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
     final Map<String, LibraryData> idToLibraryData = new HashMap<String, LibraryData>();
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       if (!modules.containsKey(mainTarget)) {
@@ -291,11 +238,11 @@ public class PantsResolver {
   }
 
   private void runResolverExtensions(@NotNull DataNode<ProjectData> projectInfoDataNode, @NotNull Map<String, DataNode<ModuleData>> modules) {
-    for (String resolverClassName : settings.getResolverExtensionClassNames()) {
+    for (String resolverClassName : mySettings.getResolverExtensionClassNames()) {
       try {
         Object resolver = Class.forName(resolverClassName).newInstance();
         if (resolver instanceof PantsResolverExtension) {
-          ((PantsResolverExtension)resolver).resolve(projectInfo, projectInfoDataNode, modules);
+          ((PantsResolverExtension)resolver).resolve(myProjectInfo, projectInfoDataNode, modules);
         }
       }
       catch (Exception e) {
@@ -449,8 +396,8 @@ public class PantsResolver {
 
   @NotNull
   private List<String> getLibraryJars(@NotNull String libraryId) {
-    final List<String> libraryJars = projectInfo.getLibraries(libraryId);
-    if (libraryJars.isEmpty() && generateJars) {
+    final List<String> libraryJars = myProjectInfo.getLibraries(libraryId);
+    if (libraryJars.isEmpty() && myGenerateJars) {
       // log only we tried to resolve libs
       LOG.warn("No info for library: " + libraryId);
     }
@@ -482,84 +429,5 @@ public class PantsResolver {
       }
     }
     return false;
-  }
-
-  public void resolve(@Nullable ProcessAdapter processAdapter) {
-    try {
-      final File outputFile = FileUtil.createTempFile("pants_run", ".out");
-      final GeneralCommandLine command = getCommand(outputFile);
-      final ProcessOutput processOutput = PantsUtil.getCmdOutput(command, processAdapter);
-      if (processOutput.getStdout().contains("no such option")) {
-        throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
-      }
-      final boolean stdOutDebugInfo = ApplicationManager.getApplication().isUnitTestMode() ||
-                                      ApplicationManager.getApplication().isInternal();
-      if (processOutput.checkSuccess(LOG)) {
-        final String output = FileUtil.loadFile(outputFile);
-        parse(output);
-
-        final File bootstrapBuildFile = new File(command.getWorkDirectory(), "BUILD");
-        if (bootstrapBuildFile.exists() && projectInfo != null && PantsScalaUtil.hasMissingScalaCompilerLibs(projectInfo)) {
-          // need to bootstrap tools
-          final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(bootstrapBuildFile.getPath());
-          commandLine.addParameters("goal", "resolve", "BUILD:");
-          final boolean bootstrapped = PantsUtil.getCmdOutput(commandLine, null).checkSuccess(LOG);
-          if (bootstrapped && stdOutDebugInfo) {
-            System.out.println("Bootstrapped Pants successfully!");
-          }
-        }
-      }
-      else {
-        final PantsExecutionException executionException =
-          new PantsExecutionException("Failed to update the project!", command.getCommandLineString("pants"), processOutput);
-
-        if (stdOutDebugInfo) {
-          System.err.println("Pants execution failure!");
-          System.err.println(executionException.getExecutionDetails());
-        }
-
-        throw executionException;
-      }
-    }
-    catch (ExecutionException e) {
-      throw new ExternalSystemException(e);
-    }
-    catch (IOException ioException) {
-      throw new ExternalSystemException(ioException);
-    }
-  }
-
-  protected GeneralCommandLine getCommand(final File outputFile) {
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
-    myWorkDirectory = commandLine.getWorkDirectory();
-    commandLine.addParameter("goal");
-    // in unit test mode it's always preview but we need to know libraries
-    // because some jvm_binary targets are actually Scala ones and we need to
-    // set a proper com.twitter.intellij.pants.compiler output folder
-    if (generateJars || ApplicationManager.getApplication().isUnitTestMode()) {
-      commandLine.addParameter("resolve");
-    }
-    String relativeProjectPath = PantsUtil.getRelativeProjectPath(myWorkDirectory, projectPath);
-
-    if (relativeProjectPath == null) {
-      throw new ExternalSystemException(
-        String.format("Can't find relative path for a target %s from dir %s", projectPath, myWorkDirectory.getPath())
-      );
-    }
-
-    commandLine.addParameter("depmap");
-    if (settings.isAllTargets()) {
-      commandLine.addParameter(relativeProjectPath + File.separator + "::");
-    }
-    else {
-      for (String targetName : settings.getTargetNames()) {
-        commandLine.addParameter(relativeProjectPath + File.separator + ":" + targetName);
-      }
-    }
-    commandLine.addParameter("--thrift-linter-skip");
-    commandLine.addParameter("--depmap-project-info");
-    commandLine.addParameter("--depmap-project-info-formatted");
-    commandLine.addParameter("--depmap-output-file=" + outputFile.getPath());
-    return commandLine;
   }
 }
