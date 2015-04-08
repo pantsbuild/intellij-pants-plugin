@@ -30,7 +30,6 @@ _intellij_sdk_jars = [
     'httpmime-4.3.6.jar',
     'icons.jar',
     'idea.jar',
-    'idea-jsp-openapi.jar',
     'idea_rt.jar',
     'isorelax.jar',
     'javac2.jar',
@@ -97,6 +96,10 @@ _intellij_sdk_jars = [
     'xstream-1.4.3.jar',
 ]
 
+_intellij_ultimate_sdk_jars = [
+    'idea-jsp-openapi.jar'
+]
+
 _jdk_jars = [
     'sa-jdi.jar',
     'tools.jar'
@@ -116,7 +119,11 @@ def _intellij_sdk_classpath():
     base_dir = os.environ['INTELLIJ_HOME']
     if not os.path.exists(base_dir):
         raise Exception('Directory %s not exists!' % base_dir)
-    intellij_jars = [_jar_path_in_lib_folder(base_dir, jar_name) for jar_name in _intellij_sdk_jars]
+
+    intellij_ultimate_flag = os.environ.get('IJ_ULTIMATE')
+    additional_intellij_sdk_jars = _intellij_ultimate_sdk_jars if intellij_ultimate_flag and intellij_ultimate_flag == 'true' else []
+
+    intellij_jars = [_jar_path_in_lib_folder(base_dir, jar_name) for jar_name in _intellij_sdk_jars + additional_intellij_sdk_jars]
 
     external_api_jar_path = os.path.join(os.getcwd(), 'testData', 'external-system-test-api-impl.jar')
     if not os.path.exists(external_api_jar_path):
