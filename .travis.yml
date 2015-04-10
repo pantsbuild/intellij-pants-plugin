@@ -13,6 +13,7 @@ env:
   global:
     - OSS_PANTS_HOME=./.cache/intellij/pants
   matrix:
+    - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" USE_PANTS_TO_COMPILE="false"
     - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" IJ_ULTIMATE=true
     - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177"
 
