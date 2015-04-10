@@ -13,6 +13,7 @@ import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
+import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -38,7 +39,11 @@ public class ScalaSdkResolver implements PantsResolverExtension {
     final Set<String> scalaJars = new HashSet<String>();
     for (String libId : projectInfo.getLibraries().keySet()) {
       if (PantsScalaUtil.isScalaLib(libId)) {
-        scalaJars.addAll(projectInfo.getLibraries(libId));
+        final LibraryInfo scalaLib = projectInfo.getLibraries(libId);
+        final String scalaLibPath = scalaLib != null ? scalaLib.getDefault() : null;
+        if (scalaLibPath != null) {
+          scalaJars.add(scalaLibPath);
+        }
       }
     }
 

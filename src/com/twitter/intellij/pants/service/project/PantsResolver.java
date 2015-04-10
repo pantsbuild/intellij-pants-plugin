@@ -18,6 +18,7 @@ import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
+import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -207,8 +208,8 @@ public class PantsResolver extends PantsResolverBase {
           // skip Scala. Will be added by PantsScalaDataService
           continue;
         }
-        final List<String> libraryJars = getLibraryJars(libraryId);
-        if (libraryJars.isEmpty()) {
+        final LibraryInfo libraryJars = getLibraryJars(libraryId);
+        if (libraryJars == null) {
           // no library jars by that id
           continue;
         }
@@ -220,9 +221,14 @@ public class PantsResolver extends PantsResolverBase {
               @Override
               public LibraryData create() {
                 final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
-                for (String jarPath : libraryJars) {
-                  // todo: sources + docs
-                  libraryData.addPath(LibraryPathType.BINARY, jarPath);
+                if (libraryJars.getDefault() != null) {
+                  libraryData.addPath(LibraryPathType.BINARY, libraryJars.getDefault());
+                }
+                if (libraryJars.getSources() != null) {
+                  libraryData.addPath(LibraryPathType.SOURCE, libraryJars.getSources());
+                }
+                if (libraryJars.getJavadoc() != null) {
+                  libraryData.addPath(LibraryPathType.DOC, libraryJars.getJavadoc());
                 }
                 return libraryData;
               }
@@ -394,10 +400,10 @@ public class PantsResolver extends PantsResolverBase {
     return moduleDataNode;
   }
 
-  @NotNull
-  private List<String> getLibraryJars(@NotNull String libraryId) {
-    final List<String> libraryJars = myProjectInfo.getLibraries(libraryId);
-    if (libraryJars.isEmpty() && myGenerateJars) {
+  @Nullable
+  private LibraryInfo getLibraryJars(@NotNull String libraryId) {
+    final LibraryInfo libraryJars = myProjectInfo.getLibraries(libraryId);
+    if (libraryJars == null && myGenerateJars) {
       // log only we tried to resolve libs
       LOG.warn("No info for library: " + libraryId);
     }

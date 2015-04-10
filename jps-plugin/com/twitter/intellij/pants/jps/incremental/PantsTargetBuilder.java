@@ -90,7 +90,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     }
 
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
-    commandLine.addParameters("goal");
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       final Set<String> suitableTargetsToCompile = filterGenTargets(target.getTargetAddresses());
       final String recompileMessage = String.format("Recompiling all %s targets", suitableTargetsToCompile.size());

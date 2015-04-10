@@ -11,6 +11,7 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
@@ -79,12 +80,10 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
       )
     );
 
-    Map<String, List<String>> libraries = new HashMap<String, List<String>>();
+    final Map<String, LibraryInfo> libraries = new HashMap<String, LibraryInfo>();
     for (TargetInfo targetInfo : result.getTargets().values()) {
       for (String libraryId : targetInfo.getLibraries()) {
-        List<String> libs = new ArrayList<String>();
-        libs.add(libraryId.replace('.', File.separatorChar));
-        libraries.put(libraryId, libs);
+        libraries.put(libraryId, new LibraryInfo(libraryId.replace('.', File.separatorChar)));
       }
     }
     result.setLibraries(libraries);

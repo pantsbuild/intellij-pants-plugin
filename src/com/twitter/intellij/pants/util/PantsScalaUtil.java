@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.util;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,16 +43,13 @@ public class PantsScalaUtil {
   }
 
   public static boolean hasMissingScalaCompilerLibs(ProjectInfo projectInfo) {
-    for (String scalaLibPath : projectInfo.getLibraries(getFullScalaLibId(scalaLibrary))) {
-      final File scalaCompilerJar = getScalaLibFile(scalaLibPath, scalaCompiler);
-      if (!scalaCompilerJar.exists()) {
-        return true;
-      }
-    }
-
-    return false;
+    final LibraryInfo libraries = projectInfo.getLibraries(getFullScalaLibId(scalaLibrary));
+    final String scalaLibPath = libraries != null ? libraries.getDefault() : null;
+    final boolean scalaLibExists = scalaLibPath != null && getScalaLibFile(scalaLibPath, scalaCompiler).exists();
+    return !scalaLibExists;
   }
 
+  @NotNull
   public static File getScalaLibFile(@NotNull String scalaLibraryJarPath, @NotNull String libName) {
     return new File(StringUtil.replace(scalaLibraryJarPath, scalaLibrary, libName));
   }

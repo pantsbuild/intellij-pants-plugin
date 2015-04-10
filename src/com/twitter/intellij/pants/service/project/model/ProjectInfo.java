@@ -8,6 +8,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import java.util.Collections;
@@ -27,15 +28,15 @@ public class ProjectInfo {
 
   private final Logger LOG = Logger.getInstance(getClass());
   // id(org:name:version) to jars
-  protected Map<String, List<String>> libraries;
+  protected Map<String, LibraryInfo> libraries;
   // name to info
   protected Map<String, TargetInfo> targets;
 
-  public Map<String, List<String>> getLibraries() {
+  public Map<String, LibraryInfo> getLibraries() {
     return libraries;
   }
 
-  public void setLibraries(Map<String, List<String>> libraries) {
+  public void setLibraries(Map<String, LibraryInfo> libraries) {
     this.libraries = libraries;
   }
 
@@ -47,27 +48,28 @@ public class ProjectInfo {
     this.targets = targets;
   }
 
-  public List<String> getLibraries(@NotNull String libraryId) {
-    if (libraries.containsKey(libraryId) && libraries.get(libraryId).size() > 0) {
+  @Nullable
+  public LibraryInfo getLibraries(@NotNull String libraryId) {
+    if (libraries.containsKey(libraryId) && libraries.get(libraryId).getDefault() != null) {
       return libraries.get(libraryId);
     }
     int versionIndex = libraryId.lastIndexOf(':');
     if (versionIndex == -1) {
-      return Collections.emptyList();
+      return null;
     }
     final String libraryName = libraryId.substring(0, versionIndex);
-    for (Map.Entry<String, List<String>> libIdAndJars : libraries.entrySet()) {
+    for (Map.Entry<String, LibraryInfo> libIdAndJars : libraries.entrySet()) {
       final String currentLibraryId = libIdAndJars.getKey();
       if (!StringUtil.startsWith(currentLibraryId, libraryName + ":")) {
         continue;
       }
-      final List<String> currentJars = libIdAndJars.getValue();
-      if (!currentJars.isEmpty()) {
+      final LibraryInfo currentInfo = libIdAndJars.getValue();
+      if (currentInfo != null) {
         LOG.info("Using " + currentLibraryId + " instead of " + libraryId);
-        return currentJars;
+        return currentInfo;
       }
     }
-    return Collections.emptyList();
+    return null;
   }
 
   public TargetInfo getTarget(String targetName) {

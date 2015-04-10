@@ -104,8 +104,9 @@ public abstract class PantsResolverBase {
         final File bootstrapBuildFile = new File(command.getWorkDirectory(), "BUILD");
         if (bootstrapBuildFile.exists() && myProjectInfo != null && PantsScalaUtil.hasMissingScalaCompilerLibs(myProjectInfo)) {
           // need to bootstrap tools
+          statusConsumer.consume("Bootstrapping tools...");
           final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(bootstrapBuildFile.getPath());
-          commandLine.addParameters("goal", "resolve", "BUILD:");
+          commandLine.addParameters("resolve", "BUILD:");
           PantsUtil.getCmdOutput(commandLine, null).checkSuccess(LOG);
         }
       }
@@ -142,17 +143,18 @@ public abstract class PantsResolverBase {
     // because some jvm_binary targets are actually Scala ones and we need to
     // set a proper com.twitter.intellij.pants.compiler output folder
     if (myGenerateJars || ApplicationManager.getApplication().isUnitTestMode()) {
-      commandLine.addParameter("resolve");
+      commandLine.addParameter("resolve.ivy");
+      commandLine.addParameter("--confs=default");
+      commandLine.addParameter("--confs=sources");
+      commandLine.addParameter("--soft-excludes");
     }
 
-    commandLine.addParameter("depmap");
+    commandLine.addParameter("export");
     commandLine.addParameters(getAllTargetAddresses());
     commandLine.addParameters(additionalTargets);
 
     commandLine.addParameter("--thrift-linter-skip");
-    commandLine.addParameter("--depmap-project-info");
-    commandLine.addParameter("--depmap-project-info-formatted");
-    commandLine.addParameter("--depmap-output-file=" + outputFile.getPath());
+    commandLine.addParameter("--export-output-file=" + outputFile.getPath());
     return commandLine;
   }
 
