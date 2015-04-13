@@ -13,52 +13,40 @@ Find "Pants Support" plugin. Install and Restart IntelliJ.
 Using this plugin you can import entire project or specific targets in a BUILD file.
 
 * Importing an entire project directory
-    1. Use Main menu: File -> Import Project
+    1. Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
     2. Select project directory
        ![Import project from directory](images/import_dir1.png)
     3. Choose "Pants" on the next screen
     4. Make sure the check box "All Targets in the directory" is enabled and proceed with the wizard
 
-* Importing targets from Build File
-    1. Use Main menu: File -> Import Project
+* Importing targets from a BUILD File
+    1. Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
     2. Select a Build File from within the project
        ![Import project from BUILD file](images/import_file1.png)
     3. Check the targets you want to Import and proceed with the wizard. (Please wait for the targets to show up)
        ![Choose Targets](images/import_file2.png)
+       
+* Importing several BUILD files/directories(works in IntelliJ 14.1+)
+    1. Import the first directory/BUILD file
+    2. Use File -> New -> Module From Existing Sources to import next directories/BUILD files
 
 Once you import the project using above steps, you will see the "Project View" with multiple modules configured.
 
 ### How the plugin works
 
-The plugin uses `pants goal resolve depmap --depmap-project-info <list of imported targets>` command to get an information
-about an imported project. `pants goal resolve depmap --depmap-project-info <list of imported targets>` command returns information
+The plugin uses `pants resolve export <list of imported targets>` command to get an information
+about an imported project. `pants resolve export <list of imported targets>` command returns information
 about all targets that are needed to be imported for the project in JSON format. It contains information about all dependencies of a target
 as well as the same information for each dependency. Then the plugin creates an IntelliJ module for each target, configures
 dependencies(modules and libraries) and source roots.
 
-Let's check an output of `./pants goal resolve depmap --depmap-project-info examples/src/java/com/pants/examples/hello/main:main-bin` command:
+Let's check an output of `./pants export examples/src/java/org/pantsbuild/example/hello/main:main-bin` command:
 
 ```json
 {
     "libraries": {},
     "targets": {
-        "examples/src/java/com/pants/examples/hello/main:main-bin": {
-            "is_code_gen": false,
-            "target_type": "SOURCE",
-            "libraries": [],
-            "pants_target_type": "jvm_binary",
-            "targets": [
-                "examples/src/java/com/pants/examples/hello/greet:greet",
-                "examples/src/resources/com/pants/example/hello:hello"
-            ],
-            "roots": [
-                {
-                    "source_root": "/Users/fkorotkov/workspace/pants/examples/src/java/com/pants/examples/hello/main",
-                    "package_prefix": "com.pants.examples.hello.main"
-                }
-            ]
-        },
-        "examples/src/java/com/pants/examples/hello/greet:greet": {
+        "examples/src/java/org/pantsbuild/example/hello/greet:greet": {
             "is_code_gen": false,
             "target_type": "SOURCE",
             "libraries": [],
@@ -66,12 +54,28 @@ Let's check an output of `./pants goal resolve depmap --depmap-project-info exam
             "targets": [],
             "roots": [
                 {
-                    "source_root": "/Users/fkorotkov/workspace/pants/examples/src/java/com/pants/examples/hello/greet",
-                    "package_prefix": "com.pants.examples.hello.greet"
+                    "source_root": "/Users/fkorotkov/workspace/pants/examples/src/java/org/pantsbuild/example/hello/greet",
+                    "package_prefix": "org.pantsbuild.example.hello.greet"
                 }
             ]
         },
-        "examples/src/resources/com/pants/example/hello:hello": {
+        "examples/src/java/org/pantsbuild/example/hello/main:main-bin": {
+            "is_code_gen": false,
+            "target_type": "SOURCE",
+            "libraries": [],
+            "pants_target_type": "jvm_binary",
+            "targets": [
+                "examples/src/java/org/pantsbuild/example/hello/greet:greet",
+                "examples/src/resources/org/pantsbuild/example/hello:hello"
+            ],
+            "roots": [
+                {
+                    "source_root": "/Users/fkorotkov/workspace/pants/examples/src/java/org/pantsbuild/example/hello/main",
+                    "package_prefix": "org.pantsbuild.example.hello.main"
+                }
+            ]
+        },
+        "examples/src/resources/org/pantsbuild/example/hello:hello": {
             "is_code_gen": false,
             "target_type": "RESOURCE",
             "libraries": [],
@@ -79,8 +83,8 @@ Let's check an output of `./pants goal resolve depmap --depmap-project-info exam
             "targets": [],
             "roots": [
                 {
-                    "source_root": "/Users/fkorotkov/workspace/pants/examples/src/resources/com/pants/example/hello",
-                    "package_prefix": "com.pants.example.hello"
+                    "source_root": "/Users/fkorotkov/workspace/pants/examples/src/resources/org/pantsbuild/example/hello",
+                    "package_prefix": "org.pantsbuild.example.hello"
                 }
             ]
         }
@@ -96,7 +100,7 @@ test sources, resources, test resources, generated sources, etc).
 ### Compilation
 The plugin provides two ways to compile your project:
 * via pants' compile goal (Default)
-  The plugin will use `pants goal compile <list of targets>` to compile your project once a `Make` command is invoked.
+  The plugin will use `pants compile <list of targets>` to compile your project once a `Make` command is invoked.
   ![Compilation via compile goal ](images/compilation_via_compile_goal.png)
 * via IntelliJ's scala/java compilers
   Because the plugin configured all modules' dependencies IntelliJ can use this information to build and run your project without
@@ -193,10 +197,15 @@ For contributing to the project, continue reading below.
 * Remember to bootstrap pants in the project repository inside which you want to test the plugin.
 
         cd ~/workspace/example_project
-        /path/to/pants_dev/pants goal goals
+        /path/to/pants_dev/pants goals
 
   This will bootstrap pants and resolve all the dependencies or else you will get an `ExecutionException` exception for exceeding 30s timeout.
 
 # Running tests with Pants
 
-* Execute `./scripts/run-tests-local.sh` from command-line.
+* Use `./scripts/setup-ci-environment.sh` with the latest `IJ_VERSION` and `IJ_BUILD_NUMBER` 
+  environment variables from `.travis.ci` file to load everything for running tests. For example:
+  
+        IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" ./scripts/setup-ci-environment.sh
+        
+* Execute `./scripts/run-tests-ci.sh` from command-line.
