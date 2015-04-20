@@ -12,8 +12,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertModules(
       "examples_src_java_org_pantsbuild_example_annotation_example_example",
       "examples_src_java_org_pantsbuild_example_annotation_main_main",
-      "examples_src_java_org_pantsbuild_example_annotation_processor_processor",
-      "3rdparty_guava"
+      "examples_src_java_org_pantsbuild_example_annotation_processor_processor"
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_annotation_main_main");
@@ -92,7 +91,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "examples_src_java_org_pantsbuild_example_hello_main_main",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
       "3rdparty_junit",
-      "3rdparty_hamcrest-core",
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome", // dependee
       "examples_tests_java_org_pantsbuild_example_hello_greet_greet"     // dependee
     );
