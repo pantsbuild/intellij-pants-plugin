@@ -14,6 +14,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
+import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
@@ -522,5 +523,15 @@ public class PantsUtil {
     }
 
     return false;
+  }
+
+  @NotNull
+  public static String resolveSymlinks(@NotNull String path) {
+    try {
+      return new File(path).getCanonicalPath();
+    }
+    catch (IOException e) {
+      throw new ExternalSystemException("Can't resolve symbolic links for " + path, e);
+    }
   }
 }
