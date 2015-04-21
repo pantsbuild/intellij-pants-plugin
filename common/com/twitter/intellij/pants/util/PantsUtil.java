@@ -40,6 +40,9 @@ import org.jetbrains.annotations.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -411,13 +414,13 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static String getRelativeProjectPath(@NotNull File workDirectory, @NotNull String projectPath){
+  public static String getRelativeProjectPath(@NotNull File workDirectory, @NotNull String projectPath) {
     final File projectFile = new File(projectPath);
     return getRelativeProjectPath(workDirectory, projectFile);
   }
 
   @Nullable
-  public static String getRelativeProjectPath(@NotNull File workDirectory, @NotNull File projectFile){
+  public static String getRelativeProjectPath(@NotNull File workDirectory, @NotNull File projectFile) {
     return FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
   }
 
@@ -525,6 +528,15 @@ public class PantsUtil {
     return false;
   }
 
+  @Contract("null -> false")
+  public static boolean isExecutable(@Nullable String filePath) {
+    if (filePath == null) {
+      return false;
+    }
+    final Path path = Paths.get(filePath);
+    return !Files.isDirectory(path) && Files.isExecutable(path);
+  }
+
   @NotNull
   public static String resolveSymlinks(@NotNull String path) {
     try {
@@ -533,5 +545,12 @@ public class PantsUtil {
     catch (IOException e) {
       throw new ExternalSystemException("Can't resolve symbolic links for " + path, e);
     }
+  }
+
+  @NotNull
+  public static String fileNameWithoutExtension(@NotNull String name) {
+    int index = name.lastIndexOf('.');
+    if (index < 0) return name;
+    return name.substring(0, index);
   }
 }

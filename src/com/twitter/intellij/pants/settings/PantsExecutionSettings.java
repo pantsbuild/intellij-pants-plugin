@@ -12,19 +12,17 @@ import java.util.Collections;
 import java.util.List;
 
 public class PantsExecutionSettings extends ExternalSystemExecutionSettings implements PantsExecutionOptions {
-  private final boolean myAllTargets;
   private final boolean myWithDependees;
   private final boolean myCompileWithIntellij;
   private List<String> myTargetNames;
   @NotNull private final List<String> myResolverExtensionClassNames = ContainerUtilRt.newArrayList();
 
   public PantsExecutionSettings() {
-    this(Collections.<String>emptyList(), true, false, false);
+    this(Collections.<String>emptyList(), false, false);
   }
 
-  public PantsExecutionSettings(List<String> targetNames, boolean allTargets, boolean withDependees, boolean compileWithIntellij) {
+  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean compileWithIntellij) {
     myTargetNames = targetNames;
-    myAllTargets = allTargets;
     myWithDependees = withDependees;
     myCompileWithIntellij = compileWithIntellij;
   }
@@ -32,10 +30,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   @NotNull
   public List<String> getTargetNames() {
     return myTargetNames;
-  }
-
-  public boolean isAllTargets() {
-    return myAllTargets;
   }
 
   @Override
@@ -64,7 +58,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
 
     PantsExecutionSettings settings = (PantsExecutionSettings)o;
 
-    if (myAllTargets != settings.myAllTargets) return false;
     if (myWithDependees != settings.myWithDependees) return false;
     if (myCompileWithIntellij != settings.myCompileWithIntellij) return false;
     if (!myResolverExtensionClassNames.equals(settings.myResolverExtensionClassNames)) return false;
@@ -76,7 +69,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   @Override
   public int hashCode() {
     int result = super.hashCode();
-    result = 31 * result + (myAllTargets ? 1 : 0);
     result = 31 * result + (myWithDependees ? 1 : 0);
     result = 31 * result + (myTargetNames != null ? myTargetNames.hashCode() : 0);
     result = 31 * result + myResolverExtensionClassNames.hashCode();

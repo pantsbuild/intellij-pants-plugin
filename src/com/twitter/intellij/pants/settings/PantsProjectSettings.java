@@ -12,7 +12,6 @@ import java.util.List;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargets = ContainerUtilRt.newArrayList();
-  private boolean myAllTargets;
   private boolean myWithDependees;
 
   @NotNull
@@ -27,7 +26,6 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   protected void copyTo(@NotNull ExternalProjectSettings receiver) {
     super.copyTo(receiver);
     if (receiver instanceof PantsProjectSettings) {
-      ((PantsProjectSettings)receiver).setAllTargets(isAllTargets());
       ((PantsProjectSettings)receiver).setWithDependees(isWithDependees());
       ((PantsProjectSettings)receiver).setTargetNames(getTargetNames());
     }
@@ -43,17 +41,8 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     myTargets = targets;
   }
 
-  public void setAllTargets(boolean allTargets) {
-    myAllTargets = allTargets;
-  }
-
   public void setWithDependees(boolean withDependees) {
     myWithDependees = withDependees;
-  }
-
-  @Override
-  public boolean isAllTargets() {
-    return myAllTargets;
   }
 
   @Override

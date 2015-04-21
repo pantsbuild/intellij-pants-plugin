@@ -39,11 +39,6 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
   }
 
   @Override
-  public boolean isAllTargets() {
-    return myTargetNames.isEmpty();
-  }
-
-  @Override
   public boolean isWithDependees() {
     return myWithDependees;
   }

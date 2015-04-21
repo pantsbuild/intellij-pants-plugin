@@ -11,14 +11,14 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
-import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.util.PantsConstants;
-import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -55,9 +55,8 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   }
 
   private DataNode<ProjectData> createProjectNode() {
-    final PantsResolver dependenciesResolver = new PantsResolver("", new PantsExecutionSettings(), false);
+    final PantsResolver dependenciesResolver = new PantsResolver(PantsCompileOptionsExecutor.createMock());
     dependenciesResolver.setProjectInfo(getProjectInfo());
-    dependenciesResolver.setWorkDirectory(new File(""));
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID, "test-project", "path/to/fake/project", "path/to/fake/project/BUILD"
     );

@@ -20,16 +20,13 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
-import com.intellij.util.PathUtil;
-import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import java.io.File;
 
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
@@ -45,46 +42,41 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (projectPath.startsWith(".pants.d")) {
       return null;
     }
-    final int targetNameDelimiterIndex = projectPath.indexOf(':');
-    if (targetNameDelimiterIndex > 0) {
-      // normalizing. we don't have per module settings and a linked project path of a module contains target name.
-      projectPath = projectPath.substring(0, targetNameDelimiterIndex);
-    }
-    projectPath = PantsUtil.resolveSymlinks(projectPath);
-    boolean allTargets = settings == null || settings.isAllTargets();
-    final String projectDirPath = allTargets ? projectPath : PathUtil.getParentPath(projectPath);
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(projectDirPath);
-    if (workingDir == null) {
-      throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", projectDirPath));
-    }
+    final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings, !isPreviewMode);
+    return resolveProjectInfoImpl(id, executor, listener);
+  }
+
+  @NotNull
+  private DataNode<ProjectData> resolveProjectInfoImpl(
+    @NotNull ExternalSystemTaskId id,
+    @NotNull PantsCompileOptionsExecutor executor,
+    @NotNull ExternalSystemTaskNotificationListener listener
+  ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     // todo(fkorotkov): add ability to choose a name for a project
-    final String targetsSuffix = allTargets ? ":" : StringUtil.join(settings.getTargetNames(), " :");
-    final String relativeProjectPath = PantsUtil.getRelativeProjectPath(new File(workingDir.getPath()), projectDirPath);
-    final String projectName = relativeProjectPath + "/:" + targetsSuffix;
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
-      projectName,
-      workingDir.getPath() + "/.idea/pants-projects/" + relativeProjectPath,
-      projectPath
+      executor.getProjectName(),
+      executor.getWorkingDir().getPath() + "/.idea/pants-projects/" + executor.getProjectRelativePath(),
+      executor.getProjectPath()
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData> (ProjectKeys.PROJECT, projectData, null);
 
-    resolveUsingPantsGoal(id, projectPath, settings, listener, projectDataNode, isPreviewMode);
+    resolveUsingPantsGoal(id, executor, listener, projectDataNode);
 
-    if (!containsContentRoot(projectDataNode, projectDirPath)) {
+    if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
       // Add a module with content root as import project directory path.
       // This will allow all the files in the imported project directory will be indexed by the plugin.
-      final String moduleName = PantsUtil.getCanonicalModuleName(relativeProjectPath);
+      final String moduleName = PantsUtil.getCanonicalModuleName(executor.getProjectRelativePath());
       final ModuleData moduleData = new ModuleData(
         PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX + moduleName,
         PantsConstants.SYSTEM_ID,
         ModuleTypeId.JAVA_MODULE,
         moduleName + PantsConstants.PANTS_PROJECT_MODULE_SUFFIX,
         projectData.getIdeProjectFileDirectoryPath() + "/" + moduleName,
-        projectDirPath
+        executor.getProjectPath()
       );
       final DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
-      final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, projectDirPath);
+      final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, executor.getProjectDir());
       moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
     }
 
@@ -106,13 +98,11 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
   private void resolveUsingPantsGoal(
     final ExternalSystemTaskId id,
-    String projectPath,
-    PantsExecutionSettings settings,
+    @NotNull PantsCompileOptionsExecutor executor,
     final ExternalSystemTaskNotificationListener listener,
-    DataNode<ProjectData> projectDataNode,
-    boolean isPreviewMode
+    @NotNull DataNode<ProjectData> projectDataNode
   ) {
-    final PantsResolver dependenciesResolver = new PantsResolver(projectPath, settings, isPreviewMode);
+    final PantsResolver dependenciesResolver = new PantsResolver(executor);
     dependenciesResolver.resolve(
       new Consumer<String>() {
         @Override

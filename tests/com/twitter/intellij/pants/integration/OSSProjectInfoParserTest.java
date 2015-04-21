@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.integration;
 
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.Consumer;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
@@ -21,7 +22,9 @@ public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {
   @NotNull
   public ProjectInfo resolveProjectInfo(@NotNull String relativeProjectPath) {
     final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), relativeProjectPath);
-    final PantsResolver resolver = new PantsResolver(absoluteProjectPath, new PantsExecutionSettings(), true);
+    final PantsResolver resolver = new PantsResolver(PantsCompileOptionsExecutor.create(
+      absoluteProjectPath, new PantsExecutionSettings(), true
+    ));
     resolver.resolve(STRING_CONSUMER, null);
     final ProjectInfo projectInfo = resolver.getProjectInfo();
     assertNotNull(projectInfo);

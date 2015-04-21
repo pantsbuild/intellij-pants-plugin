@@ -33,7 +33,6 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private static final Logger LOG = Logger.getInstance(PantsProjectSettingsControl.class);
 
   private CheckBoxList<String> myTargets;
-  private JBCheckBox myAllTargetsCheckBox;
   private JBCheckBox myWithDependeesCheckBox;
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
@@ -45,12 +44,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final JLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
     myTargets = new CheckBoxList<String>();
 
-    myAllTargetsCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.all.targets"));
-    myAllTargetsCheckBox.setEnabled(false);
-
     myWithDependeesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.dependees"));
-
-    content.add(myAllTargetsCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
     content.add(myWithDependeesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
     content.add(targetsLabel, ExternalSystemUiUtil.getLabelConstraints(indentLevel));
@@ -74,19 +68,22 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myTargets.clear();
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     if (file == null || !PantsUtil.isPantsProjectFolder(file)) {
-      myAllTargetsCheckBox.setEnabled(false);
       myTargets.setEnabled(true);
       LOG.warn("Bad project path: " + projectPath);
       return;
     }
 
     if (file.isDirectory()) {
-      myAllTargetsCheckBox.setEnabled(true);
-      myAllTargetsCheckBox.setSelected(true);
+      myWithDependeesCheckBox.setSelected(false);
+      myWithDependeesCheckBox.setEnabled(false);
+    } else if (PantsUtil.isExecutable(file.getPath())) {
       myTargets.setEnabled(false);
+
+      myWithDependeesCheckBox.setSelected(false);
+      myWithDependeesCheckBox.setEnabled(false);
     } else {
-      myAllTargetsCheckBox.setEnabled(false);
-      myTargets.setEnabled(true);
+      myWithDependeesCheckBox.setSelected(false);
+      myWithDependeesCheckBox.setEnabled(true);
       loadTargets(projectPath);
     }
   }
@@ -125,18 +122,13 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
     final List<String> result = new ArrayList<String>();
     settings.setWithDependees(myWithDependeesCheckBox.isSelected());
-    if (myAllTargetsCheckBox.isEnabled() && myAllTargetsCheckBox.isSelected()) {
-      settings.setAllTargets(true);
-    }
-    else {
-      for (int i = 0; i < myTargets.getItemsCount(); i++) {
-        String target = myTargets.getItemAt(i);
-        if (myTargets.isItemSelected(target)) {
-          result.add(target);
-        }
+    for (int i = 0; i < myTargets.getItemsCount(); i++) {
+      String target = myTargets.getItemAt(i);
+      if (myTargets.isItemSelected(target)) {
+        result.add(target);
       }
-      settings.setTargetNames(result);
     }
+    settings.setTargetNames(result);
   }
 
   @Override
@@ -149,7 +141,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     if (!PantsUtil.isPantsProjectFolder(file)) {
       throw new ConfigurationException(PantsBundle.message("pants.error.not.build.file.path.or.directory"));
     }
-    if (!myAllTargetsCheckBox.isSelected() && myTargets.getSelectedIndices().length == 0) {
+    if (PantsUtil.isBUILDFileName(file.getName()) && myTargets.getSelectedIndices().length == 0) {
       throw new ConfigurationException(PantsBundle.message("pants.error.no.targets.are.selected"));
     }
     return true;

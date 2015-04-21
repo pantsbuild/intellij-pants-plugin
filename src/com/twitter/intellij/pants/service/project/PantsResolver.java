@@ -17,11 +17,11 @@ import com.intellij.util.Function;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
-import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsScalaUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -33,8 +33,8 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
-  public PantsResolver(@NotNull String projectPath, @NotNull PantsExecutionSettings settings, boolean isPreviewMode) {
-    super(projectPath, settings, isPreviewMode);
+  public PantsResolver(@NotNull PantsCompileOptionsExecutor executor) {
+    super(executor);
   }
 
   @Override
@@ -95,7 +95,7 @@ public class PantsResolver extends PantsResolverBase {
       addSourceRootsToContentRoots(targetAddress, targetInfo, contentRoots);
       addExcludesToContentRoots(targetInfo, contentRoots);
 
-      if (!mySettings.isCompileWithIntellij()) {
+      if (!myExecutor.isCompileWithIntellij()) {
         addPantsJpsCompileOutputs(targetInfo, moduleDataNode);
       }
     }
@@ -170,7 +170,7 @@ public class PantsResolver extends PantsResolverBase {
     else if (targetInfo.isAnnotationProcessorTarget()) {
       compilerOutputRelativePath = ".pants.d/compile/jvm/apt/classes";
     }
-    final String absoluteCompilerOutputPath = new File(myWorkDirectory, compilerOutputRelativePath).getPath();
+    final String absoluteCompilerOutputPath = new File(myExecutor.getWorkingDir(), compilerOutputRelativePath).getPath();
     final ModuleData moduleData = moduleDataNode.getData();
     moduleData.setInheritProjectCompileOutputPath(false);
     moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, absoluteCompilerOutputPath);
@@ -244,7 +244,7 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   private void runResolverExtensions(@NotNull DataNode<ProjectData> projectInfoDataNode, @NotNull Map<String, DataNode<ModuleData>> modules) {
-    for (String resolverClassName : mySettings.getResolverExtensionClassNames()) {
+    for (String resolverClassName : myExecutor.getResolverExtensionClassNames()) {
       try {
         Object resolver = Class.forName(resolverClassName).newInstance();
         if (resolver instanceof PantsResolverExtension) {
@@ -371,7 +371,7 @@ public class PantsResolver extends PantsResolverBase {
       ModuleTypeId.JAVA_MODULE,
       moduleName,
       projectInfoDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
-      new File(myWorkDirectory, targetName).getAbsolutePath()
+      new File(myExecutor.getWorkingDir(), targetName).getAbsolutePath()
     );
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
@@ -403,7 +403,7 @@ public class PantsResolver extends PantsResolverBase {
   @Nullable
   private LibraryInfo getLibraryJars(@NotNull String libraryId) {
     final LibraryInfo libraryJars = myProjectInfo.getLibraries(libraryId);
-    if (libraryJars == null && myGenerateJars) {
+    if (libraryJars == null && myExecutor.isResolveJars()) {
       // log only we tried to resolve libs
       LOG.warn("No info for library: " + libraryId);
     }
