@@ -177,10 +177,19 @@ public class TargetInfo {
       ContainerUtil.union(getTargets(), other.getTargets()),
       ContainerUtil.union(getRoots(), other.getRoots()),
       getTargetType(),
-      ContainerUtil.getLastItem(ContainerUtil.sorted(Arrays.asList(getInternalPantsTargetType(), other.getInternalPantsTargetType()))),
+      getInternalTargetForUnion(getInternalPantsTargetType(), other.getInternalPantsTargetType()),
       is_code_gen,
       ContainerUtil.union(getTargetAddresses(), other.getTargetAddresses())
     );
+  }
+
+  @Nullable
+  private static String getInternalTargetForUnion(@Nullable String typeA, @Nullable String typeB) {
+    if (typeA == null) return typeB;
+    if (typeB == null) return typeA;
+    if (StringUtil.containsIgnoreCase(typeA, "scala")) return typeA;
+    if (StringUtil.containsIgnoreCase(typeB, "scala")) return typeB;
+    return typeA.compareToIgnoreCase(typeB) > 0 ? typeA : typeB;
   }
 
   @Override
