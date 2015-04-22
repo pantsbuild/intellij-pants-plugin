@@ -12,11 +12,12 @@ env:
   global:
     - OSS_PANTS_HOME=./.cache/intellij/pants
   matrix:
+    - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" USE_PANTS_TO_COMPILE=false
     - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" IJ_ULTIMATE=true
     - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177"
 
 script:
-  - ./scripts/run-tests-ci.sh --test-junit-jvm-options="-Dpants.compiler.enabled=${USE_PANTS_TO_COMPILE:-true}"
+  - ./scripts/run-tests-ci.sh
   - ./scripts/run-custom-integration.sh
       -r $OSS_PANTS_HOME
       -t examples/src/scala/org/pantsbuild/example/hello,examples/src/java/org/pantsbuild/example/hello

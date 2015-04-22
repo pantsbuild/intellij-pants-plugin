@@ -8,6 +8,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -42,11 +43,23 @@ public class PantsScalaUtil {
     return "org.scala-lang:" + libName;
   }
 
-  public static boolean hasMissingScalaCompilerLibs(ProjectInfo projectInfo) {
-    final LibraryInfo libraries = projectInfo.getLibraries(getFullScalaLibId(scalaLibrary));
-    final String scalaLibPath = libraries != null ? libraries.getDefault() : null;
-    final boolean scalaLibExists = scalaLibPath != null && getScalaLibFile(scalaLibPath, scalaCompiler).exists();
-    return !scalaLibExists;
+  public static boolean hasMissingScalaCompilerLibs(final ProjectInfo projectInfo) {
+    return ContainerUtil.exists(
+      projectInfo.getTargets().values(),
+      new Condition<TargetInfo>() {
+        @Override
+        public boolean value(TargetInfo info) {
+          for (String libraryId : info.getLibraries()) {
+            final LibraryInfo libraryInfo = projectInfo.getLibraries().get(libraryId);
+            final String libraryJarPath = libraryInfo != null ? libraryInfo.getDefault() : null;
+            if (isScalaLib(libraryId) && libraryJarPath != null && !getScalaLibFile(libraryJarPath, scalaCompiler).exists()) {
+              return true;
+            }
+          }
+          return false;
+        }
+      }
+    );
   }
 
   @NotNull

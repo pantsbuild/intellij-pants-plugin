@@ -3,27 +3,31 @@
 
 package com.twitter.intellij.pants.service.project.model;
 
+import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.Nullable;
 
 public class LibraryInfo {
   @Nullable
+  @SerializedName("default")
   protected String myDefault;
   @Nullable
+  @SerializedName("sources")
   protected String mySources;
   @Nullable
+  @SerializedName("javadoc")
   protected String myJavadoc;
 
   public LibraryInfo() {
   }
 
-  public LibraryInfo(@Nullable String aDefault) {
-    myDefault = aDefault;
+  public LibraryInfo(@Nullable String defaultPath) {
+    myDefault = defaultPath;
   }
 
-  public LibraryInfo(@Nullable String aDefault, @Nullable String sources, @Nullable String javadoc) {
-    myDefault = aDefault;
-    mySources = sources;
-    myJavadoc = javadoc;
+  public LibraryInfo(@Nullable String defaultPath, @Nullable String sourcesPath, @Nullable String javadocPath) {
+    myDefault = defaultPath;
+    mySources = sourcesPath;
+    myJavadoc = javadocPath;
   }
 
   @Nullable

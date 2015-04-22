@@ -33,8 +33,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
       "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
 
-    final PsiClass psiClass = findClass("org.pantsbuild.testproject.missingdepswhitelist2.MissingDepsWhitelist2");
-    assertNotNull(psiClass);
+    final PsiClass psiClass = findClassAndAssert("org.pantsbuild.testproject.missingdepswhitelist2.MissingDepsWhitelist2");
     final Editor editor = createEditor(psiClass.getContainingFile().getVirtualFile());
     assertNotNull(editor);
     final HighlightInfo info = findInfo(doHighlighting(psiClass.getContainingFile(), editor), "Cannot resolve symbol Greeting");

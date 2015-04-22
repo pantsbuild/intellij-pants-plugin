@@ -16,14 +16,14 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_annotation_main_main");
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.annotation.main.Main", "examples_src_java_org_pantsbuild_example_annotation_main_main")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.annotation.main.Main", "examples_src_java_org_pantsbuild_example_annotation_main_main"
     );
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.annotation.example.Example", "examples_src_java_org_pantsbuild_example_annotation_example_example")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.annotation.example.Example", "examples_src_java_org_pantsbuild_example_annotation_example_example"
     );
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.annotation.processor.ExampleProcessor", "examples_src_java_org_pantsbuild_example_annotation_processor_processor")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.annotation.processor.ExampleProcessor", "examples_src_java_org_pantsbuild_example_annotation_processor_processor"
     );
   }
 
@@ -38,8 +38,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_antlr3_antlr3");
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.antlr3.ExampleAntlr3", "examples_src_java_org_pantsbuild_example_antlr3_antlr3")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.antlr3.ExampleAntlr3", "examples_src_java_org_pantsbuild_example_antlr3_antlr3"
     );
   }
 
@@ -54,8 +54,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_antlr4_antlr4");
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.antlr4.ExampleAntlr4", "examples_src_java_org_pantsbuild_example_antlr4_antlr4")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.antlr4.ExampleAntlr4", "examples_src_java_org_pantsbuild_example_antlr4_antlr4"
     );
   }
 
@@ -72,11 +72,11 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_hello_main_main");
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.hello.greet.Greeting", "examples_src_java_org_pantsbuild_example_hello_greet_greet")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.hello.greet.Greeting", "examples_src_java_org_pantsbuild_example_hello_greet_greet"
     );
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.hello.main.HelloMain", "examples_src_java_org_pantsbuild_example_hello_main_main-bin")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.hello.main.HelloMain", "examples_src_java_org_pantsbuild_example_hello_main_main-bin"
     );
   }
 
@@ -96,8 +96,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeProject();
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.hello.greet.GreetingTest", "examples_tests_java_org_pantsbuild_example_hello_greet_greet")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.hello.greet.GreetingTest", "examples_tests_java_org_pantsbuild_example_hello_greet_greet"
     );
   }
 
@@ -113,8 +113,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_jaxb_main_main");
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.jaxb.main.ExampleJaxb", "examples_src_java_org_pantsbuild_example_jaxb_main_main")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.jaxb.main.ExampleJaxb", "examples_src_java_org_pantsbuild_example_jaxb_main_main"
     );
   }
 
@@ -129,8 +129,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_protobuf_distance_distance");
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.protobuf.distance.ExampleProtobuf", "examples_src_java_org_pantsbuild_example_protobuf_distance_distance")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.protobuf.distance.ExampleProtobuf", "examples_src_java_org_pantsbuild_example_protobuf_distance_distance"
     );
   }
 
@@ -142,11 +142,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1");
-    assertNotNull(
-      findClassFile(
-        "org.pantsbuild.testproject.excludes1.Foo",
-        "intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1"
-      )
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.testproject.excludes1.Foo", "intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1"
     );
   }
 
@@ -159,11 +156,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2");
-    assertNotNull(
-      findClassFile(
-        "org.pantsbuild.testproject.excludes2.foo.Foo",
-        "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2"
-      )
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.testproject.excludes2.foo.Foo", "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2"
     );
   }
 

@@ -68,7 +68,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     );
     makeModules("intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1");
 
-    assertNotNull(findClass("org.pantsbuild.testproject.excludes1.nested.foo.Foo"));
+    findClassAndAssert("org.pantsbuild.testproject.excludes1.nested.foo.Foo");
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.testproject.excludes1.nested.foo.Foo", "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_nested_foo_foo"

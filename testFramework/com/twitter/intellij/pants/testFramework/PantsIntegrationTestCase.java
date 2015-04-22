@@ -184,18 +184,33 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return myCompilerTester;
   }
 
+  protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
+    assertNotNull(
+      String.format("Didn't find %s class in %s module's output!", className, moduleName),
+      findClassFile(className, moduleName)
+    );
+  }
+
   @Nullable
-  protected File findClassFile(String className, String moduleName) throws Exception {
+  private File findClassFile(String className, String moduleName) throws Exception {
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
-    final String compilerOutputUrl =
-      ModuleRootManager.getInstance(getModule(moduleName)).getModuleExtension(CompilerModuleExtension.class).getCompilerOutputUrl();
-    final File classFile = new File(new File(VfsUtil.urlToPath(compilerOutputUrl)), className.replace('.', '/') + ".class");
-    return classFile.exists() ? classFile : null;
+    final CompilerModuleExtension moduleExtension =
+      ModuleRootManager.getInstance(getModule(moduleName)).getModuleExtension(CompilerModuleExtension.class);
+    final File classFile =
+      new File(new File(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl())), className.replace('.', '/') + ".class");
+    if (classFile.exists()) {
+      return classFile;
+    }
+    final File testClassFile =
+      new File(new File(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests())), className.replace('.', '/') + ".class");
+    if (testClassFile.exists()) {
+      return testClassFile;
+    }
+    return null;
   }
 
   protected void modify(@NonNls @NotNull String qualifiedName) {
-    final PsiClass psiClass = findClass(qualifiedName);
-    assertNotNull("Failed to find " + qualifiedName, psiClass);
+    final PsiClass psiClass = findClassAndAssert(qualifiedName);
     final PsiFile psiFile = psiClass.getContainingFile();
     final PsiParserFacade parserFacade = PsiParserFacade.SERVICE.getInstance(myProject);
     final PsiComment comment = parserFacade.createBlockCommentFromText(psiFile.getLanguage(), "Foo");
@@ -210,11 +225,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     );
   }
 
-  @Nullable
-  protected PsiClass findClass(@NonNls @NotNull String qualifiedName) {
-    PsiClass[] classes = JavaPsiFacade.getInstance(myProject).findClasses(qualifiedName, GlobalSearchScope.allScope(myProject));
-    assertTrue(classes.length < 2);
-    return classes.length > 0 ? classes[0] : null;
+  @NotNull
+  protected PsiClass findClassAndAssert(@NonNls @NotNull String qualifiedName) {
+    final PsiClass[] classes = JavaPsiFacade.getInstance(myProject).findClasses(qualifiedName, GlobalSearchScope.allScope(myProject));
+    assertTrue("Several classes with the same qualified name " + qualifiedName, classes.length < 2);
+    assertTrue(qualifiedName + " class not found!", classes.length > 0);
+    return classes[0];
   }
 
   protected void doImportWithDependees(@NotNull String projectFolderPathToImport) {
@@ -243,12 +259,13 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void assertCompilationFailed(final Module... modules) throws Exception {
-    for (CompilerMessage message : compileAndGetMessages(modules)) {
+    final List<CompilerMessage> messages = compileAndGetMessages(modules);
+    for (CompilerMessage message : messages) {
       if (message.getCategory() == CompilerMessageCategory.ERROR) {
         return;
       }
     }
-    fail("Compilation didn't fail!");
+    fail("Compilation didn't fail!\n" + messages);
   }
 
   /**
@@ -365,12 +382,4 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected String getExternalSystemConfigFileName() {
     return "BUILD";
   }
-
-  protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
-    assertNotNull(
-      String.format("didn't find class: %s in module: %s",className,moduleName),
-      findClassFile(className, moduleName)
-    );
-  }
-
 }

@@ -20,8 +20,8 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_hello_main_main");
-    assertNotNull(
-      findClassFile("org.pantsbuild.example.hello.greet.Greeting", "examples_src_java_org_pantsbuild_example_hello_greet_greet")
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.hello.greet.Greeting", "examples_src_java_org_pantsbuild_example_hello_greet_greet"
     );
 
     doImport("examples/src/scala/org/pantsbuild/example/hello/BUILD", "hello");

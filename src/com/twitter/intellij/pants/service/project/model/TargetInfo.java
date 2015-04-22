@@ -21,9 +21,10 @@ public class TargetInfo {
     Set<String> targets,
     Set<SourceRoot> roots,
     String target_type,
+    String internal_target_type,
     Boolean is_code_gen
   ) {
-    this(libraries, targets, roots, target_type, is_code_gen, new HashSet<String>());
+    this(libraries, targets, roots, target_type, internal_target_type, is_code_gen, new HashSet<String>());
   }
 
   public TargetInfo(
@@ -31,6 +32,7 @@ public class TargetInfo {
     Set<String> targets,
     Set<SourceRoot> roots,
     String target_type,
+    String internal_target_type,
     Boolean is_code_gen,
     Set<String> targetAddresses
   ) {
@@ -38,6 +40,7 @@ public class TargetInfo {
     this.targets = targets;
     this.roots = roots;
     this.target_type = target_type;
+    this.pants_target_type = internal_target_type;
     this.is_code_gen = is_code_gen;
     myTargetAddresses = targetAddresses;
   }
@@ -174,6 +177,7 @@ public class TargetInfo {
       ContainerUtil.union(getTargets(), other.getTargets()),
       ContainerUtil.union(getRoots(), other.getRoots()),
       getTargetType(),
+      ContainerUtil.getLastItem(ContainerUtil.sorted(Arrays.asList(getInternalPantsTargetType(), other.getInternalPantsTargetType()))),
       is_code_gen,
       ContainerUtil.union(getTargetAddresses(), other.getTargetAddresses())
     );
