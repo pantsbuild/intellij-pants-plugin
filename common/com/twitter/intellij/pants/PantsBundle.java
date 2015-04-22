@@ -12,7 +12,7 @@ import java.lang.ref.Reference;
 import java.util.ResourceBundle;
 
 public class PantsBundle {
-  private static Reference<ResourceBundle> ourBundle; 
+  private static Reference<ResourceBundle> ourBundle;
 
   @NonNls
   private static final String BUNDLE = "com.twitter.intellij.pants.PantsBundle";
