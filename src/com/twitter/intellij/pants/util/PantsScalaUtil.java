@@ -39,6 +39,10 @@ public class PantsScalaUtil {
     );
   }
 
+  public static boolean isScalaLibraryLib(final String libraryId) {
+    return StringUtil.containsIgnoreCase(libraryId, getFullScalaLibId(scalaLibrary));
+  }
+
   private static String getFullScalaLibId(String libName) {
     return "org.scala-lang:" + libName;
   }

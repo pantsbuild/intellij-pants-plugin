@@ -5,30 +5,24 @@ package com.twitter.intellij.pants.service.scala;
 
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
+import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.File;
-import java.util.Set;
 
 public class ScalaModelData extends AbstractExternalEntityData {
   private static final long serialVersionUID = 1L;
   @NotNull
   public static final Key<ScalaModelData> KEY =
     Key.create(ScalaModelData.class, ProjectKeys.LIBRARY_DEPENDENCY.getProcessingWeight() + 1);
-  private Set<File> myScalaCompilerJars;
+  private final String myScalaLibId;
 
-  public ScalaModelData(ProjectSystemId systemId) {
-    super(systemId);
+  public ScalaModelData(@NotNull String scalaLibId) {
+    super(PantsConstants.SYSTEM_ID);
+    myScalaLibId = scalaLibId;
   }
 
-
-  public void setScalaCompilerJars(Set<File> scalaCompilerJars) {
-    myScalaCompilerJars = scalaCompilerJars;
-  }
-
-  public Set<File> getScalaCompilerJars() {
-    return myScalaCompilerJars;
+  @NotNull
+  public String getScalaLibId() {
+    return myScalaLibId;
   }
 }

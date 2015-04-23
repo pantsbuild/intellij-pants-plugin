@@ -3,9 +3,11 @@
 
 package com.twitter.intellij.pants.service.project.model;
 
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.util.PantsScalaUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -140,12 +142,20 @@ public class TargetInfo {
   }
 
   public boolean hasScalaLib() {
-    for (String libraryId : libraries) {
-      if (StringUtil.startsWith(libraryId, "org.scala-lang:scala-library")) {
-        return true;
+    return findScalaLibId() != null;
+  }
+
+  @Nullable
+  public String findScalaLibId() {
+    return ContainerUtil.find(
+      libraries,
+      new Condition<String>() {
+        @Override
+        public boolean value(String libraryId) {
+          return PantsScalaUtil.isScalaLibraryLib(libraryId);
+        }
       }
-    }
-    return false;
+    );
   }
 
   public boolean dependOn(@NotNull String targetName) {
