@@ -102,6 +102,13 @@
    </component>
   </application-components>
 
+  <project-components>
+    <component>
+      <interface-class>com.twitter.intellij.pants.components.PantsProjectComponent</interface-class>
+      <implementation-class>com.twitter.intellij.pants.components.impl.PantsProjectComponentImpl</implementation-class>
+    </component>
+  </project-components>
+
   <extensionPoints>
     <extensionPoint name="projectResolver" interface="com.twitter.intellij.pants.service.project.PantsResolverExtension"/>
     <extensionPoint name="projectInfoModifier" interface="com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension"/>
@@ -141,6 +148,6 @@
                 factoryClass="com.twitter.intellij.pants.ui.PantsToolWindowFactory"
                 conditionClass="com.twitter.intellij.pants.ui.PantsToolWindowFactoryCondition"/>
     <externalSystemNotificationExtension implementation="com.twitter.intellij.pants.notification.PantsNotificationCustomizer"/>
-    <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.TargetMetadataService"/>
+    <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.PantsMetadataService"/>
   </extensions>
 </idea-plugin>

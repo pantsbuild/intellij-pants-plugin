@@ -30,7 +30,7 @@ public class PantsExecutionException extends PantsException {
   @Override
   public String getMessage() {
     final String originalMessage = super.getMessage();
-    if (ApplicationManager.getApplication().isUnitTestMode()) {
+    if (ApplicationManager.getApplication().isUnitTestMode() || ApplicationManager.getApplication().isInternal()) {
       return originalMessage + "\n" + getExecutionDetails();
     }
     return originalMessage;

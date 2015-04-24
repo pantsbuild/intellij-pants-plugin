@@ -10,12 +10,14 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
+import com.twitter.intellij.pants.service.project.PantsResolver;
+import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
-public class TargetMetadataService implements ProjectDataService<TargetMetadata, Module> {
+public class PantsMetadataService implements ProjectDataService<TargetMetadata, Module> {
   @NotNull
   @Override
   public Key<TargetMetadata> getTargetDataKey() {
@@ -26,6 +28,8 @@ public class TargetMetadataService implements ProjectDataService<TargetMetadata,
   public void importData(
     @NotNull Collection<DataNode<TargetMetadata>> toImport, @NotNull Project project, boolean synchronous
   ) {
+    // for existing projects. for new projects PantsSettings.defaultSettings will provide the version.
+    PantsSettings.getInstance(project).setResolverVersion(PantsResolver.VERSION);
     final ModuleManager moduleManager = ModuleManager.getInstance(project);
     for (DataNode<TargetMetadata> node : toImport) {
       final TargetMetadata metadata = node.getData();

@@ -33,6 +33,8 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
+  public static final int VERSION = 1;
+
   public PantsResolver(@NotNull PantsCompileOptionsExecutor executor) {
     super(executor);
   }

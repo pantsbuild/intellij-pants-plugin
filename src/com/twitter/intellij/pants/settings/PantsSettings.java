@@ -7,8 +7,10 @@ import com.intellij.openapi.components.*;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.settings.ExternalSystemSettingsListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.intellij.util.xmlb.annotations.AbstractCollection;
+import com.twitter.intellij.pants.service.project.PantsResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +26,15 @@ import java.util.Set;
 public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings, PantsProjectSettings, PantsSettingsListener>
   implements PersistentStateComponent<PantsSettings.MyState> {
 
+  @NotNull
+  public static PantsSettings defaultSettings() {
+    final PantsSettings pantsSettings = new PantsSettings(ProjectManager.getInstance().getDefaultProject());
+    pantsSettings.setResolverVersion(PantsResolver.VERSION);
+    return pantsSettings;
+  }
+
   protected boolean myCompileWithIntellij = false;
+  protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
@@ -36,6 +46,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     myCompileWithIntellij = compileWithIntellij;
+  }
+
+  public int getResolverVersion() {
+    return myResolverVersion;
+  }
+
+  public void setResolverVersion(int resolverVersion) {
+    myResolverVersion = resolverVersion;
   }
 
   @NotNull
@@ -51,6 +69,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   @Override
   protected void copyExtraSettingsFrom(@NotNull PantsSettings settings) {
     setCompileWithIntellij(settings.isCompileWithIntellij());
+    setResolverVersion(settings.getResolverVersion());
   }
 
   @Override
@@ -63,6 +82,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public MyState getState() {
     final MyState state = new MyState();
     state.setCompileWithIntellij(isCompileWithIntellij());
+    state.setResolverVersion(getResolverVersion());
     fillState(state);
     return state;
   }
@@ -71,12 +91,15 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public void loadState(MyState state) {
     super.loadState(state);
     setCompileWithIntellij(state.isCompileWithIntellij());
+    setResolverVersion(state.getResolverVersion());
   }
 
   public static class MyState implements State<PantsProjectSettings> {
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
     boolean myCompileWithIntellij = false;
+
+    int myResolverVersion = 0;
 
     @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
     public Set<PantsProjectSettings> getLinkedExternalProjectsSettings() {
@@ -93,6 +116,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     public void setCompileWithIntellij(boolean compileWithIntellij) {
       myCompileWithIntellij = compileWithIntellij;
+    }
+
+    public int getResolverVersion() {
+      return myResolverVersion;
+    }
+
+    public void setResolverVersion(int resolverVersion) {
+      myResolverVersion = resolverVersion;
     }
   }
 }
