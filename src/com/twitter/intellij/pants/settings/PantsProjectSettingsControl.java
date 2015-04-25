@@ -75,7 +75,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
     if (file.isDirectory()) {
       myWithDependeesCheckBox.setSelected(false);
-      myWithDependeesCheckBox.setEnabled(false);
+      myWithDependeesCheckBox.setEnabled(true);
     } else if (PantsUtil.isExecutable(file.getPath())) {
       myTargets.setEnabled(false);
 
