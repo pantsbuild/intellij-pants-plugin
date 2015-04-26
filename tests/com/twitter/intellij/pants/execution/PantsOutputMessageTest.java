@@ -9,7 +9,7 @@ import com.twitter.intellij.pants.util.PantsOutputMessage;
 import junit.framework.TestCase;
 import org.jetbrains.annotations.Nullable;
 
-public class PantsFilterTest extends TestCase {
+public class PantsOutputMessageTest extends TestCase {
 
   public void doTest(@Nullable PantsOutputMessage expected, @Nullable PantsOutputMessage actual) {
     if (expected == null) {
