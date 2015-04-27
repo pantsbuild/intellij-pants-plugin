@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants;
 
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.application.ApplicationManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,6 +23,12 @@ public class PantsExecutionException extends PantsException {
     return myCommand;
   }
 
+  public boolean isTerminated() {
+    // check if exit code contains SIGTERM bits
+    // some scripts may return (exit code + 128) indicating some special conditions
+    return (getProcessOutput().getExitCode() & UnixProcessManager.SIGTERM) == UnixProcessManager.SIGTERM;
+  }
+
   @NotNull
   public ProcessOutput getProcessOutput() {
     return myProcessOutput;
@@ -38,6 +45,9 @@ public class PantsExecutionException extends PantsException {
 
   @NotNull
   public String getExecutionDetails() {
-    return getCommand() + "\n" + getProcessOutput().getStdout() + "\n" + getProcessOutput().getStderr();
+    return getCommand() + "\n" +
+           "Exit code: " + getProcessOutput().getExitCode() + "\n" +
+           getProcessOutput().getStdout() + "\n" +
+           getProcessOutput().getStderr();
   }
 }

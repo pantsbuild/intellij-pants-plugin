@@ -28,8 +28,15 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
+  private final Map<ExternalSystemTaskId, PantsCompileOptionsExecutor> task2executor =
+    new ConcurrentHashMap<ExternalSystemTaskId, PantsCompileOptionsExecutor>();
+
   @Nullable
   @Override
   public DataNode<ProjectData> resolveProjectInfo(
@@ -43,7 +50,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       return null;
     }
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings, !isPreviewMode);
-    return resolveProjectInfoImpl(id, executor, listener);
+    task2executor.put(id, executor);
+    final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener);
+    task2executor.remove(id);
+    return projectDataNode;
   }
 
   @NotNull
@@ -122,6 +132,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
   @Override
   public boolean cancelTask(@NotNull ExternalSystemTaskId taskId, @NotNull ExternalSystemTaskNotificationListener listener) {
-    return false;
+    final PantsCompileOptionsExecutor executor = task2executor.remove(taskId);
+    return executor != null && executor.cancelAllProcesses();
   }
 }

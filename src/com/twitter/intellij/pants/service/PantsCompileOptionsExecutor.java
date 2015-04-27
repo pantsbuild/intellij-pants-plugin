@@ -36,6 +36,8 @@ import java.util.List;
 public class PantsCompileOptionsExecutor {
   protected static final Logger LOG = Logger.getInstance(PantsCompileOptionsExecutor.class);
 
+  private final List<Process> myProcesses = ContainerUtil.createConcurrentList();
+
   private final PantsCompileOptions myOptions;
   private final File myWorkingDir;
   private final boolean myResolveJars;
@@ -183,7 +185,7 @@ public class PantsCompileOptionsExecutor {
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
     final GeneralCommandLine command = getCommand(outputFile, statusConsumer);
     statusConsumer.consume("Resolving dependencies...");
-    final ProcessOutput processOutput = PantsUtil.getCmdOutput(command, processAdapter);
+    final ProcessOutput processOutput = getProcessOutput(command, processAdapter);
     if (processOutput.getStdout().contains("no such option")) {
       throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
     }
@@ -193,6 +195,17 @@ public class PantsCompileOptionsExecutor {
     else {
       throw new PantsExecutionException("Failed to update the project!", command.getCommandLineString("pants"), processOutput);
     }
+  }
+
+  private ProcessOutput getProcessOutput(
+    @NotNull GeneralCommandLine command,
+    @Nullable ProcessAdapter processAdapter
+  ) throws ExecutionException {
+    final Process process = command.createProcess();
+    myProcesses.add(process);
+    final ProcessOutput processOutput = PantsUtil.getOutput(process, processAdapter);
+    myProcesses.remove(process);
+    return processOutput;
   }
 
   @NotNull
@@ -230,7 +243,7 @@ public class PantsCompileOptionsExecutor {
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
     commandLine.addParameter("--dependees-output-file=" + outputFile.getPath());
 
-    if (!PantsUtil.getCmdOutput(commandLine, null).checkSuccess(LOG)) {
+    if (!getProcessOutput(commandLine, null).checkSuccess(LOG)) {
       throw new ExternalSystemException("Failed to find dependees!");
     }
 
@@ -252,6 +265,19 @@ public class PantsCompileOptionsExecutor {
     } else {
       return Collections.singletonList(getProjectRelativePath() + File.separator + "::");
     }
+  }
+
+  /**
+   * @return if successfully canceled all running processes. false if failed ot there were no processes to cancel.
+   */
+  public boolean cancelAllProcesses() {
+    if (myProcesses.isEmpty()) {
+      return false;
+    }
+    for (Process process : myProcesses) {
+      process.destroy();
+    }
+    return true;
   }
 
   private static class MyPantsCompileOptions implements PantsCompileOptions {

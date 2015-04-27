@@ -509,7 +509,10 @@ public class PantsUtil {
     @NotNull GeneralCommandLine command,
     @Nullable ProcessAdapter processAdapter
   ) throws ExecutionException {
-    final Process process = command.createProcess();
+    return getOutput(command.createProcess(), processAdapter);
+  }
+
+  public static ProcessOutput getOutput(@NotNull Process process, @Nullable ProcessAdapter processAdapter) {
     final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
     if (processAdapter != null) {
       processHandler.addProcessListener(processAdapter);

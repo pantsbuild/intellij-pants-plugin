@@ -7,6 +7,7 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.service.notification.ExternalSystemNotificationExtension;
 import com.intellij.openapi.externalSystem.service.notification.NotificationData;
 import com.intellij.openapi.project.Project;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsExecutionException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +27,11 @@ public class PantsNotificationCustomizer implements ExternalSystemNotificationEx
   }
 
   public void customizeExecutionException(@NotNull NotificationData notificationData, @NotNull PantsExecutionException ex) {
-    notificationData.setMessage(ex.getExecutionDetails());
+    if (ex.isTerminated()) {
+      notificationData.setBalloonNotification(true);
+      notificationData.setMessage(PantsBundle.message("pants.command.terminated"));
+    } else {
+      notificationData.setMessage(ex.getExecutionDetails());
+    }
   }
 }
