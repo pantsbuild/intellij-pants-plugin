@@ -78,7 +78,7 @@ public class PantsUtil {
   }
 
   public static boolean isBUILDFileName(@NotNull String name) {
-    return PantsConstants.BUILD.equals(FileUtil.getNameWithoutExtension(name));
+    return StringUtil.equalsIgnoreCase(PantsConstants.BUILD, FileUtil.getNameWithoutExtension(name));
   }
 
   /**
@@ -97,15 +97,14 @@ public class PantsUtil {
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
   @Nullable
-  public static String findPantsVersion(@NotNull Project project) {
-    final VirtualFile pantsIniFile = findPantsIniFile(project);
+  public static String findPantsVersion(@Nullable VirtualFile workingDir) {
+    final VirtualFile pantsIniFile = findPantsIniFile(workingDir);
     return pantsIniFile == null ? null : findVersionInFile(pantsIniFile);
   }
 
   @Nullable
-  public static VirtualFile findPantsIniFile(@NotNull Project project) {
-    final VirtualFile pantsWorkingDir = findPantsWorkingDir(project);
-    return pantsWorkingDir != null ? pantsWorkingDir.findChild(PantsConstants.PANTS_INI) : null;
+  public static VirtualFile findPantsIniFile(@Nullable VirtualFile workingDir) {
+    return workingDir != null ? workingDir.findChild(PantsConstants.PANTS_INI) : null;
   }
 
   @Nullable

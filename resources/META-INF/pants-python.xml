@@ -2,26 +2,19 @@
 <!-- Licensed under the Apache License, Version 2.0 (see LICENSE). -->
 
 <idea-plugin version="2">
+  <extensions defaultExtensionNs="com.intellij.plugins.pants">
+    <projectResolver implementation="com.twitter.intellij.pants.service.python.PythonPexResolver"/>
+  </extensions>
   <extensions defaultExtensionNs="com.intellij">
     <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
     <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>
+
+    <externalProjectDataService implementation="com.twitter.intellij.pants.service.python.PantsPexService"/>
 
     <completion.contributor language="Python"
                             implementationClass="com.twitter.intellij.pants.completion.PantsCompletionContributor"/>
 
     <psi.referenceContributor implementation="com.twitter.intellij.pants.psi.reference.PantsReferenceContributor"/>
-
-    <localInspection language="Python" shortName="PantsLibNotFound"
-                     bundle="com.twitter.intellij.pants.PantsBundle"
-                     key="pants.inspection.library.not.found"
-                     groupKey="inspections.group.name" enabledByDefault="true"
-                     implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection"/>
-
-    <localInspection language="Python" shortName="PantsLibNotConfigured"
-                     bundle="com.twitter.intellij.pants.PantsBundle"
-                     key="pants.inspection.library.not.configured"
-                     groupKey="inspections.group.name" enabledByDefault="true"
-                     implementationClass="com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection"/>
 
     <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsCompileConfigurationProducer"/>

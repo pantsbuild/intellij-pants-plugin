@@ -8,16 +8,20 @@ import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
-import com.twitter.intellij.pants.inspections.PantsLibNotConfiguredInspection;
-import com.twitter.intellij.pants.inspections.PantsLibNotFoundInspection;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
 
 abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
   private static final String PLUGINS_KEY = "idea.load.plugins.id";
@@ -87,8 +91,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
       new Runnable() {
         @Override
         public void run() {
-          PantsLibNotFoundInspection.InstallQuickFix.configureByFile(myFixture.getProject(), pexFiles[0]);
-          PantsLibNotConfiguredInspection.ConfigureLibFix.applyFix(myFixture.getProject(), myFixture.getModule());
+          configurePantsLibrary(myFixture.getProject(), pexFiles[0]);
         }
       }
     );
@@ -126,5 +129,27 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
       );
     }
     super.tearDown();
+  }
+
+  private static void configurePantsLibrary(@NotNull Project project, @NotNull VirtualFile pexFile) {
+    final VirtualFile jar = JarFileSystem.getInstance().refreshAndFindFileByPath(pexFile.getPath() + "!/");
+    assert jar != null;
+
+    final LibraryTable libraryTable = ProjectLibraryTable.getInstance(project);
+    final Library library = libraryTable.createLibrary(PantsConstants.PANTS_LIBRARY_NAME);
+    final Library.ModifiableModel modifiableModel = library.getModifiableModel();
+    modifiableModel.addRoot(jar, OrderRootType.CLASSES);
+    modifiableModel.commit();
+
+    for (Module module : ModuleManager.getInstance(project).getModules()) {
+      addLibraryDependency(module, library);
+    }
+  }
+
+  public static void addLibraryDependency(Module module, Library library) {
+    final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
+    final DependencyScope defaultScope = LibraryDependencyScopeSuggester.getDefaultScope(library);
+    modifiableModel.addLibraryEntry(library).setScope(defaultScope);
+    modifiableModel.commit();
   }
 }

@@ -21,10 +21,9 @@ public class PantsConstants {
   public static final String PANTS_PROJECT_MODULE_SUFFIX = "_module";
   public static final String PANTS_PROJECT_MODULE_ID_PREFIX = ".root.module.for.pants_";
 
-  public static final String PANTS_LIBRARY_NAME = "pants";
-
   public static final String PANTS_INI = "pants.ini";
   public static final String PANTS_PEX = "pants.pex";
+  public static final String PANTS_LIBRARY_NAME = PANTS_PEX;
 
   protected static final String BUILD = "BUILD";
   protected static final String THRIFT_EXT = "thrift";
