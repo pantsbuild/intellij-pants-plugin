@@ -9,7 +9,7 @@ import com.twitter.intellij.pants.util.PantsOutputMessage;
 import junit.framework.TestCase;
 import org.jetbrains.annotations.Nullable;
 
-public class PantsFilterTest extends TestCase {
+public class PantsOutputMessageTest extends TestCase {
 
   public void doTest(@Nullable PantsOutputMessage expected, @Nullable PantsOutputMessage actual) {
     if (expected == null) {
@@ -46,7 +46,7 @@ public class PantsFilterTest extends TestCase {
 
   public void testUrlWithLineNumberAndMessage() {
     PantsOutputMessage info = PantsOutputMessage.parseOutputMessage("/this/is/a/url:23: error: ...");
-    doTest(new PantsOutputMessage(0, 17, "/this/is/a/url", 22), info);
+    doTest(new PantsOutputMessage(0, 17, "/this/is/a/url", 22, PantsOutputMessage.Level.ERROR), info);
   }
 
   public void testUrlWithSpaceAndNumberAndMessage() {
@@ -61,7 +61,7 @@ public class PantsFilterTest extends TestCase {
 
   public void testUrlWithErrorInBrackets() {
     PantsOutputMessage info = PantsOutputMessage.parseOutputMessage("     [error] /this/is/a/url");
-    doTest(new PantsOutputMessage(13, 27, "/this/is/a/url", 0), info);
+    doTest(new PantsOutputMessage(13, 27, "/this/is/a/url", 0, PantsOutputMessage.Level.ERROR), info);
   }
 
   public void testDotFilePathHasNullFilterResult() {

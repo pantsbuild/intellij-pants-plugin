@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -112,14 +113,19 @@ public class PantsOutputMessage {
   }
 
   public static boolean isWarning(@NotNull String line) {
-    return line.contains("[warning]") || line.contains("[warn]");
+    return containsLevel(line, "warning") || containsLevel(line, "warn");
   }
 
   public static boolean isError(@NotNull String line) {
-    return line.contains("[error]");
+    return containsLevel(line, "error");
   }
 
-  public static enum Level {
+  public static boolean containsLevel(@NotNull String line, @NotNull String level) {
+    return StringUtil.containsIgnoreCase(line, "[" + level + "]") ||
+           StringUtil.containsIgnoreCase(line, level + ":");
+  }
+
+  public enum Level {
     ERROR, WARNING, INFO
   }
 }
