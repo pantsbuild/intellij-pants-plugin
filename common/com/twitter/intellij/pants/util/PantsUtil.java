@@ -40,9 +40,6 @@ import org.jetbrains.annotations.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -536,8 +533,8 @@ public class PantsUtil {
     if (filePath == null) {
       return false;
     }
-    final Path path = Paths.get(filePath);
-    return !Files.isDirectory(path) && Files.isExecutable(path);
+    final File file = new File(filePath);
+    return file.exists() && file.canExecute();
   }
 
   @NotNull
