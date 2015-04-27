@@ -280,6 +280,16 @@ public class PantsCompileOptionsExecutor {
     return true;
   }
 
+  public void bootstrapTools() throws ExecutionException {
+    final File bootstrapBuildFile = new File(getWorkingDir(), "BUILD");
+    if (!bootstrapBuildFile.exists() || !isResolveJars()) {
+      return;
+    }
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+    commandLine.addParameters("resolve", "BUILD:");
+    getProcessOutput(commandLine, null).checkSuccess(LOG);
+  }
+
   private static class MyPantsCompileOptions implements PantsCompileOptions {
 
     private final String myExternalProjectPath;

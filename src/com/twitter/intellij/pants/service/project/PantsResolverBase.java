@@ -13,6 +13,7 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.util.PantsScalaUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
@@ -59,6 +60,11 @@ public abstract class PantsResolverBase {
   public void resolve(@NotNull Consumer<String> statusConsumer, @Nullable ProcessAdapter processAdapter) {
     try {
       parse(myExecutor.loadProjectStructure(statusConsumer, processAdapter));
+      if (myProjectInfo != null && PantsScalaUtil.hasMissingScalaCompilerLibs(myProjectInfo)) {
+        // need to bootstrap tools
+        statusConsumer.consume("Bootstrapping tools...");
+        myExecutor.bootstrapTools();
+      }
     }
     catch (ExecutionException e) {
       throw new ExternalSystemException(e);
