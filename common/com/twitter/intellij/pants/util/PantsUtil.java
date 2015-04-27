@@ -534,7 +534,7 @@ public class PantsUtil {
       return false;
     }
     final File file = new File(filePath);
-    return file.exists() && file.canExecute();
+    return file.exists() && file.isFile() && file.canExecute();
   }
 
   @NotNull
