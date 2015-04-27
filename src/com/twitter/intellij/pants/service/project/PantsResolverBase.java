@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.service.project;
 
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
@@ -14,13 +13,10 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.util.PantsScalaUtil;
-import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
-import java.io.File;
 import java.io.IOException;
 
 public abstract class PantsResolverBase {
@@ -63,14 +59,6 @@ public abstract class PantsResolverBase {
   public void resolve(@NotNull Consumer<String> statusConsumer, @Nullable ProcessAdapter processAdapter) {
     try {
       parse(myExecutor.loadProjectStructure(statusConsumer, processAdapter));
-      final File bootstrapBuildFile = new File(myExecutor.getWorkingDir(), "BUILD");
-      if (myExecutor.isResolveJars() && bootstrapBuildFile.exists() && myProjectInfo != null && PantsScalaUtil.hasMissingScalaCompilerLibs(myProjectInfo)) {
-        // need to bootstrap tools
-        statusConsumer.consume("Bootstrapping tools...");
-        final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(bootstrapBuildFile.getPath());
-        commandLine.addParameters("resolve", "BUILD:");
-        PantsUtil.getCmdOutput(commandLine, null).checkSuccess(LOG);
-      }
     }
     catch (ExecutionException e) {
       throw new ExternalSystemException(e);
