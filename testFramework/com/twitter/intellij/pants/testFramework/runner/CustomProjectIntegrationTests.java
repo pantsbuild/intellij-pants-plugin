@@ -57,6 +57,7 @@ public class CustomProjectIntegrationTests extends PantsIntegrationTestCase {
     makeProject();
   }
 
+  @NotNull
   @Override
   protected File getProjectFolder() {
     final File projectWorkspaceFolder = new File(projectWorkspace);
