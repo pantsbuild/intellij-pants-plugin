@@ -9,8 +9,6 @@
     <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
     <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>
 
-    <externalProjectDataService implementation="com.twitter.intellij.pants.service.python.PantsPexService"/>
-
     <completion.contributor language="Python"
                             implementationClass="com.twitter.intellij.pants.completion.PantsCompletionContributor"/>
 
