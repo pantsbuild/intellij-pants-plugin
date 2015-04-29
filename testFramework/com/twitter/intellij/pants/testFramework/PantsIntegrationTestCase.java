@@ -184,6 +184,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return myCompilerTester;
   }
 
+  protected void assertScalaLibrary(String moduleName) throws Exception {
+    assertModuleLibDep(moduleName, "Pants: org.scala-lang:scala-library:2.10.4");
+  }
+
   protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
     assertNotNull(
       String.format("Didn't find %s class in %s module's output!", className, moduleName),
