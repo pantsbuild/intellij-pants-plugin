@@ -5,10 +5,8 @@ package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.filters.Filter;
 import com.intellij.openapi.command.impl.DummyProject;
-import com.intellij.openapi.externalSystem.test.ExternalSystemTestCase;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import junit.framework.TestCase;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
