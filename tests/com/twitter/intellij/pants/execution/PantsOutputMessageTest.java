@@ -12,8 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 public class PantsOutputMessageTest extends TestCase {
@@ -83,9 +83,9 @@ public class PantsOutputMessageTest extends TestCase {
   }
 
   public List<PantsOutputMessage> parseCompilationOutputFile(String pathToFile) throws FileNotFoundException, IOException {
-    File file = new File(pathToFile);
-    BufferedReader br = new BufferedReader(new FileReader(file));
-    List<PantsOutputMessage> list = new LinkedList<PantsOutputMessage>();
+    assertNotNull(pathToFile);
+    BufferedReader br = new BufferedReader(new FileReader(new File(pathToFile)));
+    List<PantsOutputMessage> list = new ArrayList<PantsOutputMessage>();
     for (String line; (line = br.readLine()) != null; ) {
       list.add(PantsOutputMessage.parseOutputMessage(line));
     }
