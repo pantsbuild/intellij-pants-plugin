@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
-public class PantsOutputMessage {
+public class  PantsOutputMessage {
   private final int myStart;
   private final int myEnd;
   private final int myLineNumber;
@@ -127,5 +127,31 @@ public class PantsOutputMessage {
 
   public enum Level {
     ERROR, WARNING, INFO
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    PantsOutputMessage message = (PantsOutputMessage)o;
+
+    if (myEnd != message.myEnd) return false;
+    if (myLineNumber != message.myLineNumber) return false;
+    if (myStart != message.myStart) return false;
+    if (myFilePath != null ? !myFilePath.equals(message.myFilePath) : message.myFilePath != null) return false;
+    if (myLevel != message.myLevel) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = myStart;
+    result = 31 * result + myEnd;
+    result = 31 * result + myLineNumber;
+    result = 31 * result + (myFilePath != null ? myFilePath.hashCode() : 0);
+    result = 31 * result + (myLevel != null ? myLevel.hashCode() : 0);
+    return result;
   }
 }

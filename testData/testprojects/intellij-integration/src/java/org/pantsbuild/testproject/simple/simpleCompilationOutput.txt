@@ -1,0 +1,51 @@
+20:31:41 00:00 [main]
+               (To run a reporting server: ./pants server)
+20:31:41 00:00   [bootstrap]
+20:31:41 00:00   [setup]
+20:31:41 00:00     [parse]
+               Executing tasks in goals: bootstrap -> imports -> unpack-jars -> deferred-sources -> gen -> resolve -> compile
+20:31:41 00:00   [bootstrap]
+20:31:41 00:00     [bootstrap-jvm-tools]
+20:31:41 00:00   [imports]
+20:31:41 00:00     [ivy-imports]
+20:31:41 00:00   [unpack-jars]
+20:31:41 00:00     [unpack-jars]
+20:31:41 00:00   [deferred-sources]
+20:31:41 00:00     [deferred-sources]
+20:31:41 00:00   [gen]
+20:31:41 00:00     [thrift]
+20:31:41 00:00     [protoc]
+20:31:41 00:00     [antlr]
+20:31:41 00:00     [ragel]
+20:31:41 00:00     [jaxb]
+20:31:42 00:01     [wire]
+20:31:42 00:01     [aapt]
+20:31:42 00:01   [resolve]
+20:31:42 00:01     [ivy]
+20:31:42 00:01   [compile]
+20:31:42 00:01     [compile]
+20:31:42 00:01     [jvm]
+20:31:42 00:01       [jvm-compilers]
+20:31:42 00:01         [find-deleted-sources]
+20:31:42 00:01         [prepare-analysis]
+                     Invalidated 1 target.
+20:31:42 00:01         [partition-analysis]
+                     Compiling 1 java source in 1 target (partition 1 of 1).
+20:31:42 00:01         [compile]
+20:31:42 00:01           [jmake]
+                         /home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/simple/HelloWorld.java:11: error: ';' expected
+                             System.out.println("Hello World!")
+                                                               ^
+                         Jmake version 1.3.8-10
+                         Opening project database...  Done.
+                         Recompiling source files:
+                         /home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/simple/HelloWorld.java
+                         Reading existing dependency file at /home/rushana/outreach/new9/intellij-pants-plugin/.pants.d/compile/jvm/java/jmake-depfiles/global_depfile
+                         Writing class dependency file to /home/rushana/outreach/new9/intellij-pants-plugin/.pants.d/compile/jvm/java/jmake-depfiles/global_depfile
+                         Writing project database...  Done.
+                         
+FAILURE: compilation error
+
+
+               Waiting for background workers to finish.
+               FAILURE

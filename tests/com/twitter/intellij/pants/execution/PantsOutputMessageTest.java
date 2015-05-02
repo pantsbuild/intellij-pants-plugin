@@ -5,9 +5,16 @@ package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.filters.Filter;
 import com.intellij.openapi.command.impl.DummyProject;
+import com.intellij.openapi.externalSystem.test.ExternalSystemTestCase;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import junit.framework.TestCase;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class PantsOutputMessageTest extends TestCase {
 
@@ -68,5 +75,34 @@ public class PantsOutputMessageTest extends TestCase {
     PantsFilter filter = new PantsFilter(DummyProject.getInstance());
     Filter.Result result = filter.applyFilter(".: message", 10000);
     assertNull("result", result);
+  }
+
+  protected static <T> void assertContain(List<? extends T> actual, T... expected) {
+    List expectedList = Arrays.asList(expected);
+    assertTrue("expected: " + expectedList + "\n" + "actual: " + actual.toString(), actual.containsAll(expectedList));
+  }
+
+  public List<PantsOutputMessage> parseCompilationOutputFile(String pathToFile) throws FileNotFoundException, IOException {
+    File file = new File(pathToFile);
+    BufferedReader br = new BufferedReader(new FileReader(file));
+    List<PantsOutputMessage> list = new LinkedList<PantsOutputMessage>();
+    for (String line; (line = br.readLine()) != null; ) {
+      list.add(PantsOutputMessage.parseOutputMessage(line));
+    }
+    return list;
+  }
+
+  public void testJavaSourceCompiledWithError() throws FileNotFoundException, IOException {
+    String pathToCompilationOutput = new String("testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/simple/simpleCompilationOutput.txt");
+    List<PantsOutputMessage> list = parseCompilationOutputFile(pathToCompilationOutput);
+    assertNotNull(list);
+    assertContain(
+      list, new PantsOutputMessage(
+                25,
+                179,
+                "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/simple/HelloWorld.java",
+                10,
+                PantsOutputMessage.Level.ERROR)
+    );
   }
 }
