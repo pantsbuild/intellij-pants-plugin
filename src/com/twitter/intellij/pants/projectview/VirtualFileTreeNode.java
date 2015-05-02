@@ -104,7 +104,15 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
       new Condition<VirtualFile>() {
         @Override
         public boolean value(VirtualFile file) {
-          return file.isDirectory() || !file.getName().startsWith(".");
+          if (!file.isValid()) {
+            return false;
+          }
+          //noinspection SimplifiableIfStatement
+          if (file.isDirectory()) {
+            // show even hidden folders like .pants.d and .idea
+            return true;
+          }
+          return !file.getName().startsWith(".");
         }
       }
     );

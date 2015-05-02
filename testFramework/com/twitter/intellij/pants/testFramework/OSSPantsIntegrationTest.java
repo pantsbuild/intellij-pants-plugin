@@ -26,7 +26,7 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     return Collections.singletonList(testProjects);
   }
 
-  @Nullable
+  @NotNull
   @Override
   protected File getProjectFolder() {
     final String ossPantsHome = System.getenv("OSS_PANTS_HOME");
