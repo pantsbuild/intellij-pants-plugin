@@ -134,6 +134,9 @@ public class TargetInfo {
   }
 
   public boolean isScalaTarget() {
+    if (StringUtil.equals("java_tests", getInternalPantsTargetType())) {
+      return hasScalaLib();
+    }
     return StringUtil.equals("scala_library", getInternalPantsTargetType());
   }
 
