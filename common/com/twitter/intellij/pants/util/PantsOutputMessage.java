@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
-public class  PantsOutputMessage {
+public class PantsOutputMessage {
   private final int myStart;
   private final int myEnd;
   private final int myLineNumber;
