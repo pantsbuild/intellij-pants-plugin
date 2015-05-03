@@ -124,4 +124,23 @@ public class PantsOutputMessageTest extends UsefulTestCase {
                                         19, PantsOutputMessage.Level.ERROR)
     );
   }
+
+  public void testScalaSourceCompiledWithErrors() throws FileNotFoundException, IOException {
+    final String pathToCompilationOutput = "testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/simpleCompilationOutput.txt";
+    List<PantsOutputMessage> actualList = parseCompilationOutputFile(pathToCompilationOutput);
+    assertNotNull(actualList);
+    assertContainsElements(actualList, new PantsOutputMessage(
+                                        33, 198,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/HelloWorld.scala",
+                                        12, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        33, 198,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/HelloWorld.scala",
+                                        13, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        33, 198,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/HelloWorld.scala",
+                                        18, PantsOutputMessage.Level.ERROR)
+   );
+  }
 }
