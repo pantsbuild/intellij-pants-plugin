@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -51,7 +52,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     }
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings, !isPreviewMode);
     task2executor.put(id, executor);
-    final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener);
+    final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
     task2executor.remove(id);
     return projectDataNode;
   }
@@ -60,7 +61,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   private DataNode<ProjectData> resolveProjectInfoImpl(
     @NotNull ExternalSystemTaskId id,
     @NotNull PantsCompileOptionsExecutor executor,
-    @NotNull ExternalSystemTaskNotificationListener listener
+    @NotNull ExternalSystemTaskNotificationListener listener,
+    boolean isPreviewMode
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     // todo(fkorotkov): add ability to choose a name for a project
     final ProjectData projectData = new ProjectData(
@@ -71,7 +73,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData> (ProjectKeys.PROJECT, projectData, null);
 
-    resolveUsingPantsGoal(id, executor, listener, projectDataNode);
+    if (!isPreviewMode || ApplicationManager.getApplication().isUnitTestMode()) {
+      resolveUsingPantsGoal(id, executor, listener, projectDataNode);
+    }
 
     if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
       // Add a module with content root as import project directory path.
