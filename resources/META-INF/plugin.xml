@@ -15,6 +15,7 @@
         <li>Source for libraries</li>
         <li>Ability to use a script to generate a project</li>
         <li>Canceling of a project refresh</li>
+        <li>Isolation strategy support</li>
       </ul>
       <p>1.1.3:</p>
       <ul>
