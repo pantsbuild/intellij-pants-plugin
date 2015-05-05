@@ -111,6 +111,10 @@ public class TargetInfo {
     this.target_type = target_type;
   }
 
+  public boolean hasAddress() {
+    return !getTargetAddresses().isEmpty();
+  }
+
   @NotNull
   public Set<String> getTargetAddresses() {
     return myTargetAddresses;

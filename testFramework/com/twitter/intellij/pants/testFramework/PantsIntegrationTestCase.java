@@ -64,6 +64,7 @@ import java.util.List;
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
   private static final String PLUGINS_KEY = "idea.load.plugins.id";
   private static final String PANTS_COMPILER_ENABLED = "pants.compiler.enabled";
+  private static final String isolatedPantsIniName = "pants.ini.isolated";
 
   private final boolean readOnly;
   private PantsProjectSettings myProjectSettings;
@@ -127,6 +128,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       }
 
       PantsUtil.copyDirContent(projectTemplateFolder, projectDir);
+    }
+
+    if (PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
+      final File isolatedIni = new File(PantsTestUtils.findTestPath("testData"), isolatedPantsIniName);
+      FileUtil.copy(isolatedIni, new File(projectDir, PantsConstants.PANTS_INI));
     }
   }
 

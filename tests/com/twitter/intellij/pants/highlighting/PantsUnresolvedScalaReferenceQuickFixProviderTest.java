@@ -14,6 +14,7 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.quickfix.AddPantsTargetDependencyFix;
 import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     // But in this test we also checking the difference between compiler options.
     // We are checking that we can compile the project with Pants even with a missing dependency
     // and we do not compile project with Pants again if no source files were changed.
-    if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
+    if (PantsSettings.getInstance(myProject).isCompileWithIntellij() || PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
       testIntentionIfCompilingWithIntelliJ(intention, editor, psiClass);
     } else {
       testIntentionIfCompilingWithPants(intention, editor, psiClass);

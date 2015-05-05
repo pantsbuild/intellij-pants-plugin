@@ -97,7 +97,7 @@ public class PantsResolver extends PantsResolverBase {
       addSourceRootsToContentRoots(targetAddress, targetInfo, contentRoots);
       addExcludesToContentRoots(targetInfo, contentRoots);
 
-      if (!myExecutor.isCompileWithIntellij()) {
+      if (myExecutor.isCompileWithPants()) {
         addPantsJpsCompileOutputs(targetInfo, moduleDataNode);
       }
     }
@@ -162,20 +162,39 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   private void addPantsJpsCompileOutputs(@NotNull TargetInfo targetInfo, @NotNull DataNode<ModuleData> moduleDataNode) {
-    if (PantsUtil.isResource(targetInfo.getSourcesType())) {
+    if (PantsUtil.isResource(targetInfo.getSourcesType()) || !targetInfo.hasAddress()) {
       return;
     }
-    String compilerOutputRelativePath = ".pants.d/compile/jvm/java/classes";
-    if (targetInfo.isScalaTarget() || targetInfo.hasScalaLib()) {
-      compilerOutputRelativePath = ".pants.d/compile/jvm/scala/classes";
-    }
-    else if (targetInfo.isAnnotationProcessorTarget()) {
-      compilerOutputRelativePath = ".pants.d/compile/jvm/apt/classes";
-    }
+    final String compilerOutputRelativePath =
+      myExecutor.isIsolatedStrategy() ? getIsolatedCompilerOutputPath(targetInfo) : getCompilerOutputPath(targetInfo);
     final String absoluteCompilerOutputPath = new File(myExecutor.getWorkingDir(), compilerOutputRelativePath).getPath();
     final ModuleData moduleData = moduleDataNode.getData();
     moduleData.setInheritProjectCompileOutputPath(false);
     moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, absoluteCompilerOutputPath);
+  }
+
+  @NotNull
+  private String getIsolatedCompilerOutputPath(@NotNull TargetInfo targetInfo) {
+    final String targetAddress = targetInfo.getTargetAddresses().iterator().next();
+    final String targetId = PantsUtil.getCanonicalTargetId(targetAddress);
+    if (targetInfo.isScalaTarget() || targetInfo.hasScalaLib()) {
+      return ".pants.d/compile/jvm/scala/isolated-classes/" + targetId;
+    }
+    else if (targetInfo.isAnnotationProcessorTarget()) {
+      return ".pants.d/compile/jvm/apt/isolated-classes/" + targetId;
+    }
+    return ".pants.d/compile/jvm/java/isolated-classes/" + targetId;
+  }
+
+  @NotNull
+  private String getCompilerOutputPath(@NotNull TargetInfo targetInfo) {
+    if (targetInfo.isScalaTarget() || targetInfo.hasScalaLib()) {
+      return ".pants.d/compile/jvm/scala/classes";
+    }
+    else if (targetInfo.isAnnotationProcessorTarget()) {
+      return ".pants.d/compile/jvm/apt/classes";
+    }
+    return ".pants.d/compile/jvm/java/classes";
   }
 
   private void addDependenciesToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {

@@ -310,7 +310,16 @@ public class PantsUtil {
   public static String getCanonicalModuleName(@NotNull @NonNls String targetName) {
     // Do not use ':' because it is used as a separator in a classpath
     // while running the app. As well as path separators
-    return targetName.replace(':', '_').replace('/', '_').replace('\\', '_');
+    return replaceDelimitersInTargetName(targetName, '_');
+  }
+
+  @NotNull @Nls
+  public static String getCanonicalTargetId(@NotNull @NonNls String targetName) {
+    return replaceDelimitersInTargetName(targetName, '.');
+  }
+
+  private static String replaceDelimitersInTargetName(@NotNull @NonNls String targetName, char delimeter) {
+    return targetName.replace(':', delimeter).replace('/', delimeter).replace('\\', delimeter);
   }
 
   @Nullable @NonNls
@@ -551,5 +560,9 @@ public class PantsUtil {
     int index = name.lastIndexOf('.');
     if (index < 0) return name;
     return name.substring(0, index);
+  }
+
+  public static boolean isIsolatedStrategyTestFlagEnabled() {
+    return Boolean.valueOf(System.getProperty("pants.compiler.isolated.strategy"));
   }
 }

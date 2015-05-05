@@ -10,6 +10,8 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
+import com.intellij.openapi.util.AtomicNotNullLazyValue;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -18,6 +20,7 @@ import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.PantsExecutionException;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
@@ -43,6 +46,23 @@ public class PantsCompileOptionsExecutor {
   private final boolean myResolveJars;
   private final boolean myCompileWithIntellij;
   private final List<String> myResolverExtensionClassNames;
+
+  private final NotNullLazyValue<Boolean> isolatedCompilerStrategy = new AtomicNotNullLazyValue<Boolean>() {
+    @NotNull
+    @Override
+    protected Boolean compute() {
+      final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+      commandLine.addParameters("help", "compile");
+      try {
+        final ProcessOutput processOutput = getProcessOutput(commandLine, null);
+        return StringUtil.contains(processOutput.getStdout(), "default: isolated");
+      }
+      catch (ExecutionException e) {
+        LOG.warn(e);
+        return false;
+      }
+    }
+  };
 
   @NotNull
   public static PantsCompileOptionsExecutor create(
@@ -136,6 +156,10 @@ public class PantsCompileOptionsExecutor {
 
   public boolean isResolveJars() {
     return myResolveJars;
+  }
+
+  public boolean isCompileWithPants() {
+    return !isCompileWithIntellij();
   }
 
   public boolean isCompileWithIntellij() {
@@ -288,6 +312,14 @@ public class PantsCompileOptionsExecutor {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
     commandLine.addParameters("resolve", "BUILD:");
     getProcessOutput(commandLine, null).checkSuccess(LOG);
+  }
+
+  public boolean isIsolatedStrategy() {
+    final boolean result = isolatedCompilerStrategy.getValue();
+    if (!result && ApplicationManager.getApplication().isUnitTestMode() && PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
+      throw new PantsException("Expected to use isolated strategy!");
+    }
+    return result;
   }
 
   private static class MyPantsCompileOptions implements PantsCompileOptions {
