@@ -12,23 +12,28 @@ Find "Pants Support" plugin. Install and Restart IntelliJ.
 ### Importing a Pants Project.
 Using this plugin you can import entire project or specific targets in a BUILD file.
 
-* Importing an entire project directory
-    1. Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
-    2. Select project directory
-       ![Import project from directory](images/import_dir1.png)
-    3. Choose "Pants" on the next screen
-    4. Make sure the check box "All Targets in the directory" is enabled and proceed with the wizard
+#### Importing an entire project directory
+  * Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
+  * Select project directory
+     ![Import project from directory](images/import_dir1.png)
+  * Choose "Pants" on the next screen
+  * Make sure the check box "All Targets in the directory" is enabled and proceed with the wizard
 
-* Importing targets from a BUILD File
-    1. Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
-    2. Select a Build File from within the project
-       ![Import project from BUILD file](images/import_file1.png)
-    3. Check the targets you want to Import and proceed with the wizard. (Please wait for the targets to show up)
-       ![Choose Targets](images/import_file2.png)
+#### Importing targets from a BUILD File
+  * Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
+  * Select a Build File from within the project
+     ![Import project from BUILD file](images/import_file1.png)
+  * Check the targets you want to Import and proceed with the wizard. (Please wait for the targets to show up)
+     ![Choose Targets](images/import_file2.png)
+     
+#### Importing targets from a script
+  * Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
+  * Select an executable that will use export goal to produce a desirable project structure. 
+    See [an integration test](testData/testprojects/intellij-integration/export1.sh) as an example.
        
-* Importing several BUILD files/directories(works in IntelliJ 14.1+)
-    1. Import the first directory/BUILD file
-    2. Use File -> New -> Module From Existing Sources to import next directories/BUILD files
+#### Importing several BUILD files/directories(works in IntelliJ 14.1+)
+  * Import the first directory/BUILD file
+  * Use File -> New -> Module From Existing Sources to import next directories/BUILD files
 
 Once you import the project using above steps, you will see the "Project View" with multiple modules configured.
 
