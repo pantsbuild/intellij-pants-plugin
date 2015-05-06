@@ -11,6 +11,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.util.AtomicNotNullLazyValue;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -47,19 +48,35 @@ public class PantsCompileOptionsExecutor {
   private final boolean myCompileWithIntellij;
   private final List<String> myResolverExtensionClassNames;
 
-  private final NotNullLazyValue<Boolean> isolatedCompilerStrategy = new AtomicNotNullLazyValue<Boolean>() {
+  /**
+   *  Add help-default goal to Pants to get all defaults in machine readable format
+   */
+  private final NotNullLazyValue<PantsCompilerOptions> compilerOptions = new AtomicNotNullLazyValue<PantsCompilerOptions>() {
     @NotNull
     @Override
-    protected Boolean compute() {
+    protected PantsCompilerOptions compute() {
       final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
       commandLine.addParameters("help", "compile");
       try {
         final ProcessOutput processOutput = getProcessOutput(commandLine, null);
-        return StringUtil.contains(processOutput.getStdout(), "default: isolated");
+        final boolean isIsolated = StringUtil.contains(processOutput.getStdout(), "default: isolated");
+        final List<String> stdoutLines = processOutput.getStdoutLines(true);
+        final int zincLineIndex = ContainerUtil.indexOf(
+          stdoutLines,
+          new Condition<String>() {
+            @Override
+            public boolean value(String line) {
+              return StringUtil.contains(line, "compile-zinc-java-enabled");
+            }
+          }
+        );
+        final boolean zincForJava = (zincLineIndex + 1) < stdoutLines.size() &&
+                                    StringUtil.contains(stdoutLines.get(zincLineIndex + 1), "default: True");
+        return new PantsCompilerOptions(isIsolated, zincForJava);
       }
       catch (ExecutionException e) {
         LOG.warn(e);
-        return false;
+        return new PantsCompilerOptions();
       }
     }
   };
@@ -314,8 +331,12 @@ public class PantsCompileOptionsExecutor {
     getProcessOutput(commandLine, null).checkSuccess(LOG);
   }
 
+  public boolean isCompileWithZincForJava() {
+    return compilerOptions.getValue().isCompileWithZincForJava();
+  }
+
   public boolean isIsolatedStrategy() {
-    final boolean result = isolatedCompilerStrategy.getValue();
+    final boolean result = compilerOptions.getValue().isCompileWithIsolatedStrategy();
     if (!result && ApplicationManager.getApplication().isUnitTestMode() && PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
       throw new PantsException("Expected to use isolated strategy!");
     }
@@ -367,6 +388,28 @@ public class PantsCompileOptionsExecutor {
     @Override
     public boolean isWithDependees() {
       return false;
+    }
+  }
+
+  private static class PantsCompilerOptions {
+    private final boolean compileWithIsolatedStrategy;
+    private final boolean compileWithZincForJava;
+
+    private PantsCompilerOptions() {
+      this(false, false);
+    }
+
+    private PantsCompilerOptions(boolean compileWithIsolatedStrategy, boolean compileWithZincForJava) {
+      this.compileWithIsolatedStrategy = compileWithIsolatedStrategy;
+      this.compileWithZincForJava = compileWithZincForJava;
+    }
+
+    public boolean isCompileWithIsolatedStrategy() {
+      return compileWithIsolatedStrategy;
+    }
+
+    public boolean isCompileWithZincForJava() {
+      return compileWithZincForJava;
     }
   }
 }

@@ -175,6 +175,7 @@ public class PantsResolver extends PantsResolverBase {
 
   @NotNull
   private String getIsolatedCompilerOutputPath(@NotNull TargetInfo targetInfo) {
+    final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
     final String targetAddress = targetInfo.getTargetAddresses().iterator().next();
     final String targetId = PantsUtil.getCanonicalTargetId(targetAddress);
     if (targetInfo.isScalaTarget()) {
@@ -183,18 +184,19 @@ public class PantsResolver extends PantsResolverBase {
     else if (targetInfo.isAnnotationProcessorTarget()) {
       return ".pants.d/compile/jvm/apt/isolated-classes/" + targetId;
     }
-    return ".pants.d/compile/jvm/java/isolated-classes/" + targetId;
+    return ".pants.d/compile/jvm/"+ javaOutputFolderName + "/isolated-classes/" + targetId;
   }
 
   @NotNull
   private String getCompilerOutputPath(@NotNull TargetInfo targetInfo) {
+    final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
     if (targetInfo.isScalaTarget()) {
       return ".pants.d/compile/jvm/scala/classes";
     }
     else if (targetInfo.isAnnotationProcessorTarget()) {
       return ".pants.d/compile/jvm/apt/classes";
     }
-    return ".pants.d/compile/jvm/java/classes";
+    return ".pants.d/compile/jvm/" + javaOutputFolderName + "/classes";
   }
 
   private void addDependenciesToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
