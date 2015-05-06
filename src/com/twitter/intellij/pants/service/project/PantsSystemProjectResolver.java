@@ -7,6 +7,7 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -16,12 +17,17 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationEvent;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
+import com.intellij.openapi.externalSystem.service.notification.ExternalSystemNotificationManager;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Consumer;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -31,10 +37,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
+  protected static final Logger LOG = Logger.getInstance(PantsSystemProjectResolver.class);
+
   private final Map<ExternalSystemTaskId, PantsCompileOptionsExecutor> task2executor =
     new ConcurrentHashMap<ExternalSystemTaskId, PantsCompileOptionsExecutor>();
 
@@ -60,7 +67,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   @NotNull
   private DataNode<ProjectData> resolveProjectInfoImpl(
     @NotNull ExternalSystemTaskId id,
-    @NotNull PantsCompileOptionsExecutor executor,
+    @NotNull final PantsCompileOptionsExecutor executor,
     @NotNull ExternalSystemTaskNotificationListener listener,
     boolean isPreviewMode
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
@@ -74,7 +81,26 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData> (ProjectKeys.PROJECT, projectData, null);
 
     if (!isPreviewMode || ApplicationManager.getApplication().isUnitTestMode()) {
-      resolveUsingPantsGoal(id, executor, listener, projectDataNode);
+      try {
+        resolveUsingPantsGoal(id, executor, listener, projectDataNode);
+      }
+      catch (ExternalSystemException e) {
+        final Project project = ContainerUtil.find(
+          ProjectManager.getInstance().getOpenProjects(),
+          new Condition<Project>() {
+            @Override
+            public boolean value(Project project) {
+              return StringUtil.equals(project.getName(), executor.getProjectName());
+            }
+          }
+        );
+        if (project == null) {
+          LOG.error(e);
+        } else {
+          final ExternalSystemNotificationManager notificationManager = ExternalSystemNotificationManager.getInstance(project);
+          notificationManager.processExternalProjectRefreshError(e, project.getName(), PantsConstants.SYSTEM_ID);
+        }
+      }
     }
 
     if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
