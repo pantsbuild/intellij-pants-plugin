@@ -64,6 +64,10 @@ public class TargetInfo {
    */
   protected String target_type;
   /**
+   * Target type.
+   */
+  protected Globs globs;
+  /**
    * Target addresses.
    */
   private Set<String> myTargetAddresses;
@@ -91,6 +95,15 @@ public class TargetInfo {
 
   public void setTargets(Set<String> targets) {
     this.targets = targets;
+  }
+
+  @NotNull
+  public Globs getGlobs() {
+    return globs != null ? globs : Globs.EMPTY;
+  }
+
+  public void setGlobs(Globs globs) {
+    this.globs = globs;
   }
 
   @NotNull
@@ -138,14 +151,15 @@ public class TargetInfo {
   }
 
   public boolean isScalaTarget() {
-    if (StringUtil.equals("java_tests", getInternalPantsTargetType())) {
-      return hasScalaLib();
-    }
-    return StringUtil.equals("scala_library", getInternalPantsTargetType());
+    return StringUtil.equals("scala_library", getInternalPantsTargetType()) || hasScalaLib() || hasScalaSources();
   }
 
   public boolean isAnnotationProcessorTarget() {
     return StringUtil.equals("annotation_processor", getInternalPantsTargetType());
+  }
+
+  public boolean hasScalaSources() {
+    return getGlobs().hasFileExtension("scala");
   }
 
   public boolean hasScalaLib() {

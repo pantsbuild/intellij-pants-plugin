@@ -177,7 +177,7 @@ public class PantsResolver extends PantsResolverBase {
   private String getIsolatedCompilerOutputPath(@NotNull TargetInfo targetInfo) {
     final String targetAddress = targetInfo.getTargetAddresses().iterator().next();
     final String targetId = PantsUtil.getCanonicalTargetId(targetAddress);
-    if (targetInfo.isScalaTarget() || targetInfo.hasScalaLib()) {
+    if (targetInfo.isScalaTarget()) {
       return ".pants.d/compile/jvm/scala/isolated-classes/" + targetId;
     }
     else if (targetInfo.isAnnotationProcessorTarget()) {
@@ -188,7 +188,7 @@ public class PantsResolver extends PantsResolverBase {
 
   @NotNull
   private String getCompilerOutputPath(@NotNull TargetInfo targetInfo) {
-    if (targetInfo.isScalaTarget() || targetInfo.hasScalaLib()) {
+    if (targetInfo.isScalaTarget()) {
       return ".pants.d/compile/jvm/scala/classes";
     }
     else if (targetInfo.isAnnotationProcessorTarget()) {

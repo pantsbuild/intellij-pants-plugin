@@ -7,6 +7,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
@@ -46,6 +48,13 @@ public class ScalaSdkResolver implements PantsResolverExtension {
       }
     }
 
+    final String defaultScalaLibId = ContainerUtil.getFirstItem(scalaLibId2Jars.keySet());
+
+    if (defaultScalaLibId == null) {
+      // no scala libs - no problems
+      return;
+    }
+
     final Map<String, LibraryData> scalaLibId2Data = new HashMap<String, LibraryData>();
     for (Map.Entry<String, Set<String>> entry : scalaLibId2Jars.entrySet()) {
       final String scalaLibraryId = entry.getKey();
@@ -65,8 +74,8 @@ public class ScalaSdkResolver implements PantsResolverExtension {
       final String mainTarget = entry.getKey();
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
       final TargetInfo targetInfo = entry.getValue();
-      String scalaLibId = targetInfo.findScalaLibId();
-      if (moduleDataNode != null && scalaLibId != null && !scalaLibId2Data.isEmpty()) {
+      if (moduleDataNode != null && targetInfo.isScalaTarget()) {
+        String scalaLibId = StringUtil.notNullize(targetInfo.findScalaLibId(), defaultScalaLibId);
         LibraryData libraryData = scalaLibId2Data.get(scalaLibId);
 
         if (libraryData == null) {
