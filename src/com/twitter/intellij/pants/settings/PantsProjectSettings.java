@@ -13,7 +13,7 @@ import java.util.List;
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargets = ContainerUtilRt.newArrayList();
   private boolean myWithDependees;
-  private boolean myLibsWithSources = true;
+  private boolean myLibsWithSources;
 
   @NotNull
   @Override

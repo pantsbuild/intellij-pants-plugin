@@ -7,6 +7,10 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.2.2:</p>
+      <ul>
+        <li>Setting to choose whether to download sources for libraries</li>
+      </ul>
       <p>1.2:</p>
       <ul>
         <li>Incremental compilation of targets that were changed</li>
@@ -91,7 +95,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
