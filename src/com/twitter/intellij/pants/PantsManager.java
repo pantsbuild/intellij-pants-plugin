@@ -137,7 +137,7 @@ public class PantsManager implements
 
         if (absoluteTargetAddress != null) {
           return new PantsExecutionSettings(
-            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, compileWithIntellij
+            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, compileWithIntellij, true
           );
         }
 
@@ -148,8 +148,10 @@ public class PantsManager implements
                                      ((PantsProjectSettings)projectSettings).getTargetNames() : Collections.<String>emptyList();
         final boolean withDependees = projectSettings instanceof PantsProjectSettings &&
                                       ((PantsProjectSettings)projectSettings).isWithDependees();
+        final boolean libsWithSources = projectSettings instanceof PantsProjectSettings &&
+                                        ((PantsProjectSettings)projectSettings).isLibsWithSources();
 
-        return new PantsExecutionSettings(targets, withDependees, compileWithIntellij);
+        return new PantsExecutionSettings(targets, withDependees, compileWithIntellij, libsWithSources);
       }
     };
   }

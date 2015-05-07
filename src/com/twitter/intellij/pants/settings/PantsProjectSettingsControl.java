@@ -34,6 +34,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   private CheckBoxList<String> myTargets;
   private JBCheckBox myWithDependeesCheckBox;
+  private JBCheckBox myLibsWithSourcesCheckBox;
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
     super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
@@ -46,6 +47,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
     myWithDependeesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.dependees"));
     content.add(myWithDependeesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+
+    myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources"));
+    myLibsWithSourcesCheckBox.setSelected(true);
+    content.add(myLibsWithSourcesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
     content.add(targetsLabel, ExternalSystemUiUtil.getLabelConstraints(indentLevel));
     content.add(myTargets, ExternalSystemUiUtil.getFillLineConstraints(0));
@@ -122,6 +127,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
     final List<String> result = new ArrayList<String>();
     settings.setWithDependees(myWithDependeesCheckBox.isSelected());
+    settings.setLibsWithSources(myLibsWithSourcesCheckBox.isSelected());
     for (int i = 0; i < myTargets.getItemsCount(); i++) {
       String target = myTargets.getItemAt(i);
       if (myTargets.isItemSelected(target)) {

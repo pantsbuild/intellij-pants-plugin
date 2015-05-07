@@ -13,6 +13,7 @@ import java.util.List;
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargets = ContainerUtilRt.newArrayList();
   private boolean myWithDependees;
+  private boolean myLibsWithSources = true;
 
   @NotNull
   @Override
@@ -28,6 +29,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     if (receiver instanceof PantsProjectSettings) {
       ((PantsProjectSettings)receiver).setWithDependees(isWithDependees());
       ((PantsProjectSettings)receiver).setTargetNames(getTargetNames());
+      ((PantsProjectSettings)receiver).setLibsWithSources(isLibsWithSources());
     }
   }
 
@@ -48,5 +50,13 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   @Override
   public boolean isWithDependees() {
     return myWithDependees;
+  }
+
+  public boolean isLibsWithSources() {
+    return myLibsWithSources;
+  }
+
+  public void setLibsWithSources(boolean libsWithSources) {
+    myLibsWithSources = libsWithSources;
   }
 }
