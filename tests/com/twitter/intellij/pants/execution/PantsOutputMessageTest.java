@@ -5,11 +5,16 @@ package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.filters.Filter;
 import com.intellij.openapi.command.impl.DummyProject;
+import com.intellij.openapi.util.io.FileUtil;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
-import junit.framework.TestCase;
+import com.intellij.testFramework.UsefulTestCase;
 import org.jetbrains.annotations.Nullable;
 
-public class PantsOutputMessageTest extends TestCase {
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PantsOutputMessageTest extends UsefulTestCase {
 
   public void doTest(@Nullable PantsOutputMessage expected, @Nullable PantsOutputMessage actual) {
     if (expected == null) {
@@ -68,5 +73,74 @@ public class PantsOutputMessageTest extends TestCase {
     PantsFilter filter = new PantsFilter(DummyProject.getInstance());
     Filter.Result result = filter.applyFilter(".: message", 10000);
     assertNull("result", result);
+  }
+
+  public List<PantsOutputMessage> parseCompilationOutputFile(String pathToFile) throws FileNotFoundException, IOException {
+    assertNotNull(pathToFile);
+    final List<String> lines = FileUtil.loadLines(new File(pathToFile));
+    assertNotNull(lines);
+    List<PantsOutputMessage> list = new ArrayList<PantsOutputMessage>();
+    for (String line : lines) {
+      list.add(PantsOutputMessage.parseOutputMessage(line));
+    }
+    return list;
+  }
+
+  public void testJavaSourceCompiledWithErrors() throws FileNotFoundException, IOException {
+    final String pathToCompilationOutput = "testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/failures/simple/simpleCompilationOutput.txt";
+    List<PantsOutputMessage> actualList = parseCompilationOutputFile(pathToCompilationOutput);
+    assertNotNull(actualList);
+    assertContainsElements(actualList, new PantsOutputMessage(
+                                        25, 188,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/failures/simple/HelloWorld.java",
+                                        10, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        25, 188,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/failures/simple/HelloWorld.java",
+                                        16, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        25, 188,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/failures/simple/HelloWorld.java",
+                                        16, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        25, 188,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/failures/simple/HelloWorld.java",
+                                        16, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        25, 188,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/failures/simple/HelloWorld.java",
+                                        16, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        25, 188,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/failures/simple/HelloWorld.java",
+                                        16, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        25, 188,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/failures/simple/HelloWorld.java",
+                                        17, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        25, 188,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/java/org/pantsbuild/testproject/failures/simple/HelloWorld.java",
+                                        19, PantsOutputMessage.Level.ERROR)
+    );
+  }
+
+  public void testScalaSourceCompiledWithErrors() throws FileNotFoundException, IOException {
+    final String pathToCompilationOutput = "testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/simpleCompilationOutput.txt";
+    List<PantsOutputMessage> actualList = parseCompilationOutputFile(pathToCompilationOutput);
+    assertNotNull(actualList);
+    assertContainsElements(actualList, new PantsOutputMessage(
+                                        33, 198,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/HelloWorld.scala",
+                                        12, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        33, 198,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/HelloWorld.scala",
+                                        13, PantsOutputMessage.Level.ERROR),
+                                       new PantsOutputMessage(
+                                        33, 198,
+                                        "/home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/HelloWorld.scala",
+                                        18, PantsOutputMessage.Level.ERROR)
+   );
   }
 }

@@ -1,0 +1,52 @@
+18:53:20 00:00 [main]
+               (To run a reporting server: ./pants server)
+18:53:20 00:00   [bootstrap]
+18:53:20 00:00   [setup]
+18:53:20 00:00     [parse]
+               Executing tasks in goals: bootstrap -> imports -> unpack-jars -> deferred-sources -> gen -> resolve -> compile -> resources -> test
+18:53:20 00:00   [bootstrap]
+18:53:20 00:00     [bootstrap-jvm-tools]
+18:53:20 00:00   [imports]
+18:53:20 00:00     [ivy-imports]
+18:53:20 00:00   [unpack-jars]
+18:53:20 00:00     [unpack-jars]
+18:53:20 00:00   [deferred-sources]
+18:53:20 00:00     [deferred-sources]
+18:53:20 00:00   [gen]
+18:53:20 00:00     [thrift]
+18:53:20 00:00     [protoc]
+18:53:20 00:00     [antlr]
+18:53:20 00:00     [ragel]
+18:53:20 00:00     [jaxb]
+18:53:20 00:00     [wire]
+18:53:20 00:00     [aapt]
+18:53:20 00:00   [resolve]
+18:53:20 00:00     [ivy]
+18:53:20 00:00   [compile]
+18:53:20 00:00     [compile]
+18:53:20 00:00     [jvm]
+18:53:20 00:00       [jvm-compilers]
+18:53:20 00:00         [find-deleted-sources]
+18:53:20 00:00         [prepare-analysis]
+                     Invalidated 1 target.
+                     Compiling 1 scala source in 1 target (partition 1 of 1).
+18:53:20 00:00         [compile]
+18:53:20 00:00           [zinc]
+                         [info] Compiling 1 Scala source to /home/rushana/outreach/new9/intellij-pants-plugin/.pants.d/compile/jvm/scala/classes...
+                         [error] /home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/HelloWorld.scala:13: illegal start of simple expression
+                         [error]     if () /* missed brackets: {} */
+                         [error]         ^
+                         [error] /home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/HelloWorld.scala:14: ')' expected but '}' found.
+                         [error]   }
+                         [error]   ^
+                         [error] /home/rushana/outreach/new9/intellij-pants-plugin/testData/testprojects/intellij-integration/src/scala/org/pantsbuild/testproject/failures/simple/HelloWorld.scala:19: Missing closing brace `}' assumed here
+                         [error] }
+                         [error] ^
+                         [error] three errors found
+                         [error] Compile failed at 03.05.2015 17:53:21 [0.221s]
+                         
+FAILURE: Zinc compile failed.
+
+
+               Waiting for background workers to finish.
+               FAILURE
