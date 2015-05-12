@@ -151,7 +151,7 @@ public class TargetInfo {
   }
 
   public boolean isScalaTarget() {
-    return StringUtil.equals("scala_library", getInternalPantsTargetType()) || hasScalaLib() || hasScalaSources();
+    return StringUtil.equals("scala_library", getInternalPantsTargetType()) || hasScalaSources();
   }
 
   public boolean isAnnotationProcessorTarget() {
