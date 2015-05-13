@@ -152,8 +152,10 @@ public class PantsResolver extends PantsResolverBase {
             }
           }
         );
-        LOG.error(targetAddress + ": found source root: " +
-                  root.getSourceRootRegardingSourceType(targetInfo.getSourcesType()) + " outside content roots: " + contentRootPaths);
+        LOG.error(
+          targetAddress + ": found source root: " +
+          root.getSourceRootRegardingSourceType(targetInfo.getSourcesType()) + " outside content roots: " + contentRootPaths
+        );
         continue;
       }
 
@@ -165,26 +167,40 @@ public class PantsResolver extends PantsResolverBase {
     if (PantsUtil.isResource(targetInfo.getSourcesType()) || !targetInfo.hasAddress()) {
       return;
     }
-    final String compilerOutputRelativePath =
-      myExecutor.isIsolatedStrategy() ? getIsolatedCompilerOutputPath(targetInfo) : getCompilerOutputPath(targetInfo);
-    final String absoluteCompilerOutputPath = new File(myExecutor.getWorkingDir(), compilerOutputRelativePath).getPath();
+    final String compilerOutputPath = myExecutor.isIsolatedStrategy() ?
+                                      getIsolatedCompilerOutputPath(targetInfo) :
+                                      myExecutor.getAbsolutePathFromWorkingDir(getCompilerOutputPath(targetInfo));
     final ModuleData moduleData = moduleDataNode.getData();
     moduleData.setInheritProjectCompileOutputPath(false);
-    moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, absoluteCompilerOutputPath);
+    moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, compilerOutputPath);
   }
 
   @NotNull
-  private String getIsolatedCompilerOutputPath(@NotNull TargetInfo targetInfo) {
-    final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
-    final String targetAddress = targetInfo.getTargetAddresses().iterator().next();
-    final String targetId = PantsUtil.getCanonicalTargetId(targetAddress);
-    if (targetInfo.isScalaTarget()) {
-      return ".pants.d/compile/jvm/scala/isolated-classes/" + targetId;
-    }
-    else if (targetInfo.isAnnotationProcessorTarget()) {
-      return ".pants.d/compile/jvm/apt/isolated-classes/" + targetId;
-    }
-    return ".pants.d/compile/jvm/"+ javaOutputFolderName + "/isolated-classes/" + targetId;
+  private String getIsolatedCompilerOutputPath(@NotNull final TargetInfo targetInfo) {
+    return StringUtil.join(
+      ContainerUtil.map(
+        targetInfo.getTargetAddresses(),
+        new Function<String, String>() {
+          @Override
+          public String fun(String targetAddress) {
+            return myExecutor.getAbsolutePathFromWorkingDir(relativePath(targetAddress));
+          }
+
+          private String relativePath(String targetAddress) {
+            final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
+            final String targetId = PantsUtil.getCanonicalTargetId(targetAddress);
+            if (targetInfo.isScalaTarget()) {
+              return ".pants.d/compile/jvm/scala/isolated-classes/" + targetId;
+            }
+            else if (targetInfo.isAnnotationProcessorTarget()) {
+              return ".pants.d/compile/jvm/apt/isolated-classes/" + targetId;
+            }
+            return ".pants.d/compile/jvm/"+ javaOutputFolderName + "/isolated-classes/" + targetId;
+          }
+        }
+      ),
+      ":"
+    );
   }
 
   @NotNull

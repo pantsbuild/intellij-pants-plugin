@@ -350,6 +350,10 @@ public class PantsCompileOptionsExecutor {
     return result;
   }
 
+  public String getAbsolutePathFromWorkingDir(@NotNull String relativePath) {
+    return new File(getWorkingDir(), relativePath).getPath();
+  }
+
   private static class MyPantsCompileOptions implements PantsCompileOptions {
 
     private final String myExternalProjectPath;

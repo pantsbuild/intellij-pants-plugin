@@ -101,23 +101,23 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           notificationManager.processExternalProjectRefreshError(e, project.getName(), PantsConstants.SYSTEM_ID);
         }
       }
-    }
 
-    if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
-      // Add a module with content root as import project directory path.
-      // This will allow all the files in the imported project directory will be indexed by the plugin.
-      final String moduleName = PantsUtil.getCanonicalModuleName(executor.getProjectRelativePath());
-      final ModuleData moduleData = new ModuleData(
-        PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX + moduleName,
-        PantsConstants.SYSTEM_ID,
-        ModuleTypeId.JAVA_MODULE,
-        moduleName + PantsConstants.PANTS_PROJECT_MODULE_SUFFIX,
-        projectData.getIdeProjectFileDirectoryPath() + "/" + moduleName,
-        executor.getProjectPath()
-      );
-      final DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
-      final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, executor.getProjectDir());
-      moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
+      if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
+        // Add a module with content root as import project directory path.
+        // This will allow all the files in the imported project directory will be indexed by the plugin.
+        final String moduleName = PantsUtil.getCanonicalModuleName(executor.getProjectRelativePath());
+        final ModuleData moduleData = new ModuleData(
+          PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX + moduleName,
+          PantsConstants.SYSTEM_ID,
+          ModuleTypeId.JAVA_MODULE,
+          moduleName + PantsConstants.PANTS_PROJECT_MODULE_SUFFIX,
+          projectData.getIdeProjectFileDirectoryPath() + "/" + moduleName,
+          executor.getProjectPath()
+        );
+        final DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
+        final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, executor.getProjectDir());
+        moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
+      }
     }
 
     return projectDataNode;
