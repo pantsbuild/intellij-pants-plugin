@@ -121,8 +121,8 @@ public class PantsOutputMessage {
   }
 
   public static boolean containsLevel(@NotNull String line, @NotNull String level) {
-    return StringUtil.containsIgnoreCase(line, "[" + level + "]") ||
-           StringUtil.containsIgnoreCase(line, " " + level + ":");
+    return StringUtil.contains(line, "[" + level + "]") ||
+           StringUtil.contains(line, " " + level + ":");
   }
 
   public enum Level {
