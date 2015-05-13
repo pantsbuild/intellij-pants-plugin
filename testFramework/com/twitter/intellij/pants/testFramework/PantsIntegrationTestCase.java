@@ -206,15 +206,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
     final CompilerModuleExtension moduleExtension =
       ModuleRootManager.getInstance(getModule(moduleName)).getModuleExtension(CompilerModuleExtension.class);
-    final File classFile =
-      new File(new File(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl())), className.replace('.', '/') + ".class");
-    if (classFile.exists()) {
-      return classFile;
-    }
-    final File testClassFile =
-      new File(new File(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests())), className.replace('.', '/') + ".class");
-    if (testClassFile.exists()) {
-      return testClassFile;
+    final String compilerOutputPaths = VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl());
+    for (String compilerOutputPath : StringUtil.split(compilerOutputPaths, ":")) {
+      final File classFile = new File(new File(compilerOutputPath), className.replace('.', '/') + ".class");
+      if (classFile.exists()) {
+        return classFile;
+      }
+      final File testClassFile =
+        new File(new File(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests())), className.replace('.', '/') + ".class");
+      if (testClassFile.exists()) {
+        return testClassFile;
+      }
     }
     return null;
   }
