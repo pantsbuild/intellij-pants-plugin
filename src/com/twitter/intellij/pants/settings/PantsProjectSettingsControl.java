@@ -81,14 +81,22 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     if (file.isDirectory()) {
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(true);
+
+      myLibsWithSourcesCheckBox.setEnabled(true);
     } else if (PantsUtil.isExecutable(file.getPath())) {
       myTargets.setEnabled(false);
 
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(false);
+
+      myLibsWithSourcesCheckBox.setSelected(false);
+      myLibsWithSourcesCheckBox.setEnabled(false);
     } else {
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(true);
+
+      myLibsWithSourcesCheckBox.setEnabled(true);
+
       loadTargets(projectPath);
     }
   }
@@ -143,6 +151,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(projectUrl);
     if (file == null) {
       throw new ConfigurationException(PantsBundle.message("pants.error.file.not.exists"));
+    }
+    if (PantsUtil.isExecutable(file.getPath())) {
+      return true;
     }
     if (!PantsUtil.isPantsProjectFolder(file)) {
       throw new ConfigurationException(PantsBundle.message("pants.error.not.build.file.path.or.directory"));
