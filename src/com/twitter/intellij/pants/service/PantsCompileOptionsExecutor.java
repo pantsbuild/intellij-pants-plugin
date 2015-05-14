@@ -122,7 +122,17 @@ public class PantsCompileOptionsExecutor {
       true,
       false,
       Collections.<String>emptyList()
-    );
+    ) {
+      @Override
+      public boolean isCompileWithZincForJava() {
+        return false;
+      }
+
+      @Override
+      public boolean isIsolatedStrategy() {
+        return false;
+      }
+    };
   }
 
   private PantsCompileOptionsExecutor(

@@ -6,8 +6,10 @@ package com.twitter.intellij.pants.service.project.modifier;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -18,7 +20,15 @@ public class PantsUnsupportedTargetsModifier implements PantsProjectInfoModifier
     new Condition<TargetInfo>() {
       @Override
       public boolean value(TargetInfo info) {
-        final String internalPantsTargetType = info.getInternalPantsTargetType();
+        return ContainerUtil.exists(info.getAddressInfos(), SUPPORTED_TARGET_ADDRESSES_CONDITION);
+      }
+    };
+
+  private static final Condition<TargetAddressInfo> SUPPORTED_TARGET_ADDRESSES_CONDITION =
+    new Condition<TargetAddressInfo>() {
+      @Override
+      public boolean value(TargetAddressInfo addressInfo) {
+        final String internalPantsTargetType = addressInfo.getInternalPantsTargetType();
         // internalPantsTargetType is empty for old depmap version
         return StringUtil.isEmpty(internalPantsTargetType) ||
                PantsConstants.SUPPORTED_TARGET_TYPES.contains(internalPantsTargetType);

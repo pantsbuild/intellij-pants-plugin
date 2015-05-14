@@ -13,10 +13,7 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
-import com.twitter.intellij.pants.service.project.model.LibraryInfo;
-import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.service.project.model.SourceRoot;
-import com.twitter.intellij.pants.service.project.model.TargetInfo;
+import com.twitter.intellij.pants.service.project.model.*;
 import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -228,12 +225,10 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
     private Set<String> libraries = new HashSet<String>();
     private Set<String> targets = new HashSet<String>();
     private Set<SourceRoot> roots = new HashSet<SourceRoot>();
-    private String target_type = PantsSourceType.SOURCE.toString();
-    private Boolean is_code_gen = false;
 
     @Override
     public TargetInfo build() {
-      return new TargetInfo(libraries, targets, roots, target_type, null, is_code_gen);
+      return new TargetInfo(Collections.singleton(new TargetAddressInfo()), libraries, targets, roots);
     }
 
     public TargetInfoBuilder withRoot(@Nls String rootRelativePath, @Nullable String packagePrefix) {

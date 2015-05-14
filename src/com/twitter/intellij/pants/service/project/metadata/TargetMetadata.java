@@ -9,6 +9,8 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 public class TargetMetadata extends AbstractExternalEntityData {
@@ -36,7 +38,7 @@ public class TargetMetadata extends AbstractExternalEntityData {
     return myTargetAddresses;
   }
 
-  public void setTargetAddresses(Set<String> targetAddresses) {
-    myTargetAddresses = targetAddresses;
+  public void setTargetAddresses(Collection<String> targetAddresses) {
+    myTargetAddresses = new HashSet<String>(targetAddresses);
   }
 }

@@ -3,21 +3,20 @@
 
 package com.twitter.intellij.pants.service.project.model;
 
-import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 public class ProjectInfo {
   public static ProjectInfo fromJson(@NotNull String data) {
-    final ProjectInfo projectInfo = new Gson().fromJson(data, ProjectInfo.class);
+    final GsonBuilder builder = new GsonBuilder();
+    builder.registerTypeAdapter(TargetInfo.class, TargetInfoDeserializer.INSTANCE);
+    final ProjectInfo projectInfo = builder.create().fromJson(data, ProjectInfo.class);
     projectInfo.initTargetAddresses();
     return projectInfo;
   }
@@ -94,7 +93,9 @@ public class ProjectInfo {
     for (Map.Entry<String, TargetInfo> entry : targets.entrySet()) {
       final TargetInfo info = entry.getValue();
       final String address = entry.getKey();
-      info.setTargetAddresses(ContainerUtil.set(address));
+      for (TargetAddressInfo addressInfo : info.getAddressInfos()) {
+        addressInfo.setTargetAddress(address);
+      }
     }
   }
 

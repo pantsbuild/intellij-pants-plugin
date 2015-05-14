@@ -21,6 +21,7 @@ import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsScalaUtil;
@@ -159,60 +160,77 @@ public class PantsResolver extends PantsResolverBase {
         continue;
       }
 
-      addSourceRoot(contentRootAncestorOfRoot, root, targetInfo.getTargetType());
+      addSourceRoot(contentRootAncestorOfRoot, root, targetInfo.getSourcesType());
     }
   }
 
   private void addPantsJpsCompileOutputs(@NotNull TargetInfo targetInfo, @NotNull DataNode<ModuleData> moduleDataNode) {
-    if (PantsUtil.isResource(targetInfo.getSourcesType()) || !targetInfo.hasAddress()) {
+    if (PantsUtil.isResource(targetInfo.getSourcesType()) || targetInfo.isDummy()) {
       return;
     }
     final String compilerOutputPath = myExecutor.isIsolatedStrategy() ?
                                       getIsolatedCompilerOutputPath(targetInfo) :
-                                      myExecutor.getAbsolutePathFromWorkingDir(getCompilerOutputPath(targetInfo));
+                                      getCompilerOutputPath(targetInfo);
     final ModuleData moduleData = moduleDataNode.getData();
     moduleData.setInheritProjectCompileOutputPath(false);
     moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, compilerOutputPath);
   }
 
   @NotNull
-  private String getIsolatedCompilerOutputPath(@NotNull final TargetInfo targetInfo) {
-    return StringUtil.join(
-      ContainerUtil.map(
-        targetInfo.getTargetAddresses(),
-        new Function<String, String>() {
-          @Override
-          public String fun(String targetAddress) {
-            return myExecutor.getAbsolutePathFromWorkingDir(relativePath(targetAddress));
+  private String getIsolatedCompilerOutputPath(@NotNull TargetInfo targetInfo) {
+    return getOutputPaths(
+      targetInfo,
+      new Function<TargetAddressInfo, String>() {
+        @Override
+        public String fun(TargetAddressInfo targetAddressInfo) {
+          final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
+          final String targetId = targetAddressInfo.getCanonicalId();
+          if (targetAddressInfo.isScala()) {
+            return ".pants.d/compile/jvm/scala/isolated-classes/" + targetId;
           }
-
-          private String relativePath(String targetAddress) {
-            final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
-            final String targetId = PantsUtil.getCanonicalTargetId(targetAddress);
-            if (targetInfo.isScalaTarget()) {
-              return ".pants.d/compile/jvm/scala/isolated-classes/" + targetId;
-            }
-            else if (targetInfo.isAnnotationProcessorTarget()) {
-              return ".pants.d/compile/jvm/apt/isolated-classes/" + targetId;
-            }
-            return ".pants.d/compile/jvm/"+ javaOutputFolderName + "/isolated-classes/" + targetId;
+          else if (targetAddressInfo.isAnnotationProcessor()) {
+            return ".pants.d/compile/jvm/apt/isolated-classes/" + targetId;
           }
+          return ".pants.d/compile/jvm/" + javaOutputFolderName + "/isolated-classes/" + targetId;
         }
-      ),
-      ":"
+      }
     );
   }
 
   @NotNull
   private String getCompilerOutputPath(@NotNull TargetInfo targetInfo) {
-    final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
-    if (targetInfo.isScalaTarget()) {
-      return ".pants.d/compile/jvm/scala/classes";
-    }
-    else if (targetInfo.isAnnotationProcessorTarget()) {
-      return ".pants.d/compile/jvm/apt/classes";
-    }
-    return ".pants.d/compile/jvm/" + javaOutputFolderName + "/classes";
+    return getOutputPaths(
+      targetInfo,
+      new Function<TargetAddressInfo, String>() {
+        @Override
+        public String fun(TargetAddressInfo targetAddressInfo) {
+          final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
+          if (targetAddressInfo.isScala()) {
+            return ".pants.d/compile/jvm/scala/classes";
+          }
+          else if (targetAddressInfo.isAnnotationProcessor()) {
+            return ".pants.d/compile/jvm/apt/classes";
+          }
+          return ".pants.d/compile/jvm/" + javaOutputFolderName + "/classes";
+        }
+      }
+    );
+  }
+
+  @NotNull
+  private String getOutputPaths(@NotNull TargetInfo targetInfo, final Function<TargetAddressInfo, String> relativePathFun) {
+    return StringUtil.join(
+      ContainerUtil.map(
+        targetInfo.getAddressInfos(),
+        new Function<TargetAddressInfo, String>() {
+          @Override
+          public String fun(TargetAddressInfo targetAddressInfo) {
+            return myExecutor.getAbsolutePathFromWorkingDir(relativePathFun.fun(targetAddressInfo));
+          }
+        }
+      ),
+      ":"
+    );
   }
 
   private void addDependenciesToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
@@ -336,9 +354,8 @@ public class PantsResolver extends PantsResolverBase {
     }
   }
 
-  private void addSourceRoot(@NotNull ContentRootData contentRoot, @NotNull SourceRoot root, @Nullable String targetType) {
+  private void addSourceRoot(@NotNull ContentRootData contentRoot, @NotNull SourceRoot root, @NotNull PantsSourceType rootType) {
     try {
-      final PantsSourceType rootType = PantsUtil.getSourceTypeForTargetType(targetType);
       final String packagePrefix = PantsUtil.isResource(rootType) ? null : root.getPackagePrefix();
       contentRoot.storePath(
         rootType.toExternalSystemSourceType(),
@@ -433,7 +450,17 @@ public class PantsResolver extends PantsResolverBase {
 
     final TargetMetadata metadata = new TargetMetadata(PantsConstants.SYSTEM_ID);
     metadata.setModuleName(moduleName);
-    metadata.setTargetAddresses(targetInfo.getTargetAddresses());
+    metadata.setTargetAddresses(
+      ContainerUtil.map(
+        targetInfo.getAddressInfos(),
+        new Function<TargetAddressInfo, String>() {
+          @Override
+          public String fun(TargetAddressInfo info) {
+            return info.getTargetAddress();
+          }
+        }
+      )
+    );
     moduleDataNode.createChild(TargetMetadata.KEY, metadata);
 
     return moduleDataNode;
