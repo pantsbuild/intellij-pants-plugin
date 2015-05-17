@@ -136,6 +136,7 @@
     <projectInfoModifier order="first" implementation="com.twitter.intellij.pants.service.project.modifier.PantsUnsupportedTargetsModifier"/>
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCyclicDependenciesModifier"/>
     <projectInfoModifier order="last" implementation="com.twitter.intellij.pants.service.project.modifier.PantsCommonSourceRootModifier"/>
+    <projectInfoModifier order="last" implementation="com.twitter.intellij.pants.service.project.modifier.PantsInlineJarLibrariesModifier"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

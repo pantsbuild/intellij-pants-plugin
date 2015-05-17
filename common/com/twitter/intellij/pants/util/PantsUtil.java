@@ -40,10 +40,7 @@ import org.jetbrains.annotations.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
@@ -564,5 +561,15 @@ public class PantsUtil {
 
   public static boolean isIsolatedStrategyTestFlagEnabled() {
     return Boolean.valueOf(System.getProperty("pants.compiler.isolated.strategy"));
+  }
+
+  @Contract(pure=true)
+  public static <T> boolean forall(@NotNull Iterable<T> iterable, @NotNull Condition<T> condition) {
+    for (T value : iterable) {
+      if(!condition.value(value)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

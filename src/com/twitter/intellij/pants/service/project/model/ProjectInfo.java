@@ -71,6 +71,7 @@ public class ProjectInfo {
     return null;
   }
 
+  @Nullable
   public TargetInfo getTarget(String targetName) {
     return targets.get(targetName);
   }

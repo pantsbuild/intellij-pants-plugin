@@ -33,8 +33,8 @@ public class TargetInfo {
 
   public TargetInfo(
     Set<TargetAddressInfo> addressInfos,
-    Set<String> libraries,
     Set<String> targets,
+    Set<String> libraries,
     Set<SourceRoot> roots
   ) {
     this.addressInfos = addressInfos;
@@ -109,6 +109,18 @@ public class TargetInfo {
     return addressInfos.isEmpty();
   }
 
+  public boolean isJarLibrary() {
+    return PantsUtil.forall(
+      getAddressInfos(),
+      new Condition<TargetAddressInfo>() {
+        @Override
+        public boolean value(TargetAddressInfo info) {
+          return info.isJarLibrary();
+        }
+      }
+    );
+  }
+
   public boolean isScalaTarget() {
     return ContainerUtil.exists(
       getAddressInfos(),
@@ -142,8 +154,7 @@ public class TargetInfo {
   public TargetInfo union(@NotNull TargetInfo other) {
     return new TargetInfo(
       ContainerUtil.union(getAddressInfos(), other.getAddressInfos()),
-      ContainerUtil.union(getLibraries(), other.getLibraries()),
-      ContainerUtil.union(getTargets(), other.getTargets()),
+      ContainerUtil.union(getTargets(), other.getTargets()), ContainerUtil.union(getLibraries(), other.getLibraries()),
       ContainerUtil.union(getRoots(), other.getRoots())
     );
   }

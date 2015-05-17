@@ -228,7 +228,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
 
     @Override
     public TargetInfo build() {
-      return new TargetInfo(Collections.singleton(new TargetAddressInfo()), libraries, targets, roots);
+      return new TargetInfo(Collections.singleton(new TargetAddressInfo()), targets, libraries, roots);
     }
 
     public TargetInfoBuilder withRoot(@Nls String rootRelativePath, @Nullable String packagePrefix) {

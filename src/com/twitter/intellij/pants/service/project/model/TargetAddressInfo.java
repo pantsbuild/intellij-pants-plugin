@@ -73,6 +73,10 @@ public class TargetAddressInfo {
     return StringUtil.equals("annotation_processor", getInternalPantsTargetType());
   }
 
+  public boolean isJarLibrary() {
+    return StringUtil.equals("jar_library", getInternalPantsTargetType());
+  }
+
   public boolean hasScalaSources() {
     return getGlobs().hasFileExtension("scala");
   }

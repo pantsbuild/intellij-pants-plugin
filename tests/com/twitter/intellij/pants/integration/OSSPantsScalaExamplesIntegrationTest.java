@@ -113,9 +113,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
       "examples_src_resources_org_pantsbuild_example_hello_hello",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
-      "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome",
-      "3rdparty_specs",
-      "3rdparty_junit"
+      "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome"
     );
 
     makeProject();
