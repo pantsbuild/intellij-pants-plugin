@@ -3,7 +3,8 @@ jdk:
   - oraclejdk7
 cache:
   directories:
-  - .cache/intellij/$IJ_BUILD_NUMBER
+  - .cache/intellij/IC-$IJ_BUILD_NUMBER
+  - .cache/intellij/IU-$IJ_BUILD_NUMBER
 
 notifications:
   email:

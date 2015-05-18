@@ -7,25 +7,19 @@ source scripts/prepare-ci-environment.sh
 # we will use Community ids to download plugins.
 SCALA_PLUGIN_ID="org.intellij.scala"
 PYTHON_PLUGIN_ID="PythonCore"
-FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
 
-IJ_BUILD="IC-${IJ_VERSION}"
-if [[ $IJ_ULTIMATE == "true" ]]; then
-  IJ_BUILD="IU-${IJ_VERSION}"
-fi
+mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
-mkdir -p .cache/intellij/$IJ_BUILD_NUMBER
-
-if [ ! -d .cache/intellij/$IJ_BUILD_NUMBER/idea-dist ]; then
+if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   echo "Loading $IJ_BUILD..."
   wget http://download-cf.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz
   tar zxf idea${IJ_BUILD}.tar.gz
   rm -rf idea${IJ_BUILD}.tar.gz
   UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1)
-  mv "$UNPACKED_IDEA" ".cache/intellij/$IJ_BUILD_NUMBER/idea-dist"
+  mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
 fi
 
-if [ ! -d .cache/intellij/$IJ_BUILD_NUMBER/plugins ]; then
+if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   echo "Loading $SCALA_PLUGIN_ID and $PYTHON_PLUGIN_ID for $FULL_IJ_BUILD_NUMBER..."
   mkdir -p plugins
   pushd plugins
@@ -38,7 +32,7 @@ if [ ! -d .cache/intellij/$IJ_BUILD_NUMBER/plugins ]; then
   rm -rf python.zip
 
   popd
-  mv plugins ".cache/intellij/$IJ_BUILD_NUMBER/plugins"
+  mv plugins ".cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 fi
 
 if [ ! -d .cache/pants ]; then
