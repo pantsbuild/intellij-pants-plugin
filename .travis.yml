@@ -1,6 +1,9 @@
 language: java
 jdk:
   - oraclejdk7
+cache:
+  directories:
+  - .cache/intellij/$IJ_BUILD_NUMBER
 
 notifications:
   email:
@@ -9,16 +12,14 @@ notifications:
 install: ./scripts/setup-ci-environment.sh
 
 env:
-  global:
-    - OSS_PANTS_HOME=./.cache/intellij/pants
   matrix:
-    - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" USE_PANTS_TO_COMPILE=false
-    - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" IJ_ULTIMATE=true
-    - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177"
-    - IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" USE_ISOLATED_STRATEGY=true
+    - IJ_ULTIMATE=false
+    - IJ_ULTIMATE=true
+    - USE_PANTS_TO_COMPILE=false
+    - USE_ISOLATED_STRATEGY=true
 
 script:
   - ./scripts/run-tests-ci.sh
   - ./scripts/run-custom-integration.sh
-      -r $OSS_PANTS_HOME
+      -r ./.cache/pants
       -t examples/src/scala/org/pantsbuild/example/hello,examples/src/java/org/pantsbuild/example/hello

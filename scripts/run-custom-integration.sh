@@ -45,8 +45,6 @@ if [ ! -z "$target_list_file" ]; then
   targets_list_args="$target_list_file"
 fi
 
-prepare_ci_env
-
 CWD=$(pwd)
 ./pants test.junit \
   --jvm-options="-Didea.load.plugins.id=com.intellij.plugins.pants" \
