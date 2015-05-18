@@ -7,6 +7,10 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.2.5:</p>
+      <ul>
+        <li>Performance fixes</li>
+      </ul>
       <p>1.2.4:</p>
       <ul>
         <li>Compiler outputs fixes for isolated strategy</li>
@@ -103,7 +107,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.2.4</version>
+  <version>1.2.5</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
