@@ -288,7 +288,6 @@ public class PantsCompileOptionsExecutor {
       commandLine.addParameters(loadDependees(getAllTargetAddresses()));
     }
 
-    commandLine.addParameter("--thrift-linter-skip");
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
     return commandLine;
   }
