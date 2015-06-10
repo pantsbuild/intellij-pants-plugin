@@ -106,7 +106,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "examples_src_resources_org_pantsbuild_example_names_names",
       "examples_src_java_org_pantsbuild_example_jaxb_main_main",
       "examples_src_java_org_pantsbuild_example_jaxb_reader_reader",
-      ".pants.d_gen_jaxb_gen-java_examples.src.resources.org.pantsbuild.example.jaxb.jaxb"
+      ".pants.d_gen_jaxb_isolated_examples.src.resources.org.pantsbuild.example.jaxb.jaxb_examples.src.resources.org.pantsbuild.example.jaxb.jaxb"
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_jaxb_main_main");
@@ -121,7 +121,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertModules(
       "examples_src_java_org_pantsbuild_example_protobuf_distance_distance",
       "examples_src_protobuf_org_pantsbuild_example_distance_distance",
-      ".pants.d_gen_protoc_gen-java_examples.src.protobuf.org.pantsbuild.example.distance.distance"
+      ".pants.d_gen_protoc_isolated_examples.src.protobuf.org.pantsbuild.example.distance.distance_examples.src.protobuf.org.pantsbuild.example.distance.distance"
     );
 
     makeModules("examples_src_java_org_pantsbuild_example_protobuf_distance_distance");
