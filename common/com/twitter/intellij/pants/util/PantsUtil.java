@@ -236,6 +236,11 @@ public class PantsUtil {
       commandLine.getEnvironment().put("PANTS_DEV", "1");
     }
 
+    if (PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
+      final File isolatedIni = new File(pantsExecutable.getParentFile(), "pants.ini.isolated");
+      commandLine.getEnvironment().put("PANTS_CONFIG_OVERRIDE", isolatedIni.getAbsolutePath());
+    }
+
     final String pantsExecutablePath = StringUtil.notNullize(
       System.getProperty("pants.executable.path"),
       pantsExecutable.getAbsolutePath()

@@ -34,7 +34,7 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
-  public static final int VERSION = 3;
+  public static final int VERSION = 4;
 
   public PantsResolver(@NotNull PantsCompileOptionsExecutor executor) {
     super(executor);
@@ -168,16 +168,25 @@ public class PantsResolver extends PantsResolverBase {
     if (PantsUtil.isResource(targetInfo.getSourcesType()) || targetInfo.isDummy()) {
       return;
     }
-    final String compilerOutputPath = myExecutor.isIsolatedStrategy() ?
+    final List<String> compilerOutputPaths = myExecutor.isIsolatedStrategy() ?
                                       getIsolatedCompilerOutputPath(targetInfo) :
                                       getCompilerOutputPath(targetInfo);
     final ModuleData moduleData = moduleDataNode.getData();
     moduleData.setInheritProjectCompileOutputPath(false);
-    moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, compilerOutputPath);
+
+    if (!compilerOutputPaths.isEmpty()) {
+      // IntelliJ doesn't support multiple compiler path outputs
+      // let's configure it with just one and add additional in PantsClasspathRunConfigurationExtension
+      final String compilerOutput = compilerOutputPaths.iterator().next();
+      moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, compilerOutput);
+      for (TargetMetadata targetMetadata : findChildren(moduleDataNode, TargetMetadata.KEY)) {
+        targetMetadata.setCompilerOutputs(new HashSet<String>(compilerOutputPaths));
+      }
+    }
   }
 
   @NotNull
-  private String getIsolatedCompilerOutputPath(@NotNull TargetInfo targetInfo) {
+  private List<String> getIsolatedCompilerOutputPath(@NotNull TargetInfo targetInfo) {
     return getOutputPaths(
       targetInfo,
       new Function<TargetAddressInfo, String>() {
@@ -198,7 +207,7 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   @NotNull
-  private String getCompilerOutputPath(@NotNull TargetInfo targetInfo) {
+  private List<String> getCompilerOutputPath(@NotNull TargetInfo targetInfo) {
     return getOutputPaths(
       targetInfo,
       new Function<TargetAddressInfo, String>() {
@@ -218,18 +227,15 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   @NotNull
-  private String getOutputPaths(@NotNull TargetInfo targetInfo, final Function<TargetAddressInfo, String> relativePathFun) {
-    return StringUtil.join(
-      ContainerUtil.map(
-        targetInfo.getAddressInfos(),
-        new Function<TargetAddressInfo, String>() {
-          @Override
-          public String fun(TargetAddressInfo targetAddressInfo) {
-            return myExecutor.getAbsolutePathFromWorkingDir(relativePathFun.fun(targetAddressInfo));
-          }
+  private List<String> getOutputPaths(@NotNull TargetInfo targetInfo, final Function<TargetAddressInfo, String> relativePathFun) {
+    return ContainerUtil.map(
+      targetInfo.getAddressInfos(),
+      new Function<TargetAddressInfo, String>() {
+        @Override
+        public String fun(TargetAddressInfo targetAddressInfo) {
+          return myExecutor.getAbsolutePathFromWorkingDir(relativePathFun.fun(targetAddressInfo));
         }
-      ),
-      ":"
+      }
     );
   }
 
@@ -294,7 +300,7 @@ public class PantsResolver extends PantsResolverBase {
         addLibraryDependencyToModule(
           moduleDataNode,
           libraryData,
-          true // todo: is it always exported?
+          true
         );
       }
     }
@@ -448,8 +454,7 @@ public class PantsResolver extends PantsResolverBase {
       }
     }
 
-    final TargetMetadata metadata = new TargetMetadata(PantsConstants.SYSTEM_ID);
-    metadata.setModuleName(moduleName);
+    final TargetMetadata metadata = new TargetMetadata(PantsConstants.SYSTEM_ID, moduleName);
     metadata.setTargetAddresses(
       ContainerUtil.map(
         targetInfo.getAddressInfos(),
@@ -461,6 +466,7 @@ public class PantsResolver extends PantsResolverBase {
         }
       )
     );
+    metadata.setLibraryExcludes(targetInfo.getExcludes());
     moduleDataNode.createChild(TargetMetadata.KEY, metadata);
 
     return moduleDataNode;

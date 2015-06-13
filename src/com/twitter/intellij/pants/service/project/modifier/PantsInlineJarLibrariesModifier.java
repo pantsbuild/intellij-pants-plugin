@@ -9,7 +9,10 @@ import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class PantsInlineJarLibrariesModifier implements PantsProjectInfoModifierExtension {
   @Override
@@ -21,19 +24,18 @@ public class PantsInlineJarLibrariesModifier implements PantsProjectInfoModifier
       if (targetInfo.isJarLibrary()) {
         continue;
       }
-      newTargetInfos.put(targetName, inlineJarLibraries(targetInfo, projectInfo, log));
+      newTargetInfos.put(targetName, inlineJarLibraries(targetInfo, projectInfo));
     }
     projectInfo.setTargets(newTargetInfos);
   }
 
   @NotNull
-  private TargetInfo inlineJarLibraries(@NotNull TargetInfo targetInfo, @NotNull ProjectInfo projectInfo, Logger log) {
+  private TargetInfo inlineJarLibraries(@NotNull TargetInfo targetInfo, @NotNull ProjectInfo projectInfo) {
     final Set<String> allLibraries = new HashSet<String>(targetInfo.getLibraries());
     final Set<String> allTargets = new HashSet<String>();
     for (String dependencyTargetName : targetInfo.getTargets()) {
       final TargetInfo dependencyTargetInfo = projectInfo.getTarget(dependencyTargetName);
       if (dependencyTargetInfo == null) {
-        log.warn(dependencyTargetName + " is missing!");
         continue;
       }
       if (dependencyTargetInfo.isJarLibrary()) {
@@ -47,6 +49,7 @@ public class PantsInlineJarLibrariesModifier implements PantsProjectInfoModifier
       targetInfo.getAddressInfos(),
       allTargets,
       allLibraries,
+      targetInfo.getExcludes(),
       targetInfo.getRoots()
     );
   }

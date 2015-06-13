@@ -15,6 +15,7 @@ import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.Collection;
 
 public class PantsMetadataService implements ProjectDataService<TargetMetadata, Module> {
@@ -35,6 +36,8 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
       final TargetMetadata metadata = node.getData();
       final Module module = moduleManager.findModuleByName(metadata.getModuleName());
       if (module != null) {
+        module.setOption(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY, StringUtil.join(metadata.getCompilerOutputs(), File.pathSeparator));
+        module.setOption(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY, StringUtil.join(metadata.getLibraryExcludes(), ","));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY, StringUtil.join(metadata.getTargetAddresses(), ","));
       }
     }

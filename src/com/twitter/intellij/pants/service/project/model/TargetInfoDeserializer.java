@@ -7,6 +7,7 @@ import com.google.common.collect.Iterators;
 import com.google.gson.*;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -19,8 +20,9 @@ public class TargetInfoDeserializer implements JsonDeserializer<TargetInfo> {
   @Override
   public TargetInfo deserialize(JsonElement element, Type type, final JsonDeserializationContext context) throws JsonParseException {
     final JsonObject object = element.getAsJsonObject();
-    final List<String> targets = getStringListField(object.getAsJsonArray("targets"));
-    final List<String> libraries = getStringListField(object.getAsJsonArray("libraries"));
+    final List<String> targets = getStringListField(object, "targets");
+    final List<String> libraries = getStringListField(object, "libraries");
+    final List<String> excludes = getStringListField(object, "excludes");
     final List<SourceRoot> sourceRoots = getFieldAsList(
       object.getAsJsonArray("roots"),
       new Function<JsonElement, SourceRoot>() {
@@ -35,13 +37,18 @@ public class TargetInfoDeserializer implements JsonDeserializer<TargetInfo> {
       new HashSet<TargetAddressInfo>(Collections.singleton(addressInfo)),
       new HashSet<String>(targets),
       new HashSet<String>(libraries),
+      new HashSet<String>(excludes),
       new HashSet<SourceRoot>(sourceRoots)
     );
   }
 
-  private List<String> getStringListField(JsonArray jsonArray) {
+  @NotNull
+  private List<String> getStringListField(JsonObject object, String memberName) {
+    if (!object.has(memberName)) {
+      return Collections.emptyList();
+    }
     return getFieldAsList(
-      jsonArray,
+      object.getAsJsonArray(memberName),
       new Function<JsonElement, String>() {
         @Override
         public String fun(JsonElement element) {

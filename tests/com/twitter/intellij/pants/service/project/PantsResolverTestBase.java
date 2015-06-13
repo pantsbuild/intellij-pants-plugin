@@ -223,12 +223,13 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
 
   public static final class TargetInfoBuilder implements Builder<TargetInfo> {
     private Set<String> libraries = new HashSet<String>();
+    private Set<String> excludes = new HashSet<String>();
     private Set<String> targets = new HashSet<String>();
     private Set<SourceRoot> roots = new HashSet<SourceRoot>();
 
     @Override
     public TargetInfo build() {
-      return new TargetInfo(Collections.singleton(new TargetAddressInfo()), targets, libraries, roots);
+      return new TargetInfo(Collections.singleton(new TargetAddressInfo()), targets, libraries, excludes, roots);
     }
 
     public TargetInfoBuilder withRoot(@Nls String rootRelativePath, @Nullable String packagePrefix) {

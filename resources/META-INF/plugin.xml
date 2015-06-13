@@ -9,6 +9,7 @@
     <![CDATA[
       <p>1.2.5:</p>
       <ul>
+        <li>Better handling of excludes</li>
         <li>Performance fixes</li>
       </ul>
       <p>1.2.4:</p>
@@ -158,6 +159,8 @@
 
     <configurationType implementation="com.twitter.intellij.pants.execution.PantsConfigurationType"/>
     <programRunner implementation="com.twitter.intellij.pants.run.PantsRunner"/>
+
+    <runConfigurationExtension implementation="com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension"/>
 
     <externalSystemManager implementation="com.twitter.intellij.pants.PantsManager"/>
 

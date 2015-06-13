@@ -10,6 +10,7 @@ import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityD
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,26 +20,45 @@ public class TargetMetadata extends AbstractExternalEntityData {
   public static final Key<TargetMetadata> KEY =
     Key.create(TargetMetadata.class, ProjectKeys.MODULE.getProcessingWeight() + 1);
 
-  private String myModuleName;
-  private Set<String> myTargetAddresses;
+  private final String myModuleName;
+  private Set<String> myCompilerOutputs = Collections.emptySet();
+  private Set<String> myLibraryExcludes = Collections.emptySet();
+  private Set<String> myTargetAddresses = Collections.emptySet();
 
-  public TargetMetadata(ProjectSystemId systemId) {
+  public TargetMetadata(ProjectSystemId systemId, @NotNull String moduleName) {
     super(systemId);
+    myModuleName = moduleName;
   }
 
+  @NotNull
   public String getModuleName() {
     return myModuleName;
   }
 
-  public void setModuleName(String moduleName) {
-    myModuleName = moduleName;
-  }
-
+  @NotNull
   public Set<String> getTargetAddresses() {
     return myTargetAddresses;
   }
 
   public void setTargetAddresses(Collection<String> targetAddresses) {
     myTargetAddresses = new HashSet<String>(targetAddresses);
+  }
+
+  @NotNull
+  public Set<String> getLibraryExcludes() {
+    return myLibraryExcludes;
+  }
+
+  public void setLibraryExcludes(Set<String> libraryExcludes) {
+    myLibraryExcludes = libraryExcludes;
+  }
+
+  @NotNull
+  public Set<String> getCompilerOutputs() {
+    return myCompilerOutputs;
+  }
+
+  public void setCompilerOutputs(Set<String> compilerOutputs) {
+    myCompilerOutputs = compilerOutputs;
   }
 }

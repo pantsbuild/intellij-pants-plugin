@@ -11,34 +11,41 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
 public class TargetInfo {
 
-  protected Set<TargetAddressInfo> addressInfos;
+  protected Set<TargetAddressInfo> addressInfos = Collections.emptySet();
 
   /**
    * List of libraries. Just names.
    */
-  protected Set<String> libraries;
+  protected Set<String> libraries = Collections.emptySet();
+  /**
+   * List of libraries. Just names.
+   */
+  protected Set<String> excludes = Collections.emptySet();
   /**
    * List of dependencies.
    */
-  protected Set<String> targets;
+  protected Set<String> targets = Collections.emptySet();
   /**
    * List of source roots.
    */
-  protected Set<SourceRoot> roots;
+  protected Set<SourceRoot> roots = Collections.emptySet();
 
   public TargetInfo(
     Set<TargetAddressInfo> addressInfos,
     Set<String> targets,
     Set<String> libraries,
+    Set<String> excludes,
     Set<SourceRoot> roots
   ) {
     this.addressInfos = addressInfos;
     this.libraries = libraries;
+    this.excludes = excludes;
     this.targets = targets;
     this.roots = roots;
   }
@@ -58,6 +65,15 @@ public class TargetInfo {
 
   public void setLibraries(Set<String> libraries) {
     this.libraries = libraries;
+  }
+
+  @NotNull
+  public Set<String> getExcludes() {
+    return excludes;
+  }
+
+  public void setExcludes(Set<String> excludes) {
+    this.excludes = excludes;
   }
 
   @NotNull
@@ -154,7 +170,9 @@ public class TargetInfo {
   public TargetInfo union(@NotNull TargetInfo other) {
     return new TargetInfo(
       ContainerUtil.union(getAddressInfos(), other.getAddressInfos()),
-      ContainerUtil.union(getTargets(), other.getTargets()), ContainerUtil.union(getLibraries(), other.getLibraries()),
+      ContainerUtil.union(getTargets(), other.getTargets()),
+      ContainerUtil.union(getLibraries(), other.getLibraries()),
+      ContainerUtil.union(getExcludes(), other.getExcludes()),
       ContainerUtil.union(getRoots(), other.getRoots())
     );
   }
@@ -163,6 +181,7 @@ public class TargetInfo {
   public String toString() {
     return "TargetInfo{" +
            "libraries=" + libraries +
+           ", excludes=" + excludes +
            ", targets=" + targets +
            ", roots=" + roots +
            ", addressInfos='" + addressInfos + '\'' +

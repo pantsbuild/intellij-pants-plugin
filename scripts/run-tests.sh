@@ -3,6 +3,7 @@
 CWD=$(pwd)
 
 ./pants test.junit \
+  --no-suppress-output \
   --jvm-options="-Didea.load.plugins.id=com.intellij.plugins.pants" \
   --jvm-options="-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME" \
   --jvm-options="-Didea.home.path=$CWD/.pants.d/intellij/plugins-sandbox/test" \

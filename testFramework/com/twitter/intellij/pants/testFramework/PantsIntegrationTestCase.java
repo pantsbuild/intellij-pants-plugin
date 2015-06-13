@@ -129,11 +129,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
       PantsUtil.copyDirContent(projectTemplateFolder, projectDir);
     }
-
-    if (PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
-      final File isolatedIni = new File(PantsTestUtils.findTestPath("testData"), isolatedPantsIniName);
-      FileUtil.copy(isolatedIni, new File(projectDir, PantsConstants.PANTS_INI));
-    }
   }
 
   private void cleanProjectRoot() throws ExecutionException {
@@ -204,18 +199,20 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Nullable
   private File findClassFile(String className, String moduleName) throws Exception {
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
-    final CompilerModuleExtension moduleExtension =
-      ModuleRootManager.getInstance(getModule(moduleName)).getModuleExtension(CompilerModuleExtension.class);
-    final String compilerOutputPaths = VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl());
+    String compilerOutputPaths;
+    if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
+      final CompilerModuleExtension moduleExtension =
+        ModuleRootManager.getInstance(getModule(moduleName)).getModuleExtension(CompilerModuleExtension.class);
+      compilerOutputPaths = VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl()) + ":" +
+                            VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests());
+    } else {
+      compilerOutputPaths = getModule(moduleName).getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY);
+      assertNotNull(compilerOutputPaths);
+    }
     for (String compilerOutputPath : StringUtil.split(compilerOutputPaths, ":")) {
       final File classFile = new File(new File(compilerOutputPath), className.replace('.', '/') + ".class");
       if (classFile.exists()) {
         return classFile;
-      }
-      final File testClassFile =
-        new File(new File(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests())), className.replace('.', '/') + ".class");
-      if (testClassFile.exists()) {
-        return testClassFile;
       }
     }
     return null;
