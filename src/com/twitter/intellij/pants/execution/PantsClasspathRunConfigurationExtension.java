@@ -45,7 +45,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     }
     final PathsList classpath = params.getClassPath();
 
-    for (String excludedPath : findAllExcludedJars(classpath.getPathList(), finsExcludes(module))) {
+    for (String excludedPath : findAllExcludedJars(classpath.getPathList(), findExcludes(module))) {
       LOG.info("Excluded " + excludedPath);
       classpath.remove(excludedPath);
     }
@@ -63,7 +63,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   }
 
   @NotNull
-  private List<String> finsExcludes(@NotNull Module module) {
+  private List<String> findExcludes(@NotNull Module module) {
     final List<String> result = new ArrayList<String>();
     processRuntimeModules(
       module,
@@ -98,7 +98,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Function<String, String>() {
         @Override
         public String fun(String exclude) {
-          return "/" + exclude.replace(':', '/') + "/";
+          return File.separator + exclude.replace(':', File.separatorChar) + File.separator;
         }
       }
     );
