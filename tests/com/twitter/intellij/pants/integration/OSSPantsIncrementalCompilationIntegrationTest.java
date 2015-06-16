@@ -7,10 +7,6 @@ import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsIncrementalCompilationIntegrationTest extends OSSPantsIntegrationTest {
-  public OSSPantsIncrementalCompilationIntegrationTest() {
-    super(false);
-  }
-
   public void testHelloByTargetName() throws Throwable {
     if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
       return;

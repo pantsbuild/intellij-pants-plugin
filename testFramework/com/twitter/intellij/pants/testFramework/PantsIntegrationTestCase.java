@@ -55,30 +55,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * If your integration test modifies any source files
- * please set {@link PantsIntegrationTestCase#readOnly} to false.
- *
- * @see com.twitter.intellij.pants.highlighting.PantsHighlightingIntegrationTest
- */
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
   private static final String PLUGINS_KEY = "idea.load.plugins.id";
   private static final String PANTS_COMPILER_ENABLED = "pants.compiler.enabled";
-  private static final String isolatedPantsIniName = "pants.ini.isolated";
 
-  private final boolean readOnly;
   private PantsProjectSettings myProjectSettings;
   private String myRelativeProjectPath = null;
   private CompilerTester myCompilerTester;
   private String defaultPlugins = null;
-
-  protected PantsIntegrationTestCase() {
-    this(true);
-  }
-
-  protected PantsIntegrationTestCase(boolean readOnly) {
-    this.readOnly = readOnly;
-  }
 
   @Override
   public void setUp() throws Exception {
@@ -129,32 +113,21 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
       PantsUtil.copyDirContent(projectTemplateFolder, projectDir);
     }
+
+    if (PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
+      final File originalIni = new File(projectDir, "pants.ini");
+      final File isolatedIni = new File(projectDir, "pants.ini.isolated");
+      assertTrue(isolatedIni.exists());
+
+      // There is no way to pass env vars to com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder.
+      // So let's just emulate the override.
+      FileUtil.appendToFile(originalIni, "\n" + FileUtil.loadFile(isolatedIni));
+    }
   }
 
   private void cleanProjectRoot() throws ExecutionException {
-    final File projectDir = new File(myProjectRoot.getPath());
-    assertTrue(projectDir.exists());
-    if (readOnly) {
-      // work around copyDirContent's copying of symlinks as hard links causing pants to fail
-      assertTrue("Failed to clean up!", FileUtil.delete(new File(projectDir, ".pants.d")));
-      // and IJ data
-      assertTrue("Failed to clean up!", FileUtil.delete(new File(projectDir, ".idea")));
-      for (File file : getProjectFoldersToCopy()) {
-        final File[] children = file.listFiles();
-        if (children == null) {
-          continue;
-        }
-        for (File child : children) {
-          final File copiedChild = new File(projectDir, child.getName());
-          if (copiedChild.exists()) {
-            assertTrue("Failed to clean up!", FileUtil.delete(copiedChild));
-          }
-        }
-      }
-    } else {
-      cmd("git", "reset", "--hard");
-      cmd("git", "clean", "-fdx");
-    }
+    cmd("git", "reset", "--hard");
+    cmd("git", "clean", "-fdx");
   }
 
   private void cmd(String ...args) throws ExecutionException {

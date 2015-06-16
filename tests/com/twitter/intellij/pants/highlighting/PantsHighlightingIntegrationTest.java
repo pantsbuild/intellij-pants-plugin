@@ -29,11 +29,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 abstract public class PantsHighlightingIntegrationTest extends OSSPantsIntegrationTest {
-  public PantsHighlightingIntegrationTest() {
-    // we do some code modifications in the tests.
-    super(false);
-  }
-
   @Override
   public void tearDown() throws Exception {
     final FileEditorManager fileEditorManager = FileEditorManager.getInstance(myProject);
