@@ -3,9 +3,9 @@
 
 package com.twitter.intellij.pants.execution;
 
-import com.intellij.execution.JavaRunConfigurationExtensionManager;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
+import com.intellij.openapi.externalSystem.model.execution.ExternalSystemTaskExecutionSettings;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.module.Module;
@@ -39,19 +39,23 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       return false;
     }
 
-    configuration.getSettings().setExternalProjectPath(module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY));
-    configuration.getSettings().setTaskNames(Collections.singletonList("test"));
+    final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
+    taskSettings.setExternalProjectPath(module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY));
+    taskSettings.setTaskNames(Collections.singletonList("test"));
 
     final PsiElement psiLocation = context.getPsiLocation();
     final PsiClass psiClass = psiLocation != null ? TestIntegrationUtils.findOuterClass(psiLocation) : null;
     if (psiClass != null && TestIntegrationUtils.isTest(psiClass)) {
       configuration.setName("Test " + psiClass.getName());
-      configuration.getSettings().setScriptParameters("--test-junit-test=" + psiClass.getQualifiedName());
+      taskSettings.setScriptParameters(
+        "--no-test-junit-suppress-output " +
+        "--test-junit-test=" + psiClass.getQualifiedName()
+      );
     } else {
       configuration.setName("Test " + targetAddress.getRelativePath() + ":" + targetAddress.getTargetName());
+      taskSettings.setScriptParameters("--no-test-junit-suppress-output");
     }
 
-    JavaRunConfigurationExtensionManager.getInstance().extendCreatedConfiguration(configuration, context.getLocation());
     return true;
   }
 
