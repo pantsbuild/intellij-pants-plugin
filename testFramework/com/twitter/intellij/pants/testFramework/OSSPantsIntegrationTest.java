@@ -12,6 +12,13 @@ import java.util.Collections;
 import java.util.List;
 
 abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
+  public OSSPantsIntegrationTest() {
+  }
+
+  public OSSPantsIntegrationTest(boolean readOnly) {
+    super(readOnly);
+  }
+
   @NotNull
   @Override
   protected List<File> getProjectFoldersToCopy() {
