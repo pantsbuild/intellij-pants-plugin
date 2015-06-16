@@ -129,12 +129,30 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
       PantsUtil.copyDirContent(projectTemplateFolder, projectDir);
     }
+
+    if (PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
+      final File originalIni = new File(projectDir, "pants.ini");
+      final File originalIniCopy = new File(projectDir, "pants.ini.copy");
+      FileUtil.copy(originalIni, originalIniCopy);
+
+      final File isolatedIni = new File(projectDir, "pants.ini.isolated");
+      assertTrue(isolatedIni.exists());
+
+      // There is no way to pass env vars to com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder.
+      // So let's just emulate the override.
+      FileUtil.appendToFile(originalIni, "\n" + FileUtil.loadFile(isolatedIni));
+    }
   }
 
-  private void cleanProjectRoot() throws ExecutionException {
+  private void cleanProjectRoot() throws ExecutionException, IOException {
     final File projectDir = new File(myProjectRoot.getPath());
     assertTrue(projectDir.exists());
     if (readOnly) {
+      final File originalIni = new File(projectDir, "pants.ini");
+      final File originalIniCopy = new File(projectDir, "pants.ini.copy");
+      if (originalIniCopy.exists()) {
+        FileUtil.copy(originalIniCopy, originalIni);
+      }
       // work around copyDirContent's copying of symlinks as hard links causing pants to fail
       assertTrue("Failed to clean up!", FileUtil.delete(new File(projectDir, ".pants.d")));
       // and IJ data
