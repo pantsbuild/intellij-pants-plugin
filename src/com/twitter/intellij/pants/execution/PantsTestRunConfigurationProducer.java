@@ -8,6 +8,7 @@ import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Ref;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -29,12 +30,16 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     ConfigurationContext context,
     Ref<PsiElement> sourceElement
   ) {
-    final PantsTargetAddress targetAddress = PantsUtil.getTargetAddressFromModule(context.getModule());
+    final Module module = context.getModule();
+    if (module == null) {
+      return false;
+    }
+    final PantsTargetAddress targetAddress = PantsUtil.getTargetAddressFromModule(module);
     if (targetAddress == null) {
       return false;
     }
 
-    configuration.getSettings().setExternalProjectPath(context.getModule().getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY));
+    configuration.getSettings().setExternalProjectPath(module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY));
     configuration.getSettings().setTaskNames(Collections.singletonList("test"));
 
     final PsiElement psiLocation = context.getPsiLocation();

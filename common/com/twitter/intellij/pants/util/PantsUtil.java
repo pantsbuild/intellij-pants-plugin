@@ -320,9 +320,10 @@ public class PantsUtil {
     return targetName.replace(':', delimeter).replace('/', delimeter).replace('\\', delimeter);
   }
 
-  @Nullable @NonNls
-  public static PantsTargetAddress getTargetAddressFromModule(@NotNull @Nls Module module) {
-    if (!isPantsModule(module)) {
+  @Nullable
+  @Contract(value = "null -> null", pure = true)
+  public static PantsTargetAddress getTargetAddressFromModule(@Nullable Module module) {
+    if (module == null || !isPantsModule(module)) {
       return null;
     }
     final String targetAddress = module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_ID_KEY);
@@ -341,7 +342,7 @@ public class PantsUtil {
     );
   }
 
-  public static boolean isPantsModule(@NotNull @Nls Module module) {
+  public static boolean isPantsModule(@NotNull Module module) {
     final String systemId = module.getOptionValue(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY);
     return StringUtil.equals(systemId, PantsConstants.SYSTEM_ID.getId());
   }

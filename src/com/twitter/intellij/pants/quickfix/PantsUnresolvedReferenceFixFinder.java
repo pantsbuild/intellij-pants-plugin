@@ -44,7 +44,7 @@ public class PantsUnresolvedReferenceFixFinder {
 
     final ProjectFileIndex fileIndex = ProjectRootManager.getInstance(project).getFileIndex();
     final Module containingModule = fileIndex.getModuleForFile(containingClassFile);
-    final PantsTargetAddress currentAddress = containingModule != null ? PantsUtil.getTargetAddressFromModule(containingModule) : null;
+    final PantsTargetAddress currentAddress = PantsUtil.getTargetAddressFromModule(containingModule);
     if (currentAddress == null) return Collections.emptyList();
 
     final PsiClass[] classes = PsiShortNamesCache.getInstance(project).getClassesByName(referenceName, GlobalSearchScope.allScope(project));
@@ -52,8 +52,8 @@ public class PantsUnresolvedReferenceFixFinder {
     final List<PantsQuickFix> result = new ArrayList<PantsQuickFix>();
     for (PsiClass dependency : allowedDependencies) {
       final Module module = ModuleUtil.findModuleForPsiElement(dependency);
-      final PantsTargetAddress addressToAdd = module != null ? PantsUtil.getTargetAddressFromModule(module) : null;
-      if (module != null && addressToAdd != null) {
+      final PantsTargetAddress addressToAdd = PantsUtil.getTargetAddressFromModule(module);
+      if (addressToAdd != null) {
         result.add(new AddPantsTargetDependencyFix(currentAddress, addressToAdd));
       }
       // todo(fkoroktov): handle jars
