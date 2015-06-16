@@ -217,11 +217,7 @@ public class PantsUtil {
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
-    final File buildFile = new File(projectPath);
-    if (!buildFile.exists()) {
-      throw new PantsException("Couldn't find BUILD file: " + projectPath);
-    }
-    final File pantsExecutable = PantsUtil.findPantsExecutable(buildFile);
+    final File pantsExecutable = PantsUtil.findPantsExecutable(new File(projectPath));
     if (pantsExecutable == null) {
       throw new PantsException("Couldn't find pants executable for: " + projectPath);
     }

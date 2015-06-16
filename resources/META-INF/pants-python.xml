@@ -14,10 +14,6 @@
 
     <psi.referenceContributor implementation="com.twitter.intellij.pants.psi.reference.PantsReferenceContributor"/>
 
-    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsRunConfigurationProducer"/>
-    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsCompileConfigurationProducer"/>
-    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsTestConfigurationProducer"/>
-
     <fileBasedIndex implementation="com.twitter.intellij.pants.index.PantsTargetIndex"/>
 
     <!--We need python plugin to insert a dependency to a proper BUILD file-->

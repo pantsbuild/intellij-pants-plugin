@@ -176,7 +176,9 @@ public class PantsManager implements
   @NotNull
   @Override
   public String getProjectRepresentationName(@NotNull String targetProjectPath, @Nullable String rootProjectPath) {
-    return ExternalSystemApiUtil.getProjectRepresentationName(targetProjectPath, rootProjectPath);
+    final PantsTargetAddress address = PantsTargetAddress.fromString(targetProjectPath, false);
+    assert address != null;
+    return address.getRelativePath() + ":" + address.getTargetName();
   }
 
   @Nullable

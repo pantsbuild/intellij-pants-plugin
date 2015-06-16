@@ -37,6 +37,29 @@ Using this plugin you can import entire project or specific targets in a BUILD f
 
 Once you import the project using above steps, you will see the "Project View" with multiple modules configured.
 
+### Invoking Pants within IntelliJ
+The plugin can invoke any Pants commands via Pants Tasks. 
+  * To configure a Pants Task simply create a new Pants Run Configuration
+    ![Creating of a new Pants Run Configuration](images/tasks/add_pants_run_config.png)
+  * Choose a target to run a task for
+    ![Choosing a target](images/tasks/configure_target.png)
+    ![Configured target](images/tasks/configured_target.png)
+  * Fill the rest of options for the task. Note there is a task for each Pants goal.
+    ![Configured Pants Task](images/tasks/configure_pants_task.png)
+  * Run the Task
+    ![Configured Pants Task](images/tasks/task_run.png)
+  * To debug a task simply press Debug button next to Run button.
+    
+#### Predefined Pants Tasks for test targets
+The plugin can preconfigure test Tasks from a context. 
+
+For example if a test class is opened then with a right click it's easy to create a task to run and debug
+    ![Run Configuration Producer](images/tasks/create_task_from_context_single.png) 
+    ![Preconfigured Run Configuration](images/tasks/preconfigured_task_single_test.png)
+    
+With a right click in Project View it's easy to create a test task to run all tests for a target
+    ![Run Configuration Producer](images/tasks/create_task_from_context_all.png) 
+
 ### How the plugin works
 
 The plugin uses `pants resolve export <list of imported targets>` command to get an information

@@ -69,12 +69,6 @@ public class PantsOutputMessageTest extends UsefulTestCase {
     doTest(new PantsOutputMessage(13, 27, "/this/is/a/url", 0, PantsOutputMessage.Level.ERROR), info);
   }
 
-  public void testDotFilePathHasNullFilterResult() {
-    PantsFilter filter = new PantsFilter(DummyProject.getInstance());
-    Filter.Result result = filter.applyFilter(".: message", 10000);
-    assertNull("result", result);
-  }
-
   public List<PantsOutputMessage> parseCompilationOutputFile(String pathToFile) throws FileNotFoundException, IOException {
     assertNotNull(pathToFile);
     final List<String> lines = FileUtil.loadLines(new File(pathToFile));

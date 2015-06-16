@@ -5,17 +5,20 @@ package com.twitter.intellij.pants.model;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.PathUtil;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 public class PantsTargetAddress {
-  private final String myRelativePath;
+  private final String myPath;
   private final String myTargetName;
 
   public PantsTargetAddress(@NotNull String path, @NotNull String name) {
-    myRelativePath = path;
+    myPath = path;
     myTargetName = name;
   }
 
@@ -24,7 +27,14 @@ public class PantsTargetAddress {
    */
   @NotNull
   public String getPath() {
-    return myRelativePath;
+    return myPath;
+  }
+
+  @NotNull
+  public String getRelativePath() {
+    final File workingDir = PantsUtil.findPantsWorkingDir(new File(getPath()));
+    final String relativePath = workingDir != null ? PantsUtil.getRelativeProjectPath(workingDir, getPath()) : null;
+    return StringUtil.notNullize(relativePath, getPath());
   }
 
   @NotNull
@@ -34,7 +44,7 @@ public class PantsTargetAddress {
 
   @Override
   public String toString() {
-    return myRelativePath + ":" + myTargetName;
+    return myPath + ":" + myTargetName;
   }
 
   @NotNull
@@ -48,13 +58,13 @@ public class PantsTargetAddress {
    * @param strict - if <code>true</code> the method will return <code>null</code> if there is no <code>:</code> indicating a target name.
    */
   @Nullable
-  public static PantsTargetAddress fromString(@NotNull @NonNls String targetName, boolean strict) {
-    final int index = targetName.lastIndexOf(':');
+  public static PantsTargetAddress fromString(@NotNull @NonNls String targetPath, boolean strict) {
+    final int index = targetPath.lastIndexOf(':');
     if (index < 0) {
-      return strict ? null : new PantsTargetAddress(targetName, PathUtil.getFileName(targetName));
+      return strict ? null : new PantsTargetAddress(targetPath, PathUtil.getFileName(targetPath));
     } else {
-      final String path = targetName.substring(0, index);
-      final String name = targetName.substring(index + 1);
+      final String path = targetPath.substring(0, index);
+      final String name = targetPath.substring(index + 1);
       return new PantsTargetAddress(path, StringUtil.isEmpty(name) ? PathUtil.getFileName(path) : name);
     }
   }
