@@ -45,10 +45,12 @@ The plugin can invoke any Pants commands via Pants Tasks.
     ![Choosing a target](images/tasks/configure_target.png)
     ![Configured target](images/tasks/configured_target.png)
   * Fill the rest of options for the task. Note there is a task for each Pants goal.
-    ![Configured Pants Task](images/tasks/configure_pants_task.png)
+    ![Configure Pants Task](images/tasks/configure_pants_task.png)
   * Run the Task
     ![Configured Pants Task](images/tasks/task_run.png)
   * To debug a task simply press Debug button next to Run button.
+  * Note: you can create a task for any goal
+    ![Bundle Task](images/tasks/bundle_task.png)
     
 #### Predefined Pants Tasks for test targets
 The plugin can preconfigure test Tasks from a context. 
@@ -59,6 +61,43 @@ For example if a test class is opened then with a right click it's easy to creat
     
 With a right click in Project View it's easy to create a test task to run all tests for a target
     ![Run Configuration Producer](images/tasks/create_task_from_context_all.png) 
+
+### Compilation
+The plugin provides two ways to compile your project:
+* via pants' compile goal (Default)
+  The plugin will use `pants compile <list of targets>` to compile your project once a `Make` command is invoked.
+  ![Compilation via compile goal ](images/compilation_via_compile_goal.png)
+* via IntelliJ's scala/java compilers
+  Because the plugin configured all modules' dependencies IntelliJ can use this information to build and run your project without
+  invoking pants. Using just internal representation of the project's model. We recommend to use first option to be consistent with
+  command line invocation.
+
+Compilation options can be configured in Preferences -> Build, Execution, Deployment -> Compiler -> Pants:
+![Compilation Options](images/compilation_options.png)
+
+### Plugin Features.
+* Project File Tree View.
+  The plugin configures modules per pants build target. Due to multiple modules, the default "Project View" is not very user friendly.
+  The Plugin provides a custom view "Project Files Tree View". This view adheres to your repository file hierarchy.
+  You can switch to this view as follows:
+  ![Project Files Tree View](images/project_files_tree_view.png)
+* BUILD File code assistance
+  The plugin provides auto completion for target names in a BUILD file such as `jar_library`, `scala_library`, etc.
+  As well as completion for dependencies' addresses.
+* Project Regeneration using IntelliJ Action.
+  If you add a dependency to your project, you can re-resolve project using IntelliJ Action in background.
+  Use Main Menu: Help -> Find Action or Short hand Cmd+Shift+A and select Action "Refresh all External Projects"
+  Remember to check "Include non-menu actions"
+  ![Refresh Project](images/refresh_action.png)
+* Compiling within IntelliJ
+* Running tests within IntelliJ
+  You can right click on tests and run tests.
+
+### Report Bugs
+If you see any bugs please file a github issue on the project page.
+Attach your `idea.log` ([location instructions](https://intellij-support.jetbrains.com/entries/23352446-Locating-IDE-log-files))
+
+For contributing to the project, continue reading below.
 
 ### How the plugin works
 
@@ -124,44 +163,6 @@ The plugin will create three modules. One for the imported target, examples/src/
 and two for the targets it depends on. It also will configure source roots for the modules and will use `target_type`
 and `is_code_gen` fields to figure out types of source roots(there are several types of source roots: sources,
 test sources, resources, test resources, generated sources, etc).
-
-### Compilation
-The plugin provides two ways to compile your project:
-* via pants' compile goal (Default)
-  The plugin will use `pants compile <list of targets>` to compile your project once a `Make` command is invoked.
-  ![Compilation via compile goal ](images/compilation_via_compile_goal.png)
-* via IntelliJ's scala/java compilers
-  Because the plugin configured all modules' dependencies IntelliJ can use this information to build and run your project without
-  invoking pants. Using just internal representation of the project's model. We recommend to use first option to be consistent with
-  command line invocation.
-
-Compilation options can be configured in Preferences -> Build, Execution, Deployment -> Compiler -> Pants:
-![Compilation Options](images/compilation_options.png)
-
-### Plugin Features.
-* Project File Tree View.
-  The plugin configures modules per pants build target. Due to multiple modules, the default "Project View" is not very user friendly.
-  The Plugin provides a custom view "Project Files Tree View". This view adheres to your repository file hierarchy.
-  You can switch to this view as follows:
-  ![Project Files Tree View](images/project_files_tree_view.png)
-* BUILD File code assistance
-  The plugin provides auto completion for target names in a BUILD file such as `jar_library`, `scala_library`, etc.
-  As well as completion for dependencies' addresses.
-* Project Regeneration using IntelliJ Action.
-  If you add a dependency to your project, you can re-resolve project using IntelliJ Action in background.
-  Use Main Menu: Help -> Find Action or Short hand Cmd+Shift+A and select Action "Refresh all External Projects"
-  Remember to check "Include non-menu actions"
-  ![Refresh Project](images/refresh_action.png)
-* Compiling within IntelliJ
-* Running tests within IntelliJ
-  You can right click on tests and run tests.
-
-### Report Bugs
-If you see any bugs please file a github issue on the project page.
-Attach your `idea.log` ([location instructions](https://intellij-support.jetbrains.com/entries/23352446-Locating-IDE-log-files))
-
-For contributing to the project, continue reading below.
-
 
 ## Contributing Guidelines:
 
