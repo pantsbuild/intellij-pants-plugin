@@ -10,14 +10,11 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.roots.OrderEnumerator;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.Function;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jdom.Element;
@@ -25,9 +22,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
@@ -45,8 +43,10 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     }
     final PathsList classpath = params.getClassPath();
 
-    for (String excludedPath : findAllExcludedJars(classpath.getPathList(), findExcludes(module))) {
-      LOG.info("Excluded " + excludedPath);
+    for (Map.Entry<String, String> excludedPathEntry : findAllExcludedJars(classpath.getPathList(), findExcludes(module)).entrySet()) {
+      final String excludedPath = excludedPathEntry.getKey();
+      final String address = excludedPathEntry.getValue();
+      LOG.info(address + "excluded " + excludedPath);
       classpath.remove(excludedPath);
     }
     processRuntimeModules(
@@ -63,14 +63,18 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   }
 
   @NotNull
-  private List<String> findExcludes(@NotNull Module module) {
-    final List<String> result = new ArrayList<String>();
+  private Map<String, String> findExcludes(@NotNull Module module) {
+    final Map<String, String> result = new HashMap<String, String>();
     processRuntimeModules(
       module,
       new Processor<Module>() {
         @Override
         public boolean process(Module module) {
-          result.addAll(StringUtil.split(StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY)), ","));
+          final String targets  = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+          final String excludes = module.getOptionValue(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY);
+          for (String exclude : StringUtil.split(StringUtil.notNullize(excludes), ",")) {
+            result.put(exclude, StringUtil.notNullize(targets, module.getName()));
+          }
           return true;
         }
       }
@@ -86,39 +90,24 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   }
 
   @NotNull
-  private List<String> findAllExcludedJars(@NotNull List<String> classpathEntries, @NotNull List<String> excludes) {
+  private Map<String, String> findAllExcludedJars(@NotNull List<String> classpathEntries, @NotNull Map<String, String> excludes) {
     if (excludes.isEmpty()) {
-      return Collections.emptyList();
+      return Collections.emptyMap();
     }
-    // exclude looks like com.foo:bar
-    // let's remove all jars with /com.foo/bar/ in the path
-    // because Pants uses Ivy
-    final List<String> excludedSubPaths = ContainerUtil.map(
-      excludes,
-      new Function<String, String>() {
-        @Override
-        public String fun(String exclude) {
-          return File.separator + exclude.replace(':', File.separatorChar) + File.separator;
+    final Map<String, String> result = new HashMap<String, String>();
+    for (String classpathEntry : classpathEntries) {
+      for (Map.Entry<String, String> excludeEntry : excludes.entrySet()) {
+        final String exclude = excludeEntry.getKey();
+        final String address = excludeEntry.getValue();
+        // exclude looks like com.foo:bar
+        // let's remove all jars with /com.foo/bar/ in the path
+        // because Pants uses Ivy
+        if (StringUtil.contains(classpathEntry, File.separator + exclude.replace(':', File.separatorChar) + File.separator)) {
+          result.put(classpathEntry, address);
         }
       }
-    );
-    return ContainerUtil.findAll(
-      classpathEntries,
-      new Condition<String>() {
-        @Override
-        public boolean value(final String path) {
-          return ContainerUtil.exists(
-            excludedSubPaths,
-            new Condition<String>() {
-              @Override
-              public boolean value(String excludedSubPath) {
-                return StringUtil.contains(path, excludedSubPath);
-              }
-            }
-          );
-        }
-      }
-    );
+    }
+    return result;
   }
 
   @Nullable
