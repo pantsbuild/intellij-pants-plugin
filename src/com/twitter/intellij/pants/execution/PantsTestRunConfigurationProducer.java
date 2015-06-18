@@ -47,6 +47,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     final PsiElement psiLocation = context.getPsiLocation();
     final PsiClass psiClass = psiLocation != null ? TestIntegrationUtils.findOuterClass(psiLocation) : null;
     if (psiClass != null && TestIntegrationUtils.isTest(psiClass)) {
+      sourceElement.set(psiClass);
       configuration.setName("Test " + psiClass.getName());
       taskSettings.setScriptParameters(
         "--no-test-junit-suppress-output " +

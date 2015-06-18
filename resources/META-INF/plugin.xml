@@ -161,7 +161,7 @@
     <runConfigurationExtension implementation="com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension"/>
     <configurationProducer implementation="com.twitter.intellij.pants.execution.PantsRuntimeConfigurationProducer"/>
     <configurationType implementation="com.twitter.intellij.pants.execution.PantsExternalTaskConfigurationType"/>
-    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsTestRunConfigurationProducer" order="first"/>
+    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsTestRunConfigurationProducer" order="last"/>
 
 
     <externalSystemManager implementation="com.twitter.intellij.pants.PantsManager"/>
