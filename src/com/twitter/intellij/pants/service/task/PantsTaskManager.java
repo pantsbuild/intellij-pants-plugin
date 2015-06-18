@@ -55,8 +55,12 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     final String relativeProjectPath = PantsUtil.getRelativeProjectPath(commandLine.getWorkDirectory(), new File(projectPath));
 
     commandLine.addParameters(taskNames);
-    for (String targetName : settings.getTargetNames()) {
-      commandLine.addParameter(relativeProjectPath + ":" + targetName);
+    if (!settings.getTargetNames().isEmpty()) {
+      for (String targetName : settings.getTargetNames()) {
+        commandLine.addParameter(relativeProjectPath + ":" + targetName);
+      }
+    } else {
+      commandLine.addParameter(relativeProjectPath + File.separator + "::");
     }
     commandLine.addParameters(scriptParameters);
     for (String goal : taskNames) {
