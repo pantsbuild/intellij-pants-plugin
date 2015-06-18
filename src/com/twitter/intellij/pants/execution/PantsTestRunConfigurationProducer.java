@@ -10,6 +10,7 @@ import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunCo
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.testIntegration.TestIntegrationUtils;
@@ -68,6 +69,18 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       PantsConstants.SYSTEM_ID, context.getProject(), configuration.getFactory(), configuration.getName()
     );
     setupConfigurationFromContext(tempConfig, context, null);
-    return configuration.getSettings().equals(tempConfig.getSettings());
+    return compareSettings(configuration.getSettings(), tempConfig.getSettings());
+  }
+
+  private boolean compareSettings(ExternalSystemTaskExecutionSettings settings1, ExternalSystemTaskExecutionSettings settings2) {
+    if (!settings1.equals(settings2)) {
+      return false;
+    }
+
+    if (!StringUtil.equalsIgnoreWhitespaces(settings1.getScriptParameters(), settings2.getScriptParameters())) {
+      return false;
+    }
+
+    return true;
   }
 }
