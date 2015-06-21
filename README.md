@@ -213,6 +213,16 @@ test sources, resources, test resources, generated sources, etc).
 
 ### Debugging the Plugin from local pants development:
 
+* To debug tests execute:
+
+        ./scripts/run-tests-ci.sh --test-junit-debug
+        
+  It will listen for a debugger on 5005 port by default. 
+  
+  Create a Remote Run Configuration in IntelliJ. By default it uses 5005 port as well.
+  
+  Hit debug button to connect to Pants.
+
 * If you want to debug plugin using your local development pants, you can do so by using the property `pants.executable.path`.
   Add this configuration to Pants Run config.
   e.g.
