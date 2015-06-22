@@ -17,6 +17,7 @@ import com.intellij.testIntegration.TestIntegrationUtils;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 
@@ -27,9 +28,9 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
 
   @Override
   protected boolean setupConfigurationFromContext(
-    ExternalSystemRunConfiguration configuration,
-    ConfigurationContext context,
-    Ref<PsiElement> sourceElement
+    @NotNull ExternalSystemRunConfiguration configuration,
+    @NotNull ConfigurationContext context,
+    @NotNull Ref<PsiElement> sourceElement
   ) {
     final Module module = context.getModule();
     if (module == null) {
@@ -63,8 +64,8 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
 
   @Override
   public boolean isConfigurationFromContext(
-    ExternalSystemRunConfiguration configuration,
-    ConfigurationContext context
+    @NotNull ExternalSystemRunConfiguration configuration,
+    @NotNull ConfigurationContext context
   ) {
     final ExternalSystemRunConfiguration tempConfig = new ExternalSystemRunConfiguration(
       PantsConstants.SYSTEM_ID, context.getProject(), configuration.getFactory(), configuration.getName()
