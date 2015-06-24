@@ -5,6 +5,8 @@ package com.twitter.intellij.pants.projectview;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.SelectInTarget;
+import com.intellij.ide.projectView.ProjectView;
+import com.intellij.ide.projectView.ProjectViewSettings;
 import com.intellij.ide.projectView.ViewSettings;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPSIPane;
 import com.intellij.ide.projectView.impl.ProjectAbstractTreeStructureBase;
@@ -13,8 +15,16 @@ import com.intellij.ide.projectView.impl.ProjectViewTree;
 import com.intellij.ide.util.treeView.AbstractTreeBuilder;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.ide.util.treeView.AbstractTreeUpdater;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.ToggleAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.openapi.util.JDOMExternalizerUtil;
+import com.intellij.openapi.util.WriteExternalException;
 import com.twitter.intellij.pants.PantsBundle;
+import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +34,8 @@ import javax.swing.tree.DefaultTreeModel;
 
 public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
   @NonNls public static final String ID = "ProjectFilesPane";
+  public static final String SHOW_EXCLUDED_FILES_OPTION = "show-excluded-files";
+  private boolean myShowExcludedFiles = true;
 
   public ProjectFilesViewPane(Project project) {
     super(project);
@@ -54,13 +66,28 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
   }
 
   @Override
+  public void readExternal(Element element) throws InvalidDataException {
+    super.readExternal(element);
+    String showExcludedOption = JDOMExternalizerUtil.readField(element, SHOW_EXCLUDED_FILES_OPTION);
+    myShowExcludedFiles = showExcludedOption == null || Boolean.parseBoolean(showExcludedOption);
+  }
+
+  @Override
+  public void writeExternal(Element element) throws WriteExternalException {
+    super.writeExternal(element);
+    if (!myShowExcludedFiles) {
+      JDOMExternalizerUtil.writeField(element, SHOW_EXCLUDED_FILES_OPTION, String.valueOf(false));
+    }
+  }
+
+  @Override
+  public void addToolbarActions(DefaultActionGroup actionGroup) {
+    actionGroup.addAction(new ShowExcludedFilesAction()).setAsSecondary(true);
+  }
+
+  @Override
   protected ProjectAbstractTreeStructureBase createStructure() {
-    return new ProjectTreeStructure(myProject, ID) {
-      @Override
-      protected AbstractTreeNode createRoot(final Project project, ViewSettings settings) {
-        return new ProjectFilesViewProjectNode(project, settings);
-      }
-    };
+    return new ProjectViewPaneTreeStructure();
   }
 
   @Override
@@ -81,5 +108,52 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
   @Override
   public SelectInTarget createSelectInTarget() {
     return new PantsProjectPaneSelectInTarget(myProject);
+  }
+
+  private class ProjectViewPaneTreeStructure extends ProjectTreeStructure implements ProjectViewSettings {
+    public ProjectViewPaneTreeStructure() {
+      super(ProjectFilesViewPane.this.myProject, ID);
+    }
+
+    @Override
+    protected AbstractTreeNode createRoot(final Project project, ViewSettings settings) {
+      return new ProjectFilesViewProjectNode(project, settings);
+    }
+
+    @Override
+    public boolean isShowExcludedFiles() {
+      return myShowExcludedFiles;
+    }
+  }
+
+  private final class ShowExcludedFilesAction extends ToggleAction {
+    private ShowExcludedFilesAction() {
+      super(
+        PantsBundle.message("pants.action.show.excluded.files"),
+        PantsBundle.message("pants.action.show.hide.excluded.files"),
+        null
+      );
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent event) {
+      return myShowExcludedFiles;
+    }
+
+    @Override
+    public void setSelected(AnActionEvent event, boolean flag) {
+      if (myShowExcludedFiles != flag) {
+        myShowExcludedFiles = flag;
+        updateFromRoot(true);
+      }
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+      super.update(e);
+      final Presentation presentation = e.getPresentation();
+      final ProjectView projectView = ProjectView.getInstance(myProject);
+      presentation.setEnabledAndVisible(projectView.getCurrentProjectViewPane() == ProjectFilesViewPane.this);
+    }
   }
 }
