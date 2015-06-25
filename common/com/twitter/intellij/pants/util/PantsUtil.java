@@ -320,14 +320,21 @@ public class PantsUtil {
     return targetName.replace(':', delimeter).replace('/', delimeter).replace('\\', delimeter);
   }
 
-  @Nullable
-  @Contract(value = "null -> null", pure = true)
-  public static PantsTargetAddress getTargetAddressFromModule(@Nullable Module module) {
+  @NotNull
+  public static List<PantsTargetAddress> getTargetAddressesFromModule(@Nullable Module module) {
     if (module == null || !isPantsModule(module)) {
-      return null;
+      return Collections.emptyList();
     }
-    final String targetAddress = module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_ID_KEY);
-    return targetAddress != null ? PantsTargetAddress.fromString(targetAddress) : null;
+    final String targets = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+    return ContainerUtil.mapNotNull(
+      StringUtil.split(StringUtil.notNullize(targets), ","),
+      new Function<String, PantsTargetAddress>() {
+        @Override
+        public PantsTargetAddress fun(String targetAddress) {
+          return PantsTargetAddress.fromString(targetAddress);
+        }
+      }
+    );
   }
 
   public static boolean isPantsProject(@NotNull Project project) {

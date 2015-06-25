@@ -7,19 +7,24 @@ import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.externalSystem.model.execution.ExternalSystemTaskExecutionSettings;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
-import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.testIntegration.TestIntegrationUtils;
+import com.intellij.util.ObjectUtils;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.List;
 
 public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
   protected PantsTestRunConfigurationProducer() {
@@ -36,13 +41,41 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     if (module == null) {
       return false;
     }
-    final PantsTargetAddress targetAddress = PantsUtil.getTargetAddressFromModule(module);
-    if (targetAddress == null) {
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
+    if (workingDir == null) {
+      return false;
+    }
+    final List<PantsTargetAddress> targets = PantsUtil.getTargetAddressesFromModule(module);
+    if (targets.isEmpty()) {
       return false;
     }
 
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
-    taskSettings.setExternalProjectPath(module.getOptionValue(ExternalSystemConstants.LINKED_PROJECT_PATH_KEY));
+
+    /**
+     * todo: try to find a better way to handle multiple targets per external project
+     * it's a big issue for targets with common source roots
+     * but it's also a sign of a bad targets layout.
+     * For now we'll try to find a `main` target or a target with 'test' in it's name.
+     *
+     * Note: there is additional issue with PantsTaskManager
+     * PantsTaskManager#executeTasks supposed to be invoked in an external process
+     * so there is no access to ProjectManager#getOpenProjects() for example.
+    **/
+    PantsTargetAddress mainTarget = null, testTarget = null;
+    for (PantsTargetAddress target : targets) {
+      if (target.isMainTarget()) {
+        mainTarget = target;
+        break;
+      }
+      if (StringUtil.startsWith(target.getTargetName(), "test")) {
+        testTarget = target;
+      }
+    }
+    final PantsTargetAddress targetAddress =
+      ObjectUtils.notNull(mainTarget, ObjectUtils.notNull(testTarget, targets.iterator().next()));
+
+    taskSettings.setExternalProjectPath(FileUtil.join(workingDir.getPath(), targetAddress.toString()));
     taskSettings.setTaskNames(Collections.singletonList("test"));
 
     final PsiElement psiLocation = context.getPsiLocation();
@@ -55,7 +88,8 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
         "--test-junit-test=" + psiClass.getQualifiedName()
       );
     } else {
-      configuration.setName("Test " + targetAddress.getRelativePath() + ":" + targetAddress.getTargetName());
+      final String name = targets.size() == 1 ? targetAddress.getTargetName() : module.getName();
+      configuration.setName("Test " + name);
       taskSettings.setScriptParameters("--no-test-junit-suppress-output");
     }
 

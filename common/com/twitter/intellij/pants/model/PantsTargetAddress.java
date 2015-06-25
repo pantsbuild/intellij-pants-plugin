@@ -54,6 +54,10 @@ public class PantsTargetAddress {
     return result;
   }
 
+  public boolean isMainTarget() {
+    return StringUtil.equals(PathUtil.getFileName(getPath()), getTargetName());
+  }
+
   /**
    * @param strict - if <code>true</code> the method will return <code>null</code> if there is no <code>:</code> indicating a target name.
    */
