@@ -284,16 +284,21 @@ public class PantsResolver extends PantsResolverBase {
               @Override
               public LibraryData create() {
                 final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
-                if (libraryJars.getDefault() != null) {
-                  libraryData.addPath(LibraryPathType.BINARY, libraryJars.getDefault());
-                }
-                if (libraryJars.getSources() != null) {
-                  libraryData.addPath(LibraryPathType.SOURCE, libraryJars.getSources());
-                }
-                if (libraryJars.getJavadoc() != null) {
-                  libraryData.addPath(LibraryPathType.DOC, libraryJars.getJavadoc());
-                }
+                addPath(libraryData, LibraryPathType.BINARY, libraryJars.getDefault());
+                addPath(libraryData, LibraryPathType.SOURCE, libraryJars.getSources());
+                addPath(libraryData, LibraryPathType.DOC,    libraryJars.getJavadoc());
                 return libraryData;
+              }
+
+              private void addPath(LibraryData libraryData, LibraryPathType binary, String path) {
+                if (path == null) {
+                  return;
+                }
+                path = FileUtil.isAbsolute(path) ? path : myExecutor.getAbsolutePathFromWorkingDir(path);
+
+                if (new File(path).exists()) {
+                  libraryData.addPath(binary, path);
+                }
               }
             }
           );

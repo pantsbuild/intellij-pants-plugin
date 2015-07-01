@@ -271,16 +271,17 @@ public class PantsCompileOptionsExecutor {
     // in unit test mode it's always preview but we need to know libraries
     // because some jvm_binary targets are actually Scala ones and we need to
     // set a proper com.twitter.intellij.pants.compiler output folder
-    if (myResolveJars || ApplicationManager.getApplication().isUnitTestMode()) {
+    if ((myResolveJars && myResolveSourcesForJars) || ApplicationManager.getApplication().isUnitTestMode()) {
       commandLine.addParameter("resolve.ivy");
       commandLine.addParameter("--confs=default");
-      if (myResolveSourcesForJars) {
-        commandLine.addParameter("--confs=sources");
-      }
+      commandLine.addParameter("--confs=sources");
       commandLine.addParameter("--soft-excludes");
     }
 
     commandLine.addParameter("export");
+    if (!myResolveJars) {
+      commandLine.addParameter("--no-libraries");
+    }
     commandLine.addParameters(getAllTargetAddresses());
 
     if (getOptions().isWithDependees()) {
