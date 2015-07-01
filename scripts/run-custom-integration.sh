@@ -5,7 +5,7 @@ source scripts/prepare-ci-environment.sh
 function usage() {
   echo "Runs commons tests for local or hosted CI."
   echo
-  echo "Usage: $0 (-h|-bsrdpceat)"
+  echo "Usage: $0 (-h|-rtf)"
   echo " -h        print out this help message"
   echo " -r        path to your test repo"
   echo " -f        file containing list of targets"
@@ -33,25 +33,14 @@ if [ -z "$repo" ]; then
   exit -1
 fi
 
-target_list_option=''
-targets_list_args=''
+cmd=$(append_intellij_jvm_options "test.junit")
+cmd="$cmd --jvm-options=-Dproject.workspace=$repo"
 if [ ! -z "$targets_list" ]; then
-  target_list_option="project.targets"
-  targets_list_args="$targets_list"
+  cmd="$cmd --jvm-options=-Dproject.targets=$targets_list"
 fi
 
 if [ ! -z "$target_list_file" ]; then
-  target_list_option="project.target.list.file"
-  targets_list_args="$target_list_file"
+  cmd="$cmd --jvm-options=-Dproject.target.list.file=$target_list_file"
 fi
 
-CWD=$(pwd)
-./pants test.junit \
-  --jvm-options="-Didea.load.plugins.id=com.intellij.plugins.pants" \
-  --jvm-options="-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME" \
-  --jvm-options="-Didea.home.path=$CWD/.pants.d/intellij/plugins-sandbox/test" \
-  --jvm-options="-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java" \
-  --jvm-options="-Dpants.jps.plugin.classpath=$CWD/.pants.d/resources/prepare/jps-plugin.services" \
-  --jvm-options="-Dproject.workspace=$repo"  \
-  --jvm-options="-D$target_list_option=$targets_list_args" \
-  testFramework/com/twitter/intellij/pants/testFramework/runner
+./pants $cmd testFramework/com/twitter/intellij/pants/testFramework/runner

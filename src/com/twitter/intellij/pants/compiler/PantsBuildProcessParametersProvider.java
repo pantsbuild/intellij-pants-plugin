@@ -14,7 +14,7 @@ public class PantsBuildProcessParametersProvider extends BuildProcessParametersP
   @Override
   public List<String> getClassPath() {
     // Hack to provide additional classpath to compilation process
-    // in BuildManager. See scripts/run-tests.sh
+    // in BuildManager. See scripts/prepare-ci-environment.sh
     final String classpath = System.getProperty("pants.jps.plugin.classpath");
     if (StringUtil.isNotEmpty(classpath)) {
       return StringUtil.split(classpath, ":");

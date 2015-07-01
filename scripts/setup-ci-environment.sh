@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
-set -e
-
 source scripts/prepare-ci-environment.sh
 
 # we will use Community ids to download plugins.
 SCALA_PLUGIN_ID="org.intellij.scala"
 PYTHON_PLUGIN_ID="PythonCore"
+if [[ $IJ_ULTIMATE == "true" ]]; then
+  PYTHON_PLUGIN_ID="Pythonid"
+fi
 
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 

@@ -1,109 +1,20 @@
 import os
 
-_intellij_sdk_jars = [
-    'annotations.jar',
-    'asm-all.jar',
-    'asm-commons.jar',
-    'asm.jar',
-    'asm4-all.jar',
-    'automaton.jar',
-    'boot.jar',
-    'bootstrap.jar',
-    'cglib-2.2.2.jar',
-    'cli-parser-1.1.jar',
-    'commons-codec-1.8.jar',
-    'commons-httpclient-3.1-patched.jar',
-    'commons-logging-1.1.3.jar',
-    'commons-net-3.3.jar',
-    'ecj-4.4.jar',
-    'extensions.jar',
-    'fluent-hc-4.3.6.jar',
-    'forms_rt.jar',
-    'freemarker.jar',
-    'groovy-all-2.3.9.jar',
-    'gson-2.3.jar',
-    'guava-17.0.jar',
-    'hamcrest-core-1.3.jar',
-    'hamcrest-library-1.3.jar',
-    'httpclient-4.3.6.jar',
-    'httpcore-4.3.3.jar',
-    'httpmime-4.3.6.jar',
-    'icons.jar',
-    'idea.jar',
-    'idea_rt.jar',
-    'isorelax.jar',
-    'javac2.jar',
-    'jaxen-1.1.3.jar',
-    'jayatana-1.2.4.jar',
-    'jcip-annotations.jar',
-    'jdkAnnotations.jar',
-    'jdom.jar',
-    'jgoodies-common-1.2.1.jar',
-    'jgoodies-forms.jar',
-    'jgoodies-looks-2.4.2.jar',
-    'jh.jar',
-    'jing.jar',
-    'jna-utils.jar',
-    'jna.jar',
-    'jps-launcher.jar',
-    'jps-model.jar',
-    'jps-server.jar',
-    'jsch-0.1.51.jar',
-    'jsch.agentproxy.connector-factory.jar',
-    'jsch.agentproxy.core.jar',
-    'jsch.agentproxy.pageant.jar',
-    'jsch.agentproxy.sshagent.jar',
-    'jsch.agentproxy.usocket-jna.jar',
-    'jsch.agentproxy.usocket-nc.jar',
-    'jsr166e.jar',
-    'jsr173_1.0_api.jar',
-    'junit-4.11.jar',
-    'jzlib-1.1.1.jar',
-    'log4j.jar',
-    'markdownj-core-0.4.2-SNAPSHOT.jar',
-    'microba.jar',
-    'miglayout-swing.jar',
-    'nanoxml-2.2.3.jar',
-    'nekohtml-1.9.14.jar',
-    'netty-all-4.1.0.Beta4.jar',
-    'openapi.jar',
-    'optimizedFileManager.jar',
-    'oromatcher.jar',
-    'picocontainer.jar',
-    'protobuf-2.5.0.jar',
-    'proxy-vole_20131209.jar',
-    'pty4j-0.4.12.jar',
-    'purejavacomm.jar',
-    'resolver.jar',
-    'resources.jar',
-    'resources_en.jar',
-    'rhino-js-1_7R4.jar',
-    'rngom-20051226-patched.jar',
-    'sanselan-0.98-snapshot.jar',
-    'serviceMessages.jar',
-    'snappy-in-java-0.3.1.jar',
-    'swingx-core-1.6.2.jar',
-    'trang-core.jar',
-    'trove4j.jar',
-    'trove4j_src.jar',
-    'util.jar',
-    'velocity.jar',
-    'winp-1.21-patched.jar',
-    'xbean.jar',
-    'xerces.jar',
-    'xmlrpc-2.0.jar',
-    'xpp3-1.1.4-min.jar',
-    'xstream-1.4.3.jar',
-]
-
-_intellij_ultimate_sdk_jars = [
-    'idea-jsp-openapi.jar'
-]
-
 _jdk_jars = [
     'sa-jdi.jar',
     'tools.jar'
 ]
+
+def is_ultimate():
+    return os.getenv('IJ_ULTIMATE', 'false') == 'true'
+
+def _find_all_jars(root_dir):
+    result = []
+    for root, _, files in os.walk(root_dir):
+        for file in files:
+            if file.endswith('.jar'):
+                result.append(os.path.join(root, file))
+    return result
 
 def _jar_path_in_lib_folder(base_dir, jar_name):
     lib_path = os.path.join(base_dir, 'lib')
@@ -111,8 +22,6 @@ def _jar_path_in_lib_folder(base_dir, jar_name):
 
 def _jar_path_in_folder(lib_path, jar_name):
     jar_path = os.path.join(lib_path, jar_name)
-    if not os.path.exists(jar_path):
-        raise Exception('Cannot find %s in %s!' % (jar_name, lib_path))
     return jar_path
 
 def _intellij_sdk_classpath():
@@ -120,17 +29,35 @@ def _intellij_sdk_classpath():
     if not os.path.exists(base_dir):
         raise Exception('Directory %s not exists!' % base_dir)
 
-    intellij_ultimate_flag = os.environ.get('IJ_ULTIMATE')
-    additional_intellij_sdk_jars = _intellij_ultimate_sdk_jars if intellij_ultimate_flag and intellij_ultimate_flag == 'true' else []
+    def plugin_jar(path, name=None):
+        file_name = os.path.basename(path)
+        jar_name = '{}.{}'.format(name, file_name) if name else file_name
+        return jar(
+            org='com.intellij.sdk.%s' % ('ultimate' if is_ultimate() else 'community'),
+            name=jar_name,
+            rev='latest',
+            url='file://%s' % path,
+        )
 
-    intellij_jars = [_jar_path_in_lib_folder(base_dir, jar_name) for jar_name in _intellij_sdk_jars + additional_intellij_sdk_jars]
+    intellij_jars = []
+
+    # lib
+    for file in os.listdir(os.path.join(base_dir, 'lib')):
+        if file.endswith('.jar'):
+            intellij_jars.append(plugin_jar(os.path.join(base_dir, 'lib', file)))
+
+    for plugin_name in os.listdir(os.path.join(base_dir, 'plugins')):
+        plugin_root = os.path.join(base_dir, 'plugins', plugin_name)
+        for jar_path in _find_all_jars(plugin_root):
+            intellij_jars.append(plugin_jar(jar_path, plugin_name))
 
     external_api_jar_path = os.path.join(os.getcwd(), 'testData', 'external-system-test-api-impl.jar')
     if not os.path.exists(external_api_jar_path):
         raise Exception('File %s not exists!' % external_api_jar_path)
-    additional_jars = [external_api_jar_path]
 
-    return intellij_jars + additional_jars
+    intellij_jars.append(plugin_jar(external_api_jar_path))
+
+    return intellij_jars
 
 def _jdk_classpath():
     jdk_libs_home = os.environ['JDK_LIBS_HOME']
@@ -172,17 +99,23 @@ def _jdk_jar(path):
 
 jar_library(
     name = 'sdk',
-    jars =
-      [ _intellij_sdk_jar(path) for path in _intellij_sdk_classpath() ] +
-      [ _jdk_jar(path) for path in _jdk_classpath() ]
+    jars = _intellij_sdk_classpath() + [ _jdk_jar(path) for path in _jdk_classpath() ]
 )
 
 jar_library(
     name = 'python-plugin',
-    jars = [ _intellij_plugin_jar(path) for path in _find_jars_for_plugin('python', 'python-community.jar') ]
+    jars = [
+        _intellij_plugin_jar(path) for path in _find_jars_for_plugin('python',
+            'python.jar' if is_ultimate() else 'python-community.jar'
+        )
+    ]
 )
 
 jar_library(
     name = 'scala-plugin',
-    jars = [ _intellij_plugin_jar(path) for path in _find_jars_for_plugin('Scala', 'scala-plugin.jar', 'jps/scala-jps-plugin.jar') ]
+    jars = [
+        _intellij_plugin_jar(path) for path in _find_jars_for_plugin('Scala',
+            'scala-plugin.jar', 'jps/scala-jps-plugin.jar', 'scala-play-2-jps-plugin.jar', 'compiler-settings.jar'
+        )
+    ]
 )
