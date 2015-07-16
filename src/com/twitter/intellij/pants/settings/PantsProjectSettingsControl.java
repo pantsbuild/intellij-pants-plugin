@@ -9,10 +9,6 @@ import com.intellij.openapi.externalSystem.service.settings.ExternalSystemSettin
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
 import com.intellij.openapi.externalSystem.util.PaintAwarePanel;
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.progress.PerformInBackgroundOption;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -27,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
@@ -102,29 +99,14 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   }
 
   private void loadTargets(final String projectPath) {
-    myTargets.setPaintBusy(true);
-    ProgressManager.getInstance().run(
-      new Task.Backgroundable(
-        null, PantsBundle.message("pants.settings.text.loading.targets"),
-        false, PerformInBackgroundOption.ALWAYS_BACKGROUND
-      ) {
+    final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
+    UIUtil.invokeLaterIfNeeded(
+      new Runnable() {
         @Override
-        public void run(@NotNull ProgressIndicator indicator) {
-          try {
-            final List<String> targets = PantsUtil.listAllTargets(projectPath);
-            UIUtil.invokeLaterIfNeeded(
-              new Runnable() {
-                @Override
-                public void run() {
-                  myTargets.clear();
-                  for (String target : targets) {
-                    myTargets.addItem(target, target, false);
-                  }
-                }
-              }
-            );
-          } finally {
-            myTargets.setPaintBusy(false);
+        public void run() {
+          myTargets.clear();
+          for (String target : targets) {
+            myTargets.addItem(target, target, false);
           }
         }
       }

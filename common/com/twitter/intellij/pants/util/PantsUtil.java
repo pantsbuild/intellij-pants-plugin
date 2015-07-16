@@ -246,51 +246,20 @@ public class PantsUtil {
     return commandLine.withWorkDirectory(workingDir);
   }
 
-  public static List<String> listAllTargets(@NotNull String projectPath) throws PantsException {
-    final GeneralCommandLine commandLine = defaultCommandLine(projectPath);
-    commandLine.addParameter("list");
+  public static Collection<String> listAllTargets(@NotNull String projectPath) throws PantsException {
     try {
-      final File temporaryFile = FileUtil.createTempFile("pants_run", ".out");
-      commandLine.addParameter("--list-output-file=" + temporaryFile.getPath());
-      final File workDirectory = commandLine.getWorkDirectory();
-      final String relativePath = FileUtil.getRelativePath(workDirectory, new File(projectPath).getParentFile());
-
-      if (relativePath == null) {
-        throw new PantsException(String.format("Can't find relative path from %s to %s", workDirectory.getPath(), projectPath));
-      }
-
-      commandLine.addParameter(relativePath + "::");
-
-      final ProcessOutput commandOutput = PantsUtil.getCmdOutput(commandLine, null);
-      if (commandOutput.getStdout().contains("no such option")) {
-        throw new PantsException("Pants doesn't have necessary APIs. Please upgrade you pants!");
-      }
-      final String processOutput = FileUtil.loadFile(temporaryFile);
-      return ContainerUtil.map(
-        ContainerUtil.filter(
-          StringUtil.splitByLines(processOutput),
-          new Condition<String>() {
-            @Override
-            public boolean value(String s) {
-              return s.startsWith(relativePath + ":");
-            }
-          }
-        ),
-        new Function<String, String>() {
-          @Override
-          public String fun(String target) {
-            int index = target.lastIndexOf(':');
-            return target.substring(index + 1);
-          }
-        }
-      );
-    }
-    catch (ExecutionException e) {
-      throw new PantsException(e);
+      final String fileContent = removeWhitespace(FileUtil.loadFile(new File(projectPath)));
+      final Set<String> result = new TreeSet<String>();
+      result.addAll(StringUtil.findMatches(fileContent, Pattern.compile("\\Wname=(['\"])([\\w-_]+)\\1"), 2));
+      return result;
     }
     catch (IOException e) {
       throw new PantsException(e.getMessage());
     }
+  }
+
+  public static String removeWhitespace(@NotNull String text) {
+    return text.replaceAll("\\s","");
   }
 
   public static boolean isGeneratableFile(@NotNull String path) {
