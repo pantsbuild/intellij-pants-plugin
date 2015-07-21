@@ -16,7 +16,7 @@ env:
     - IJ_ULTIMATE=false
     - IJ_ULTIMATE=true
     - USE_PANTS_TO_COMPILE=false
-    - USE_ISOLATED_STRATEGY=true
+    - USE_ISOLATED_STRATEGY=false
     - PANTS_SHA=261bb71418f2605ff397d74b589cc74fed88bcda TEST_SET=integration # 0.0.36
     - PANTS_SHA=69a95616bc5ab498166adf939e5634e6fa2ff0ae TEST_SET=integration # 0.0.35
     - PANTS_SHA=c2342bb240321a7bd53adec744abf6246a20492e TEST_SET=integration # 0.0.34

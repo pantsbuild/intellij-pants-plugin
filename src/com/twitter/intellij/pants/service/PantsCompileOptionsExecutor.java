@@ -57,7 +57,7 @@ public class PantsCompileOptionsExecutor {
     @Override
     protected PantsCompilerOptions compute() {
       final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
-      commandLine.addParameters("help", "compile");
+      commandLine.addParameters("help", "compile", "--no-color");
       try {
         final ProcessOutput processOutput = getProcessOutput(commandLine, null);
         final boolean isIsolated = StringUtil.contains(processOutput.getStdout(), "default: isolated");
@@ -71,9 +71,11 @@ public class PantsCompileOptionsExecutor {
             }
           }
         );
-        final boolean zincForJava = (zincLineIndex + 1) < stdoutLines.size() &&
-                                    StringUtil.contains(stdoutLines.get(zincLineIndex + 1), "default: True");
-        return new PantsCompilerOptions(isIsolated, zincForJava);
+        final boolean zincForJava1 = zincLineIndex >= 0 &&
+                                     StringUtil.contains(stdoutLines.get(zincLineIndex), "default: True");
+        final boolean zincForJava2 = (zincLineIndex + 1) < stdoutLines.size() &&
+                                     StringUtil.contains(stdoutLines.get(zincLineIndex + 1), "default: True");
+        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2);
       }
       catch (ExecutionException e) {
         LOG.warn(e);
