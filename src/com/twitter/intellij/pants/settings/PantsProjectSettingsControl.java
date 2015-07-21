@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.CheckBoxList;
+import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.UIUtil;
@@ -50,7 +51,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     content.add(myLibsWithSourcesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
     content.add(targetsLabel, ExternalSystemUiUtil.getLabelConstraints(indentLevel));
-    content.add(myTargets, ExternalSystemUiUtil.getFillLineConstraints(0));
+    content.add(ScrollPaneFactory.createScrollPane(myTargets), ExternalSystemUiUtil.getFillLineConstraints(0));
   }
 
   @Override
