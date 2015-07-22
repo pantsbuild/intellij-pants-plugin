@@ -27,6 +27,7 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -362,6 +363,46 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
     return modules.toArray(new Module[modules.size()]);
   }
+
+  /**
+   *  Same as super method except it doesn't check for gen modules.
+   *  It appeared names of gen modules are changing from time to time
+   *  and we can't use a determenistic one because we run tests
+   *  for different version of pants.
+   *
+   *  Use assertGenModules instead.
+   */
+  @Override
+  protected void assertModules(String... expectedNames) {
+    final Module[] actual = ModuleManager.getInstance(myProject).getModules();
+    final List<String> moduleNames = ContainerUtil.mapNotNull(
+      actual,
+      new Function<Module, String>() {
+        @Override
+        public String fun(Module module) {
+          final String moduleName = module.getName();
+          return moduleName.startsWith(".pants.d") ? null : moduleName;
+        }
+      }
+    );
+
+    assertUnorderedElementsAreEqual(moduleNames, expectedNames);
+  }
+
+  protected void assertGenModules(int count) {
+    final List<Module> genModules = ContainerUtil.findAll(
+      ModuleManager.getInstance(myProject).getModules(),
+      new Condition<Module>() {
+        @Override
+        public boolean value(Module module) {
+          return module.getName().startsWith(".pants.d");
+        }
+      }
+    );
+
+    assertSize(count, genModules);
+  }
+
 
   @Override
   public void tearDown() throws Exception {
