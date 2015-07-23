@@ -81,9 +81,11 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     final List<Pair<String, TargetInfo>> result = new ArrayList<Pair<String, TargetInfo>>();
 
     for (Pair<String, TargetInfo> targetInfoPair : targetsForSourceRoot) {
+      final String targetName = targetInfoPair.getFirst();
       final TargetInfo info = targetInfoPair.getSecond();
       if (info.dependOnAny(targetNames)) {
         info.getRoots().remove(originalSourceRoot);
+        targetNames.remove(targetName);
       } else {
         result.add(targetInfoPair);
       }
