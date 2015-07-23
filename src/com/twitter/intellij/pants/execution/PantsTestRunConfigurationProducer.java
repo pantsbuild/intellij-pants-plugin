@@ -79,8 +79,13 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     taskSettings.setTaskNames(Collections.singletonList("test"));
 
     final PsiElement psiLocation = context.getPsiLocation();
-    final PsiClass psiClass = psiLocation != null ? TestIntegrationUtils.findOuterClass(psiLocation) : null;
-    if (psiClass != null && TestIntegrationUtils.isTest(psiClass)) {
+
+    if (psiLocation == null || !TestIntegrationUtils.isTest(psiLocation)) {
+      return false;
+    }
+
+    final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);
+    if (psiClass != null) {
       sourceElement.set(psiClass);
       configuration.setName("Test " + psiClass.getName());
       taskSettings.setScriptParameters(
