@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class TargetInfo {
@@ -144,6 +145,18 @@ public class TargetInfo {
         @Override
         public boolean value(TargetAddressInfo info) {
           return info.isScala();
+        }
+      }
+    );
+  }
+
+  public boolean dependOnAny(@NotNull List<String> targetNames) {
+    return !targetNames.isEmpty() && ContainerUtil.exists(
+      targetNames,
+      new Condition<String>() {
+        @Override
+        public boolean value(String targetName) {
+          return dependOn(targetName);
         }
       }
     );

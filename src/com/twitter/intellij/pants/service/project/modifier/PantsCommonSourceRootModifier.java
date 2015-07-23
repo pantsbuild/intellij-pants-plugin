@@ -4,11 +4,11 @@
 package com.twitter.intellij.pants.service.project.modifier;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Factory;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
@@ -16,7 +16,6 @@ import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -40,8 +39,8 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     final String pantsWorkingDirPath = findPantsWorkingDirPath(sourceRoot2Targets);
 
     for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
-      final List<Pair<String, TargetInfo>> targetNameAndInfos = entry.getValue();
       final SourceRoot originalSourceRoot = entry.getKey();
+      final List<Pair<String, TargetInfo>> targetNameAndInfos = handleInnerDeps(originalSourceRoot, entry.getValue());
       if (targetNameAndInfos.size() <= 1) {
         continue;
       }
@@ -55,6 +54,42 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
         nameAndInfo.getSecond().addDependency(commonTargetNameAndInfo.getFirst());
       }
     }
+  }
+
+  /**
+   *  Handle cases when some targets for a source root depends on each other.
+   *
+   *  For example if targets A and B have a common source root but A depends on B
+   *  then we can simply remove the common source root from roots of A.
+   *  A will get it transitively from B.
+   */
+  @NotNull
+  private List<Pair<String, TargetInfo>> handleInnerDeps(
+    @NotNull SourceRoot originalSourceRoot,
+    @NotNull List<Pair<String, TargetInfo>> targetsForSourceRoot
+  ) {
+    final List<String> targetNames = ContainerUtil.map(
+      targetsForSourceRoot,
+      new Function<Pair<String, TargetInfo>, String>() {
+        @Override
+        public String fun(Pair<String, TargetInfo> nameAndInfo) {
+          return nameAndInfo.getFirst();
+        }
+      }
+    );
+
+    final List<Pair<String, TargetInfo>> result = new ArrayList<Pair<String, TargetInfo>>();
+
+    for (Pair<String, TargetInfo> targetInfoPair : targetsForSourceRoot) {
+      final TargetInfo info = targetInfoPair.getSecond();
+      if (info.dependOnAny(targetNames)) {
+        info.getRoots().remove(originalSourceRoot);
+      } else {
+        result.add(targetInfoPair);
+      }
+    }
+
+    return result;
   }
 
   @NotNull
@@ -117,6 +152,19 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     while (iterator.hasNext()) {
       commonInfo = commonInfo.union(iterator.next().getSecond());
     }
+    // make sure we won't have cyclic deps
+    commonInfo.getTargets().removeAll(
+      ContainerUtil.map(
+        targetNameAndInfos,
+        new Function<Pair<String, TargetInfo>, String>() {
+          @Override
+          public String fun(Pair<String, TargetInfo> info) {
+            return info.getFirst();
+          }
+        }
+      )
+    );
+
     final Set<SourceRoot> newRoots = ContainerUtil.newHashSet(originalSourceRoot);
     commonInfo.setRoots(newRoots);
     return commonInfo;
