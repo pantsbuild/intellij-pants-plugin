@@ -394,6 +394,12 @@ public class PantsUtil {
   }
 
   @Nullable
+  public static String getRelativeProjectPath(@NotNull File projectFile) {
+    final File workingDir = findPantsWorkingDir(projectFile);
+    return workingDir == null ? null : getRelativeProjectPath(workingDir, projectFile);
+  }
+
+  @Nullable
   public static String getRelativeProjectPath(@NotNull File workDirectory, @NotNull String projectPath) {
     final File projectFile = new File(projectPath);
     return getRelativeProjectPath(workDirectory, projectFile);

@@ -17,12 +17,14 @@ import com.intellij.ui.CheckBoxList;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.StatusText;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -77,12 +79,16 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     }
 
     if (file.isDirectory()) {
+      myTargets.setEnabled(false);
+      myTargets.setEmptyText(PantsUtil.getRelativeProjectPath(new File(file.getPath())) + "/::");
+
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(true);
 
       myLibsWithSourcesCheckBox.setEnabled(true);
     } else if (PantsUtil.isExecutable(file.getPath())) {
       myTargets.setEnabled(false);
+      myTargets.setEmptyText(file.getName());
 
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(false);
@@ -90,6 +96,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myLibsWithSourcesCheckBox.setSelected(false);
       myLibsWithSourcesCheckBox.setEnabled(false);
     } else {
+      myTargets.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
+
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(true);
 
