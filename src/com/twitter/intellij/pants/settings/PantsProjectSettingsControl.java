@@ -43,7 +43,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final JLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
     myTargets = new CheckBoxList<String>();
 
-    myWithDependeesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.dependees"));
+    myWithDependeesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.dependents"));
     content.add(myWithDependeesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
     myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources"));

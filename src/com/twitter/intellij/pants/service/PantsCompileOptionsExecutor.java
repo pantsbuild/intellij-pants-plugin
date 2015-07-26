@@ -287,7 +287,7 @@ public class PantsCompileOptionsExecutor {
     commandLine.addParameters(getAllTargetAddresses());
 
     if (getOptions().isWithDependees()) {
-      statusConsumer.consume( "Looking for dependees...");
+      statusConsumer.consume( "Looking for dependents...");
       commandLine.addParameters(loadDependees(getAllTargetAddresses()));
     }
 
@@ -303,8 +303,9 @@ public class PantsCompileOptionsExecutor {
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
     commandLine.addParameter("--dependees-output-file=" + outputFile.getPath());
 
-    if (!getProcessOutput(commandLine, null).checkSuccess(LOG)) {
-      throw new ExternalSystemException("Failed to find dependees!");
+    final ProcessOutput output = getProcessOutput(commandLine, null);
+    if (!output.checkSuccess(LOG)) {
+      throw new ExternalSystemException("Failed to find dependents!\n" + output.getStderr());
     }
 
     return FileUtil.loadLines(outputFile);
