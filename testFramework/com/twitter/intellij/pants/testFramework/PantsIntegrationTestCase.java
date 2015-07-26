@@ -381,7 +381,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         @Override
         public String fun(Module module) {
           final String moduleName = module.getName();
-          return moduleName.startsWith(".pants.d") ? null : moduleName;
+          return moduleName.startsWith(".pants.d") || moduleName.startsWith("3rdparty") ? null : moduleName;
         }
       }
     );
