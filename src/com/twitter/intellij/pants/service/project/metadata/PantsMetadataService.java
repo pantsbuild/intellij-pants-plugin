@@ -6,6 +6,8 @@ package com.twitter.intellij.pants.service.project.metadata;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataService;
+import com.intellij.openapi.externalSystem.util.DisposeAwareProjectChange;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -27,8 +29,19 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
 
   @Override
   public void importData(
-    @NotNull Collection<DataNode<TargetMetadata>> toImport, @NotNull Project project, boolean synchronous
+    @NotNull final Collection<DataNode<TargetMetadata>> toImport, @NotNull final Project project, boolean synchronous
   ) {
+    ExternalSystemApiUtil.executeProjectChangeAction(
+      synchronous,
+      new DisposeAwareProjectChange(project) {
+        public void execute() {
+          doImport(toImport, project);
+        }
+      }
+    );
+  }
+
+  public void doImport(@NotNull Collection<DataNode<TargetMetadata>> toImport, @NotNull Project project) {
     // for existing projects. for new projects PantsSettings.defaultSettings will provide the version.
     PantsSettings.getInstance(project).setResolverVersion(PantsResolver.VERSION);
     final ModuleManager moduleManager = ModuleManager.getInstance(project);
@@ -44,9 +57,16 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
   }
 
   @Override
-  public void removeData(@NotNull Collection<? extends Module> toRemove, @NotNull Project project, boolean synchronous) {
-    for (Module module : toRemove) {
-      module.clearOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-    }
+  public void removeData(@NotNull final Collection<? extends Module> toRemove, @NotNull final Project project, boolean synchronous) {
+    ExternalSystemApiUtil.executeProjectChangeAction(
+      synchronous,
+      new DisposeAwareProjectChange(project) {
+        public void execute() {
+          for (Module module : toRemove) {
+            module.clearOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+          }
+        }
+      }
+    );
   }
 }

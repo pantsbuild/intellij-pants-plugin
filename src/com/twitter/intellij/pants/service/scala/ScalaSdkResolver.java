@@ -51,6 +51,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
     final String defaultScalaLibId = ContainerUtil.getFirstItem(scalaLibId2Jars.keySet());
 
     if (defaultScalaLibId == null) {
+      LOG.debug("Didn't find any Scala libraries");
       // no scala libs - no problems
       return;
     }

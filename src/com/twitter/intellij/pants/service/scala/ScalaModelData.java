@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.service.scala;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
+import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,5 +25,10 @@ public class ScalaModelData extends AbstractExternalEntityData {
   @NotNull
   public String getScalaLibId() {
     return myScalaLibId;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return super.equals(obj) && StringUtil.equals(getScalaLibId(), ((ScalaModelData)obj).getScalaLibId());
   }
 }
