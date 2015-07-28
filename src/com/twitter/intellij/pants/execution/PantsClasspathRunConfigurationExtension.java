@@ -46,7 +46,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     for (Map.Entry<String, String> excludedPathEntry : findAllExcludedJars(classpath.getPathList(), findExcludes(module)).entrySet()) {
       final String excludedPath = excludedPathEntry.getKey();
       final String address = excludedPathEntry.getValue();
-      LOG.info(address + "excluded " + excludedPath);
+      LOG.info(address + " excluded " + excludedPath);
       classpath.remove(excludedPath);
     }
     processRuntimeModules(
@@ -84,9 +84,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   private void processRuntimeModules(@NotNull Module module, Processor<Module> processor) {
     final OrderEnumerator runtimeEnumerator = OrderEnumerator.orderEntries(module).runtimeOnly().recursively();
-    runtimeEnumerator.forEachModule(
-      processor
-    );
+    runtimeEnumerator.forEachModule(processor);
   }
 
   @NotNull

@@ -34,7 +34,7 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
-  public static final int VERSION = 5;
+  public static final int VERSION = 6;
 
   public PantsResolver(@NotNull PantsCompileOptionsExecutor executor) {
     super(executor);
@@ -85,16 +85,12 @@ public class PantsResolver extends PantsResolverBase {
     for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
       final String targetAddress = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
-      if (!modules.containsKey(targetAddress) || targetInfo.getRoots().isEmpty()) {
+      if (!modules.containsKey(targetAddress)) {
         continue;
       }
       final DataNode<ModuleData> moduleDataNode = modules.get(targetAddress);
 
       final List<ContentRootData> contentRoots = findChildren(moduleDataNode, ProjectKeys.CONTENT_ROOT);
-      if (contentRoots.isEmpty()) {
-        continue;
-      }
-
       addSourceRootsToContentRoots(targetAddress, targetInfo, contentRoots);
       addExcludesToContentRoots(targetInfo, contentRoots);
 
