@@ -83,7 +83,7 @@ public class PantsUtil {
    *
    * @param file - a BUILD file or a directory
    */
-  public static boolean isPantsProjectFolder(VirtualFile file) {
+  public static boolean isPantsProjectFile(VirtualFile file) {
     if (file.isDirectory()) {
       return findPantsExecutable(file) != null;
     }

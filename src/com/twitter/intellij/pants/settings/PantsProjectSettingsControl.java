@@ -72,7 +72,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   public void onProjectPathChanged(@NotNull final String projectPath) {
     myTargets.clear();
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
-    if (file == null || !PantsUtil.isPantsProjectFolder(file)) {
+    if (file == null || !PantsUtil.isPantsProjectFile(file)) {
       myTargets.setEnabled(true);
       LOG.warn("Bad project path: " + projectPath);
       return;
@@ -146,7 +146,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     if (PantsUtil.isExecutable(file.getPath())) {
       return true;
     }
-    if (!PantsUtil.isPantsProjectFolder(file)) {
+    if (!PantsUtil.isPantsProjectFile(file)) {
       throw new ConfigurationException(PantsBundle.message("pants.error.not.build.file.path.or.directory"));
     }
     if (PantsUtil.isBUILDFileName(file.getName()) && myTargets.getSelectedIndices().length == 0) {

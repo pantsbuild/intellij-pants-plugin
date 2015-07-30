@@ -5,7 +5,6 @@ package com.twitter.intellij.pants;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.SimpleJavaParameters;
-import com.intellij.ide.actions.OpenProjectFileChooserDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.ExternalSystemConfigurableAware;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
@@ -52,17 +51,14 @@ public class PantsManager implements
                             PantsLocalSettings,
                             PantsExecutionSettings> {
 
-  public static final FileChooserDescriptor BUILD_FILE_CHOOSER_DESCRIPTOR = new OpenProjectFileChooserDescriptor(true) {
-    @Override
-    public boolean isFileSelectable(VirtualFile file) {
-      return PantsUtil.isPantsProjectFolder(file);
-    }
+  public static final FileChooserDescriptor BUILD_FILE_CHOOSER_DESCRIPTOR =
+    new FileChooserDescriptor(true, true, false, false, false, false) {
+      @Override
+      public boolean isFileSelectable(VirtualFile file) {
+        return super.isFileSelectable(file) && PantsUtil.isPantsProjectFile(file);
+      }
+    };
 
-    @Override
-    public boolean isFileVisible(VirtualFile file, boolean showHiddenFiles) {
-      return super.isFileVisible(file, showHiddenFiles) && PantsUtil.isBUILDFileName(file.getName());
-    }
-  };
   private static final Logger LOG = Logger.getInstance(PantsManager.class);
 
   @NotNull
