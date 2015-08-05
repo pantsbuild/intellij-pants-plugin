@@ -42,8 +42,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void fillExtraControls(@NotNull PaintAwarePanel content, int indentLevel) {
-    final JLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
-    myTargets = new CheckBoxList<String>();
+    final JLabel hintLabel = new JBLabel(PantsBundle.message("pants.settings.text.path.hint"));
+    hintLabel.setBorder(BorderFactory.createTitledBorder(PantsBundle.message("pants.settings.text.hint")));
+    content.add(hintLabel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
     myWithDependeesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.dependents"));
     content.add(myWithDependeesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
@@ -52,7 +53,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myLibsWithSourcesCheckBox.setSelected(false);
     content.add(myLibsWithSourcesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
-    content.add(targetsLabel, ExternalSystemUiUtil.getLabelConstraints(indentLevel));
+    final JLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
+    content.add(targetsLabel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+
+    myTargets = new CheckBoxList<String>();
     content.add(ScrollPaneFactory.createScrollPane(myTargets), ExternalSystemUiUtil.getFillLineConstraints(0));
   }
 
