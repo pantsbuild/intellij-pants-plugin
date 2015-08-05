@@ -100,6 +100,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myLibsWithSourcesCheckBox.setSelected(false);
       myLibsWithSourcesCheckBox.setEnabled(false);
     } else {
+      myTargets.setEnabled(true);
       myTargets.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
 
       myWithDependeesCheckBox.setSelected(false);
