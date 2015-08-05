@@ -166,6 +166,10 @@
     <projectConfigurable instance="com.twitter.intellij.pants.config.PantsProjectCompilerConfigurable"
                          id="intellij-pants" displayName="Pants" parentId="project.propCompiler"/>
 
+    <projectConfigurable groupId="build.tools" groupWeight="110" id="reference.settingsdialog.project.pants"
+                         instance="com.twitter.intellij.pants.settings.PantsConfigurable"
+                         key="pants.name" bundle="com.twitter.intellij.pants.PantsBundle"/>
+
     <projectImportProvider
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider"/>
     <projectImportBuilder
