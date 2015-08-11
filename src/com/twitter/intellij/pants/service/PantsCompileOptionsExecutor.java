@@ -298,6 +298,7 @@ public class PantsCompileOptionsExecutor {
   private List<String> loadDependees(List<String> addresses) throws IOException, ExecutionException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
     commandLine.addParameter("dependees");
+    commandLine.addParameter("--transitive");
     commandLine.addParameters(addresses);
 
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
