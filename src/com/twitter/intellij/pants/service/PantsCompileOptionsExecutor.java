@@ -25,6 +25,7 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.PantsExecutionException;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
@@ -57,11 +58,13 @@ public class PantsCompileOptionsExecutor {
     @Override
     protected PantsCompilerOptions compute() {
       final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
-      commandLine.addParameters("help", "compile", "--no-color");
+      commandLine.addParameters("help-advanced", "compile", "--no-color");
       try {
         final ProcessOutput processOutput = getProcessOutput(commandLine, null);
         final boolean isIsolated = StringUtil.contains(processOutput.getStdout(), "default: isolated");
         final List<String> stdoutLines = processOutput.getStdoutLines(true);
+        final boolean isZincForAll = StringUtil.contains(processOutput.getStdout(), "--compile-zinc-strategy");
+        final boolean useJmakeForJava = StringUtil.contains(processOutput.getStdout(), "compile-java-use-jmake (default: True)");
         final int zincLineIndex = ContainerUtil.indexOf(
           stdoutLines,
           new Condition<String>() {
@@ -75,7 +78,7 @@ public class PantsCompileOptionsExecutor {
                                      StringUtil.contains(stdoutLines.get(zincLineIndex), "default: True");
         final boolean zincForJava2 = (zincLineIndex + 1) < stdoutLines.size() &&
                                      StringUtil.contains(stdoutLines.get(zincLineIndex + 1), "default: True");
-        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2);
+        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2, isZincForAll, useJmakeForJava);
       }
       catch (ExecutionException e) {
         LOG.warn(e);
@@ -124,17 +127,7 @@ public class PantsCompileOptionsExecutor {
       true,
       false,
       Collections.<String>emptyList()
-    ) {
-      @Override
-      public boolean isCompileWithZincForJava() {
-        return false;
-      }
-
-      @Override
-      public boolean isIsolatedStrategy() {
-        return false;
-      }
-    };
+    );
   }
 
   private PantsCompileOptionsExecutor(
@@ -225,7 +218,7 @@ public class PantsCompileOptionsExecutor {
   ) throws IOException, ExecutionException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(scriptPath);
     commandLine.setExePath(scriptPath);
-    statusConsumer.consume("Executing " + PathUtil.getFileName(scriptPath) );
+    statusConsumer.consume("Executing " + PathUtil.getFileName(scriptPath));
     final ProcessOutput processOutput = PantsUtil.getCmdOutput(commandLine, processAdapter);
     if (processOutput.checkSuccess(LOG)) {
       return processOutput.getStdout();
@@ -352,8 +345,18 @@ public class PantsCompileOptionsExecutor {
     getProcessOutput(commandLine, null).checkSuccess(LOG);
   }
 
-  public boolean isCompileWithZincForJava() {
-    return compilerOptions.getValue().isCompileWithZincForJava();
+  public String compilerFolderForTarget(@NotNull TargetAddressInfo targetAddressInfo) {
+    if (targetAddressInfo.isAnnotationProcessor()) {
+      return "apt";
+    }
+    final PantsCompilerOptions options = compilerOptions.getValue();
+    if (targetAddressInfo.isScala()) {
+      return options.isZincForAll() ? "zinc" : "scala";
+    }
+    if (options.isZincForAll() && !options.isUseJmakeForJava()) {
+      return "zinc";
+    }
+    return options.isCompileWithZincForJava() ? "zinc-java" : "java";
   }
 
   public boolean isIsolatedStrategy() {
@@ -419,14 +422,18 @@ public class PantsCompileOptionsExecutor {
   private static class PantsCompilerOptions {
     private final boolean compileWithIsolatedStrategy;
     private final boolean compileWithZincForJava;
+    private final boolean zincForAll;
+    private final boolean useJmakeForJava;
 
     private PantsCompilerOptions() {
-      this(false, false);
+      this(false, false, false, false);
     }
 
-    private PantsCompilerOptions(boolean compileWithIsolatedStrategy, boolean compileWithZincForJava) {
+    private PantsCompilerOptions(boolean compileWithIsolatedStrategy, boolean compileWithZincForJava, boolean zincForAll, boolean useJmakeForJava) {
       this.compileWithIsolatedStrategy = compileWithIsolatedStrategy;
       this.compileWithZincForJava = compileWithZincForJava;
+      this.zincForAll = zincForAll;
+      this.useJmakeForJava = useJmakeForJava;
     }
 
     public boolean isCompileWithIsolatedStrategy() {
@@ -435,6 +442,14 @@ public class PantsCompileOptionsExecutor {
 
     public boolean isCompileWithZincForJava() {
       return compileWithZincForJava;
+    }
+
+    public boolean isZincForAll() {
+      return zincForAll;
+    }
+
+    public boolean isUseJmakeForJava() {
+      return useJmakeForJava;
     }
   }
 }

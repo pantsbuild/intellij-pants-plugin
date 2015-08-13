@@ -165,8 +165,8 @@ public class PantsResolver extends PantsResolverBase {
       return;
     }
     final List<String> compilerOutputPaths = myExecutor.isIsolatedStrategy() ?
-                                      getIsolatedCompilerOutputPath(targetInfo) :
-                                      getCompilerOutputPath(targetInfo);
+                                             getIsolatedCompilerOutputPath(targetInfo) :
+                                             getCompilerOutputPath(targetInfo);
     final ModuleData moduleData = moduleDataNode.getData();
     moduleData.setInheritProjectCompileOutputPath(false);
 
@@ -182,21 +182,14 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   @NotNull
-  private List<String> getIsolatedCompilerOutputPath(@NotNull TargetInfo targetInfo) {
+  private List<String> getIsolatedCompilerOutputPath(@NotNull final TargetInfo targetInfo) {
     return getOutputPaths(
       targetInfo,
       new Function<TargetAddressInfo, String>() {
         @Override
         public String fun(TargetAddressInfo targetAddressInfo) {
-          final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
           final String targetId = targetAddressInfo.getCanonicalId();
-          if (targetAddressInfo.isScala()) {
-            return ".pants.d/compile/jvm/scala/isolated-classes/" + targetId;
-          }
-          else if (targetAddressInfo.isAnnotationProcessor()) {
-            return ".pants.d/compile/jvm/apt/isolated-classes/" + targetId;
-          }
-          return ".pants.d/compile/jvm/" + javaOutputFolderName + "/isolated-classes/" + targetId;
+          return ".pants.d/compile/jvm/" + myExecutor.compilerFolderForTarget(targetAddressInfo) + "/isolated-classes/" + targetId;
         }
       }
     );
@@ -209,14 +202,7 @@ public class PantsResolver extends PantsResolverBase {
       new Function<TargetAddressInfo, String>() {
         @Override
         public String fun(TargetAddressInfo targetAddressInfo) {
-          final String javaOutputFolderName = myExecutor.isCompileWithZincForJava() ? "zinc-java" : "java";
-          if (targetAddressInfo.isScala()) {
-            return ".pants.d/compile/jvm/scala/classes";
-          }
-          else if (targetAddressInfo.isAnnotationProcessor()) {
-            return ".pants.d/compile/jvm/apt/classes";
-          }
-          return ".pants.d/compile/jvm/" + javaOutputFolderName + "/classes";
+          return ".pants.d/compile/jvm/" + myExecutor.compilerFolderForTarget(targetAddressInfo) + "/classes";
         }
       }
     );
