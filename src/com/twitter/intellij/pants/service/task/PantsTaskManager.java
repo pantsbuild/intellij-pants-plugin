@@ -29,15 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExecutionSettings> {
-  private static final Map<String, String> goal2JvmOptionsFlag = ContainerUtil.newHashMap(
-    Pair.create("test", "--test-junit-jvm-options"),
-    Pair.create("run", "--run-jvm-jvm-options")
+  public static final Map<String, String> goal2JvmOptionsFlag = ContainerUtil.newHashMap(
+    Pair.create("test", "--jvm-test-junit-options"),
+    Pair.create("run", "--jvm-run-jvm-options")
   );
-
-  private static final Map<String, List<String>> goal2AdditionalFlags = ContainerUtil.newHashMap(
-    Pair.create("test", Collections.singletonList("--test-junit-parallel-threads=1"))
-  );
-
   private final Map<ExternalSystemTaskId, Process> myCancellationMap = ContainerUtil.newConcurrentMap();
 
   @Override
@@ -89,7 +84,6 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
         throw new ExternalSystemException(PantsBundle.message("pants.error.cannot.debug.task", goal));
       }
       commandLine.addParameter(jvmOptionsFlag + "=" + debuggerSetup);
-      commandLine.addParameters(ContainerUtil.getOrElse(goal2AdditionalFlags, goal, Collections.<String>emptyList()));
     }
 
     listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);
