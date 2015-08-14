@@ -127,7 +127,12 @@ public class PantsCompileOptionsExecutor {
       true,
       false,
       Collections.<String>emptyList()
-    );
+    ) {
+      @Override
+      public boolean isIsolatedStrategy() {
+        return false;
+      }
+    };
   }
 
   private PantsCompileOptionsExecutor(
