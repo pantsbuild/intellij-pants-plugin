@@ -6,7 +6,6 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
@@ -80,7 +79,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData> (ProjectKeys.PROJECT, projectData, null);
 
-    if (!isPreviewMode || ApplicationManager.getApplication().isUnitTestMode()) {
+    if (!isPreviewMode) {
       try {
         resolveUsingPantsGoal(id, executor, listener, projectDataNode);
       }

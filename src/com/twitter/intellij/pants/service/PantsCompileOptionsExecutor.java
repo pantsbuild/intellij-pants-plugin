@@ -7,7 +7,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.util.AtomicNotNullLazyValue;
@@ -271,7 +270,7 @@ public class PantsCompileOptionsExecutor {
     // in unit test mode it's always preview but we need to know libraries
     // because some jvm_binary targets are actually Scala ones and we need to
     // set a proper com.twitter.intellij.pants.compiler output folder
-    if ((myResolveJars && myResolveSourcesForJars) || ApplicationManager.getApplication().isUnitTestMode()) {
+    if (myResolveJars && myResolveSourcesForJars) {
       commandLine.addParameter("resolve.ivy");
       commandLine.addParameter("--confs=default");
       commandLine.addParameter("--confs=sources");
@@ -366,7 +365,7 @@ public class PantsCompileOptionsExecutor {
 
   public boolean isIsolatedStrategy() {
     final boolean result = compilerOptions.getValue().isCompileWithIsolatedStrategy();
-    if (!result && ApplicationManager.getApplication().isUnitTestMode() && PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
+    if (!result && PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
       throw new PantsException("Expected to use isolated strategy!");
     }
     return result;
