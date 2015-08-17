@@ -25,13 +25,12 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
   @Override
   public void initComponent() {
-    // enable inProcessMode for debugging
+    // The Pants plugin doesn't do so many computations for building a project
+    // to start an external JVM each time.
+    // The plugin only calls `export` goal and parses JSON response.
+    // So it will be in process all the time.
     final String key = PantsConstants.SYSTEM_ID.getId() + ExternalSystemConstants.USE_IN_PROCESS_COMMUNICATION_REGISTRY_KEY_SUFFIX;
-
-    final boolean inProcess = Boolean.valueOf(System.getProperty(key.toLowerCase()));
-    // until bug at RemoteExternalSystemCommunicationManager.java:162 is not fixed
-    // we'll always run in inProcess mode
-    Registry.get(key).setValue(true/*inProcess*/);
+    Registry.get(key).setValue(true);
 
     // hack to trick BuildProcessClasspathManager
     final String basePath = System.getProperty("pants.plugin.base.path");

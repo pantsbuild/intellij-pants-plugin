@@ -44,9 +44,11 @@ public class PantsResolver extends PantsResolverBase {
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (myProjectInfo == null) return;
 
+    LOG.debug("Amount of targets before modifiers: " + myProjectInfo.getTargets().size());
     for (PantsProjectInfoModifierExtension modifier : PantsProjectInfoModifierExtension.EP_NAME.getExtensions()) {
       modifier.modify(myProjectInfo, LOG);
     }
+    LOG.debug("Amount of targets after modifiers: " + myProjectInfo.getTargets().size());
 
     final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
     createAllEmptyModules(projectInfoDataNode, modules);
@@ -54,6 +56,10 @@ public class PantsResolver extends PantsResolverBase {
     addDependenciesToModules(modules);
     addLibrariesToModules(modules);
     runResolverExtensions(projectInfoDataNode, modules);
+    if (LOG.isDebugEnabled()) {
+      final int amountOfModules = findChildren(projectInfoDataNode, ProjectKeys.MODULE).size();
+      LOG.debug("Amount of modules created: " + amountOfModules);
+    }
   }
 
   private void createAllEmptyModules(
