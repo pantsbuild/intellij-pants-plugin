@@ -42,7 +42,7 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
     }
 
     return compileWithPants && PantsJpsUtil.containsPantsModules(jpsProject.getModules()) ?
-           new PantsBuildTarget(pantsProjectExtension.getExternalProjectPath(), new HashSet<String>(allTargetAddresses)) : null;
+           new PantsBuildTarget(pantsProjectExtension.getPantsExecutablePath(), new HashSet<String>(allTargetAddresses)) : null;
   }
 
   @NotNull

@@ -34,7 +34,7 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
-  public static final int VERSION = 6;
+  public static final int VERSION = 7;
 
   public PantsResolver(@NotNull PantsCompileOptionsExecutor executor) {
     super(executor);
@@ -173,17 +173,8 @@ public class PantsResolver extends PantsResolverBase {
     final List<String> compilerOutputPaths = myExecutor.isIsolatedStrategy() ?
                                              getIsolatedCompilerOutputPath(targetInfo) :
                                              getCompilerOutputPath(targetInfo);
-    final ModuleData moduleData = moduleDataNode.getData();
-    moduleData.setInheritProjectCompileOutputPath(false);
-
-    if (!compilerOutputPaths.isEmpty()) {
-      // IntelliJ doesn't support multiple compiler path outputs
-      // let's configure it with just one and add additional in PantsClasspathRunConfigurationExtension
-      final String compilerOutput = compilerOutputPaths.iterator().next();
-      moduleData.setCompileOutputPath(ExternalSystemSourceType.SOURCE, compilerOutput);
-      for (TargetMetadata targetMetadata : findChildren(moduleDataNode, TargetMetadata.KEY)) {
-        targetMetadata.setCompilerOutputs(new HashSet<String>(compilerOutputPaths));
-      }
+    for (TargetMetadata targetMetadata : findChildren(moduleDataNode, TargetMetadata.KEY)) {
+      targetMetadata.setCompilerOutputs(new HashSet<String>(compilerOutputPaths));
     }
   }
 

@@ -32,11 +32,11 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
   @NotNull
   private final Set<String> myTargetAddresses;
   @NotNull
-  private final String myRootTarget;
+  private final String myPantsExecutable;
 
-  protected PantsBuildTarget(@NotNull String rootTarget, @NotNull Set<String> addresses) {
+  protected PantsBuildTarget(@NotNull String pantsExecutable, @NotNull Set<String> addresses) {
     super(PantsBuildTargetType.INSTANCE);
-    myRootTarget = rootTarget;
+    myPantsExecutable = pantsExecutable;
     myTargetAddresses = addresses;
   }
 
@@ -128,8 +128,8 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
   }
 
   @NotNull
-  public String getRootTarget() {
-    return myRootTarget;
+  public String getPantsExecutable() {
+    return myPantsExecutable;
   }
 
   @NotNull
@@ -141,7 +141,7 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
   public String toString() {
     return "PantsBuildTarget{" +
            "myTargetAddresses=" + myTargetAddresses +
-           ", myRootTarget='" + myRootTarget + '\'' +
+           ", myPantsExecutable='" + myPantsExecutable + '\'' +
            '}';
   }
 
@@ -153,13 +153,13 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
     PantsBuildTarget target = (PantsBuildTarget)o;
 
     if (!myTargetAddresses.equals(target.myTargetAddresses)) return false;
-    return myRootTarget.equals(target.myRootTarget);
+    return myPantsExecutable.equals(target.myPantsExecutable);
   }
 
   @Override
   public int hashCode() {
     int result = myTargetAddresses.hashCode();
-    result = 31 * result + myRootTarget.hashCode();
+    result = 31 * result + myPantsExecutable.hashCode();
     return result;
   }
 }

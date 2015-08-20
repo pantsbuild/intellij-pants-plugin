@@ -75,44 +75,45 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull BuildOutputConsumer outputConsumer,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
-    final String targetAbsolutePath = target.getRootTarget();
-    final File pantsExecutable = findPantsExecutable(targetAbsolutePath);
+    final String pantsExecutable = target.getPantsExecutable();
 
     if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       context.processMessage(new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, "No changes to compile."));
       return;
     }
 
-    if (pantsExecutable == null) {
-      context.processMessage(new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.ERROR, "Failed to find Pants executable!"));
-      LOG.error("Failed to find Pants executable for: " + target);
-      return;
-    }
-
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
+    final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
-      final Set<String> suitableTargetsToCompile = filterGenTargets(target.getTargetAddresses());
-      final String recompileMessage = String.format("Recompiling all %s targets", suitableTargetsToCompile.size());
+      final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargets.size());
       context.processMessage(
         new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
       );
       context.processMessage(new ProgressMessage(recompileMessage));
-      commandLine.addParameter("clean-all");
-      commandLine.addParameter("compile");
-      for (String targetAddress : suitableTargetsToCompile) {
+      commandLine.addParameters("clean-all", "compile");
+      for (String targetAddress : allNonGenTargets) {
         commandLine.addParameter(targetAddress);
       }
     } else {
-      final Set<String> targetAddresses = filterGenTargets(findTargetAddresses(holder));
-      final String recompileMessage = targetAddresses.size() == 1 ?
-                                      String.format("Recompiling %s", targetAddresses.iterator().next()) :
-                                      String.format("Recompiling %s targets", targetAddresses.size());
+      // Pants does compile incrementally and it appeared calling Pants for only findTargetAddresses(holder) targets
+      // isn't very beneficial. To simplify the plugin we are going to rely on Pants and pass all targets in the project.
+      // We can't use project settings because a project can be generated from a script file or is opened with dependeees.
+      final Set<String> changedNonGenTargets = filterGenTargets(findTargetAddresses(holder));
+      Set<String> targetsToCompile = null;
+      String recompileMessage = null;
+      if (changedNonGenTargets.size() == 1) {
+        recompileMessage = String.format("Recompiling %s", changedNonGenTargets.iterator().next());
+        targetsToCompile = changedNonGenTargets;
+      } else {
+        recompileMessage = String.format("Recompiling %s targets", changedNonGenTargets.size());
+        targetsToCompile = allNonGenTargets;
+      }
       context.processMessage(
         new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage
       ));
       context.processMessage(new ProgressMessage(recompileMessage));
-      commandLine.addParameter("compile");
-      for (String targetAddress : targetAddresses) {
+      commandLine.addParameters("compile");
+      for (String targetAddress : targetsToCompile) {
         commandLine.addParameter(targetAddress);
       }
     }

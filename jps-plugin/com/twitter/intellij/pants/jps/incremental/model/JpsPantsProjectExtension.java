@@ -3,25 +3,21 @@
 
 package com.twitter.intellij.pants.jps.incremental.model;
 
-import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.JpsElement;
 import org.jetbrains.jps.model.JpsElementChildRole;
 import org.jetbrains.jps.model.ex.JpsElementChildRoleBase;
 
-import java.util.List;
-
-public interface JpsPantsProjectExtension extends JpsElement, PantsCompileOptions {
+public interface JpsPantsProjectExtension extends JpsElement {
   JpsElementChildRole<JpsPantsProjectExtension> ROLE = JpsElementChildRoleBase.create(PantsConstants.PANTS);
 
-  void setExternalProjectPath(@NotNull String path);
+  @NotNull
+  String getPantsExecutablePath();
 
-  void setTargetNames(@NotNull List<String> names);
+  void setPantsExecutablePath(@NotNull String path);
 
   boolean isCompileWithIntellij();
 
   void setCompileWithIntellij(boolean compileWithIntellij);
-
-  void setWithDependees(boolean withDependees);
 }

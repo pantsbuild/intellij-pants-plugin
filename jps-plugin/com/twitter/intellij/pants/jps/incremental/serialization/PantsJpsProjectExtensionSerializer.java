@@ -4,27 +4,22 @@
 package com.twitter.intellij.pants.jps.incremental.serialization;
 
 import com.intellij.openapi.util.JDOMExternalizerUtil;
-import com.intellij.openapi.util.JDOMUtil;
-import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.model.impl.JpsPantsProjectExtensionImpl;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.JpsProject;
 import org.jetbrains.jps.model.serialization.JpsProjectExtensionSerializer;
 
-import java.util.Collections;
-import java.util.List;
+import java.io.File;
 
 public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSerializer {
 
   private static final String COMPILE_WITH_INTELLIJ   = "compileWithIntellij";
-  private static final String WITH_DEPENDEES          = "withDependees";
   private static final String LINKED_PROJECT_SETTINGS = "linkedExternalProjectsSettings";
   private static final String EXTERNAL_PROJECT_PATH   = "externalProjectPath";
-  private static final String TARGETS                 = "targets";
   private static final String PROJECT_SETTINGS        = "PantsProjectSettings";
 
   @Nullable
@@ -44,31 +39,15 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
       return;
     }
     final String projectPath = JDOMExternalizerUtil.readField(projectSettings, EXTERNAL_PROJECT_PATH);
-    if (projectPath == null) {
+    final File pantsExecutable = projectPath != null ? PantsUtil.findPantsExecutable(new File(projectPath)) : null;
+    if (pantsExecutable == null) {
       return;
     }
     final boolean compileWithIntellij =
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
-    final boolean withDependees =
-      Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, WITH_DEPENDEES, "false"));
 
-    final Element targetsList = JDOMExternalizerUtil.getOption(projectSettings, TARGETS);
-    final Element listOfTargetNames = targetsList != null ? targetsList.getChild("list") : null;
-    final List<Element> targetNameOptions = listOfTargetNames != null ? JDOMUtil.getChildren(listOfTargetNames, "option") : Collections.<Element>emptyList();
-    final JpsPantsProjectExtension projectExtension = new JpsPantsProjectExtensionImpl(
-      projectPath,
-      ContainerUtil.mapNotNull(
-        targetNameOptions,
-        new Function<Element, String>() {
-          @Override
-          public String fun(Element element) {
-            return element.getAttributeValue("value");
-          }
-        }
-      ),
-      withDependees,
-      compileWithIntellij
-    );
+    final JpsPantsProjectExtension projectExtension =
+      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij);
 
     project.getContainer().setChild(JpsPantsProjectExtension.ROLE, projectExtension);
   }
