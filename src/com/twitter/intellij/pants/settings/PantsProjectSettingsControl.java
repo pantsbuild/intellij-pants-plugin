@@ -62,7 +62,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected boolean isExtraSettingModified() {
-    return !myTargets.getSelectedValuesList().isEmpty();
+    return myTargets.getSelectedValues().length > 0;
   }
 
   @Override
