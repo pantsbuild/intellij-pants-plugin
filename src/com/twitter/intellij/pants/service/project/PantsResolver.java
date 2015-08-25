@@ -10,7 +10,6 @@ import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Factory;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
@@ -34,7 +33,7 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
-  public static final int VERSION = 7;
+  public static final int VERSION = 8;
 
   public PantsResolver(@NotNull PantsCompileOptionsExecutor executor) {
     super(executor);
@@ -54,7 +53,7 @@ public class PantsResolver extends PantsResolverBase {
     createAllEmptyModules(projectInfoDataNode, modules);
     addSourceRootsToModules(modules);
     addDependenciesToModules(modules);
-    addLibrariesToModules(modules);
+    addLibrariesToModules(projectInfoDataNode, modules);
     runResolverExtensions(projectInfoDataNode, modules);
     if (LOG.isDebugEnabled()) {
       final int amountOfModules = findChildren(projectInfoDataNode, ProjectKeys.MODULE).size();
@@ -236,8 +235,21 @@ public class PantsResolver extends PantsResolverBase {
     }
   }
 
-  private void addLibrariesToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
+  private void addLibrariesToModules(DataNode<ProjectData> projectInfoDataNode, @NotNull Map<String, DataNode<ModuleData>> modules) {
     final Map<String, LibraryData> idToLibraryData = new HashMap<String, LibraryData>();
+    for (Map.Entry<String, LibraryInfo> libraryInfoEntry : myProjectInfo.getLibraries().entrySet()) {
+      final String libraryId = libraryInfoEntry.getKey();
+      final LibraryInfo libraryJars = libraryInfoEntry.getValue();
+
+      final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
+      addPathLoLibrary(libraryData, LibraryPathType.BINARY, libraryJars.getDefault());
+      addPathLoLibrary(libraryData, LibraryPathType.SOURCE, libraryJars.getSources());
+      addPathLoLibrary(libraryData, LibraryPathType.DOC, libraryJars.getJavadoc());
+
+      idToLibraryData.put(libraryId, libraryData);
+      projectInfoDataNode.createChild(ProjectKeys.LIBRARY, libraryData);
+    }
+
     for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
@@ -250,43 +262,28 @@ public class PantsResolver extends PantsResolverBase {
           // skip Scala. Will be added by PantsScalaDataService
           continue;
         }
-        final LibraryInfo libraryJars = getLibraryJars(libraryId);
-        if (libraryJars == null) {
-          // no library jars by that id
-          continue;
-        }
-        final LibraryData libraryData =
-          ContainerUtil.getOrCreate(
-            idToLibraryData,
-            libraryId,
-            new Factory<LibraryData>() {
-              @Override
-              public LibraryData create() {
-                final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
-                addPath(libraryData, LibraryPathType.BINARY, libraryJars.getDefault());
-                addPath(libraryData, LibraryPathType.SOURCE, libraryJars.getSources());
-                addPath(libraryData, LibraryPathType.DOC,    libraryJars.getJavadoc());
-                return libraryData;
-              }
 
-              private void addPath(LibraryData libraryData, LibraryPathType binary, String path) {
-                if (path == null) {
-                  return;
-                }
-                path = FileUtil.isAbsolute(path) ? path : myExecutor.getAbsolutePathFromWorkingDir(path);
-
-                if (new File(path).exists()) {
-                  libraryData.addPath(binary, path);
-                }
-              }
-            }
+        if (idToLibraryData.containsKey(libraryId)) {
+          final LibraryDependencyData library = new LibraryDependencyData(
+            moduleDataNode.getData(),
+            idToLibraryData.get(libraryId),
+            LibraryLevel.PROJECT
           );
-        addLibraryDependencyToModule(
-          moduleDataNode,
-          libraryData,
-          true
-        );
+          library.setExported(true);
+          moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
+        }
       }
+    }
+  }
+
+  private void addPathLoLibrary(@NotNull LibraryData libraryData, @NotNull LibraryPathType binary, @Nullable String path) {
+    if (path == null) {
+      return;
+    }
+    path = FileUtil.isAbsolute(path) ? path : myExecutor.getAbsolutePathFromWorkingDir(path);
+
+    if (new File(path).exists()) {
+      libraryData.addPath(binary, path);
     }
   }
 
@@ -387,20 +384,6 @@ public class PantsResolver extends PantsResolverBase {
     moduleDataNode.createChild(ProjectKeys.MODULE_DEPENDENCY, moduleDependencyData);
   }
 
-  private static void addLibraryDependencyToModule(
-    @NotNull DataNode<ModuleData> moduleDataNode,
-    @NotNull LibraryData data,
-    boolean exported
-  ) {
-    final LibraryDependencyData library = new LibraryDependencyData(
-      moduleDataNode.getData(),
-      data,
-      LibraryLevel.MODULE
-    );
-    library.setExported(exported);
-    moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
-  }
-
   @NotNull
   private DataNode<ModuleData> createModuleData(
     @NotNull DataNode<ProjectData> projectInfoDataNode,
@@ -454,16 +437,6 @@ public class PantsResolver extends PantsResolverBase {
     moduleDataNode.createChild(TargetMetadata.KEY, metadata);
 
     return moduleDataNode;
-  }
-
-  @Nullable
-  private LibraryInfo getLibraryJars(@NotNull String libraryId) {
-    final LibraryInfo libraryJars = myProjectInfo.getLibraries(libraryId);
-    if (libraryJars == null && myExecutor.isResolveJars()) {
-      // log only we tried to resolve libs
-      LOG.warn("No info for library: " + libraryId);
-    }
-    return libraryJars;
   }
 
   private static List<SourceRoot> sortRootsAsPaths(
