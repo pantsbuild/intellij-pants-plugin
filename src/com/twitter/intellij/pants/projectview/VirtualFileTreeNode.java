@@ -23,10 +23,14 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.components.PantsProjectCache;
+import com.twitter.intellij.pants.components.impl.PantsProjectCacheImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
   public VirtualFileTreeNode(
@@ -109,12 +113,20 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
           }
           //noinspection SimplifiableIfStatement
           if (file.isDirectory()) {
-            // show even hidden folders like .pants.d and .idea
-            return true;
+            return shouldIncludeDirectory(file);
           }
           return !file.getName().startsWith(".");
         }
       }
     );
+  }
+
+  private boolean shouldIncludeDirectory(VirtualFile dir) {
+    final ViewSettings viewSettings = getSettings();
+    if (viewSettings instanceof PantsViewSettings && ((PantsViewSettings)viewSettings).isShowOnlyLoadedFiles()) {
+      final PantsProjectCache projectCache = PantsProjectCacheImpl.getInstance(getProject());
+      return projectCache.folderContainsSourceRoot(dir);
+    }
+    return true;
   }
 }

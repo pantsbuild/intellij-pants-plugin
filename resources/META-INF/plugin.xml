@@ -148,6 +148,10 @@
       <interface-class>com.twitter.intellij.pants.components.PantsProjectComponent</interface-class>
       <implementation-class>com.twitter.intellij.pants.components.impl.PantsProjectComponentImpl</implementation-class>
     </component>
+    <component>
+      <interface-class>com.twitter.intellij.pants.components.PantsProjectCache</interface-class>
+      <implementation-class>com.twitter.intellij.pants.components.impl.PantsProjectCacheImpl</implementation-class>
+    </component>
   </project-components>
 
   <extensionPoints>

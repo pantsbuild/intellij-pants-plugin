@@ -5,6 +5,7 @@ junit_tests(
     ],
     sources =
         globs('com/twitter/intellij/pants/completion/*.java') +
+        globs('com/twitter/intellij/pants/components/impl/*.java') +
         globs('com/twitter/intellij/pants/execution/*.java') +
         globs('com/twitter/intellij/pants/highlighting/*.java') +
         globs('com/twitter/intellij/pants/quickfix/*.java') +

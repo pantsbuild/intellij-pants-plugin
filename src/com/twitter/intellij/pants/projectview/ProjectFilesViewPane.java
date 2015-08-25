@@ -6,7 +6,6 @@ package com.twitter.intellij.pants.projectview;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.SelectInTarget;
 import com.intellij.ide.projectView.ProjectView;
-import com.intellij.ide.projectView.ProjectViewSettings;
 import com.intellij.ide.projectView.ViewSettings;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPSIPane;
 import com.intellij.ide.projectView.impl.ProjectAbstractTreeStructureBase;
@@ -35,7 +34,9 @@ import javax.swing.tree.DefaultTreeModel;
 public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
   @NonNls public static final String ID = "ProjectFilesPane";
   public static final String SHOW_EXCLUDED_FILES_OPTION = "show-excluded-files";
+  public static final String SHOW_ONLY_LOADED_FILES_OPTION = "show-only-loaded-files";
   private boolean myShowExcludedFiles = true;
+  private boolean myShowOnlyLoadedFiles = true;
 
   public ProjectFilesViewPane(Project project) {
     super(project);
@@ -68,21 +69,24 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
   @Override
   public void readExternal(Element element) throws InvalidDataException {
     super.readExternal(element);
-    String showExcludedOption = JDOMExternalizerUtil.readField(element, SHOW_EXCLUDED_FILES_OPTION);
+    final String showExcludedOption = JDOMExternalizerUtil.readField(element, SHOW_EXCLUDED_FILES_OPTION);
     myShowExcludedFiles = showExcludedOption == null || Boolean.parseBoolean(showExcludedOption);
+
+    final String showOnlyLoadedOption = JDOMExternalizerUtil.readField(element, SHOW_ONLY_LOADED_FILES_OPTION);
+    myShowOnlyLoadedFiles = showOnlyLoadedOption == null || Boolean.parseBoolean(showOnlyLoadedOption);
   }
 
   @Override
   public void writeExternal(Element element) throws WriteExternalException {
     super.writeExternal(element);
-    if (!myShowExcludedFiles) {
-      JDOMExternalizerUtil.writeField(element, SHOW_EXCLUDED_FILES_OPTION, String.valueOf(false));
-    }
+    JDOMExternalizerUtil.writeField(element, SHOW_EXCLUDED_FILES_OPTION, String.valueOf(myShowExcludedFiles));
+    JDOMExternalizerUtil.writeField(element, SHOW_ONLY_LOADED_FILES_OPTION, String.valueOf(myShowOnlyLoadedFiles));
   }
 
   @Override
   public void addToolbarActions(DefaultActionGroup actionGroup) {
     actionGroup.addAction(new ShowExcludedFilesAction()).setAsSecondary(true);
+    actionGroup.addAction(new ShowOnlyLoadedFilesAction()).setAsSecondary(true);
   }
 
   @Override
@@ -110,7 +114,7 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     return new PantsProjectPaneSelectInTarget(myProject);
   }
 
-  private class ProjectViewPaneTreeStructure extends ProjectTreeStructure implements ProjectViewSettings {
+  private class ProjectViewPaneTreeStructure extends ProjectTreeStructure implements PantsViewSettings {
     public ProjectViewPaneTreeStructure() {
       super(ProjectFilesViewPane.this.myProject, ID);
     }
@@ -123,6 +127,11 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     @Override
     public boolean isShowExcludedFiles() {
       return myShowExcludedFiles;
+    }
+
+    @Override
+    public boolean isShowOnlyLoadedFiles() {
+      return myShowOnlyLoadedFiles;
     }
   }
 
@@ -144,6 +153,37 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     public void setSelected(AnActionEvent event, boolean flag) {
       if (myShowExcludedFiles != flag) {
         myShowExcludedFiles = flag;
+        updateFromRoot(true);
+      }
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+      super.update(e);
+      final Presentation presentation = e.getPresentation();
+      final ProjectView projectView = ProjectView.getInstance(myProject);
+      presentation.setEnabledAndVisible(projectView.getCurrentProjectViewPane() == ProjectFilesViewPane.this);
+    }
+  }
+
+  private final class ShowOnlyLoadedFilesAction extends ToggleAction {
+    private ShowOnlyLoadedFilesAction() {
+      super(
+        PantsBundle.message("pants.action.show.only.loaded.files"),
+        PantsBundle.message("pants.action.show.hide.only.loaded.files"),
+        null
+      );
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent event) {
+      return myShowOnlyLoadedFiles;
+    }
+
+    @Override
+    public void setSelected(AnActionEvent event, boolean flag) {
+      if (myShowOnlyLoadedFiles != flag) {
+        myShowOnlyLoadedFiles = flag;
         updateFromRoot(true);
       }
     }
