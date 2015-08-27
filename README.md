@@ -176,7 +176,7 @@ test sources, resources, test resources, generated sources, etc).
 
 * Run tests to verify your installation
 
-        IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" ./scripts/download-ci-environment.sh
+        IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" ./scripts/setup-ci-environment.sh
         ./scripts/run-tests-ci.sh
 
 * Post your first review ([setup instructions](http://pantsbuild.github.io/howto_contribute.html#code-review))

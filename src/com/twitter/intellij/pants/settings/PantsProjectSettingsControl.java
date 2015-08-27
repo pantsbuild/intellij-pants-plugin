@@ -146,7 +146,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final String projectUrl = VfsUtil.pathToUrl(settings.getExternalProjectPath());
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(projectUrl);
     if (file == null) {
-      throw new ConfigurationException(PantsBundle.message("pants.error.file.not.exists"));
+      throw new ConfigurationException(PantsBundle.message("pants.error.file.not.exists", projectUrl));
     }
     if (PantsUtil.isExecutable(file.getPath())) {
       return true;

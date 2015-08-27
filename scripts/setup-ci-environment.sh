@@ -42,7 +42,7 @@ if [ ! -d .cache/pants ]; then
   git clone https://github.com/pantsbuild/pants
   echo "Bootstrapping Pants and Ivy..."
   pushd pants
-  ./pants goal resolve examples/src/scala/:: examples/src/java/::
+  ./pants resolve examples/src/scala/:: examples/src/java/::
   popd
   popd
 fi
@@ -54,4 +54,4 @@ if [ ! -d .cache/jdk-libs ]; then
 fi
 
 echo "Bootstrapping Pants..."
-./pants goal goals
+./pants goals
