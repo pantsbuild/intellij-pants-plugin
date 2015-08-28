@@ -6,10 +6,12 @@ package com.twitter.intellij.pants.service.project.model;
 import com.google.gson.GsonBuilder;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ProjectInfo {
@@ -98,6 +100,21 @@ public class ProjectInfo {
         addressInfo.setTargetAddress(address);
       }
     }
+  }
+
+  /**
+   *  Helper method to get a distribution by target type.
+   */
+  public Map<String, Integer> getTargetsDistribution() {
+    final Map<String, Integer> result = new HashMap<String, Integer>();
+    for (TargetInfo targetInfo : targets.values()) {
+      for (TargetAddressInfo addressInfo : targetInfo.getAddressInfos()) {
+        final String type = addressInfo.getInternalPantsTargetType();
+        final int currentValue = ContainerUtil.getOrCreate(result, type, 0);
+        result.put(type, currentValue + 1);
+      }
+    }
+    return result;
   }
 
   @Override
