@@ -33,7 +33,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
     @NotNull Map<String, DataNode<ModuleData>> modules
   ) {
     final Map<String, Set<String>> scalaLibId2Jars = new HashMap<String, Set<String>>();
-    for (String libId : projectInfo.getLibraries().keySet()) {
+    for (String libId : ContainerUtil.sorted(projectInfo.getLibraries().keySet())) {
       if (PantsScalaUtil.isScalaLibraryLib(libId)) {
         final LibraryInfo scalaLib = projectInfo.getLibraries(libId);
         final String scalaLibPath = scalaLib != null ? scalaLib.getDefault() : null;

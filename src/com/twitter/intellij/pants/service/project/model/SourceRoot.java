@@ -8,7 +8,7 @@ import com.twitter.intellij.pants.model.PantsSourceType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SourceRoot {
+public class SourceRoot implements Comparable<SourceRoot> {
   protected String source_root;
   protected String package_prefix;
 
@@ -69,5 +69,10 @@ public class SourceRoot {
            "source_root='" + source_root + '\'' +
            ", package_prefix='" + package_prefix + '\'' +
            '}';
+  }
+
+  @Override
+  public int compareTo(SourceRoot o) {
+    return StringUtil.naturalCompare(getRawSourceRoot(), o.getRawSourceRoot());
   }
 }

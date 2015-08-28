@@ -11,10 +11,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class TargetInfo {
 
@@ -44,11 +41,11 @@ public class TargetInfo {
     Set<String> excludes,
     Set<SourceRoot> roots
   ) {
-    this.addressInfos = addressInfos;
-    this.libraries = libraries;
-    this.excludes = excludes;
-    this.targets = targets;
-    this.roots = roots;
+    setAddressInfos(addressInfos);
+    setLibraries(libraries);
+    setExcludes(excludes);
+    setTargets(targets);
+    setRoots(roots);
   }
 
   public Set<TargetAddressInfo> getAddressInfos() {
@@ -65,7 +62,7 @@ public class TargetInfo {
   }
 
   public void setLibraries(Set<String> libraries) {
-    this.libraries = libraries;
+    this.libraries = new TreeSet<String>(libraries);
   }
 
   @NotNull
@@ -74,7 +71,7 @@ public class TargetInfo {
   }
 
   public void setExcludes(Set<String> excludes) {
-    this.excludes = excludes;
+    this.excludes = new TreeSet<String>(excludes);
   }
 
   @NotNull
@@ -83,7 +80,7 @@ public class TargetInfo {
   }
 
   public void setTargets(Set<String> targets) {
-    this.targets = targets;
+    this.targets = new TreeSet<String>(targets);
   }
 
   @NotNull
@@ -92,7 +89,7 @@ public class TargetInfo {
   }
 
   public void setRoots(Set<SourceRoot> roots) {
-    this.roots = roots;
+    this.roots = new TreeSet<SourceRoot>(roots);
   }
 
   public boolean isEmpty() {

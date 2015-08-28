@@ -11,7 +11,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ProjectInfo {
@@ -33,12 +35,32 @@ public class ProjectInfo {
   // name to info
   protected Map<String, TargetInfo> targets;
 
+  private static <T> List<Map.Entry<String, T>> getSortedEntries(Map<String, T> map) {
+    return ContainerUtil.sorted(
+      map.entrySet(),
+      new Comparator<Map.Entry<String, T>>() {
+        @Override
+        public int compare(Map.Entry<String, T> o1, Map.Entry<String, T> o2) {
+          return StringUtil.naturalCompare(o1.getKey(), o2.getKey());
+        }
+      }
+    );
+  }
+
+  public List<Map.Entry<String, LibraryInfo>> getSortedLibraries() {
+    return getSortedEntries(getLibraries());
+  }
+
   public Map<String, LibraryInfo> getLibraries() {
     return libraries;
   }
 
   public void setLibraries(Map<String, LibraryInfo> libraries) {
     this.libraries = libraries;
+  }
+
+  public List<Map.Entry<String, TargetInfo>> getSortedTargets() {
+    return getSortedEntries(getTargets());
   }
 
   public Map<String, TargetInfo> getTargets() {

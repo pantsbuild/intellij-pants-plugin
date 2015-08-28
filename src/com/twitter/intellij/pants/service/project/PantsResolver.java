@@ -33,7 +33,7 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
-  public static final int VERSION = 8;
+  public static final int VERSION = 9;
 
   public PantsResolver(@NotNull PantsCompileOptionsExecutor executor) {
     super(executor);
@@ -59,13 +59,14 @@ public class PantsResolver extends PantsResolverBase {
       final int amountOfModules = findChildren(projectInfoDataNode, ProjectKeys.MODULE).size();
       LOG.debug("Amount of modules created: " + amountOfModules);
     }
+
   }
 
   private void createAllEmptyModules(
     @NotNull DataNode<ProjectData> projectInfoDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules
   ) {
-    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getSortedTargets()) {
       final String targetName = entry.getKey();
       if (StringUtil.startsWith(targetName, ":scala-library")) {
         // we already have it in libs
@@ -87,7 +88,7 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   private void addSourceRootsToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
-    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getSortedTargets()) {
       final String targetAddress = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       if (!modules.containsKey(targetAddress)) {
@@ -218,7 +219,7 @@ public class PantsResolver extends PantsResolverBase {
   }
 
   private void addDependenciesToModules(@NotNull Map<String, DataNode<ModuleData>> modules) {
-    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getSortedTargets()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       if (!modules.containsKey(mainTarget)) {
@@ -237,7 +238,7 @@ public class PantsResolver extends PantsResolverBase {
 
   private void addLibrariesToModules(DataNode<ProjectData> projectInfoDataNode, @NotNull Map<String, DataNode<ModuleData>> modules) {
     final Map<String, LibraryData> idToLibraryData = new HashMap<String, LibraryData>();
-    for (Map.Entry<String, LibraryInfo> libraryInfoEntry : myProjectInfo.getLibraries().entrySet()) {
+    for (Map.Entry<String, LibraryInfo> libraryInfoEntry : myProjectInfo.getSortedLibraries()) {
       final String libraryId = libraryInfoEntry.getKey();
       final LibraryInfo libraryJars = libraryInfoEntry.getValue();
 
@@ -250,7 +251,7 @@ public class PantsResolver extends PantsResolverBase {
       projectInfoDataNode.createChild(ProjectKeys.LIBRARY, libraryData);
     }
 
-    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getTargets().entrySet()) {
+    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getSortedTargets()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       if (!modules.containsKey(mainTarget)) {
