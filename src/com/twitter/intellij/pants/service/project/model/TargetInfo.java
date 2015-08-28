@@ -127,10 +127,6 @@ public class TargetInfo {
   }
 
   public boolean isJarLibrary() {
-    if (getTargets().isEmpty() && getRoots().isEmpty()) {
-      // only jars
-      return true;
-    }
     return PantsUtil.forall(
       getAddressInfos(),
       new Condition<TargetAddressInfo>() {
