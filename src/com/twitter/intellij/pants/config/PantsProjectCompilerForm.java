@@ -13,7 +13,7 @@ import java.awt.event.ActionListener;
 
 public class PantsProjectCompilerForm {
   private JPanel myMainPanel;
-  private JComboBox<CompilerValue> myCompilerComboBox;
+  private JComboBox myCompilerComboBox;
   private JTextPane myDescriptionTextPane;
 
   private final CompilerValue myPantsCompiler =
@@ -41,7 +41,7 @@ public class PantsProjectCompilerForm {
     return myMainPanel;
   }
 
-  public JComboBox<CompilerValue> getCompilerComboBox() {
+  public JComboBox getCompilerComboBox() {
     return myCompilerComboBox;
   }
 
