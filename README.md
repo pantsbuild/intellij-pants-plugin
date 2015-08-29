@@ -81,6 +81,8 @@ Compilation options can be configured in Preferences -> Build, Execution, Deploy
   The Plugin provides a custom view "Project Files Tree View". This view adheres to your repository file hierarchy.
   You can switch to this view as follows:
   ![Project Files Tree View](images/project_files_tree_view.png)
+  "Project Files Tree View" also provides an ability to filter out files that weren't loaded during project generation.
+  ![Show Only Loaded Files](images/show_only_loaded_files.jpg)
 * BUILD File code assistance
   The plugin provides auto completion for target names in a BUILD file such as `jar_library`, `scala_library`, etc.
   As well as completion for dependencies' addresses.
