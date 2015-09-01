@@ -15,6 +15,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
@@ -23,7 +24,6 @@ import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
-import com.twitter.intellij.pants.util.PantsScalaUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
@@ -74,7 +74,11 @@ public class PantsResolver extends PantsResolverBase {
       }
       final TargetInfo targetInfo = entry.getValue();
       if (targetInfo.isEmpty()) {
-        LOG.info("Skipping " + targetName + " because it is empty");
+        LOG.debug("Skipping " + targetName + " because it is empty");
+        continue;
+      }
+      if (targetInfo.isJarLibrary()) {
+        LOG.debug("Skipping " + targetName + " because it is a jar");
         continue;
       }
       final DataNode<ModuleData> moduleData =
@@ -230,24 +234,36 @@ public class PantsResolver extends PantsResolverBase {
         if (!modules.containsKey(target)) {
           continue;
         }
-        // todo: is it always exported?
         addModuleDependency(moduleDataNode, modules.get(target), true);
       }
     }
   }
 
   private void addLibrariesToModules(DataNode<ProjectData> projectInfoDataNode, @NotNull Map<String, DataNode<ModuleData>> modules) {
-    final Map<String, LibraryData> idToLibraryData = new HashMap<String, LibraryData>();
-    for (Map.Entry<String, LibraryInfo> libraryInfoEntry : myProjectInfo.getSortedLibraries()) {
-      final String libraryId = libraryInfoEntry.getKey();
-      final LibraryInfo libraryJars = libraryInfoEntry.getValue();
+    final Map<String, LibraryData> idToLibraryData = ContainerUtilRt.newHashMap();
 
-      final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, libraryId);
-      addPathLoLibrary(libraryData, LibraryPathType.BINARY, libraryJars.getDefault());
-      addPathLoLibrary(libraryData, LibraryPathType.SOURCE, libraryJars.getSources());
-      addPathLoLibrary(libraryData, LibraryPathType.DOC, libraryJars.getJavadoc());
+    for (Map.Entry<String, TargetInfo> entry : myProjectInfo.getSortedTargets()) {
+      final TargetInfo targetInfo = entry.getValue();
+      if (!targetInfo.isJarLibrary()) {
+        continue;
+      }
 
-      idToLibraryData.put(libraryId, libraryData);
+      final String jarTarget = entry.getKey();
+      final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, jarTarget);
+
+      for (String libraryId : targetInfo.getLibraries()) {
+        final LibraryInfo libraryInfo = myProjectInfo.getLibraries(libraryId);
+        if (libraryInfo == null) {
+          LOG.debug("Couldn't find library " + libraryId);
+          continue;
+        }
+
+        addPathLoLibrary(libraryData, LibraryPathType.BINARY, libraryInfo.getDefault());
+        addPathLoLibrary(libraryData, LibraryPathType.SOURCE, libraryInfo.getSources());
+        addPathLoLibrary(libraryData, LibraryPathType.DOC, libraryInfo.getJavadoc());
+      }
+
+      idToLibraryData.put(jarTarget, libraryData);
       projectInfoDataNode.createChild(ProjectKeys.LIBRARY, libraryData);
     }
 
@@ -258,21 +274,19 @@ public class PantsResolver extends PantsResolverBase {
         continue;
       }
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
-      for (final String libraryId : targetInfo.getLibraries()) {
-        if (targetInfo.isScalaTarget() && PantsScalaUtil.isScalaLib(libraryId)) {
-          // skip Scala. Will be added by PantsScalaDataService
+      for (final String depTarget : targetInfo.getTargets()) {
+        final LibraryData libraryData = idToLibraryData.get(depTarget);
+        if (libraryData == null) {
           continue;
         }
 
-        if (idToLibraryData.containsKey(libraryId)) {
-          final LibraryDependencyData library = new LibraryDependencyData(
-            moduleDataNode.getData(),
-            idToLibraryData.get(libraryId),
-            LibraryLevel.PROJECT
-          );
-          library.setExported(true);
-          moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
-        }
+        final LibraryDependencyData library = new LibraryDependencyData(
+          moduleDataNode.getData(),
+          libraryData,
+          LibraryLevel.PROJECT
+        );
+        library.setExported(true);
+        moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
       }
     }
   }
