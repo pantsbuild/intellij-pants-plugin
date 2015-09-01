@@ -86,6 +86,10 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
     return result;
   }
 
+  protected TargetInfoBuilder addJarLibrary(String name) {
+    return addInfo(name).withType("jar_library");
+  }
+
   protected TargetInfoBuilder addInfo(String name) {
     final TargetInfoBuilder result = new TargetInfoBuilder();
     myInfoBuilders.put(name, result);
@@ -222,6 +226,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   }
 
   public static final class TargetInfoBuilder implements Builder<TargetInfo> {
+    private String type = "scala_library";
     private Set<String> libraries = new HashSet<String>();
     private Set<String> excludes = new HashSet<String>();
     private Set<String> targets = new HashSet<String>();
@@ -229,7 +234,14 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
 
     @Override
     public TargetInfo build() {
-      return new TargetInfo(Collections.singleton(new TargetAddressInfo()), targets, libraries, excludes, roots);
+      final TargetAddressInfo addressInfo = new TargetAddressInfo();
+      addressInfo.setPantsTargetType(type);
+      return new TargetInfo(Collections.singleton(addressInfo), targets, libraries, excludes, roots);
+    }
+
+    public TargetInfoBuilder withType(@Nls String targetType) {
+      type = targetType;
+      return this;
     }
 
     public TargetInfoBuilder withRoot(@Nls String rootRelativePath, @Nullable String packagePrefix) {
@@ -239,7 +251,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
     }
 
     public TargetInfoBuilder withLibrary(@Nls String libraryId) {
-      libraries.add(libraryId);
+      targets.add(libraryId);
       return this;
     }
 

@@ -64,6 +64,9 @@ public class TargetAddressInfo {
     return pants_target_type;
   }
 
+  public void setPantsTargetType(@NotNull String type) {
+    pants_target_type = type;
+  }
 
   public boolean isScala() {
     return StringUtil.equals("scala_library", getInternalPantsTargetType()) || hasScalaSources();

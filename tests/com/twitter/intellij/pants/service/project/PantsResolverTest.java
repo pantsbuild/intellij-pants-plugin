@@ -115,33 +115,37 @@ public class PantsResolverTest extends PantsResolverTestBase {
   }
 
   public void testOnlyOneInstanceOfLibraryDataCreatedForSameLibrary() {
-    addInfo("a:scala").withLibrary("mycoollibrary:1.2.3");
-    addInfo("b:scala").withLibrary("mycoollibrary:1.2.3");
+    addJarLibrary("3rdparty/com/twitter/mycoollibrary:1.2.3");
+    addInfo("a:scala").withLibrary("3rdparty/com/twitter/mycoollibrary:1.2.3");
+    addInfo("b:scala").withLibrary("3rdparty/com/twitter/mycoollibrary:1.2.3");
 
-    final DataNode<LibraryDependencyData> aLib = findLibraryDependency("a_scala", "mycoollibrary:1.2.3");
+    final DataNode<LibraryDependencyData> aLib = findLibraryDependency("a_scala", "3rdparty/com/twitter/mycoollibrary:1.2.3");
     assertNotNull(aLib);
-    final DataNode<LibraryDependencyData> bLib = findLibraryDependency("b_scala", "mycoollibrary:1.2.3");
+    final DataNode<LibraryDependencyData> bLib = findLibraryDependency("b_scala", "3rdparty/com/twitter/mycoollibrary:1.2.3");
     assertNotNull(bLib);
 
     assertSame(aLib.getData().getTarget(), bLib.getData().getTarget());
   }
 
   public void testJavaScalaCyclic() {
+    addJarLibrary("3rdparty/com/twitter/baz:baz");
     addInfo("a:java").
       withRoot("src/java/foo/bar", "com.foo.bar").
       withRoot("src/java/foo/baz", "com.foo.baz").
       withDependency("a:scala").
-      withLibrary("com.twitter.baz");
+      withDependency("3rdparty/com/twitter/baz:baz");
+
+    addJarLibrary("3rdparty/com/twitter/bar:bar");
     addInfo("a:scala").
       withRoot("src/scala/foo/bar", "com.foo.bar").
       withRoot("src/scala/foo/baz", "com.foo.baz").
       withDependency("a:java").
-      withLibrary("com.twitter.bar");
+      withDependency("3rdparty/com/twitter/bar:bar");
 
     assertModulesCreated("a_java_and_scala");
 
-    assertLibrary("a_java_and_scala", "com.twitter.baz");
-    assertLibrary("a_java_and_scala", "com.twitter.bar");
+    assertLibrary("a_java_and_scala", "3rdparty/com/twitter/baz:baz");
+    assertLibrary("a_java_and_scala", "3rdparty/com/twitter/bar:bar");
 
     assertSourceRoot("a_java_and_scala", "src/java/foo/bar");
     assertSourceRoot("a_java_and_scala", "src/java/foo/baz");
