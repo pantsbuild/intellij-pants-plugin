@@ -36,7 +36,7 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
   public static final String SHOW_EXCLUDED_FILES_OPTION = "show-excluded-files";
   public static final String SHOW_ONLY_LOADED_FILES_OPTION = "show-only-loaded-files";
   private boolean myShowExcludedFiles = true;
-  private boolean myShowOnlyLoadedFiles = true;
+  private boolean myShowOnlyLoadedFiles = false;
 
   public ProjectFilesViewPane(Project project) {
     super(project);
