@@ -185,10 +185,6 @@ public class PantsCompileOptionsExecutor {
     return myOptions;
   }
 
-  public boolean isResolveJars() {
-    return myResolveJars;
-  }
-
   public boolean isCompileWithPants() {
     return !isCompileWithIntellij();
   }
@@ -337,16 +333,6 @@ public class PantsCompileOptionsExecutor {
       process.destroy();
     }
     return true;
-  }
-
-  public void bootstrapTools() throws ExecutionException {
-    final File bootstrapBuildFile = new File(getWorkingDir(), "BUILD");
-    if (!bootstrapBuildFile.exists() || !isResolveJars()) {
-      return;
-    }
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
-    commandLine.addParameters("resolve", "BUILD:");
-    getProcessOutput(commandLine, null).checkSuccess(LOG);
   }
 
   public String compilerFolderForTarget(@NotNull TargetAddressInfo targetAddressInfo) {
