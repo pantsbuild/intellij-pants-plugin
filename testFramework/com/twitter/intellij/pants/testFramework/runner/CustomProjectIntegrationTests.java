@@ -25,19 +25,18 @@ public class CustomProjectIntegrationTests extends PantsIntegrationTestCase {
   private static final String CUSTOM_TARGETS = "project.targets";
   private static final String CUSTOM_PROJECT_WS = "project.workspace";
 
-  @org.junit.runners.Parameterized.Parameter()
   private String target;
   private String projectWorkspace;
 
-  public CustomProjectIntegrationTests(@NotNull String name, @NotNull String target) {
+  public CustomProjectIntegrationTests(@NotNull String target) {
     super();
     this.target = target;
-    this.setName(name);
+    setName(target);
     projectWorkspace = System.getProperty(CUSTOM_PROJECT_WS);
     assertNotNull(projectWorkspace);
   }
 
-  @Parameterized.Parameters(name = "{0}")
+  @Parameterized.Parameters
   public static Collection<Object[]> getProjectList() {
     final String projectConfigFileName = System.getProperty(CUSTOM_TARGET_LIST_FILE);
     if(projectConfigFileName != null) {
@@ -87,7 +86,7 @@ public class CustomProjectIntegrationTests extends PantsIntegrationTestCase {
       targets, new Function<String, Object[]>() {
         @Override
         public Object[] fun(String targetAddress) {
-          return new Object[]{targetAddress, targetAddress};
+          return new Object[]{targetAddress};
         }
       }
     );
