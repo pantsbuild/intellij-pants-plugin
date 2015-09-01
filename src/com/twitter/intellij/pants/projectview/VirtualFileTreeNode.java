@@ -14,7 +14,6 @@ import com.intellij.ide.projectView.impl.nodes.PsiFileNode;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
@@ -29,8 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
   public VirtualFileTreeNode(
@@ -82,8 +79,8 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
   public Collection<? extends AbstractTreeNode> getChildren() {
     final PsiManager psiManager = PsiManager.getInstance(myProject);
     final VirtualFile virtualFile = getValue();
-    return ContainerUtil.map(
-      virtualFile.isValid() && virtualFile.isDirectory() ? getFilteredChildren(virtualFile) : Collections.<VirtualFile>emptyList(),
+    return ContainerUtil.mapNotNull(
+      virtualFile.isValid() && virtualFile.isDirectory() ? virtualFile.getChildren() : VirtualFile.EMPTY_ARRAY,
       new Function<VirtualFile, AbstractTreeNode>() {
         @Override
         public AbstractTreeNode fun(VirtualFile file) {
@@ -92,33 +89,26 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
             // PsiDirectoryNode doesn't render files outside of a project
             // let's use PsiDirectoryNode only for folders in a modules
             return new PsiDirectoryNode(myProject, (PsiDirectory)psiElement, getSettings());
-          } else if (psiElement instanceof PsiFile) {
+          }
+          else if (psiElement instanceof PsiFile) {
             return new PsiFileNode(myProject, (PsiFile)psiElement, getSettings());
-          } else {
-            return new VirtualFileTreeNode(myProject, file, getSettings());
+          }
+          else {
+            return shouldShow(file) ? new VirtualFileTreeNode(myProject, file, getSettings()) : null;
           }
         }
       }
     );
   }
 
-  private List<VirtualFile> getFilteredChildren(@NotNull VirtualFile folder) {
-    return ContainerUtil.filter(
-      folder.getChildren(),
-      new Condition<VirtualFile>() {
-        @Override
-        public boolean value(VirtualFile file) {
-          if (!file.isValid()) {
-            return false;
-          }
-          //noinspection SimplifiableIfStatement
-          if (file.isDirectory()) {
-            return shouldIncludeDirectory(file);
-          }
-          return !file.getName().startsWith(".");
-        }
-      }
-    );
+  private boolean shouldShow(@NotNull VirtualFile file) {
+    if (!file.isValid()) {
+      return false;
+    }
+    if (file.isDirectory()) {
+      return shouldIncludeDirectory(file);
+    }
+    return !file.getName().startsWith(".");
   }
 
   private boolean shouldIncludeDirectory(VirtualFile dir) {
