@@ -94,6 +94,10 @@ Compilation options can be configured in Preferences -> Build, Execution, Deploy
 * Compiling within IntelliJ
 * Running tests within IntelliJ
   You can right click on tests and run tests.
+* Open dependents of targets
+  To perform a refactoring of a common target you need to change all targets that depend on the given target. 
+  To load such dependents using the plugin simply open Preferences -> Build Tools -> Pants and check Load Dependents Transitively.
+  ![Load Dependents](images/load_dependents.png)
 
 ### Report Bugs
 If you see any bugs please file a github issue on the project page.

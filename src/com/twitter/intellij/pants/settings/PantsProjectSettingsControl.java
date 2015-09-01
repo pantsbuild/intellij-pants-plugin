@@ -31,13 +31,15 @@ import java.util.List;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
   private static final Logger LOG = Logger.getInstance(PantsProjectSettingsControl.class);
+  private final boolean myShowAdvancedSettings;
 
   private CheckBoxList<String> myTargets;
   private JBCheckBox myWithDependeesCheckBox;
   private JBCheckBox myLibsWithSourcesCheckBox;
 
-  public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
+  public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings, boolean showAdvancedSettings) {
     super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
+    myShowAdvancedSettings = showAdvancedSettings;
   }
 
   @Override
@@ -47,7 +49,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     content.add(hintLabel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
     myWithDependeesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.dependents"));
-    content.add(myWithDependeesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+    if (myShowAdvancedSettings) {
+      content.add(myWithDependeesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+    }
 
     myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources"));
     myLibsWithSourcesCheckBox.setSelected(false);

@@ -19,7 +19,7 @@ public class PantsConfigurable extends AbstractExternalSystemConfigurable<PantsP
   @NotNull
   @Override
   protected ExternalSystemSettingsControl<PantsProjectSettings> createProjectSettingsControl(@NotNull PantsProjectSettings settings) {
-    return new PantsProjectSettingsControl(settings);
+    return new PantsProjectSettingsControl(settings, true);
   }
 
   @Nullable
