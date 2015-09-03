@@ -1,5 +1,5 @@
 <plugin-repository>
-<!--  <ff>"Build"</ff>
+  <ff>"Build"</ff>
   <category name="Build">
     <idea-plugin downloads="0" size="0" date="1406666585000" url="">
       <name>Pants Support</name>
@@ -7,16 +7,16 @@
       <description>
         <![CDATA[ Support for Pants build system ]]>
       </description>
-      <version>1.3.4.20150825</version>
+      <version>1.3.4.20150903</version>
       <vendor email="" url="">Twitter, Inc.</vendor>
-      <download-url>https://github.com/pantsbuild/intellij-pants-plugin/releases/download/1.3.4.20150825/pants.zip</download-url>
+      <download-url>https://github.com/pantsbuild/intellij-pants-plugin/releases/download/1.3.4.20150903/pants.zip</download-url>
       <idea-version min="n/a" max="n/a" since-build="141.177" until-build="142.1"/>
       <change-notes>
         <![CDATA[
-        Beta Version
+        Beta Version 09/03/2015
         ]]>
       </change-notes>
       <rating>00</rating>
     </idea-plugin>
-  </category>-->
+  </category>
 </plugin-repository>
