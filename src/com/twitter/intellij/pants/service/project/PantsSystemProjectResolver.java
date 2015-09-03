@@ -20,7 +20,7 @@ import com.intellij.openapi.externalSystem.service.project.ExternalSystemProject
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -102,7 +102,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     for (DataNode<ModuleData> moduleDataNode : ExternalSystemApiUtil.findAll(projectDataNode, ProjectKeys.MODULE)) {
       for (DataNode<ContentRootData> contentRootDataNode : ExternalSystemApiUtil.findAll(moduleDataNode, ProjectKeys.CONTENT_ROOT)) {
         final ContentRootData contentRootData = contentRootDataNode.getData();
-        if (StringUtil.equalsIgnoreCase(path, contentRootData.getRootPath())) {
+        if (FileUtil.isAncestor(contentRootData.getRootPath(), path, false)) {
           return true;
         }
       }

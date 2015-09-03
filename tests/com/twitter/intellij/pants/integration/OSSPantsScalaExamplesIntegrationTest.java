@@ -5,10 +5,13 @@ package com.twitter.intellij.pants.integration;
 
 import com.intellij.openapi.compiler.CompilerMessage;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
+import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import org.jetbrains.jps.model.java.JavaSourceRootType;
 
 import java.util.List;
 
@@ -115,6 +118,12 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
       "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome"
     );
+
+    final ContentEntry[] contentRoots = getContentRoots("examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome");
+    assertSize(1, contentRoots);
+    final List<SourceFolder> testSourceRoots = contentRoots[0].getSourceFolders(JavaSourceRootType.TEST_SOURCE);
+    assertSize(1, testSourceRoots);
+    assertTrue(testSourceRoots.iterator().next().getUrl().endsWith("examples/tests/scala"));
 
     makeProject();
 

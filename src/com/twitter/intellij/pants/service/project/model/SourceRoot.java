@@ -15,30 +15,33 @@ public class SourceRoot implements Comparable<SourceRoot> {
   public SourceRoot() {
   }
 
-  public SourceRoot(@NotNull String source_root, String package_prefix) {
+  public SourceRoot(@NotNull String source_root, @Nullable String package_prefix) {
     this.source_root = source_root;
     this.package_prefix = package_prefix;
   }
 
   @NotNull
   public String getSourceRootRegardingSourceType(@Nullable PantsSourceType rootType) {
-    if (PantsSourceType.isResource(rootType)) {
-      // source_root might contain '.' in the path.
-      final boolean sourceRootMatchesPackage =
-        StringUtil.endsWith(StringUtil.replaceChar(source_root, '/', '.'), package_prefix);
-      return sourceRootMatchesPackage ?
-             source_root.substring(0, source_root.length() - package_prefix.length()) :
-             source_root;
-    }
-    else {
-      return source_root;
-    }
+    return PantsSourceType.isResource(rootType) ? getPackageRoot() : getRawSourceRoot();
   }
 
+  @NotNull
+  public String getPackageRoot() {
+    // source_root might contain '.' in the path.
+    final boolean sourceRootMatchesPackage =
+      StringUtil.endsWith(StringUtil.replaceChar(source_root, '/', '.'), package_prefix);
+    return sourceRootMatchesPackage ?
+           source_root.substring(0, source_root.length() - package_prefix.length()) :
+           source_root;
+
+  }
+
+  @NotNull
   public String getRawSourceRoot() {
     return source_root;
   }
 
+  @Nullable
   public String getPackagePrefix() {
     return package_prefix;
   }

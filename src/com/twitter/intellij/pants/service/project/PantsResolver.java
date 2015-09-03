@@ -33,7 +33,7 @@ import java.io.File;
 import java.util.*;
 
 public class PantsResolver extends PantsResolverBase {
-  public static final int VERSION = 9;
+  public static final int VERSION = 10;
 
   public PantsResolver(@NotNull PantsCompileOptionsExecutor executor) {
     super(executor);
@@ -102,36 +102,10 @@ public class PantsResolver extends PantsResolverBase {
 
       final List<ContentRootData> contentRoots = findChildren(moduleDataNode, ProjectKeys.CONTENT_ROOT);
       addSourceRootsToContentRoots(targetAddress, targetInfo, contentRoots);
-      addExcludesToContentRoots(targetInfo, contentRoots);
 
       if (myExecutor.isCompileWithPants()) {
         addPantsJpsCompileOutputs(targetInfo, moduleDataNode);
       }
-    }
-  }
-
-  private void addExcludesToContentRoots(@NotNull final TargetInfo targetInfo, @NotNull List<ContentRootData> remainingContentRoots) {
-    if (PantsUtil.isResource(targetInfo.getSourcesType())) {
-      return; // don't exclude subdirectories of resource sources
-    }
-    for (final ContentRootData contentRoot : remainingContentRoots) {
-      addExcludes(
-        targetInfo,
-        contentRoot,
-        ContainerUtil.findAll(
-          targetInfo.getRoots(),
-          new Condition<SourceRoot>() {
-            @Override
-            public boolean value(SourceRoot root) {
-              return FileUtil.isAncestor(
-                contentRoot.getRootPath(),
-                root.getSourceRootRegardingSourceType(targetInfo.getSourcesType()),
-                false
-              );
-            }
-          }
-        )
-      );
     }
   }
 

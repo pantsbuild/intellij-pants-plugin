@@ -19,5 +19,5 @@ import org.jetbrains.annotations.NotNull;
 public interface PantsProjectInfoModifierExtension {
   ExtensionPointName<PantsProjectInfoModifierExtension> EP_NAME = ExtensionPointName.create("com.intellij.plugins.pants.projectInfoModifier");
 
-  public void modify(@NotNull ProjectInfo projectInfo, Logger log);
+  void modify(@NotNull ProjectInfo projectInfo, @NotNull Logger log);
 }
