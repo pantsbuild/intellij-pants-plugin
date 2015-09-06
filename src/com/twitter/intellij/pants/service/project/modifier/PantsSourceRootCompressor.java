@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.service.project.modifier;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
@@ -19,7 +20,11 @@ import java.util.Set;
 
 public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtension {
   @Override
-  public void modify(@NotNull ProjectInfo projectInfo, @NotNull Logger log) {
+  public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
+    if (executor.isCompileWithIntellij()) {
+      // no optimization for IJ compilation
+      return;
+    }
     for (TargetInfo info : projectInfo.getTargets().values()) {
       if (!PantsUtil.isResource(info.getSourcesType())) {
         info.setRoots(compressRootsIfPossible(info.getRoots()));

@@ -15,7 +15,7 @@ import java.util.Map;
 public interface PantsResolverExtension {
   ExtensionPointName<PantsResolverExtension> EP_NAME = ExtensionPointName.create("com.intellij.plugins.pants.projectResolver");
 
-  public void resolve(
+  void resolve(
     @NotNull ProjectInfo projectInfo,
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules

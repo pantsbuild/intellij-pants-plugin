@@ -7,6 +7,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
@@ -36,7 +37,7 @@ public class PantsUnsupportedTargetsModifier implements PantsProjectInfoModifier
     };
 
   @Override
-  public void modify(@NotNull ProjectInfo projectInfo, Logger log) {
+  public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, Logger log) {
     projectInfo.setTargets(PantsUtil.filterByValue(projectInfo.getTargets(), SUPPORTED_TARGET_TYPES_CONDITION));
   }
 }

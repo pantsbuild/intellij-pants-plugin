@@ -7,6 +7,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
@@ -18,7 +19,7 @@ import java.util.Set;
 
 public class PantsCyclicDependenciesModifier implements PantsProjectInfoModifierExtension {
   @Override
-  public void modify(@NotNull ProjectInfo projectInfo, Logger log) {
+  public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, Logger log) {
     final Set<Map.Entry<String, TargetInfo>> originalEntries =
       new HashSet<Map.Entry<String, TargetInfo>>(projectInfo.getTargets().entrySet());
     for (Map.Entry<String, TargetInfo> nameAndInfo : originalEntries) {

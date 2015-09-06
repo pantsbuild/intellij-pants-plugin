@@ -10,6 +10,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
@@ -23,7 +24,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
   public static final String COMMON_SOURCES_TARGET_NAME = "common_sources";
 
   @Override
-  public void modify(@NotNull ProjectInfo projectInfo, Logger log) {
+  public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, Logger log) {
     // IntelliJ doesn't support when several modules have the same source root
     // so, for source roots that point at multiple targets, we need to convert those so that
     // they have only one target that owns them.

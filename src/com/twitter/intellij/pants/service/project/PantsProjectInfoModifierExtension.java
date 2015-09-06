@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.service.project;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,5 +20,5 @@ import org.jetbrains.annotations.NotNull;
 public interface PantsProjectInfoModifierExtension {
   ExtensionPointName<PantsProjectInfoModifierExtension> EP_NAME = ExtensionPointName.create("com.intellij.plugins.pants.projectInfoModifier");
 
-  void modify(@NotNull ProjectInfo projectInfo, @NotNull Logger log);
+  void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log);
 }

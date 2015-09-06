@@ -45,7 +45,7 @@ public class PantsResolver extends PantsResolverBase {
 
     LOG.debug("Amount of targets before modifiers: " + myProjectInfo.getTargets().size());
     for (PantsProjectInfoModifierExtension modifier : PantsProjectInfoModifierExtension.EP_NAME.getExtensions()) {
-      modifier.modify(myProjectInfo, LOG);
+      modifier.modify(myProjectInfo, myExecutor, LOG);
     }
     LOG.debug("Amount of targets after modifiers: " + myProjectInfo.getTargets().size());
 
@@ -106,6 +106,34 @@ public class PantsResolver extends PantsResolverBase {
       if (myExecutor.isCompileWithPants()) {
         addPantsJpsCompileOutputs(targetInfo, moduleDataNode);
       }
+      if (myExecutor.isCompileWithIntellij()) {
+        addExcludesToContentRoots(targetInfo, contentRoots);
+      }
+    }
+  }
+
+  private void addExcludesToContentRoots(@NotNull final TargetInfo targetInfo, @NotNull List<ContentRootData> remainingContentRoots) {
+    if (PantsUtil.isResource(targetInfo.getSourcesType())) {
+      return; // don't exclude subdirectories of resource sources
+    }
+    for (final ContentRootData contentRoot : remainingContentRoots) {
+      addExcludes(
+        targetInfo,
+        contentRoot,
+        ContainerUtil.findAll(
+          targetInfo.getRoots(),
+          new Condition<SourceRoot>() {
+            @Override
+            public boolean value(SourceRoot root) {
+              return FileUtil.isAncestor(
+                contentRoot.getRootPath(),
+                root.getSourceRootRegardingSourceType(targetInfo.getSourcesType()),
+                false
+              );
+            }
+          }
+        )
+      );
     }
   }
 
