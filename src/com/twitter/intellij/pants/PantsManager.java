@@ -118,10 +118,6 @@ public class PantsManager implements
         final String projectPath = projectStringPair.getSecond();
 
         final PantsExecutionSettings executionSettings = getExecutionsSettingsFromPath(ideProject, projectPath);
-
-        for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
-          executionSettings.addResolverExtensionClassName(resolver.getClass().getName());
-        }
         return executionSettings;
       }
 

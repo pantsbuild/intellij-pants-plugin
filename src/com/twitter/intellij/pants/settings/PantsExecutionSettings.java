@@ -16,7 +16,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private final boolean myCompileWithIntellij;
   private final boolean myLibsWithSources;
   private List<String> myTargetNames;
-  @NotNull private final List<String> myResolverExtensionClassNames = ContainerUtilRt.newArrayList();
 
   public PantsExecutionSettings() {
     this(Collections.<String>emptyList(), false, false, true);
@@ -47,15 +46,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     return myLibsWithSources;
   }
 
-  @NotNull
-  public List<String> getResolverExtensionClassNames() {
-    return myResolverExtensionClassNames;
-  }
-
-  public void addResolverExtensionClassName(@NotNull String className) {
-    myResolverExtensionClassNames.add(className);
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -67,7 +57,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     if (myWithDependees != settings.myWithDependees) return false;
     if (myCompileWithIntellij != settings.myCompileWithIntellij) return false;
     if (myLibsWithSources != settings.myLibsWithSources) return false;
-    if (!myResolverExtensionClassNames.equals(settings.myResolverExtensionClassNames)) return false;
     if (myTargetNames != null ? !myTargetNames.equals(settings.myTargetNames) : settings.myTargetNames != null) return false;
 
     return true;
@@ -78,7 +67,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     int result = super.hashCode();
     result = 31 * result + (myWithDependees ? 1 : 0);
     result = 31 * result + (myTargetNames != null ? myTargetNames.hashCode() : 0);
-    result = 31 * result + myResolverExtensionClassNames.hashCode();
     result = 31 * result + (myCompileWithIntellij ? 1 : 0);
     result = 31 * result + (myLibsWithSources ? 1 : 0);
     return result;

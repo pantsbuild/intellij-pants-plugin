@@ -14,8 +14,11 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
+import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
+import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
@@ -555,5 +558,18 @@ public class PantsUtil {
       }
     }
     return true;
+  }
+
+  @NotNull
+  public static  <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
+    return ContainerUtil.mapNotNull(
+      ExternalSystemApiUtil.findAll(dataNode, key),
+      new Function<DataNode<T>, T>() {
+        @Override
+        public T fun(DataNode<T> node) {
+          return node.getData();
+        }
+      }
+    );
   }
 }

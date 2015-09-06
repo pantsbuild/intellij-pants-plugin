@@ -9,6 +9,7 @@ import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
@@ -29,6 +30,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
   @Override
   public void resolve(
     @NotNull ProjectInfo projectInfo,
+    @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules
   ) {

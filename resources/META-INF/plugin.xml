@@ -172,6 +172,13 @@
     <projectInfoModifier order="last" implementation="com.twitter.intellij.pants.service.project.modifier.PantsCommonSourceRootModifier"/>
   </extensions>
 
+  <extensions defaultExtensionNs="com.intellij.plugins.pants">
+    <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsCreateModulesExtension" order="first"/>
+    <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsSourceRootsExtension"/>
+    <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsModuleDependenciesExtension"/>
+    <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsLibrariesExtension"/>
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
     <compileServer.plugin classpath="pants-jps-plugin.jar;pants-common.jar"/>
     <compiler.buildTargetScopeProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildTargetScopeProvider"/>

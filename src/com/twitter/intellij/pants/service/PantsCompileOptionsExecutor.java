@@ -47,7 +47,6 @@ public class PantsCompileOptionsExecutor {
   private final boolean myResolveJars;
   private final boolean myCompileWithIntellij;
   private final boolean myResolveSourcesForJars;
-  private final List<String> myResolverExtensionClassNames;
 
   /**
    *  Add help-default goal to Pants to get all defaults in machine readable format
@@ -111,8 +110,7 @@ public class PantsCompileOptionsExecutor {
     return new PantsCompileOptionsExecutor(
       workingDir, options,
       resolveJars, executionOptions != null && executionOptions.isLibsWithSources(),
-      executionOptions != null && executionOptions.isCompileWithIntellij(),
-      executionOptions != null ? executionOptions.getResolverExtensionClassNames() : Collections.<String>emptyList()
+      executionOptions != null && executionOptions.isCompileWithIntellij()
     );
   }
 
@@ -124,8 +122,7 @@ public class PantsCompileOptionsExecutor {
       new MyPantsCompileOptions("", new PantsExecutionSettings()),
       false,
       true,
-      false,
-      Collections.<String>emptyList()
+      false
     ) {
       @Override
       public boolean isIsolatedStrategy() {
@@ -139,14 +136,12 @@ public class PantsCompileOptionsExecutor {
     @NotNull PantsCompileOptions compilerOptions,
     boolean resolveJars,
     boolean resolveSourcesForJars,
-    boolean compileWithIntellij,
-    @NotNull List<String> resolverExtensionClassNames
+    boolean compileWithIntellij
   ) {
     myWorkingDir = workingDir;
     myOptions = compilerOptions;
     myResolveJars = resolveJars;
     myCompileWithIntellij = compileWithIntellij;
-    myResolverExtensionClassNames = resolverExtensionClassNames;
     myResolveSourcesForJars = resolveSourcesForJars;
   }
 
@@ -191,11 +186,6 @@ public class PantsCompileOptionsExecutor {
 
   public boolean isCompileWithIntellij() {
     return myCompileWithIntellij;
-  }
-
-  @NotNull
-  public List<String> getResolverExtensionClassNames() {
-    return myResolverExtensionClassNames;
   }
 
   @NotNull
