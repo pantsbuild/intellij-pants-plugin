@@ -1,5 +1,5 @@
 <plugin-repository>
-  <ff>"Build"</ff>
+  <!--<ff>"Build"</ff>
   <category name="Build">
     <idea-plugin downloads="0" size="0" date="1406666585000" url="">
       <name>Pants Support</name>
@@ -18,5 +18,5 @@
       </change-notes>
       <rating>00</rating>
     </idea-plugin>
-  </category>
+  </category>-->
 </plugin-repository>
