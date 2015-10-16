@@ -59,10 +59,12 @@ public class PantsCompileOptionsExecutor {
       commandLine.addParameters("help-advanced", "compile", "--no-color");
       try {
         final ProcessOutput processOutput = getProcessOutput(commandLine, null);
-        final boolean isIsolated = StringUtil.contains(processOutput.getStdout(), "default: isolated");
+        final String stdout = processOutput.getStdout();
+        final boolean isIsolated = StringUtil.contains(stdout, "default: isolated") ||
+                                   !StringUtil.contains(stdout, "default: global");
         final List<String> stdoutLines = processOutput.getStdoutLines(true);
-        final boolean isZincForAll = StringUtil.contains(processOutput.getStdout(), "--compile-zinc-strategy");
-        final boolean useJmakeForJava = StringUtil.contains(processOutput.getStdout(), "compile-java-use-jmake (default: True)");
+        final boolean isZincStrategy = StringUtil.contains(stdout, "--compile-zinc-strategy");
+        final boolean useJmakeForJava = StringUtil.contains(stdout, "compile-java-use-jmake (default: True)");
         final int zincLineIndex = ContainerUtil.indexOf(
           stdoutLines,
           new Condition<String>() {
@@ -72,11 +74,12 @@ public class PantsCompileOptionsExecutor {
             }
           }
         );
+        final boolean onlyZinc = zincLineIndex < 0;
         final boolean zincForJava1 = zincLineIndex >= 0 &&
                                      StringUtil.contains(stdoutLines.get(zincLineIndex), "default: True");
         final boolean zincForJava2 = (zincLineIndex + 1) < stdoutLines.size() &&
                                      StringUtil.contains(stdoutLines.get(zincLineIndex + 1), "default: True");
-        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2, isZincForAll, useJmakeForJava);
+        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2, onlyZinc || isZincStrategy, useJmakeForJava);
       }
       catch (ExecutionException e) {
         LOG.warn(e);

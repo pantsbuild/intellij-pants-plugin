@@ -123,7 +123,9 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     assertSize(1, contentRoots);
     final List<SourceFolder> testSourceRoots = contentRoots[0].getSourceFolders(JavaSourceRootType.TEST_SOURCE);
     assertSize(1, testSourceRoots);
-    assertTrue(testSourceRoots.iterator().next().getUrl().endsWith("examples/tests/scala"));
+    if (!PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
+      assertTrue(testSourceRoots.iterator().next().getUrl().endsWith("examples/tests/scala"));
+    }
 
     makeProject();
 

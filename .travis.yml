@@ -22,18 +22,13 @@ env:
     - IJ_ULTIMATE=false
     - IJ_ULTIMATE=true
     - USE_PANTS_TO_COMPILE=false
-    - USE_ISOLATED_STRATEGY=false
-    - PANTS_SHA=91b8038 TEST_SET=integration # 0.0.44
-    - PANTS_SHA=9459369 TEST_SET=integration # 0.0.43
-    - PANTS_SHA=16c0c71 TEST_SET=integration # 0.0.42
-    - PANTS_SHA=565a786 TEST_SET=integration # 0.0.41
-    - PANTS_SHA=bde6007 TEST_SET=integration # 0.0.40
-    - PANTS_SHA=bdc6820 TEST_SET=integration # 0.0.39
-    - PANTS_SHA=047b149 TEST_SET=integration # 0.0.38
-    - PANTS_SHA=2a0316a TEST_SET=integration # 0.0.37
-    - PANTS_SHA=261bb71 TEST_SET=integration # 0.0.36
-    - PANTS_SHA=69a9561 TEST_SET=integration # 0.0.35
-    - PANTS_SHA=c2342bb TEST_SET=integration # 0.0.34
+    - PANTS_SHA=11d89c9 TEST_SET=integration # 0.0.53
+    - PANTS_SHA=4719e0d TEST_SET=integration # 0.0.52
+    - PANTS_SHA=78d5bb8 TEST_SET=integration # 0.0.51
+    - PANTS_SHA=8ae0612 TEST_SET=integration # 0.0.50
+    - PANTS_SHA=31fba06 TEST_SET=integration # 0.0.49
+    - PANTS_SHA=953cb12 TEST_SET=integration # 0.0.48
+    - PANTS_SHA=1fd2293 TEST_SET=integration # 0.0.47
 
 script:
   - ./scripts/run-tests-ci.sh
