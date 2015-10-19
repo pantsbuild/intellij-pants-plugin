@@ -79,7 +79,8 @@ public class PantsCompileOptionsExecutor {
                                      StringUtil.contains(stdoutLines.get(zincLineIndex), "default: True");
         final boolean zincForJava2 = (zincLineIndex + 1) < stdoutLines.size() &&
                                      StringUtil.contains(stdoutLines.get(zincLineIndex + 1), "default: True");
-        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2, onlyZinc || isZincStrategy, useJmakeForJava);
+        final boolean separateAnnotationOutput = StringUtil.contains(stdout, "compile.apt");
+        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2, onlyZinc || isZincStrategy, useJmakeForJava, separateAnnotationOutput);
       }
       catch (ExecutionException e) {
         LOG.warn(e);
@@ -338,10 +339,10 @@ public class PantsCompileOptionsExecutor {
   }
 
   public String compilerFolderForTarget(@NotNull TargetAddressInfo targetAddressInfo) {
-    if (targetAddressInfo.isAnnotationProcessor()) {
+    final PantsCompilerOptions options = compilerOptions.getValue();
+    if (targetAddressInfo.isAnnotationProcessor() && options.isSeparateAnnotationOutput()) {
       return "apt";
     }
-    final PantsCompilerOptions options = compilerOptions.getValue();
     if (targetAddressInfo.isScala()) {
       return options.isZincForAll() ? "zinc" : "scala";
     }
@@ -416,16 +417,18 @@ public class PantsCompileOptionsExecutor {
     private final boolean compileWithZincForJava;
     private final boolean zincForAll;
     private final boolean useJmakeForJava;
+    private final boolean separateAnnotationOutput;
 
     private PantsCompilerOptions() {
-      this(false, false, false, false);
+      this(false, false, false, false, false);
     }
 
-    private PantsCompilerOptions(boolean compileWithIsolatedStrategy, boolean compileWithZincForJava, boolean zincForAll, boolean useJmakeForJava) {
+    private PantsCompilerOptions(boolean compileWithIsolatedStrategy, boolean compileWithZincForJava, boolean zincForAll, boolean useJmakeForJava, boolean separateAnnotationOutput) {
       this.compileWithIsolatedStrategy = compileWithIsolatedStrategy;
       this.compileWithZincForJava = compileWithZincForJava;
       this.zincForAll = zincForAll;
       this.useJmakeForJava = useJmakeForJava;
+      this.separateAnnotationOutput = separateAnnotationOutput;
     }
 
     public boolean isCompileWithIsolatedStrategy() {
@@ -442,6 +445,10 @@ public class PantsCompileOptionsExecutor {
 
     public boolean isUseJmakeForJava() {
       return useJmakeForJava;
+    }
+
+    public boolean isSeparateAnnotationOutput() {
+      return separateAnnotationOutput;
     }
   }
 }
