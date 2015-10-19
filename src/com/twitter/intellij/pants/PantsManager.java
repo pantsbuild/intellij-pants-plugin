@@ -123,13 +123,16 @@ public class PantsManager implements
 
       @NotNull
       public PantsExecutionSettings getExecutionsSettingsFromPath(@NotNull Project ideProject, @NotNull String projectPath) {
+
+
         boolean compileWithIntellij = PantsSettings.getInstance(ideProject).isCompileWithIntellij();
+        boolean compileWithDebugInfo= PantsSettings.getInstance(ideProject).isCompileWithDebugInfoChecked();
 
         final PantsTargetAddress absoluteTargetAddress = PantsTargetAddress.fromString(projectPath, true);
 
         if (absoluteTargetAddress != null) {
           return new PantsExecutionSettings(
-            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, compileWithIntellij, true
+            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, compileWithIntellij,compileWithDebugInfo, true
           );
         }
 
@@ -143,7 +146,7 @@ public class PantsManager implements
         final boolean libsWithSources = projectSettings instanceof PantsProjectSettings &&
                                         ((PantsProjectSettings)projectSettings).isLibsWithSources();
 
-        return new PantsExecutionSettings(targets, withDependees, compileWithIntellij, libsWithSources);
+        return new PantsExecutionSettings(targets, withDependees, compileWithIntellij, compileWithDebugInfo, libsWithSources);
       }
     };
   }

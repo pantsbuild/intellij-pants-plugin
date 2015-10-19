@@ -14,18 +14,21 @@ import java.util.List;
 public class PantsExecutionSettings extends ExternalSystemExecutionSettings implements PantsExecutionOptions {
   private final boolean myWithDependees;
   private final boolean myCompileWithIntellij;
+  private final boolean myCompileWithDebugInfo;
   private final boolean myLibsWithSources;
   private List<String> myTargetNames;
 
   public PantsExecutionSettings() {
-    this(Collections.<String>emptyList(), false, false, true);
+    this(Collections.<String>emptyList(), false, false, false, true);
   }
 
-  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean compileWithIntellij, boolean libsWithSources) {
+  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean compileWithIntellij, boolean compileWithDebugInfo, boolean libsWithSources) {
     myTargetNames = targetNames;
     myWithDependees = withDependees;
     myCompileWithIntellij = compileWithIntellij;
+    myCompileWithDebugInfo = compileWithDebugInfo;
     myLibsWithSources = libsWithSources;
+
   }
 
   @NotNull
@@ -41,6 +44,8 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   public boolean isCompileWithIntellij() {
     return myCompileWithIntellij;
   }
+
+  public boolean isCompileWithDebugInfo() {return myCompileWithDebugInfo; }
 
   public boolean isLibsWithSources() {
     return myLibsWithSources;

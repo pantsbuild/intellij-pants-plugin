@@ -63,7 +63,8 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       commandLine.addParameter(relativeProjectPath + File.separator + "::");
     }
 
-    if (debuggerSetup != null){
+    if (settings.isCompileWithDebugInfo()){
+      //if to change this, please also change it in com/twitter/intellij/pants/jps/incremental/PantsTargetBuilder.java
       scriptParameters.add("--compile-java-args=['-C-g:lines,source,vars']");
       scriptParameters.add("--compile-zinc-args=-C-g:lines,source,vars");
     }

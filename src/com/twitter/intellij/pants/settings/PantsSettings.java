@@ -34,15 +34,20 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   protected boolean myCompileWithIntellij = false;
+  protected boolean myCompileWithDebugInfoChecked = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
   }
 
+  public boolean isCompileWithDebugInfoChecked() {return myCompileWithDebugInfoChecked;}
+
   public boolean isCompileWithIntellij() {
     return myCompileWithIntellij;
   }
+
+  public void setCompileWithDebugInfoChecked(boolean isCompileWithDebugInfoChecked){myCompileWithDebugInfoChecked = isCompileWithDebugInfoChecked;}
 
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     myCompileWithIntellij = compileWithIntellij;
@@ -82,6 +87,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public MyState getState() {
     final MyState state = new MyState();
     state.setCompileWithIntellij(isCompileWithIntellij());
+    state.setCompileWithDebugInfoChecked(isCompileWithDebugInfoChecked());
     state.setResolverVersion(getResolverVersion());
     fillState(state);
     return state;
@@ -91,6 +97,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public void loadState(MyState state) {
     super.loadState(state);
     setCompileWithIntellij(state.isCompileWithIntellij());
+    setCompileWithDebugInfoChecked(state.isCompileWithDebugInfoChecked());
     setResolverVersion(state.getResolverVersion());
   }
 
@@ -98,6 +105,8 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
     boolean myCompileWithIntellij = false;
+
+    boolean myCompileWithDebugInfoChecked = false;
 
     int myResolverVersion = 0;
 
@@ -124,6 +133,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     public void setResolverVersion(int resolverVersion) {
       myResolverVersion = resolverVersion;
+    }
+
+    public boolean isCompileWithDebugInfoChecked() {
+      return myCompileWithDebugInfoChecked;
+    }
+
+    public void setCompileWithDebugInfoChecked(boolean CompileWithDebugInfoChecked) {
+      myCompileWithDebugInfoChecked = CompileWithDebugInfoChecked;
     }
   }
 }

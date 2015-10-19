@@ -10,16 +10,18 @@ import org.jetbrains.jps.model.ex.JpsElementBase;
 public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProjectExtensionImpl> implements JpsPantsProjectExtension {
   private String myPantsExecutablePath;
   private boolean myCompileWithIntellij;
+  private boolean myCompileWithDebugInfo;
 
-  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean compileWithIntellij) {
+  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean compileWithIntellij, boolean compileWithDebugInfo) {
     myPantsExecutablePath = pantsExecutable;
     myCompileWithIntellij = compileWithIntellij;
+    myCompileWithDebugInfo = compileWithDebugInfo;
   }
 
   @NotNull
   @Override
   public JpsPantsProjectExtensionImpl createCopy() {
-    return new JpsPantsProjectExtensionImpl(myPantsExecutablePath, myCompileWithIntellij);
+    return new JpsPantsProjectExtensionImpl(myPantsExecutablePath, myCompileWithIntellij, myCompileWithDebugInfo);
   }
 
   @Override
@@ -43,6 +45,12 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
   public boolean isCompileWithIntellij() {
     return myCompileWithIntellij;
   }
+
+  @Override
+  public boolean isCompileWithDebugInfo() {
+    return myCompileWithDebugInfo;
+  }
+
 
   @Override
   public void setCompileWithIntellij(boolean compileWithIntellij) {

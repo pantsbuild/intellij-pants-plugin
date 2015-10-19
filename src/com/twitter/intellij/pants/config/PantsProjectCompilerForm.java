@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.config;
 
 import com.twitter.intellij.pants.PantsBundle;
+import com.intellij.ui.components.JBCheckBox;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,6 +16,7 @@ public class PantsProjectCompilerForm {
   private JPanel myMainPanel;
   private JComboBox myCompilerComboBox;
   private JTextPane myDescriptionTextPane;
+  private JCheckBox myCompilerDebugInfoCheckBox;
 
   private final CompilerValue myPantsCompiler =
     new CompilerValue(PantsBundle.message("pants.compile.pants.compiler"), PantsBundle.message("pants.compile.pants.compiler.description"));
@@ -27,12 +29,19 @@ public class PantsProjectCompilerForm {
         @Override
         public void actionPerformed(ActionEvent e) {
           Object selectedItem = myCompilerComboBox.getSelectedItem();
+          if (selectedItem==myPantsCompiler){
+            myCompilerDebugInfoCheckBox.setEnabled(true);
+          }
+          else{
+            myCompilerDebugInfoCheckBox.setEnabled(false);
+          }
           myDescriptionTextPane.setText(
             selectedItem instanceof CompilerValue ? ((CompilerValue)selectedItem).getDescription() : ""
           );
         }
       }
     );
+
     myCompilerComboBox.addItem(myPantsCompiler);
     myCompilerComboBox.addItem(myIJCompiler);
   }
@@ -49,12 +58,19 @@ public class PantsProjectCompilerForm {
     return myCompilerComboBox.getSelectedItem() == myIJCompiler;
   }
 
+  public boolean isCompilerDebugInfoChecked() {return myCompilerDebugInfoCheckBox.isSelected();}
+
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     if (compileWithIntellij) {
       myCompilerComboBox.setSelectedItem(myIJCompiler);
-    } else {
+    }
+    else {
       myCompilerComboBox.setSelectedItem(myPantsCompiler);
     }
+  }
+
+  public void setCompilerDebugInfoCheckBox(boolean CompilerDebugInfoCheckBox){
+    myCompilerDebugInfoCheckBox.setSelected(CompilerDebugInfoCheckBox);
   }
 
   public static class CompilerValue {

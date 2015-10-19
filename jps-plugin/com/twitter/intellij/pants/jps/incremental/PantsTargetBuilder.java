@@ -50,6 +50,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
   }
 
+  private boolean isCompileWithDebugInfo = false;
+
   @NotNull
   @Override
   public String getPresentableName() {
@@ -62,6 +64,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
     final boolean compileWithPants = pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij();
+    this.isCompileWithDebugInfo = pantsProjectExtension.isCompileWithDebugInfo();
     if (compileWithPants && PantsJpsUtil.containsPantsModules(jpsProject.getModules())) {
       // disable only for imported projects
       JavaBuilder.IS_ENABLED.set(context, Boolean.FALSE);
@@ -118,6 +121,12 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     }
 
+    if (isCompileWithDebugInfo){
+      //if this is to change, please also change it in com/twitter/intellij/pants/service/task/PantsTaskManager.java
+      commandLine.addParameters("--compile-java-args=['-C-g:lines,source,vars']");
+      commandLine.addParameters("--compile-zinc-args=-C-g:lines,source,vars");
+    }
+
     final Process process;
     try {
       commandLine.addParameters("--no-colors");
@@ -126,6 +135,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     catch (ExecutionException e) {
       throw new ProjectBuildException(e);
     }
+
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
     processHandler.addProcessListener(
       new ProcessAdapter() {
@@ -138,6 +148,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     );
     final ProcessOutput processOutput = processHandler.runProcess();
     processOutput.checkSuccess(LOG);
+
   }
 
   private boolean hasDirtyTargets(DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder) throws IOException {

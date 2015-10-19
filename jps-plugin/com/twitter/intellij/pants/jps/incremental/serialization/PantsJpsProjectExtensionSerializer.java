@@ -18,6 +18,7 @@ import java.io.File;
 public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSerializer {
 
   private static final String COMPILE_WITH_INTELLIJ   = "compileWithIntellij";
+  private static final String COMPILE_WITH_DEBUG_INFO = "compileWithDebugInfoChecked";
   private static final String LINKED_PROJECT_SETTINGS = "linkedExternalProjectsSettings";
   private static final String EXTERNAL_PROJECT_PATH   = "externalProjectPath";
   private static final String PROJECT_SETTINGS        = "PantsProjectSettings";
@@ -46,8 +47,11 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     final boolean compileWithIntellij =
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
 
+    final boolean compileWithDebugInfo =
+      Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_DEBUG_INFO, "false"));
+
     final JpsPantsProjectExtension projectExtension =
-      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij);
+      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij, compileWithDebugInfo);
 
     project.getContainer().setChild(JpsPantsProjectExtension.ROLE, projectExtension);
   }
