@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class PantsResolver {
-  public static final int VERSION = 10;
+  public static final int VERSION = 11;
 
   protected static final Logger LOG = Logger.getInstance(PantsResolver.class);
   protected final PantsCompileOptionsExecutor myExecutor;
@@ -43,7 +43,11 @@ public class PantsResolver {
     myExecutor = executor;
   }
 
-  public static ProjectInfo parseProjectInfoFromJSON(String data) throws JsonSyntaxException {
+  public static ProjectInfo parseProjectInfoFromJSON(@NotNull String data) throws JsonSyntaxException {
+    final int jsonStart = data.indexOf("\n{");
+    if (jsonStart > 0) {
+      data = data.substring(jsonStart + 1);
+    }
     return ProjectInfo.fromJson(data);
   }
 

@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.service.project.modifier;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Conditions;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
@@ -15,6 +16,8 @@ import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
 
 public class PantsUnsupportedTargetsModifier implements PantsProjectInfoModifierExtension {
   private static final Condition<TargetInfo> SUPPORTED_TARGET_TYPES_CONDITION =
@@ -37,7 +40,9 @@ public class PantsUnsupportedTargetsModifier implements PantsProjectInfoModifier
     };
 
   @Override
-  public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, Logger log) {
-    projectInfo.setTargets(PantsUtil.filterByValue(projectInfo.getTargets(), SUPPORTED_TARGET_TYPES_CONDITION));
+  public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
+    final Map<String, TargetInfo> unsupportedTargets =
+      PantsUtil.filterByValue(projectInfo.getTargets(), Conditions.not(SUPPORTED_TARGET_TYPES_CONDITION));
+    projectInfo.removeTargets(unsupportedTargets.keySet());
   }
 }

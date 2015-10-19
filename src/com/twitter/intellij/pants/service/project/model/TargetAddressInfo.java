@@ -69,7 +69,13 @@ public class TargetAddressInfo {
   }
 
   public boolean isScala() {
-    return StringUtil.equals("scala_library", getInternalPantsTargetType()) || hasScalaSources();
+    return StringUtil.contains("scala", StringUtil.notNullize(getInternalPantsTargetType())) ||
+           getGlobs().hasFileExtension("scala");
+  }
+
+  public boolean isPython() {
+    return StringUtil.contains("python", StringUtil.notNullize(getInternalPantsTargetType())) ||
+           getGlobs().hasFileExtension("py");
   }
 
   public boolean isAnnotationProcessor() {
@@ -80,9 +86,6 @@ public class TargetAddressInfo {
     return StringUtil.equals("jar_library", getInternalPantsTargetType());
   }
 
-  public boolean hasScalaSources() {
-    return getGlobs().hasFileExtension("scala");
-  }
 
   public String getCanonicalId() {
     return PantsUtil.getCanonicalTargetId(targetAddress);

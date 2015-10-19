@@ -87,7 +87,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   }
 
   protected TargetInfoBuilder addJarLibrary(String name) {
-    return addInfo(name).withType("jar_library");
+    return addInfo(name).withType("jar_library").withLibrary("name");
   }
 
   protected TargetInfoBuilder addInfo(String name) {

@@ -214,9 +214,4 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       -1L, -1L, -1L, message.getLineNumber() + 1, -1L
     );
   }
-
-  @Nullable
-  private File findPantsExecutable(@NotNull String path) {
-    return PantsUtil.findPantsExecutable(new File(path));
-  }
 }

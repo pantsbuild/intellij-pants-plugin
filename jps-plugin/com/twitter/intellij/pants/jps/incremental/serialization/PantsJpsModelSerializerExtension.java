@@ -3,7 +3,9 @@
 
 package com.twitter.intellij.pants.jps.incremental.serialization;
 
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.model.impl.JpsPantsModuleExtensionImpl;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsModuleExtension;
@@ -11,6 +13,10 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.model.JpsDummyElement;
+import org.jetbrains.jps.model.java.JpsJavaSdkType;
+import org.jetbrains.jps.model.library.sdk.JpsSdk;
+import org.jetbrains.jps.model.library.sdk.JpsSdkType;
 import org.jetbrains.jps.model.module.JpsModule;
 import org.jetbrains.jps.model.serialization.JpsModelSerializerExtension;
 import org.jetbrains.jps.model.serialization.JpsProjectExtensionSerializer;
@@ -39,6 +45,21 @@ public class PantsJpsModelSerializerExtension extends JpsModelSerializerExtensio
   @Override
   public void loadModuleOptions(@NotNull JpsModule module, @NotNull Element rootElement) {
     super.loadModuleOptions(module, rootElement);
+    final Element facetManager = ContainerUtil.find(
+      rootElement.getChildren("component"),
+      new Condition<Element>() {
+        @Override
+        public boolean value(Element element) {
+          return StringUtil.equalsIgnoreCase(element.getAttributeValue("name"), "FacetManager");
+        }
+      }
+    );
+    final List<Element> facets = facetManager != null ? facetManager.getChildren() : Collections.<Element>emptyList();
+    if (!facets.isEmpty()) {
+      // facet will handle compilation/transpilation or maybe it's Python module and we don't need to do anything
+      return;
+    }
+
     final String externalSystemId = rootElement.getAttributeValue(EXTERNAL_SYSTEM_ID_KEY);
     final String linkedProjectPath = rootElement.getAttributeValue(LINKED_PROJECT_PATH_KEY);
     final String targetAddressesValue = StringUtil.nullize(rootElement.getAttributeValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));

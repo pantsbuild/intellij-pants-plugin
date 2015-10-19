@@ -34,6 +34,10 @@ public class TargetInfo {
    */
   protected Set<SourceRoot> roots = Collections.emptySet();
 
+  public TargetInfo(TargetAddressInfo ...addressInfos) {
+    setAddressInfos(ContainerUtil.newHashSet(addressInfos));
+  }
+
   public TargetInfo(
     Set<TargetAddressInfo> addressInfos,
     Set<String> targets,
@@ -109,6 +113,18 @@ public class TargetInfo {
     );
   }
 
+  public boolean isTest() {
+    return ContainerUtil.exists(
+      getAddressInfos(),
+      new Condition<TargetAddressInfo>() {
+        @Override
+        public boolean value(TargetAddressInfo info) {
+          return PantsUtil.getSourceTypeForTargetType(info.getTargetType()).toExternalSystemSourceType().isTest();
+        }
+      }
+    );
+  }
+
   @NotNull
   public PantsSourceType getSourcesType() {
     // todo: take it smarter
@@ -147,13 +163,13 @@ public class TargetInfo {
     );
   }
 
-  public boolean dependOnAny(@NotNull List<String> targetNames) {
-    return !targetNames.isEmpty() && ContainerUtil.exists(
-      targetNames,
-      new Condition<String>() {
+  public boolean isPythonTarget() {
+    return ContainerUtil.exists(
+      getAddressInfos(),
+      new Condition<TargetAddressInfo>() {
         @Override
-        public boolean value(String targetName) {
-          return dependOn(targetName);
+        public boolean value(TargetAddressInfo info) {
+          return info.isPython();
         }
       }
     );

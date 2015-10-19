@@ -178,6 +178,15 @@ public class PantsCompileOptionsExecutor {
     return getProjectRelativePath() + "/:" + targetsSuffix;
   }
 
+  @NotNull @Nls
+  public String getRootModuleName() {
+    if (PantsUtil.isExecutable(myOptions.getExternalProjectPath())) {
+      //noinspection ConstantConditions
+      return PantsUtil.fileNameWithoutExtension(VfsUtil.extractFileName(myOptions.getExternalProjectPath()));
+    }
+    return getProjectRelativePath();
+  }
+
   @NotNull
   public PantsCompileOptions getOptions() {
     return myOptions;

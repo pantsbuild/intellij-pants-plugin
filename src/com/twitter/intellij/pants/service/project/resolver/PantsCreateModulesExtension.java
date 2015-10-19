@@ -84,22 +84,6 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
-    if (!roots.isEmpty()) {
-      final Collection<SourceRoot> baseSourceRoots = new ArrayList<SourceRoot>();
-      for (SourceRoot root : sortRootsAsPaths(roots, rootType)) {
-        if (hasAnAncestorRoot(baseSourceRoots, root, rootType)) continue;
-        baseSourceRoots.add(root);
-      }
-
-      for (SourceRoot baseRoot : baseSourceRoots) {
-        final ContentRootData contentRoot = new ContentRootData(
-          PantsConstants.SYSTEM_ID,
-          baseRoot.getSourceRootRegardingSourceType(rootType)
-        );
-        moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
-      }
-    }
-
     final TargetMetadata metadata = new TargetMetadata(PantsConstants.SYSTEM_ID, moduleName);
     metadata.setTargetAddresses(
       ContainerUtil.map(
@@ -116,32 +100,5 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
     moduleDataNode.createChild(TargetMetadata.KEY, metadata);
 
     return moduleDataNode;
-  }
-
-  private static List<SourceRoot> sortRootsAsPaths(
-    @NotNull Collection<SourceRoot> sourceRoots,
-    @NotNull final PantsSourceType rootType
-  ) {
-    final List<SourceRoot> sortedRoots = new ArrayList<SourceRoot>(sourceRoots);
-    Collections.sort(
-      sortedRoots, new Comparator<SourceRoot>() {
-        @Override
-        public int compare(SourceRoot o1, SourceRoot o2) {
-          final String rootPath1 = o1.getSourceRootRegardingSourceType(rootType);
-          final String rootPath2 = o2.getSourceRootRegardingSourceType(rootType);
-          return FileUtil.comparePaths(rootPath1, rootPath2);
-        }
-      }
-    );
-    return sortedRoots;
-  }
-
-  private boolean hasAnAncestorRoot(@NotNull Collection<SourceRoot> baseSourceRoots, @NotNull SourceRoot root, PantsSourceType rootType) {
-    for (SourceRoot sourceRoot : baseSourceRoots) {
-      if (FileUtil.isAncestor(sourceRoot.getSourceRootRegardingSourceType(rootType), root.getSourceRootRegardingSourceType(rootType), false)) {
-        return true;
-      }
-    }
-    return false;
   }
 }

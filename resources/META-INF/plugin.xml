@@ -7,6 +7,10 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.3.5+:</p>
+      <ul>
+        <li>Python Support</li>
+      </ul>
       <p>1.3.5:</p>
       <ul>
         <li>Optimized for performance project structure</li>
@@ -166,15 +170,23 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
-    <projectInfoModifier order="first" implementation="com.twitter.intellij.pants.service.project.modifier.PantsUnsupportedTargetsModifier"/>
-    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCyclicDependenciesModifier"/>
-    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsSourceRootCompressor"/>
-    <projectInfoModifier order="last" implementation="com.twitter.intellij.pants.service.project.modifier.PantsCommonSourceRootModifier"/>
+    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsUnsupportedTargetsModifier"
+                         id="unsupportedTargetsRemover" order="first" />
+    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCyclicDependenciesModifier"
+                         id="cyclicDeps" order="after unsupportedTargetsRemover"/>
+
+    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsSourceRootCompressor"
+                         id="compressor" order="before emptyTargetsRemover"/>
+    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsEmptyTargetRemover"
+                         id="emptyTargetsRemover" order="before commonSourceRoots"/>
+    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCommonSourceRootModifier"
+                         id="commonSourceRoots" order="last" />
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsCreateModulesExtension" order="first"/>
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsSourceRootsExtension"/>
+    <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsCompilerOutputsExtension"/>
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsModuleDependenciesExtension"/>
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsLibrariesExtension"/>
   </extensions>

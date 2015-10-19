@@ -11,10 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ProjectInfo {
   public static ProjectInfo fromJson(@NotNull String data) {
@@ -34,6 +31,9 @@ public class ProjectInfo {
   protected Map<String, LibraryInfo> libraries;
   // name to info
   protected Map<String, TargetInfo> targets;
+
+  @Nullable
+  protected PythonSetup python_setup = null;
 
   private static <T> List<Map.Entry<String, T>> getSortedEntries(Map<String, T> map) {
     return ContainerUtil.sorted(
@@ -72,6 +72,11 @@ public class ProjectInfo {
   }
 
   @Nullable
+  public PythonSetup getPythonSetup() {
+    return python_setup;
+  }
+
+  @Nullable
   public LibraryInfo getLibraries(@NotNull String libraryId) {
     if (libraries.containsKey(libraryId) && libraries.get(libraryId).getDefault() != null) {
       return libraries.get(libraryId);
@@ -104,8 +109,17 @@ public class ProjectInfo {
     targets.put(targetName, info);
   }
 
+  public void removeTargets(Collection<String> targetNames) {
+    for (String targetName : targetNames) {
+      removeTarget(targetName);
+    }
+  }
+
   public void removeTarget(String targetName) {
     targets.remove(targetName);
+    for (TargetInfo targetInfo : targets.values()) {
+      targetInfo.getTargets().remove(targetName);
+    }
   }
 
   public void replaceDependency(String targetName, String newTargetName) {

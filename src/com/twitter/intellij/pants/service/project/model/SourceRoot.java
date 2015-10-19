@@ -21,12 +21,10 @@ public class SourceRoot implements Comparable<SourceRoot> {
   }
 
   @NotNull
-  public String getSourceRootRegardingSourceType(@Nullable PantsSourceType rootType) {
-    return PantsSourceType.isResource(rootType) ? getPackageRoot() : getRawSourceRoot();
-  }
-
-  @NotNull
   public String getPackageRoot() {
+    if (package_prefix == null) {
+      return source_root;
+    }
     // source_root might contain '.' in the path.
     final boolean sourceRootMatchesPackage =
       StringUtil.endsWith(StringUtil.replaceChar(source_root, '/', '.'), package_prefix);
@@ -43,7 +41,7 @@ public class SourceRoot implements Comparable<SourceRoot> {
 
   @Nullable
   public String getPackagePrefix() {
-    return package_prefix;
+    return StringUtil.nullize(package_prefix);
   }
 
   @Override

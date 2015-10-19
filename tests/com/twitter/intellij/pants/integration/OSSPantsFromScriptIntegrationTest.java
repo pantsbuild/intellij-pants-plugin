@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.integration;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsFromScriptIntegrationTest extends OSSPantsIntegrationTest {
-  public void testHelloByTargetName() throws Throwable {
+  public void testScript() throws Throwable {
     doImport("intellij-integration/export1.sh");
 
     assertModules(
@@ -18,7 +18,7 @@ public class OSSPantsFromScriptIntegrationTest extends OSSPantsIntegrationTest {
       "examples_src_scala_org_pantsbuild_example_hello_hello",
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe",
-      "intellij-integration_module"
+      "export1_module"
     );
 
     makeProject();

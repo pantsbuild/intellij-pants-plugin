@@ -101,8 +101,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
     final File libFile = PantsScalaUtil.getScalaLibFile(jarPath, libName);
     if (libFile.exists()) {
       files.add(libFile.getAbsolutePath());
-    }
-    else {
+    } else {
       LOG.warn("Could not find scala library path: " + libFile);
     }
   }

@@ -22,6 +22,7 @@ env:
     - IJ_ULTIMATE=false
     - IJ_ULTIMATE=true
     - USE_PANTS_TO_COMPILE=false
+    - PANTS_SHA=bf5e1d8 TEST_SET=integration # 0.0.54
     - PANTS_SHA=11d89c9 TEST_SET=integration # 0.0.53
     - PANTS_SHA=4719e0d TEST_SET=integration # 0.0.52
     - PANTS_SHA=78d5bb8 TEST_SET=integration # 0.0.51

@@ -11,6 +11,7 @@ import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.ContentRootData;
+import com.intellij.openapi.externalSystem.model.project.ExternalSystemSourceType;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
@@ -21,7 +22,9 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Consumer;
+import com.intellij.util.PathUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -29,6 +32,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -80,7 +84,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
         // Add a module with content root as import project directory path.
         // This will allow all the files in the imported project directory will be indexed by the plugin.
-        final String moduleName = PantsUtil.getCanonicalModuleName(executor.getProjectRelativePath());
+        final String moduleName = executor.getRootModuleName();
         final ModuleData moduleData = new ModuleData(
           PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX + moduleName,
           PantsConstants.SYSTEM_ID,
@@ -91,6 +95,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
         );
         final DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
         final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, executor.getProjectDir());
+        if (FileUtil.filesEqual(executor.getWorkingDir(), new File(executor.getProjectPath()))) {
+          contentRoot.storePath(ExternalSystemSourceType.EXCLUDED, executor.getWorkingDir().getPath() + "/.idea");
+        }
         moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
       }
     }
