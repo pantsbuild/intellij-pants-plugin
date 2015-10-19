@@ -63,8 +63,7 @@ public class PantsProjectCompilerForm {
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     if (compileWithIntellij) {
       myCompilerComboBox.setSelectedItem(myIJCompiler);
-    }
-    else {
+    } else {
       myCompilerComboBox.setSelectedItem(myPantsCompiler);
     }
   }
