@@ -49,9 +49,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   public PantsTargetBuilder() {
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
   }
-
-  private boolean isCompileWithDebugInfo = false;
-
+  
   @NotNull
   @Override
   public String getPresentableName() {
@@ -64,7 +62,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
     final boolean compileWithPants = pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij();
-    this.isCompileWithDebugInfo = pantsProjectExtension.isCompileWithDebugInfo();
     if (compileWithPants && PantsJpsUtil.containsPantsModules(jpsProject.getModules())) {
       // disable only for imported projects
       JavaBuilder.IS_ENABLED.set(context, Boolean.FALSE);
