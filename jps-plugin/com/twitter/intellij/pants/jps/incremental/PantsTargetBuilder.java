@@ -138,7 +138,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     catch (ExecutionException e) {
       throw new ProjectBuildException(e);
     }
-
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
     processHandler.addProcessListener(
       new ProcessAdapter() {

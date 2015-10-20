@@ -28,7 +28,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     myCompileWithIntellij = compileWithIntellij;
     myCompileWithDebugInfo = compileWithDebugInfo;
     myLibsWithSources = libsWithSources;
-
   }
 
   @NotNull
