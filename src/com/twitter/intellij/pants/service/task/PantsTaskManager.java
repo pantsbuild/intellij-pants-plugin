@@ -64,9 +64,9 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     }
 
     if (settings.isCompileWithDebugInfo()){
-      // If to change this, please also change it in com/twitter/intellij/pants/jps/incremental/PantsTargetBuilder.java
-      scriptParameters.add("--compile-java-args=['-C-g:lines,source,vars']");
-      scriptParameters.add("--compile-zinc-args=-C-g:lines,source,vars");
+      for (String arg : PantsConstants.DEBUG_INFO_ARGUMENTS) {
+        scriptParameters.add(arg);
+      }
     }
 
     commandLine.addParameters(scriptParameters);
