@@ -24,7 +24,6 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
-import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.PantsSystemProjectResolver;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
 import com.twitter.intellij.pants.settings.*;
@@ -124,7 +123,7 @@ public class PantsManager implements
       @NotNull
       public PantsExecutionSettings getExecutionsSettingsFromPath(@NotNull Project ideProject, @NotNull String projectPath) {
         boolean compileWithIntellij = PantsSettings.getInstance(ideProject).isCompileWithIntellij();
-        boolean compileWithDebugInfo= PantsSettings.getInstance(ideProject).isCompileWithDebugInfoChecked();
+        boolean compileWithDebugInfo= PantsSettings.getInstance(ideProject).isCompileWithDebugInfo();
 
         final PantsTargetAddress absoluteTargetAddress = PantsTargetAddress.fromString(projectPath, true);
 

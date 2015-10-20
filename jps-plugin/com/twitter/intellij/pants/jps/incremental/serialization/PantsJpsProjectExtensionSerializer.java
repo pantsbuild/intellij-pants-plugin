@@ -18,7 +18,7 @@ import java.io.File;
 public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSerializer {
 
   private static final String COMPILE_WITH_INTELLIJ   = "compileWithIntellij";
-  private static final String COMPILE_WITH_DEBUG_INFO = "compileWithDebugInfoCheck";
+  private static final String COMPILE_WITH_DEBUG_INFO = "compileWithDebugInfo";
   private static final String LINKED_PROJECT_SETTINGS = "linkedExternalProjectsSettings";
   private static final String EXTERNAL_PROJECT_PATH   = "externalProjectPath";
   private static final String PROJECT_SETTINGS        = "PantsProjectSettings";

@@ -59,7 +59,7 @@ public class PantsProjectCompilerConfigurable extends BaseConfigurable implement
   @Override
   public boolean isModified() {
     return (PantsSettings.getInstance(myProject).isCompileWithIntellij() != myCompilerForm.isCompileWithIntellij())
-      || (PantsSettings.getInstance(myProject).isCompileWithDebugInfoChecked() != myCompilerForm.isCompilerDebugInfoChecked());
+      || (PantsSettings.getInstance(myProject).isCompileWithDebugInfo() != myCompilerForm.isCompilerDebugInfoChecked());
   }
 
   @Override
@@ -67,7 +67,7 @@ public class PantsProjectCompilerConfigurable extends BaseConfigurable implement
     final PantsSettings pantsSettings = PantsSettings.getInstance(myProject);
     final boolean refreshNeeded = pantsSettings.isCompileWithIntellij() != myCompilerForm.isCompileWithIntellij();
     pantsSettings.setCompileWithIntellij(myCompilerForm.isCompileWithIntellij());
-    pantsSettings.setCompileWithDebugInfoChecked(myCompilerForm.isCompilerDebugInfoChecked());
+    pantsSettings.setCompileWithDebugInfo(myCompilerForm.isCompilerDebugInfoChecked());
     if (refreshNeeded) {
       PantsUtil.refreshAllProjects(myProject);
     }
@@ -76,7 +76,7 @@ public class PantsProjectCompilerConfigurable extends BaseConfigurable implement
   @Override
   public void reset() {
     myCompilerForm.setCompileWithIntellij(PantsSettings.getInstance(myProject).isCompileWithIntellij());
-    myCompilerForm.setCompilerDebugInfoCheckBox(PantsSettings.getInstance(myProject).isCompileWithDebugInfoChecked());
+    myCompilerForm.setCompilerDebugInfoCheckBox(PantsSettings.getInstance(myProject).isCompileWithDebugInfo());
   }
 
   @Override

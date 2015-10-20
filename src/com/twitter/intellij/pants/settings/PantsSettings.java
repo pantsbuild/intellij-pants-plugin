@@ -34,21 +34,21 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   protected boolean myCompileWithIntellij = false;
-  protected boolean myCompileWithDebugInfoChecked = false;
+  protected boolean myCompileWithDebugInfo = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
   }
 
-  public boolean isCompileWithDebugInfoChecked() {return myCompileWithDebugInfoChecked;}
+  public boolean isCompileWithDebugInfo() {return myCompileWithDebugInfo;}
 
   public boolean isCompileWithIntellij() {
     return myCompileWithIntellij;
   }
 
-  public void setCompileWithDebugInfoChecked(boolean isCompileWithDebugInfoChecked){
-    myCompileWithDebugInfoChecked = isCompileWithDebugInfoChecked;
+  public void setCompileWithDebugInfo(boolean isCompileWithDebugInfo){
+    myCompileWithDebugInfo = isCompileWithDebugInfo;
   }
 
   public void setCompileWithIntellij(boolean compileWithIntellij) {
@@ -89,7 +89,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public MyState getState() {
     final MyState state = new MyState();
     state.setCompileWithIntellij(isCompileWithIntellij());
-    state.setCompileWithDebugInfoChecked(isCompileWithDebugInfoChecked());
+    state.setCompileWithDebugInfo(isCompileWithDebugInfo());
     state.setResolverVersion(getResolverVersion());
     fillState(state);
     return state;
@@ -99,7 +99,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public void loadState(MyState state) {
     super.loadState(state);
     setCompileWithIntellij(state.isCompileWithIntellij());
-    setCompileWithDebugInfoChecked(state.isCompileWithDebugInfoChecked());
+    setCompileWithDebugInfo(state.isCompileWithDebugInfo());
     setResolverVersion(state.getResolverVersion());
   }
 
@@ -108,7 +108,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     boolean myCompileWithIntellij = false;
 
-    boolean myCompileWithDebugInfoChecked = false;
+    boolean myCompileWithDebugInfo = false;
 
     int myResolverVersion = 0;
 
@@ -137,12 +137,12 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
       myResolverVersion = resolverVersion;
     }
 
-    public boolean isCompileWithDebugInfoChecked() {
-      return myCompileWithDebugInfoChecked;
+    public boolean isCompileWithDebugInfo() {
+      return myCompileWithDebugInfo;
     }
 
-    public void setCompileWithDebugInfoChecked(boolean CompileWithDebugInfoChecked) {
-      myCompileWithDebugInfoChecked = CompileWithDebugInfoChecked;
+    public void setCompileWithDebugInfo(boolean compileWithDebugInfo) {
+      myCompileWithDebugInfo = compileWithDebugInfo;
     }
   }
 }
