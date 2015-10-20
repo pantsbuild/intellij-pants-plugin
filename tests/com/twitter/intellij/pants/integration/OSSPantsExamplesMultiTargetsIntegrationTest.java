@@ -72,4 +72,5 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
       assertContain(output, arg);
     }
   }
+  
 }
