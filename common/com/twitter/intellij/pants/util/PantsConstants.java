@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.List;
 
 
 public class PantsConstants {
@@ -45,5 +46,10 @@ public class PantsConstants {
       "thrift_jar", "python_binary", "python_library", "python_test_suite", "python_tests"
       ),
     CaseInsensitiveStringHashingStrategy.INSTANCE
+  );
+
+  public static final List<String> DEBUG_INFO_ARGUMENTS = Arrays.asList(
+    "--compile-java-args=['-C-g:lines,source,vars']",
+    "--compile-zinc-args=-C-g:lines,source,vars"
   );
 }
