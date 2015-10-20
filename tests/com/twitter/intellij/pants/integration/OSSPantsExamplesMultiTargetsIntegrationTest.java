@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.integration;
 
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsConstants;
 
 public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegrationTest {
   public void testHello() throws Throwable {
@@ -48,5 +49,26 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.welcome.WelcomeEverybody", "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
     );
+  }
+
+
+  public void testDebugInfo() throws Throwable {
+    assertModules(
+      "examples_src_resources_org_pantsbuild_example_hello_hello",
+      "examples_src_java_org_pantsbuild_example_hello_main_main",
+      "examples_src_java_org_pantsbuild_example_hello_greet_greet",
+      "examples_src_java_org_pantsbuild_example_hello_simple_simple",
+      "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
+      "examples_src_java_org_pantsbuild_example_hello_module",
+      "examples_src_scala_org_pantsbuild_example_hello_module",
+      "examples_src_scala_org_pantsbuild_example_hello_hello",
+      "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
+      "examples_src_scala_org_pantsbuild_example_hello_exe_exe"
+    );
+    PantsSettings.getInstance(myProject).setCompileWithDebugInfo(true);
+    PantsSettings.getInstance(myProject).setCompileWithIntellij(false);
+    for (String arg : PantsConstants.DEBUG_INFO_ARGUMENTS){
+      assertContain(makeProject(), arg);
+    }
   }
 }
