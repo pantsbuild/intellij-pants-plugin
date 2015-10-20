@@ -49,7 +49,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   public PantsTargetBuilder() {
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
   }
-  
+
   @NotNull
   @Override
   public String getPresentableName() {
