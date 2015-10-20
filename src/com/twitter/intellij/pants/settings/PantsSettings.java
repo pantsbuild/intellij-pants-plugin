@@ -47,7 +47,9 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     return myCompileWithIntellij;
   }
 
-  public void setCompileWithDebugInfoChecked(boolean isCompileWithDebugInfoChecked){myCompileWithDebugInfoChecked = isCompileWithDebugInfoChecked;}
+  public void setCompileWithDebugInfoChecked(boolean isCompileWithDebugInfoChecked){
+    myCompileWithDebugInfoChecked = isCompileWithDebugInfoChecked;
+  }
 
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     myCompileWithIntellij = compileWithIntellij;

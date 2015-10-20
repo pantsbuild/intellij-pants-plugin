@@ -28,6 +28,7 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
   public void applyChanges(@NotNull JpsPantsProjectExtensionImpl modified) {
     setPantsExecutablePath(modified.getPantsExecutablePath());
     setCompileWithIntellij(modified.isCompileWithIntellij());
+    setCompileWithDebugInfo(modified.isCompileWithDebugInfo());
   }
 
   @NotNull
@@ -56,4 +57,7 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     myCompileWithIntellij = compileWithIntellij;
   }
+
+  @Override
+  public void setCompileWithDebugInfo(boolean compileWithDebugInfo){ myCompileWithDebugInfo = compileWithDebugInfo;}
 }

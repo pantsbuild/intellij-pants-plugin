@@ -123,8 +123,6 @@ public class PantsManager implements
 
       @NotNull
       public PantsExecutionSettings getExecutionsSettingsFromPath(@NotNull Project ideProject, @NotNull String projectPath) {
-
-
         boolean compileWithIntellij = PantsSettings.getInstance(ideProject).isCompileWithIntellij();
         boolean compileWithDebugInfo= PantsSettings.getInstance(ideProject).isCompileWithDebugInfoChecked();
 
@@ -132,7 +130,7 @@ public class PantsManager implements
 
         if (absoluteTargetAddress != null) {
           return new PantsExecutionSettings(
-            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, compileWithIntellij,compileWithDebugInfo, true
+            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, compileWithIntellij, compileWithDebugInfo, true
           );
         }
 

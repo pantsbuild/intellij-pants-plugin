@@ -22,4 +22,6 @@ public interface JpsPantsProjectExtension extends JpsElement {
   boolean isCompileWithDebugInfo();
 
   void setCompileWithIntellij(boolean compileWithIntellij);
+
+  void setCompileWithDebugInfo(boolean compileWithDebugInfo);
 }

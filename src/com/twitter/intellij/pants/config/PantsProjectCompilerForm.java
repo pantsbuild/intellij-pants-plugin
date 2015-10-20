@@ -41,7 +41,6 @@ public class PantsProjectCompilerForm {
         }
       }
     );
-
     myCompilerComboBox.addItem(myPantsCompiler);
     myCompilerComboBox.addItem(myIJCompiler);
   }
@@ -58,7 +57,7 @@ public class PantsProjectCompilerForm {
     return myCompilerComboBox.getSelectedItem() == myIJCompiler;
   }
 
-  public boolean isCompilerDebugInfoChecked() {return myCompilerDebugInfoCheckBox.isSelected();}
+  public boolean isCompilerDebugInfoChecked() { return myCompilerDebugInfoCheckBox.isSelected(); }
 
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     if (compileWithIntellij) {
