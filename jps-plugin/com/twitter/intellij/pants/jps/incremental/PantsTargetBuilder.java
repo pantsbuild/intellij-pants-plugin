@@ -21,6 +21,7 @@ import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.builders.BuildOutputConsumer;
@@ -127,7 +128,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         new CompilerMessage(
           PantsConstants.PANTS,
           BuildMessage.Kind.INFO,
-          StringUtil.join(" ", PantsConstants.DEBUG_INFO_ARGUMENTS)
+          StringUtils.join(PantsConstants.DEBUG_INFO_ARGUMENTS, " ")
         )
       );
     }
