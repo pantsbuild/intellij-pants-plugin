@@ -104,7 +104,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     final boolean usePantsToCompile = Boolean.valueOf(System.getProperty(PANTS_COMPILER_ENABLED, "true"));
     PantsSettings.getInstance(myProject).setCompileWithIntellij(!usePantsToCompile);
 
-    final boolean compileWithDebugInfo =  Boolean.valueOf(System.getProperty(PANTS_COMPILER_DEBUG_INFO, "true"));
+    final boolean compileWithDebugInfo =  Boolean.valueOf(System.getProperty(PANTS_COMPILER_DEBUG_INFO, "false"));
     PantsSettings.getInstance(myProject).setCompileWithDebugInfo(compileWithDebugInfo);
 
     myProjectSettings = new PantsProjectSettings();
