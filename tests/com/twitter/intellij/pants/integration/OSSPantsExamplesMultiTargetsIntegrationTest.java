@@ -7,7 +7,6 @@ import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.intellij.openapi.util.text.StringUtil;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
@@ -71,7 +70,6 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
     PantsSettings.getInstance(myProject).setCompileWithDebugInfo(true);
     PantsSettings.getInstance(myProject).setCompileWithIntellij(false);
     List<String> output = makeProject();
-    assertContain(output, "pants: " + StringUtils.join(PantsConstants.DEBUG_INFO_ARGUMENTS, " ")
-    );
+    assertContain(output, "pants: " + StringUtil.join(PantsConstants.DEBUG_INFO_ARGUMENTS, " "));
   }
 }
