@@ -6,8 +6,8 @@ package com.twitter.intellij.pants.integration;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsConstants;
-import java.util.List;
 import com.intellij.openapi.util.text.StringUtil;
+import java.util.List;
 
 public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegrationTest {
   public void testHello() throws Throwable {
