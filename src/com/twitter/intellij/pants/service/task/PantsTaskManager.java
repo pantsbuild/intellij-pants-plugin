@@ -63,10 +63,8 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       commandLine.addParameter(relativeProjectPath + File.separator + "::");
     }
 
-    if (settings.isCompileWithDebugInfo()){
-      for (String arg : PantsConstants.DEBUG_INFO_ARGUMENTS) {
-        scriptParameters.add(arg);
-      }
+    if (settings.isCompileWithDebugInfo()) {
+      scriptParameters.addAll(PantsConstants.DEBUG_INFO_ARGUMENTS);
     }
 
     commandLine.addParameters(scriptParameters);

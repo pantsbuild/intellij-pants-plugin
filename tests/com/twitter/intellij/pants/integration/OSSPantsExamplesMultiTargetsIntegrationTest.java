@@ -68,8 +68,6 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
     PantsSettings.getInstance(myProject).setCompileWithDebugInfo(true);
     PantsSettings.getInstance(myProject).setCompileWithIntellij(false);
     List<String> output = makeProject();
-    for (String arg : PantsConstants.DEBUG_INFO_ARGUMENTS){
-      assertContain(output, "pants: " + arg);
-    }
+    assertContain(output, "pants: " + String.join(" ", PantsConstants.DEBUG_INFO_ARGUMENTS));
   }
 }

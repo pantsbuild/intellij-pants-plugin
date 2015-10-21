@@ -52,7 +52,9 @@ public class PantsProjectCompilerForm {
     return myCompilerComboBox.getSelectedItem() == myIJCompiler;
   }
 
-  public boolean isCompilerDebugInfoChecked() { return myCompilerDebugInfoCheckBox.isSelected(); }
+  public boolean isCompilerDebugInfoChecked() {
+    return myCompilerDebugInfoCheckBox.isSelected();
+  }
 
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     if (compileWithIntellij) {
@@ -62,7 +64,7 @@ public class PantsProjectCompilerForm {
     }
   }
 
-  public void setCompilerDebugInfoCheckBox(boolean CompilerDebugInfoCheckBox){
+  public void setCompilerDebugInfoCheckBox(boolean CompilerDebugInfoCheckBox) {
     myCompilerDebugInfoCheckBox.setSelected(CompilerDebugInfoCheckBox);
   }
 
