@@ -65,6 +65,8 @@ import java.util.List;
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
   private static final String PLUGINS_KEY = "idea.load.plugins.id";
   private static final String PANTS_COMPILER_ENABLED = "pants.compiler.enabled";
+  private static final String PANTS_COMPILER_DEBUG_INFO = "pants.compiler.debuginfo";
+
   private static final String isolatedPantsIniName = "pants.ini.isolated";
 
   private final boolean readOnly;
@@ -101,6 +103,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
     final boolean usePantsToCompile = Boolean.valueOf(System.getProperty(PANTS_COMPILER_ENABLED, "true"));
     PantsSettings.getInstance(myProject).setCompileWithIntellij(!usePantsToCompile);
+
+    final boolean compileWithDebugInfo =  Boolean.valueOf(System.getProperty(PANTS_COMPILER_DEBUG_INFO, "true"));
+    PantsSettings.getInstance(myProject).setCompileWithDebugInfo(compileWithDebugInfo);
 
     myProjectSettings = new PantsProjectSettings();
     myCompilerTester = null;
