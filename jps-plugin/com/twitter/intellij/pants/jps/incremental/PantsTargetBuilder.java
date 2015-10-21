@@ -124,6 +124,11 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (pantsProjectExtension.isCompileWithDebugInfo()){
       for (String arg : PantsConstants.DEBUG_INFO_ARGUMENTS){
         commandLine.addParameters(arg);
+        context.processMessage(new CompilerMessage(
+          PantsConstants.PANTS,
+          BuildMessage.Kind.INFO,
+          arg
+        ));
       }
     }
 
@@ -164,7 +169,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     );
     return hasDirtyTargets.get();
-
   }
 
   private Set<String> filterGenTargets(@NotNull Collection<String> addresses) {

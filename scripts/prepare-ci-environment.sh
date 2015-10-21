@@ -29,6 +29,7 @@ append_intellij_jvm_options() {
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
     "-Dpants.jps.plugin.classpath=$CWD/.pants.d/resources/prepare/jps-plugin.services"
     "-Dpants.compiler.enabled=${USE_PANTS_TO_COMPILE:-true}"
+    "-Dpants.compiler.debuginfo=${USE_PANTS_COMPILE_DEBUG_INFO:-true}"
     "-Dpants.compiler.isolated.strategy=${USE_ISOLATED_STRATEGY:-true}"
   )
   for jvm_option in ${INTELLIJ_JVM_OPTIONS[@]}

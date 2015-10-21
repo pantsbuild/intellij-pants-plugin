@@ -49,7 +49,6 @@ public class PantsConstants {
   );
 
   public static final List<String> DEBUG_INFO_ARGUMENTS = Arrays.asList(
-    "--compile-java-args=['-C-g:lines,source,vars']",
     "--compile-zinc-args=-C-g:lines,source,vars"
   );
 }
