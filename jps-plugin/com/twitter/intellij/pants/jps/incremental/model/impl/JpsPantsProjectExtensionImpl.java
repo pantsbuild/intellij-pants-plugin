@@ -52,7 +52,6 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
     return myCompileWithDebugInfo;
   }
 
-
   @Override
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     myCompileWithIntellij = compileWithIntellij;

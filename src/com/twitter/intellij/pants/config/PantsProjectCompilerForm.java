@@ -29,7 +29,7 @@ public class PantsProjectCompilerForm {
         @Override
         public void actionPerformed(ActionEvent e) {
           Object selectedItem = myCompilerComboBox.getSelectedItem();
-          myCompilerDebugInfoCheckBox.setEnabled(selectedItem==myPantsCompiler);
+          myCompilerDebugInfoCheckBox.setEnabled(selectedItem == myPantsCompiler);
           myDescriptionTextPane.setText(
             selectedItem instanceof CompilerValue ? ((CompilerValue)selectedItem).getDescription() : ""
           );
