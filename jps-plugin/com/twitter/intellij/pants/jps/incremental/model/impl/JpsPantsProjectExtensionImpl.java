@@ -58,5 +58,7 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
   }
 
   @Override
-  public void setCompileWithDebugInfo(boolean compileWithDebugInfo){ myCompileWithDebugInfo = compileWithDebugInfo;}
+  public void setCompileWithDebugInfo(boolean compileWithDebugInfo) {
+    myCompileWithDebugInfo = compileWithDebugInfo;
+  }
 }
