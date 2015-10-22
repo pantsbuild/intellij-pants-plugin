@@ -41,13 +41,15 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     super(PantsSettingsListener.TOPIC, project);
   }
 
-  public boolean isCompileWithDebugInfo() {return myCompileWithDebugInfo;}
+  public boolean isCompileWithDebugInfo() {
+    return myCompileWithDebugInfo;
+  }
 
   public boolean isCompileWithIntellij() {
     return myCompileWithIntellij;
   }
 
-  public void setCompileWithDebugInfo(boolean isCompileWithDebugInfo){
+  public void setCompileWithDebugInfo(boolean isCompileWithDebugInfo) {
     myCompileWithDebugInfo = isCompileWithDebugInfo;
   }
 

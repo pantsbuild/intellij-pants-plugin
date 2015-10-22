@@ -44,7 +44,9 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     return myCompileWithIntellij;
   }
 
-  public boolean isCompileWithDebugInfo() { return myCompileWithDebugInfo; }
+  public boolean isCompileWithDebugInfo() {
+    return myCompileWithDebugInfo;
+  }
 
   public boolean isLibsWithSources() {
     return myLibsWithSources;
