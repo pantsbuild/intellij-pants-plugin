@@ -49,6 +49,6 @@ public class PantsConstants {
   );
 
   public static final List<String> DEBUG_INFO_ARGUMENTS = Arrays.asList(
-    "--compile-zinc-debug-symbol"
+    "--compile-zinc-debug-symbols"
   );
 }
