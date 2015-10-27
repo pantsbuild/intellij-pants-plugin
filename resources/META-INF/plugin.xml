@@ -189,7 +189,6 @@
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsCompilerOutputsExtension"/>
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsModuleDependenciesExtension"/>
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsLibrariesExtension"/>
-
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
