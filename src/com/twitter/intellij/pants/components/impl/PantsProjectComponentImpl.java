@@ -32,6 +32,14 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
       new Runnable() {
         @Override
         public void run() {
+          if (!PantsUtil.isPythonAvailable()) {
+            Messages.showMessageDialog(
+              PantsBundle.message("pants.project.without.python.plugin", myProject.getName()),
+              PantsBundle.message("pants.name"),
+              PantsIcons.Icon
+            );
+          }
+
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
             pantsSettings instanceof PantsSettings && ((PantsSettings)pantsSettings).getResolverVersion() != PantsResolver.VERSION;
