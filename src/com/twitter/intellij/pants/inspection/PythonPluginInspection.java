@@ -27,9 +27,4 @@ public class PythonPluginInspection extends BaseJavaLocalInspectionTool {
     }
     return null;
   }
-
-  @Override
-  public boolean isEnabledByDefault() {
-    return true;
-  }
 }
