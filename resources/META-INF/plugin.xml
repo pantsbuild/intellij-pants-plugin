@@ -192,8 +192,8 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <localInspection shortName="DefaultFileTemplate" bundle="com.twitter.intellij.pants.PantsBundle" key="pants.info.python.plugin.missing"
-                     groupName="General" enabledByDefault="true" level="INFO"
+    <localInspection bundle="com.twitter.intellij.pants.PantsBundle" key="pants.info.python.plugin.missing"
+                     enabledByDefault="true"
                      implementationClass="com.twitter.intellij.pants.inspection.PythonPluginInspection"/>
 
     <compileServer.plugin classpath="pants-jps-plugin.jar;pants-common.jar"/>
