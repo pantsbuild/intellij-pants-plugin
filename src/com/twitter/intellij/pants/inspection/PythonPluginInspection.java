@@ -10,11 +10,10 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PythonPluginInspection extends BaseJavaLocalInspectionTool {
+public class PythonPluginInspection extends LocalInspectionTool {
   @Override
   @Nullable
   public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
-
     if (PantsUtil.isBUILDFileName(file.getName()) && (!PantsUtil.isPythonAvailable())) {
       ProblemDescriptor descriptor = manager.createProblemDescriptor(
         file.getNavigationElement(),
