@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.inspection;
 import com.intellij.codeInspection.*;
 import com.intellij.psi.PsiFile;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.quickfix.AddPythonPluginQuickFix;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,11 +16,12 @@ public class PythonPluginInspection extends LocalInspectionTool {
   @Nullable
   public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
     if (PantsUtil.isBUILDFileName(file.getName()) && (!PantsUtil.isPythonAvailable())) {
+      LocalQuickFix[] fixes = new LocalQuickFix[]{new AddPythonPluginQuickFix(file)};
       ProblemDescriptor descriptor = manager.createProblemDescriptor(
         file.getNavigationElement(),
         PantsBundle.message("pants.info.python.plugin.missing"),
         isOnTheFly,
-        null,
+        fixes,
         ProblemHighlightType.GENERIC_ERROR_OR_WARNING
       );
       return new ProblemDescriptor[]{descriptor};
