@@ -54,7 +54,7 @@ public class AddPythonPluginQuickFix extends PantsQuickFix {
     SwingUtilities.invokeLater(
       new Runnable() {
         public void run() {
-          ShowSettingsUtil.getInstance().showSettingsDialog(myPsiFile.getProject(), "plugin");
+          ShowSettingsUtil.getInstance().showSettingsDialog(myPsiFile.getProject(), "Plugins");
         }
       }
     );
