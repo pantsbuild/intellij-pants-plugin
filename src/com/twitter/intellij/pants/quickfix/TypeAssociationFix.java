@@ -40,7 +40,7 @@ public class TypeAssociationFix extends PantsQuickFix {
 
   @Override
   public void applyFix(Project project, ProblemDescriptor descriptor) {
-    invoke(null, null, null);
+    invoke(project, null, descriptor.getPsiElement().getContainingFile());
   }
 
   @Override
