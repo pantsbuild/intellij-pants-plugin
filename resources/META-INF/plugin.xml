@@ -192,6 +192,10 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <localInspection bundle="com.twitter.intellij.pants.PantsBundle" key="pants.info.python.plugin.missing"
+                     groupName="Pants" enabledByDefault="true"
+                     implementationClass="com.twitter.intellij.pants.inspection.PythonPluginInspection"/>
+
     <compileServer.plugin classpath="pants-jps-plugin.jar;pants-common.jar"/>
     <compiler.buildTargetScopeProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildTargetScopeProvider"/>
     <buildProcess.parametersProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildProcessParametersProvider"/>
