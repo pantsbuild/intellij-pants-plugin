@@ -122,7 +122,8 @@ public class PantsTargetReferenceSet {
     public static PartialTargetAddress parse(String value) {
       final int colonIndex = value.indexOf(':');
       final int valueLength = value.length();
-      final String explicitTarget = colonIndex < 0 ? null : value.substring(colonIndex);
+      // Extracting explicitTarget name after colon
+      final String explicitTarget = (colonIndex < 0 || colonIndex + 1 >= value.length()) ? null : value.substring(colonIndex + 1);
       final String rawPath = value.substring(0, colonIndex < 0 ? value.length() : colonIndex);
       String normalizedPath;
       if (rawPath.isEmpty()) {

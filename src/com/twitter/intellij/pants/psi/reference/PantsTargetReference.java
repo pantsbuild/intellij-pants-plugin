@@ -55,16 +55,13 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
   @Nullable
   @Override
   public PsiElement resolve() {
-    // get rid of ':' in the target name
-    String sanitizedTargetName = getText().replace(":", "");
-
     PsiFile file = findBuildFile();
-    PsiElement target = PantsPsiUtil.findTargets(file).get(sanitizedTargetName);
-
+    PsiElement target = PantsPsiUtil.findTargets(file).get(getText());
+    // Return the file element instead if target is not found for any reason.
     if (target == null) {
       return file;
     }
-    else{
+    else {
       return target;
     }
   }
