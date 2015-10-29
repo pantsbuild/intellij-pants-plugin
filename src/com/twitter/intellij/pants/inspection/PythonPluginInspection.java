@@ -15,7 +15,7 @@ public class PythonPluginInspection extends LocalInspectionTool {
   @Override
   @Nullable
   public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
-    if (PantsUtil.isBUILDFileName(file.getName()) && (!PantsUtil.isPythonAvailable())) {
+    if (PantsUtil.isBUILDFileName(file.getName()) && !PantsUtil.isPythonAvailable() && PantsUtil.isPantsProject(file.getProject())) {
       LocalQuickFix[] fixes = new LocalQuickFix[]{new AddPythonPluginQuickFix(file)};
       ProblemDescriptor descriptor = manager.createProblemDescriptor(
         file.getNavigationElement(),

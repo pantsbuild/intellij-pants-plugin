@@ -30,7 +30,7 @@ public class AddPythonPluginQuickFix extends PantsQuickFix {
 
   @Override
   public boolean startInWriteAction() {
-    return true;
+    return false;
   }
 
   @NotNull
