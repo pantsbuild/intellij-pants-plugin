@@ -55,7 +55,7 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
   @Override
   public PsiElement resolve() {
     // Sanitize ':' out of the target name
-    String santizedText = getText().replace(":", "");
-    return PantsPsiUtil.findTargets(findBuildFile()).get(santizedText);
+    String sanitizedText = getText().replace(":", "");
+    return PantsPsiUtil.findTargets(findBuildFile()).get(sanitizedText);
   }
 }
