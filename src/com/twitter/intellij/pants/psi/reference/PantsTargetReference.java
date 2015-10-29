@@ -78,8 +78,7 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
     if (retVal != null) {
       return retVal;
     }
-    // Else return an empty Expression
-    returm new PyCallExpression() {
+    return new PyCallExpression() {
       @Nullable
       @Override
       public PyExpression getCallee() {
