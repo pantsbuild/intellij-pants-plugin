@@ -10,18 +10,11 @@ import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
+import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-
 public class AddPythonPluginQuickFix extends PantsQuickFix {
-  protected final PsiFile myPsiFile;
-
-  public AddPythonPluginQuickFix(@NotNull PsiFile file) {
-    myPsiFile = file;
-  }
-
   @NotNull
   @Override
   public String getName() {
@@ -50,11 +43,11 @@ public class AddPythonPluginQuickFix extends PantsQuickFix {
   }
 
   @Override
-  public void invoke(Project project, Editor editor, PsiFile psiFile) throws IncorrectOperationException {
-    SwingUtilities.invokeLater(
+  public void invoke(final Project project, Editor editor, PsiFile psiFile) throws IncorrectOperationException {
+    UIUtil.invokeLaterIfNeeded(
       new Runnable() {
         public void run() {
-          ShowSettingsUtil.getInstance().showSettingsDialog(myPsiFile.getProject(), "Plugins");
+          ShowSettingsUtil.getInstance().showSettingsDialog(project, "Plugins");
         }
       }
     );
