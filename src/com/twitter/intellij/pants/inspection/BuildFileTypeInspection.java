@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.inspection;
 
 import com.intellij.codeInspection.*;
 import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.UnknownFileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.python.PythonFileType;
@@ -22,7 +23,7 @@ public class BuildFileTypeInspection extends LocalInspectionTool {
       FileTypeManager mgr = FileTypeManager.getInstance();
       FileType type = mgr.getFileTypeByFileName(file.getName());
 
-      if (type != PythonFileType.INSTANCE) {
+      if (type != PythonFileType.INSTANCE && type != UnknownFileType.INSTANCE) {
         LocalQuickFix[] fixes = new LocalQuickFix[]{new TypeAssociationFix()};
         ProblemDescriptor descriptor = manager.createProblemDescriptor(
           file.getNavigationElement(),
