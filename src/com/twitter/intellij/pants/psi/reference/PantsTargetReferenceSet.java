@@ -136,7 +136,9 @@ public class PantsTargetReferenceSet {
       final int colonIndex = value.indexOf(':');
       final int valueLength = value.length();
 
-      final String explicitTarget = (colonIndex == value.length() - 1) ? null : StringUtil.substringAfter(value, ":");
+      //substringAfter may return empty string if colon is the last character, so null is need in this case
+      final String explicitTarget = StringUtil.nullize(StringUtil.substringAfter(value, ":"));
+      //substringBefore may return null if colon does not exist, so rawPath is value in this case
       final String rawPath = ObjectUtils.notNull(StringUtil.substringBefore(value, ":"), value);
 
       String normalizedPath;
