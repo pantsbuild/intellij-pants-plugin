@@ -45,13 +45,12 @@ public class TypeAssociationFix extends PantsQuickFix {
 
   @Override
   public void invoke(final Project project, Editor editor, PsiFile psiFile) throws IncorrectOperationException {
-    FileTypeManager mgr = FileTypeManager.getInstance();
-    FileType type = mgr.getFileTypeByFileName(psiFile.getName());
+    FileTypeManager manager = FileTypeManager.getInstance();
+    FileType type = manager.getFileTypeByFileName(psiFile.getName());
     // Remove the BUILD file matcher from the wrong type then add it to PythonFileType
-    for (FileNameMatcher matcher : mgr.getAssociations(type)) {
+    for (FileNameMatcher matcher : manager.getAssociations(type)) {
       if (matcher.accept(psiFile.getName())) {
-        mgr.removeAssociation(type, matcher);
-        mgr.associate(PythonFileType.INSTANCE, matcher);
+        manager.removeAssociation(type, matcher);
       }
     }
   }

@@ -18,10 +18,7 @@ public class BuildFileTypeInspection extends LocalInspectionTool {
   @Override
   @Nullable
   public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
-    if (PantsUtil.isBUILDFileName(file.getName())
-        && PantsUtil.isPythonAvailable()
-        && PantsUtil.isPantsProject(file.getProject())
-      ) {
+    if (PantsUtil.isBUILDFileName(file.getName()) && PantsUtil.isPythonAvailable() && PantsUtil.isPantsProject(file.getProject())) {
       FileTypeManager mgr = FileTypeManager.getInstance();
       FileType type = mgr.getFileTypeByFileName(file.getName());
 
