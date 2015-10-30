@@ -196,6 +196,10 @@
                      groupName="Pants" enabledByDefault="true"
                      implementationClass="com.twitter.intellij.pants.inspection.PythonPluginInspection"/>
 
+    <localInspection bundle="com.twitter.intellij.pants.PantsBundle" key="pants.info.mistreated.build.file"
+                     groupName="Pants" enabledByDefault="true"
+                     implementationClass="com.twitter.intellij.pants.inspection.BuildFileTypeInspection"/>
+
     <compileServer.plugin classpath="pants-jps-plugin.jar;pants-common.jar"/>
     <compiler.buildTargetScopeProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildTargetScopeProvider"/>
     <buildProcess.parametersProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildProcessParametersProvider"/>
