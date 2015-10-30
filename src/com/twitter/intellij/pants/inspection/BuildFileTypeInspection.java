@@ -14,16 +14,14 @@ import com.twitter.intellij.pants.quickfix.TypeAssociationFix;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import com.intellij.openapi.fileTypes.FileTypeRegistry;
 
 public class BuildFileTypeInspection extends LocalInspectionTool {
   @Override
   @Nullable
   public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
     if (PantsUtil.isBUILDFileName(file.getName()) && PantsUtil.isPythonAvailable() && PantsUtil.isPantsProject(file.getProject())) {
-      FileTypeManager mgr = FileTypeManager.getInstance();
-      FileType type = mgr.getFileTypeByFileName(file.getName());
-
-      if (type != PythonFileType.INSTANCE && type != UnknownFileType.INSTANCE) {
+      if (file.getFileType() != PythonFileType.INSTANCE) {
         LocalQuickFix[] fixes = new LocalQuickFix[]{new TypeAssociationFix()};
         ProblemDescriptor descriptor = manager.createProblemDescriptor(
           file.getNavigationElement(),
