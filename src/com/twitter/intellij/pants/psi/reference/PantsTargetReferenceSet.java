@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.ObjectUtils;
+
 /**
  * Converts a python string literal in a build file into PantsPsiReferences
  */
@@ -103,13 +106,23 @@ public class PantsTargetReferenceSet {
     );
   }
 
-  private static class PartialTargetAddress {
+  public static class PartialTargetAddress {
     @Nullable
     private final String explicitTarget;
     @NotNull
     private final String normalizedPath;
     private final int valueLength;
     private final int colonIndex;
+
+    @Nullable
+    public String getExplicitTarget() {
+      return explicitTarget;
+    }
+
+    @NotNull
+    public String getNormalizedPath() {
+      return normalizedPath;
+    }
 
     public PartialTargetAddress(@Nullable String explicitTarget, @NotNull String normalizedPath, int valueLength, int colonIndex) {
       this.explicitTarget = explicitTarget;
@@ -122,8 +135,12 @@ public class PantsTargetReferenceSet {
     public static PartialTargetAddress parse(String value) {
       final int colonIndex = value.indexOf(':');
       final int valueLength = value.length();
-      final String explicitTarget = colonIndex < 0 ? null : value.substring(colonIndex);
-      final String rawPath = value.substring(0, colonIndex < 0 ? value.length() : colonIndex);
+
+      //substringAfter may return empty string if colon is the last character, so null is need in this case
+      final String explicitTarget = StringUtil.nullize(StringUtil.substringAfter(value, ":"));
+      //substringBefore may return null if colon does not exist, so rawPath is value in this case
+      final String rawPath = ObjectUtils.notNull(StringUtil.substringBefore(value, ":"), value);
+
       String normalizedPath;
       if (rawPath.isEmpty()) {
         normalizedPath = rawPath;
