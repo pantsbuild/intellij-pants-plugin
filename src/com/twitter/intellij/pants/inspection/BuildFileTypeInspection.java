@@ -4,9 +4,6 @@
 package com.twitter.intellij.pants.inspection;
 
 import com.intellij.codeInspection.*;
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.fileTypes.UnknownFileType;
-import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.python.PythonFileType;
 import com.twitter.intellij.pants.PantsBundle;
@@ -14,7 +11,6 @@ import com.twitter.intellij.pants.quickfix.TypeAssociationFix;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.intellij.openapi.fileTypes.FileTypeRegistry;
 
 public class BuildFileTypeInspection extends LocalInspectionTool {
   @Override
