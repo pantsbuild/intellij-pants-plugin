@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.ObjectUtils;
+
 /**
  * Converts a python string literal in a build file into PantsPsiReferences
  */
@@ -103,13 +106,23 @@ public class PantsTargetReferenceSet {
     );
   }
 
-  private static class PartialTargetAddress {
+  public static class PartialTargetAddress {
     @Nullable
     private final String explicitTarget;
     @NotNull
     private final String normalizedPath;
     private final int valueLength;
     private final int colonIndex;
+
+    @Nullable
+    public String getExplicitTarget() {
+      return explicitTarget;
+    }
+
+    @NotNull
+    public String getNormalizedPath() {
+      return normalizedPath;
+    }
 
     public PartialTargetAddress(@Nullable String explicitTarget, @NotNull String normalizedPath, int valueLength, int colonIndex) {
       this.explicitTarget = explicitTarget;
@@ -122,13 +135,10 @@ public class PantsTargetReferenceSet {
     public static PartialTargetAddress parse(String value) {
       final int colonIndex = value.indexOf(':');
       final int valueLength = value.length();
-      String explicitTarget = null;
-      String rawPath = value;
-      String[] parts = value.split(":");
-      if (parts.length == 2) {
-        rawPath = parts[0];
-        explicitTarget = parts[1];
-      }
+
+      final String explicitTarget = (colonIndex == value.length() - 1) ? null : StringUtil.substringAfter(value, ":");
+      final String rawPath = ObjectUtils.notNull(StringUtil.substringBefore(value, ":"), value);
+
       String normalizedPath;
       if (rawPath.isEmpty()) {
         normalizedPath = rawPath;
