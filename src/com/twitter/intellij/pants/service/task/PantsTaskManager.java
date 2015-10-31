@@ -128,7 +128,6 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
         catch (InterruptedException e) {
 
         }
-        process.destroy();
         return true;
       }
       catch (Exception e) {
