@@ -8,6 +8,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
@@ -24,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -121,6 +121,13 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     final Process process = myCancellationMap.get(id);
     if (process != null) {
       try {
+        UnixProcessManager.sendSigIntToProcessTree(process);
+        try {
+          process.waitFor();
+        }
+        catch (InterruptedException e) {
+
+        }
         process.destroy();
         return true;
       }
