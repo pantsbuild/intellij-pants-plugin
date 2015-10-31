@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExecutionSettings> {
   public static final Map<String, String> goal2JvmOptionsFlag = ContainerUtil.newHashMap(
@@ -34,6 +35,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     Pair.create("run", "--jvm-run-jvm-options")
   );
   private final Map<ExternalSystemTaskId, Process> myCancellationMap = ContainerUtil.newConcurrentMap();
+
 
   @Override
   public void executeTasks(
@@ -123,10 +125,13 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       try {
         UnixProcessManager.sendSigIntToProcessTree(process);
         try {
-          process.waitFor();
+          boolean exitWithinTimeout = process.waitFor(5, TimeUnit.SECONDS);
+          if (!exitWithinTimeout) {
+            listener.onTaskOutput(id, "SIGINT TIMEOUT, force kill\n", true);
+            process.destroy();
+          }
         }
         catch (InterruptedException e) {
-
         }
         return true;
       }
