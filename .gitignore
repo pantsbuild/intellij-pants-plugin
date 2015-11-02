@@ -6,6 +6,7 @@
 .idea/thriftCompiler.xml
 .idea/workspace.xml
 .DS_Store
+.pids/
 *.class
 *~
 *.pyc

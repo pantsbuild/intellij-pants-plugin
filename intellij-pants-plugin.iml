@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/testFramework" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/.pants.d" />
+      <excludeFolder url="file://$MODULE_DIR$/.pids" />
       <excludeFolder url="file://$MODULE_DIR$/build-support" />
     </content>
     <orderEntry type="inheritedJdk" />

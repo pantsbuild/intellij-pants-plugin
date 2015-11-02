@@ -4,15 +4,16 @@ junit_tests(
         ':integration',
         ':py-integration',
     ],
-    sources =
-        globs('com/twitter/intellij/pants/completion/*.java') +
-        globs('com/twitter/intellij/pants/components/impl/*.java') +
-        globs('com/twitter/intellij/pants/execution/*.java') +
-        globs('com/twitter/intellij/pants/highlighting/*.java') +
-        globs('com/twitter/intellij/pants/quickfix/*.java') +
-        globs('com/twitter/intellij/pants/resolve/*.java') +
-        globs('com/twitter/intellij/pants/service/project/*.java') +
-        globs('com/twitter/intellij/pants/service/util/*.java')
+    sources = globs(
+        'com/twitter/intellij/pants/completion/*.java',
+        'com/twitter/intellij/pants/components/impl/*.java',
+        'com/twitter/intellij/pants/execution/*.java',
+        'com/twitter/intellij/pants/highlighting/*.java',
+        'com/twitter/intellij/pants/quickfix/*.java',
+        'com/twitter/intellij/pants/resolve/*.java',
+        'com/twitter/intellij/pants/service/project/*.java',
+        'com/twitter/intellij/pants/service/util/*.java'
+    )
 )
 
 junit_tests(

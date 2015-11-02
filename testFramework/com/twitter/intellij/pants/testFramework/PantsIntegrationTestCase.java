@@ -9,7 +9,6 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.compiler.CompilerMessage;
@@ -63,7 +62,6 @@ import java.util.List;
  * @see com.twitter.intellij.pants.highlighting.PantsHighlightingIntegrationTest
  */
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
-  private static final String PLUGINS_KEY = "idea.load.plugins.id";
   private static final String PANTS_COMPILER_ENABLED = "pants.compiler.enabled";
   private static final String isolatedPantsIniName = "pants.ini.isolated";
 
@@ -71,7 +69,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   private PantsProjectSettings myProjectSettings;
   private String myRelativeProjectPath = null;
   private CompilerTester myCompilerTester;
-  private String defaultPlugins = null;
 
   protected PantsIntegrationTestCase() {
     this(true);
@@ -83,20 +80,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Override
   public void setUp() throws Exception {
-    defaultPlugins = System.getProperty(PLUGINS_KEY);
-    final String pluginIdsToInstall = StringUtil.join(getRequiredPluginIds(), ",");
-    if (StringUtil.isNotEmpty(pluginIdsToInstall)) {
-      System.setProperty(PLUGINS_KEY, pluginIdsToInstall + "," + defaultPlugins);
-    }
-
     super.setUp();
-
     for (String pluginId : getRequiredPluginIds()) {
       final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
-      assertNotNull(pluginId + " plugin should be in classpath for integration tests", plugin);
-      if (!plugin.isEnabled()) {
-        assertTrue(PluginManagerCore.enablePlugin(pluginId));
-      }
+      assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
+      assertTrue(pluginId + " is not enabled!", plugin.isEnabled());
     }
 
     final boolean usePantsToCompile = Boolean.valueOf(System.getProperty(PANTS_COMPILER_ENABLED, "true"));
@@ -405,10 +393,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Override
   public void tearDown() throws Exception {
-    if (defaultPlugins != null) {
-      System.setProperty(PLUGINS_KEY, defaultPlugins);
-      defaultPlugins = null;
-    }
     try {
       cleanProjectRoot();
       if (myCompilerTester != null) {
