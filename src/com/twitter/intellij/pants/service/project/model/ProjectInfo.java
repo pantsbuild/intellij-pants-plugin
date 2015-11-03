@@ -115,6 +115,12 @@ public class ProjectInfo {
     }
   }
 
+  public void renameTarget(@NotNull String targetName, @NotNull String newTargetName) {
+    addTarget(newTargetName, getTarget(targetName));
+    replaceDependency(targetName, newTargetName);
+    removeTarget(targetName);
+  }
+
   public void removeTarget(String targetName) {
     targets.remove(targetName);
     for (TargetInfo targetInfo : targets.values()) {
