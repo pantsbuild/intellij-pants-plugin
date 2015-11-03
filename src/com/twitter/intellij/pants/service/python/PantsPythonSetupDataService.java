@@ -6,13 +6,11 @@ package com.twitter.intellij.pants.service.python;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
-import com.intellij.openapi.externalSystem.service.project.ProjectStructureHelper;
+import com.intellij.openapi.externalSystem.model.project.ProjectData;
+import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider;
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataService;
-import com.intellij.openapi.externalSystem.util.DisposeAwareProjectChange;
-import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
@@ -29,8 +27,10 @@ import com.jetbrains.python.sdk.PythonSdkType;
 import com.jetbrains.python.testing.TestRunnerService;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,7 +42,12 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
   }
 
   @Override
-  public void importData(@NotNull final Collection<DataNode<PythonSetupData>> toImport, @NotNull final Project project, boolean sync) {
+  public void importData(
+    @NotNull final Collection<DataNode<PythonSetupData>> toImport,
+    @Nullable ProjectData projectData,
+    @NotNull Project project,
+    @NotNull IdeModifiableModelsProvider modelsProvider
+  ) {
     final Set<PythonInterpreterInfo> interpreters = ContainerUtil.map2Set(
       toImport,
       new Function<DataNode<PythonSetupData>, PythonInterpreterInfo>() {
@@ -52,8 +57,6 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
         }
       }
     );
-
-    final ProjectStructureHelper helper = ServiceManager.getService(ProjectStructureHelper.class);
 
     final Map<PythonInterpreterInfo, Sdk> interpreter2sdk = ContainerUtilRt.newHashMap();
     for (final PythonInterpreterInfo interpreterInfo : interpreters) {
@@ -81,36 +84,50 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
       interpreter2sdk.put(interpreterInfo, pythonSdk);
     }
 
-    ExternalSystemApiUtil.executeProjectChangeAction(
-      sync,
-      new DisposeAwareProjectChange(project) {
-        @Override
-        public void execute() {
-          for (DataNode<PythonSetupData> dataNode : toImport) {
-            final PythonSetupData pythonSetupData = dataNode.getData();
-            final Sdk pythonSdk = interpreter2sdk.get(pythonSetupData.getInterpreterInfo());
-            final Module module = helper.findIdeModule(pythonSetupData.getOwnerModuleData(), project);
-            if (module == null) {
-              return;
-            }
-            FacetManager facetManager = FacetManager.getInstance(module);
-            PythonFacet facet = facetManager.getFacetByType(PythonFacetType.getInstance().getId());
-            if (facet == null) {
-              facet = facetManager.createFacet(PythonFacetType.getInstance(), "Python", null);
-              ModifiableFacetModel facetModel = facetManager.createModifiableModel();
-              facet.getConfiguration().setSdk(pythonSdk);
-              facetModel.addFacet(facet);
-              facetModel.commit();
-              TestRunnerService.getInstance(module).setProjectConfiguration("py.test");
-            }
-          }
-        }
+    for (DataNode<PythonSetupData> dataNode : toImport) {
+      final PythonSetupData pythonSetupData = dataNode.getData();
+      final Sdk pythonSdk = interpreter2sdk.get(pythonSetupData.getInterpreterInfo());
+      final Module module = modelsProvider.findIdeModule(pythonSetupData.getOwnerModuleData());
+      if (module == null) {
+        return;
       }
-    );
+      FacetManager facetManager = FacetManager.getInstance(module);
+      PythonFacet facet = facetManager.getFacetByType(PythonFacetType.getInstance().getId());
+      if (facet == null) {
+        facet = facetManager.createFacet(PythonFacetType.getInstance(), "Python", null);
+        ModifiableFacetModel facetModel = facetManager.createModifiableModel();
+        facet.getConfiguration().setSdk(pythonSdk);
+        facetModel.addFacet(facet);
+        facetModel.commit();
+        TestRunnerService.getInstance(module).setProjectConfiguration("py.test");
+      }
+    }
+  }
+
+  @NotNull
+  @Override
+  public Computable<Collection<Module>> computeOrphanData(
+    @NotNull Collection<DataNode<PythonSetupData>> toImport,
+    @NotNull ProjectData projectData,
+    @NotNull Project project,
+    @NotNull IdeModifiableModelsProvider modelsProvider
+  ) {
+    return new Computable<Collection<Module>>() {
+      @Override
+      public Collection<Module> compute() {
+        return Collections.emptyList();
+      }
+    };
   }
 
   @Override
-  public void removeData(@NotNull Collection<? extends Module> collection, @NotNull Project project, boolean sync) {
+  public void removeData(
+    @NotNull Computable<Collection<Module>> toRemove,
+    @NotNull Collection<DataNode<PythonSetupData>> toIgnore,
+    @NotNull ProjectData projectData,
+    @NotNull Project project,
+    @NotNull IdeModifiableModelsProvider modelsProvider
+  ) {
 
   }
 }

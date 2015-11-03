@@ -49,15 +49,9 @@ def _intellij_sdk_classpath():
             intellij_jars.append(plugin_jar(os.path.join(base_dir, 'lib', file)))
 
     for plugin_name in os.listdir(os.path.join(base_dir, 'plugins')):
-        plugin_root = os.path.join(base_dir, 'plugins', plugin_name)
+        plugin_root = os.path.join(base_dir, 'plugins', plugin_name, 'lib')
         for jar_path in _find_all_jars(plugin_root):
             intellij_jars.append(plugin_jar(jar_path, plugin_name))
-
-    external_api_jar_path = os.path.join(os.getcwd(), 'testData', 'external-system-test-api-impl.jar')
-    if not os.path.exists(external_api_jar_path):
-        raise Exception('File %s not exists!' % external_api_jar_path)
-
-    intellij_jars.append(plugin_jar(external_api_jar_path))
 
     return intellij_jars
 
@@ -108,6 +102,13 @@ jar_library(
     name = 'python-plugin',
     jars = [
         _intellij_plugin_jar(path) for path in _find_jars_for_plugin('python', 'python.jar')
+    ]
+)
+
+jar_library(
+    name = 'external-system-test-api',
+    jars = [
+        _intellij_plugin_jar(os.path.join(os.getcwd(), 'testData', 'external-system-test-api.jar'))
     ]
 )
 

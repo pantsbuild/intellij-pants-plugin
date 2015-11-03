@@ -13,7 +13,7 @@ mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   echo "Loading $IJ_BUILD..."
-  wget http://download-cf.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz
+  wget http://download.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz
   tar zxf idea${IJ_BUILD}.tar.gz
   rm -rf idea${IJ_BUILD}.tar.gz
   UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1)

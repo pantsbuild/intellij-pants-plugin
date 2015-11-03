@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.testFramework.performance
 
 import java.io.File
+import java.util.Collections
 
 import com.intellij.ProjectTopics
 import com.intellij.ide.plugins.PluginManagerCore
@@ -82,7 +83,7 @@ class PantsPerformanceBenchmark(projectFolder: File, pluginsToDisable: Set[Strin
   override protected def getProjectFolder = projectFolder
 
   override protected def getRequiredPluginIds = {
-    val allPluginIds = PluginManagerCore.loadDescriptors(null).map(_.getPluginId.getIdString).toSet
+    val allPluginIds = PluginManagerCore.loadDescriptors(null, Collections.emptyList()).map(_.getPluginId.getIdString).toSet
     (allPluginIds -- pluginsToDisable).toArray
   }
 

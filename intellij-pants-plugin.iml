@@ -20,7 +20,7 @@
     <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/testData/external-system-test-api-impl.jar!/" />
+          <root url="jar://$MODULE_DIR$/testData/external-system-test-api.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

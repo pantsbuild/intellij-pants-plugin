@@ -3,8 +3,8 @@
 set -e
 
 export CWD=$(pwd)
-export IJ_VERSION="14.1.4"
-export IJ_BUILD_NUMBER="141.2735.5"
+export IJ_VERSION="15.0"
+export IJ_BUILD_NUMBER="143.381"
 
 export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
 export IJ_BUILD="IC-${IJ_VERSION}"

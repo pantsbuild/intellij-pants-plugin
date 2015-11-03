@@ -5,15 +5,19 @@ package com.twitter.intellij.pants.service.scala
 
 import java.io.File
 import java.util
+import java.util.Collections
 
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.externalSystem.model.project.ProjectData
 import com.intellij.openapi.externalSystem.model.{DataNode, ExternalSystemException, ProjectKeys}
+import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataService
-import com.intellij.openapi.externalSystem.service.project.{PlatformFacade, ProjectStructureHelper}
 import com.intellij.openapi.externalSystem.util.{DisposeAwareProjectChange, ExternalSystemApiUtil}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.OrderRootType
+import com.intellij.openapi.roots.impl.libraries.LibraryEx.ModifiableModelEx
 import com.intellij.openapi.roots.libraries.Library
+import com.intellij.openapi.util.Computable
 import com.intellij.openapi.vfs.VfsUtilCore
 import org.jetbrains.plugins.scala.project._
 
@@ -23,26 +27,26 @@ object PantsScalaDataService {
   val LOG = Logger.getInstance(classOf[PantsScalaDataService])
 }
 
-class PantsScalaDataService(platformFacade: PlatformFacade, helper: ProjectStructureHelper)
-  extends ProjectDataService[ScalaModelData, Library] {
+class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] {
 
   import PantsScalaDataService._
 
   def getTargetDataKey = ScalaModelData.KEY
 
-  final def importData(toImport: util.Collection[DataNode[ScalaModelData]], project: Project, synchronous: Boolean) {
-    ExternalSystemApiUtil.executeProjectChangeAction(synchronous, new DisposeAwareProjectChange(project) {
+  override def importData(
+    toImport: util.Collection[DataNode[ScalaModelData]],
+    projectData: ProjectData,
+    project: Project,
+    modelsProvider: IdeModifiableModelsProvider
+  ): Unit = {
+    ExternalSystemApiUtil.executeProjectChangeAction(new DisposeAwareProjectChange(project) {
       def execute() {
-        doImportData(toImport, project)
+        toImport.asScala.toSet.foreach[Unit](doImport(_, modelsProvider))
       }
     })
   }
 
-  def doImportData(toImport: util.Collection[DataNode[ScalaModelData]], project: Project) {
-    toImport.asScala.toSet.foreach[Unit](doImport(_, project))
-  }
-
-  private def doImport(scalaNode: DataNode[ScalaModelData], project: Project) {
+  private def doImport(scalaNode: DataNode[ScalaModelData], modelsProvider: IdeModifiableModelsProvider) {
     val scalaData = scalaNode.getData
 
     val scalaLibId = scalaData.getScalaLibId
@@ -55,22 +59,39 @@ class PantsScalaDataService(platformFacade: PlatformFacade, helper: ProjectStruc
       .getOrElse(throw new ExternalSystemException("Cannot determine Scala compiler version for module " +
                                                    scalaNode.getData(ProjectKeys.MODULE).getExternalName))
 
-    val scalaLibrary = project.libraries.find(_.getName.contains(scalaLibId))
+    val scalaLibrary = modelsProvider.getAllLibraries.find(_.getName.contains(scalaLibId))
       .getOrElse(throw new ExternalSystemException("Cannot find project Scala library " +
                                                    compilerVersion.number +
                                                    " for module " +
                                                    scalaNode.getData(ProjectKeys.MODULE).getExternalName))
 
     if (!scalaLibrary.isScalaSdk) {
-      val languageLevel = compilerVersion.toLanguageLevel.getOrElse(ScalaLanguageLevel.Default)
       val scalaBinaryJarsPaths = scalaLibrary.getFiles(OrderRootType.CLASSES).toSeq.map(_.getPresentableUrl).map(VfsUtilCore.urlToPath)
       val scalaBinaryJars = scalaBinaryJarsPaths.map(new File(_)).filter(_.exists)
-      scalaLibrary.convertToScalaSdkWith(languageLevel, scalaBinaryJars)
+
+      val properties = new ScalaLibraryProperties()
+      properties.languageLevel = compilerVersion.toLanguageLevel.getOrElse(ScalaLanguageLevel.Default)
+      properties.compilerClasspath = scalaBinaryJars
+      val modifiableModelEx = modelsProvider.getModifiableLibraryModel(scalaLibrary).asInstanceOf[ModifiableModelEx]
+      modifiableModelEx.setKind(ScalaLibraryType.instance.getKind)
+      modifiableModelEx.setProperties(properties)
     } else {
       LOG.debug(s"${scalaLibrary.getName} is already a Scala SDK")
     }
   }
 
-  final def removeData(toRemove: util.Collection[_ <: Library], project: Project, synchronous: Boolean) {
-  }
+  override def computeOrphanData(toImport: util.Collection[DataNode[ScalaModelData]],
+                                 projectData: ProjectData,
+                                 project: Project,
+                                 modelsProvider: IdeModifiableModelsProvider
+  ): Computable[util.Collection[Library]] =
+    new Computable[util.Collection[Library]] {
+      override def compute(): util.Collection[Library] = Collections.emptyList()
+    }
+
+  override def removeData(toRemove: Computable[util.Collection[Library]],
+                          toIgnore: util.Collection[DataNode[ScalaModelData]],
+                          projectData: ProjectData,
+                          project: Project,
+                          modelsProvider: IdeModifiableModelsProvider): Unit = { }
 }

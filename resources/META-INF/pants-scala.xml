@@ -6,7 +6,7 @@
       <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaSdkResolver"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
-      <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService"/>
+      <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService" order="last"/>
       <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantScalaHighlightVisitor"/>
     </extensions>
 </idea-plugin>
