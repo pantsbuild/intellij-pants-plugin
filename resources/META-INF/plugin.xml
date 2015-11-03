@@ -7,7 +7,7 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
-      <p>1.3.5+:</p>
+      <p>1.3.6:</p>
       <ul>
         <li>Python Support</li>
       </ul>
@@ -180,7 +180,9 @@
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsEmptyTargetRemover"
                          id="emptyTargetsRemover" order="before commonSourceRoots"/>
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCommonSourceRootModifier"
-                         id="commonSourceRoots" order="last" />
+                         id="commonSourceRoots" order="before shortener" />
+    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsTargetNamesShortenerModifier"
+                         id="shortener" order="last" />
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
