@@ -9,12 +9,16 @@ import com.intellij.execution.configurations.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.Function;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jdom.Element;
@@ -22,10 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
@@ -49,6 +50,29 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       LOG.info(address + " excluded " + excludedPath);
       classpath.remove(excludedPath);
     }
+
+    final List<String> publishedClasspath = ContainerUtil.newArrayList();
+    processRuntimeModules(
+      module,
+      new Processor<Module>() {
+        @Override
+        public boolean process(Module module) {
+          final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
+          for (String targetAddress : StringUtil.split(addresses, ",")) {
+            publishedClasspath.addAll(findPublishedClasspath(module.getProject(), targetAddress));
+          }
+          return true;
+        }
+      }
+    );
+
+    // if current version of Pants supports export-classpath
+    if (!publishedClasspath.isEmpty()) {
+      // todo: maybe remove something from classpath?
+      classpath.addAll(publishedClasspath);
+      return;
+    }
+
     processRuntimeModules(
       module,
       new Processor<Module>() {
@@ -57,6 +81,25 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
           final String compilerOutputs = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY));
           classpath.addAll(StringUtil.split(compilerOutputs, File.pathSeparator));
           return true;
+        }
+      }
+    );
+  }
+
+  @NotNull
+  private List<String> findPublishedClasspath(Project project, String targetAddress) {
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(project);
+    final VirtualFile classpath = workingDir != null ? workingDir.findFileByRelativePath("dist/export-classpath") : null;
+    final VirtualFile classpathLinks = classpath != null ? classpath.findFileByRelativePath(targetAddress.replace(':', '/')) : null;
+    if (classpathLinks == null) {
+      return Collections.emptyList();
+    }
+    return ContainerUtil.map(
+      classpathLinks.getChildren(),
+      new Function<VirtualFile, String>() {
+        @Override
+        public String fun(VirtualFile classpathEntry) {
+          return classpathEntry.getPath();
         }
       }
     );
