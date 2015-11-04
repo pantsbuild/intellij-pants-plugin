@@ -124,14 +124,10 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     if (process != null && process.isAlive()) {
       try {
         UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM);
-        try {
-          boolean exitWithinTimeout = process.waitFor(5, TimeUnit.SECONDS);
-          if (!exitWithinTimeout) {
-            listener.onTaskOutput(id, "SIGTERM timed out. Force kill.\n", true);
-            process.destroy();
-          }
-        }
-        catch (InterruptedException e) {
+        boolean exitWithinTimeout = process.waitFor(5, TimeUnit.SECONDS);
+        if (!exitWithinTimeout) {
+          listener.onTaskOutput(id, "SIGTERM timed out. Force kill.\n", true);
+          process.destroy();
         }
         return true;
       }
