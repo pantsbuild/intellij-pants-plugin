@@ -11,11 +11,16 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderEnumerator;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.Function;
+import com.intellij.util.PathUtil;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
@@ -68,7 +73,21 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
     // if current version of Pants supports export-classpath
     if (!publishedClasspath.isEmpty()) {
-      // todo: maybe remove something from classpath?
+      // remove IJ compiler outputs to reduce amount of arguments.
+      final VirtualFile pantsWorkingDir = PantsUtil.findPantsWorkingDir(module);
+      final List<String> toRemove = ContainerUtil.findAll(
+        classpath.getPathList(),
+        new Condition<String>() {
+          @Override
+          public boolean value(String classpathEntry) {
+            final VirtualFile entry = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(classpathEntry));
+            return pantsWorkingDir != null && entry != null && VfsUtil.isAncestor(pantsWorkingDir, entry, false);
+          }
+        }
+      );
+      for (String pathToRemove : toRemove) {
+        classpath.remove(pathToRemove);
+      }
       classpath.addAll(publishedClasspath);
       return;
     }
@@ -94,11 +113,15 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     if (classpathLinks == null) {
       return Collections.emptyList();
     }
-    return ContainerUtil.map(
+    return ContainerUtil.mapNotNull(
       classpathLinks.getChildren(),
       new Function<VirtualFile, String>() {
         @Override
         public String fun(VirtualFile classpathEntry) {
+          if (classpathEntry.isDirectory()) {
+            // Optimization to not include empty folders.
+            return classpathEntry.getChildren().length > 0 ? classpathEntry.getPath() : null;
+          }
           return classpathEntry.getPath();
         }
       }
