@@ -30,15 +30,14 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.*;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -203,21 +202,30 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @Nullable
-  private File findClassFile(String className, String moduleName) throws Exception {
+  private VirtualFile findClassFile(String className, String moduleName) throws Exception {
+    final Module module = getModule(moduleName);
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
-    String compilerOutputPaths;
+    List<String> compilerOutputPaths = ContainerUtil.newArrayList();
     if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
       final CompilerModuleExtension moduleExtension =
-        ModuleRootManager.getInstance(getModule(moduleName)).getModuleExtension(CompilerModuleExtension.class);
-      compilerOutputPaths = VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl()) + ":" +
-                            VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests());
+        ModuleRootManager.getInstance(module).getModuleExtension(CompilerModuleExtension.class);
+      compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl()));
+      compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests()));
     } else {
-      compilerOutputPaths = getModule(moduleName).getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY);
-      assertNotNull(compilerOutputPaths);
+      compilerOutputPaths.addAll(StringUtil.split(module.getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY), ":"));
+      compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module));
     }
-    for (String compilerOutputPath : StringUtil.split(compilerOutputPaths, ":")) {
-      final File classFile = new File(new File(compilerOutputPath), className.replace('.', '/') + ".class");
-      if (classFile.exists()) {
+    for (String compilerOutputPath : compilerOutputPaths) {
+      VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));
+      if (output == null) {
+        continue;
+      }
+      if (StringUtil.equalsIgnoreCase(output.getExtension(), "jar")) {
+        output = JarFileSystem.getInstance().getJarRootForLocalFile(output);
+        assertNotNull(output);
+      }
+      final VirtualFile classFile = output.findFileByRelativePath(className.replace('.', '/') + ".class");
+      if (classFile != null) {
         return classFile;
       }
     }
