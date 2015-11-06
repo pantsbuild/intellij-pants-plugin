@@ -204,6 +204,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Nullable
   private VirtualFile findClassFile(String className, String moduleName) throws Exception {
     final Module module = getModule(moduleName);
+    final VirtualFile pantsWorkingDir = PantsUtil.findPantsWorkingDir(module);
+    assertNotNull("Can't find working dir for module '" + moduleName + "'!", pantsWorkingDir);
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
     List<String> compilerOutputPaths = ContainerUtil.newArrayList();
     if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
@@ -218,6 +220,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     for (String compilerOutputPath : compilerOutputPaths) {
       VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));
       if (output == null) {
+        continue;
+      }
+      if (!VfsUtil.isAncestor(pantsWorkingDir, output, true)) {
+        // Don't care about classpath entries outside of working dir.
+        // Otherwise VfsRootAccess.assertAccessInTests might fail
         continue;
       }
       if (StringUtil.equalsIgnoreCase(output.getExtension(), "jar")) {
