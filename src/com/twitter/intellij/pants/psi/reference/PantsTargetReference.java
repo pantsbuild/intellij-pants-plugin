@@ -61,7 +61,7 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
       return null;
     }
     else {
-      return target;
+      return ObjectUtils.notNull(target, file);
     }
   }
 }
