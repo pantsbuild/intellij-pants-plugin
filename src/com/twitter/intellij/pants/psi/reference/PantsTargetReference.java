@@ -57,14 +57,11 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
   public PsiElement resolve() {
     PsiFile file = findBuildFile();
     PsiElement target = PantsPsiUtil.findTargets(file).get(getText());
-    if (target != null) {
-      return target;
-    }
-    else if (file != null) {
-      return file;
+    if (file == null) {
+      return null;
     }
     else {
-      return null;
+      return target;
     }
   }
 }
