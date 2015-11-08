@@ -217,6 +217,12 @@ test sources, resources, test resources, generated sources, etc).
   * Checkout OSS pants in an adjacent directory to the plugin clone
 * Run tests to verify your installation
 
+### Release process:
+
+* To build from sources a pants.zip distributive simply invoke Build -> Build Artifacts... -> pants -> Rebuild
+* Zip out/artifacts/pants folder into pants.zip.
+* Upload pants.zip to https://plugins.jetbrains.com/plugin/7412
+
 ### Debugging the Plugin from local pants development:
 
 * To debug tests execute:
