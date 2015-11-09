@@ -5,12 +5,13 @@ package com.twitter.intellij.pants.service.python;
 
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider;
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataService;
+import com.intellij.openapi.externalSystem.util.DisposeAwareProjectChange;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
@@ -46,7 +47,7 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
     @NotNull final Collection<DataNode<PythonSetupData>> toImport,
     @Nullable ProjectData projectData,
     @NotNull Project project,
-    @NotNull IdeModifiableModelsProvider modelsProvider
+    @NotNull final IdeModifiableModelsProvider modelsProvider
   ) {
     final Set<PythonInterpreterInfo> interpreters = ContainerUtil.map2Set(
       toImport,
@@ -58,31 +59,32 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
       }
     );
 
-    final Map<PythonInterpreterInfo, Sdk> interpreter2sdk = ContainerUtilRt.newHashMap();
-    for (final PythonInterpreterInfo interpreterInfo : interpreters) {
-      //final String binFolder = PathUtil.getParentPath(interpreter);
-      //final String interpreterHome = PathUtil.getParentPath(binFolder);
-      final String interpreter = interpreterInfo.getBinary();
-      Sdk pythonSdk = PythonSdkType.findSdkByPath(interpreter);
-      if (pythonSdk == null) {
-        pythonSdk = ApplicationManager.getApplication().runWriteAction(
-          new Computable<Sdk>() {
-            @Override
-            public Sdk compute() {
-              final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-              final Sdk pythonSdk = jdkTable.createSdk(PathUtil.getFileName(interpreter), PythonSdkType.getInstance());
-              jdkTable.addJdk(pythonSdk);
-              final SdkModificator modificator = pythonSdk.getSdkModificator();
-              modificator.setHomePath(interpreter);
-              modificator.commitChanges();
-              PythonSdkType.getInstance().setupSdkPaths(pythonSdk);
-              return pythonSdk;
-            }
-          }
-        );
-      }
-      interpreter2sdk.put(interpreterInfo, pythonSdk);
+    if (interpreters.isEmpty()) {
+      return;
     }
+
+    final Map<PythonInterpreterInfo, Sdk> interpreter2sdk = ContainerUtilRt.newHashMap();
+    ExternalSystemApiUtil.executeProjectChangeAction(false, new DisposeAwareProjectChange(project) {
+      @Override
+      public void execute() {
+        for (final PythonInterpreterInfo interpreterInfo : interpreters) {
+          //final String binFolder = PathUtil.getParentPath(interpreter);
+          //final String interpreterHome = PathUtil.getParentPath(binFolder);
+          final String interpreter = interpreterInfo.getBinary();
+          Sdk pythonSdk = PythonSdkType.findSdkByPath(interpreter);
+          if (pythonSdk == null) {
+            final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
+            pythonSdk = jdkTable.createSdk(PathUtil.getFileName(interpreter), PythonSdkType.getInstance());
+            jdkTable.addJdk(pythonSdk);
+            final SdkModificator modificator = pythonSdk.getSdkModificator();
+            modificator.setHomePath(interpreter);
+            modificator.commitChanges();
+            PythonSdkType.getInstance().setupSdkPaths(pythonSdk);
+          }
+          interpreter2sdk.put(interpreterInfo, pythonSdk);
+        }
+      }
+    });
 
     for (DataNode<PythonSetupData> dataNode : toImport) {
       final PythonSetupData pythonSetupData = dataNode.getData();
@@ -95,10 +97,10 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
       PythonFacet facet = facetManager.getFacetByType(PythonFacetType.getInstance().getId());
       if (facet == null) {
         facet = facetManager.createFacet(PythonFacetType.getInstance(), "Python", null);
-        ModifiableFacetModel facetModel = facetManager.createModifiableModel();
         facet.getConfiguration().setSdk(pythonSdk);
+
+        final ModifiableFacetModel facetModel = modelsProvider.getModifiableFacetModel(module);
         facetModel.addFacet(facet);
-        facetModel.commit();
         TestRunnerService.getInstance(module).setProjectConfiguration("py.test");
       }
     }

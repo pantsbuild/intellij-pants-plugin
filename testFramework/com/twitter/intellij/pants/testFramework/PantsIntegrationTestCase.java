@@ -391,6 +391,20 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertUnorderedElementsAreEqual(moduleNames, expectedNames);
   }
 
+  protected void assertModuleExists(String moduleName) {
+    final List<String> moduleNames = ContainerUtil.mapNotNull(
+      ModuleManager.getInstance(myProject).getModules(),
+      new Function<Module, String>() {
+        @Override
+        public String fun(Module module) {
+          return module.getName();
+        }
+      }
+    );
+
+    assertContain(moduleNames, moduleName);
+  }
+
   protected void assertGenModules(int count) {
     final List<Module> genModules = ContainerUtil.findAll(
       ModuleManager.getInstance(myProject).getModules(),

@@ -45,7 +45,6 @@ public class PythonPexResolver implements PantsResolverExtension {
         );
         library.setExported(false);
         moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
-
       }
     }
   }
