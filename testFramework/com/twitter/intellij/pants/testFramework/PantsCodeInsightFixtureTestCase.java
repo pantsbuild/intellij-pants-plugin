@@ -18,19 +18,15 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.JarFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
-  private static final String PLUGINS_KEY = "idea.load.plugins.id";
-  private static final String USER_HOME_KEY = "user.home";
-
-  private String defaultUserHome = null;
-  private String defaultPlugins = null;
-
   private final String myPath;
 
   public PantsCodeInsightFixtureTestCase() {
@@ -62,18 +58,11 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
 
   @Override
   protected void setUp() throws Exception {
-    final String pyPluginId = "PythonCore";
-
-    defaultPlugins = System.getProperty(PLUGINS_KEY);
-    System.setProperty(PLUGINS_KEY, pyPluginId + "," + defaultPlugins);
-
-    defaultUserHome = System.getProperty(USER_HOME_KEY);
-    System.setProperty(USER_HOME_KEY, FileUtil.toSystemIndependentName(PantsTestUtils.BASE_TEST_DATA_PATH + "/userHome"));
-
     super.setUp();
 
     myModule.setOption(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, PantsConstants.SYSTEM_ID.getId());
 
+    final String pyPluginId = "PythonCore";
     final IdeaPluginDescriptor pyPlugin = PluginManager.getPlugin(PluginId.getId(pyPluginId));
     assertNotNull(
       "Python Community Edition plugin should be in classpath for tests\n" +
@@ -85,7 +74,8 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
       assertTrue("Failed to enable Python plugin!", PluginManagerCore.enablePlugin(pyPluginId));
     }
 
-    final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
+    final String testUserHome = VfsUtil.pathToUrl(FileUtil.toSystemIndependentName(PantsTestUtils.BASE_TEST_DATA_PATH + "/userHome"));
+    final VirtualFile folderWithPex = PantsUtil.findFolderWithPex(VirtualFileManager.getInstance().findFileByUrl(testUserHome));
     assertNotNull("Folder with pex files should be configured", folderWithPex);
     final VirtualFile[] pexFiles = folderWithPex.getChildren();
     assertTrue("There should be only one pex file!", pexFiles.length == 1);
@@ -110,15 +100,6 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
 
   @Override
   protected void tearDown() throws Exception {
-    if (defaultUserHome != null) {
-      System.setProperty(USER_HOME_KEY, defaultUserHome);
-      defaultUserHome = null;
-    }
-    if (defaultPlugins != null) {
-      System.setProperty(PLUGINS_KEY, defaultPlugins);
-      defaultPlugins = null;
-    }
-
     final LibraryTable libraryTable = ProjectLibraryTable.getInstance(myFixture.getProject());
     final Library libraryByName = libraryTable.getLibraryByName(PantsConstants.PANTS_LIBRARY_NAME);
     if (libraryByName != null) {
