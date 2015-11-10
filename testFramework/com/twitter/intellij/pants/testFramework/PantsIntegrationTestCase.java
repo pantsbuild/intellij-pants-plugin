@@ -5,8 +5,17 @@ package com.twitter.intellij.pants.testFramework;
 
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ProgramRunnerUtil;
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.junit.JUnitConfiguration;
+import com.intellij.execution.junit.JUnitConfigurationType;
+import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
+import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
@@ -49,10 +58,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * If your integration test modifies any source files
@@ -420,6 +426,31 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertSize(count, genModules);
   }
 
+  public void assertSuccessfulJUnitTest(String moduleName, String className) {
+    final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
+    assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+  }
+
+  public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) {
+    final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
+    final JUnitConfiguration runConfiguration = new JUnitConfiguration("Pants: " + className, myProject, factory);
+    runConfiguration.setWorkingDirectory(PantsUtil.findPantsWorkingDir(getModule(moduleName)).getCanonicalPath());
+    runConfiguration.setModule(getModule(moduleName));
+    runConfiguration.setName(className);
+    if (StringUtil.isNotEmpty(vmParams)) {
+      runConfiguration.setVMParameters(vmParams);
+    }
+    runConfiguration.setMainClass(findClassAndAssert(className));
+    final JUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings = new JUnitRunnerAndConfigurationSettings(runConfiguration);
+    final ExecutionEnvironmentBuilder environmentBuilder =
+      ExecutionUtil.createEnvironment(DefaultRunExecutor.getRunExecutorInstance(), runnerAndConfigurationSettings);
+    final ExecutionEnvironment environment = environmentBuilder.build();
+
+    ProgramRunnerUtil.executeConfiguration(environment, false, false);
+    final OSProcessHandler handler = (OSProcessHandler)environment.getContentToReuse().getProcessHandler();
+    assertTrue(handler.waitFor());
+    return handler;
+  }
 
   @Override
   public void tearDown() throws Exception {

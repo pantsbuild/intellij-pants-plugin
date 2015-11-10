@@ -25,7 +25,7 @@ append_intellij_jvm_options() {
   cmd=""
 
   INTELLIJ_JVM_OPTIONS=(
-    "-Didea.load.plugins.id=org.intellij.scala,PythonCore,com.intellij.plugins.pants"
+    "-Didea.load.plugins.id=org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants"
     "-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME"
     "-Didea.home.path=$IDEA_TEST_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
