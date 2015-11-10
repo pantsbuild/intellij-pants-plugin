@@ -56,8 +56,11 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
   @Override
   public PsiElement resolve() {
     PsiFile file = findBuildFile();
+    if (file == null) {
+      return null;
+    }
+
     PsiElement target = PantsPsiUtil.findTargets(file).get(getText());
-    // Return the file element instead if target is not found for any reason.
     return ObjectUtils.notNull(target, file);
   }
 }
