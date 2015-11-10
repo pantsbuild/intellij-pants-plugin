@@ -219,8 +219,10 @@ test sources, resources, test resources, generated sources, etc).
 
 ### Release process:
 
+* Bump version number in plugin.xml, push the change, make sure travis is green
 * To build from sources a pants.zip distributive simply invoke Build -> Build Artifacts... -> pants -> Rebuild
-* Zip out/artifacts/pants folder into pants.zip.
+* Zip out/artifacts/pants folder into pants.zip
+* Validate the plugin manually in IntelliJ: Preferences -> Plugins -> Install from disk -> pick newely created pants.zip
 * Upload pants.zip to https://plugins.jetbrains.com/plugin/7412
 
 ### Debugging the Plugin from local pants development:
