@@ -8,6 +8,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
@@ -24,9 +25,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExecutionSettings> {
   public static final Map<String, String> goal2JvmOptionsFlag = ContainerUtil.newHashMap(
@@ -34,6 +35,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     Pair.create("run", "--jvm-run-jvm-options")
   );
   private final Map<ExternalSystemTaskId, Process> myCancellationMap = ContainerUtil.newConcurrentMap();
+
 
   @Override
   public void executeTasks(
@@ -119,9 +121,14 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
   public boolean cancelTask(@NotNull ExternalSystemTaskId id, @NotNull ExternalSystemTaskNotificationListener listener)
     throws ExternalSystemException {
     final Process process = myCancellationMap.get(id);
-    if (process != null) {
+    if (process != null && process.isAlive()) {
       try {
-        process.destroy();
+        UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM);
+        boolean exitWithinTimeout = process.waitFor(5, TimeUnit.SECONDS);
+        if (!exitWithinTimeout) {
+          listener.onTaskOutput(id, "SIGTERM timed out. Force kill.\n", true);
+          process.destroy();
+        }
         return true;
       }
       catch (Exception e) {
