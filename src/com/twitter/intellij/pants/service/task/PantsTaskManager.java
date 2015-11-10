@@ -27,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExecutionSettings> {
   public static final Map<String, String> goal2JvmOptionsFlag = ContainerUtil.newHashMap(
