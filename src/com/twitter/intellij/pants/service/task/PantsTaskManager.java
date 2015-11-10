@@ -121,20 +121,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
   public boolean cancelTask(@NotNull ExternalSystemTaskId id, @NotNull ExternalSystemTaskNotificationListener listener)
     throws ExternalSystemException {
     final Process process = myCancellationMap.get(id);
-    if (process != null && process.isAlive()) {
-      try {
-        UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM);
-        boolean exitWithinTimeout = process.waitFor(5, TimeUnit.SECONDS);
-        if (!exitWithinTimeout) {
-          listener.onTaskOutput(id, "SIGTERM timed out. Force kill.\n", true);
-          process.destroy();
-        }
-        return true;
-      }
-      catch (Exception e) {
-        throw new ExternalSystemException(e);
-      }
-    }
+    UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM);
     return true;
   }
 }
