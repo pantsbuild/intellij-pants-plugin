@@ -48,6 +48,11 @@ def _intellij_sdk_classpath():
         if file.endswith('.jar'):
             intellij_jars.append(plugin_jar(os.path.join(base_dir, 'lib', file)))
 
+    for plugin_name in os.listdir(os.path.join(base_dir, 'plugins')):
+        plugin_root = os.path.join(base_dir, 'plugins', plugin_name, 'lib')
+        for jar_path in _find_all_jars(plugin_root):
+            intellij_jars.append(plugin_jar(jar_path, plugin_name))
+
     return intellij_jars
 
 def _jdk_classpath():
