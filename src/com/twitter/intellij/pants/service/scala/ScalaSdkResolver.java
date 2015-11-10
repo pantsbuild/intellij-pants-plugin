@@ -91,7 +91,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
         final LibraryDependencyData libraryDependencyData = new LibraryDependencyData(moduleDataNode.getData(), libraryData, LibraryLevel.PROJECT);
         moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, libraryDependencyData);
 
-        final ScalaModelData scalaModelData = new ScalaModelData(scalaLibId);
+        final ScalaModelData scalaModelData = new ScalaModelData(scalaLibId, libraryData.getPaths(LibraryPathType.BINARY));
         moduleDataNode.createChild(ScalaModelData.KEY, scalaModelData);
       }
     }

@@ -39,11 +39,7 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
     project: Project,
     modelsProvider: IdeModifiableModelsProvider
   ): Unit = {
-    ExternalSystemApiUtil.executeProjectChangeAction(new DisposeAwareProjectChange(project) {
-      def execute() {
-        toImport.asScala.toSet.foreach[Unit](doImport(_, modelsProvider))
-      }
-    })
+    toImport.asScala.toSet.foreach[Unit](doImport(_, modelsProvider))
   }
 
   private def doImport(scalaNode: DataNode[ScalaModelData], modelsProvider: IdeModifiableModelsProvider) {
@@ -66,12 +62,9 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
                                                    scalaNode.getData(ProjectKeys.MODULE).getExternalName))
 
     if (!scalaLibrary.isScalaSdk) {
-      val scalaBinaryJarsPaths = scalaLibrary.getFiles(OrderRootType.CLASSES).toSeq.map(_.getPresentableUrl).map(VfsUtilCore.urlToPath)
-      val scalaBinaryJars = scalaBinaryJarsPaths.map(new File(_)).filter(_.exists)
-
       val properties = new ScalaLibraryProperties()
       properties.languageLevel = compilerVersion.toLanguageLevel.getOrElse(ScalaLanguageLevel.Default)
-      properties.compilerClasspath = scalaBinaryJars
+      properties.compilerClasspath = scalaData.getClasspath.asScala.toSeq.map(new File(_))
       val modifiableModelEx = modelsProvider.getModifiableLibraryModel(scalaLibrary).asInstanceOf[ModifiableModelEx]
       modifiableModelEx.setKind(ScalaLibraryType.instance.getKind)
       modifiableModelEx.setProperties(properties)
