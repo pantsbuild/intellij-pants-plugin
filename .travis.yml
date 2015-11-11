@@ -14,7 +14,8 @@ cache:
 
 notifications:
   email:
-    - fkorotkov@twitter.com
+    - yic@twitter.com
+    - fedor.korotkov@gmail.com
 
 install: ./scripts/setup-ci-environment.sh
 
