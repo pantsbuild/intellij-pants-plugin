@@ -1,6 +1,6 @@
 resources(
     name = 'plugin-resources',
-    sources = globs('META-INF/plugin.xml')
+    sources = globs('META-INF/plugin.xml', 'intellij-jps-plugin-system.jar')
 )
 
 jvm_binary(
