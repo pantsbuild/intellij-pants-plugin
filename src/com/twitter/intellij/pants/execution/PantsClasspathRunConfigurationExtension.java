@@ -6,10 +6,12 @@ package com.twitter.intellij.pants.execution;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
 import com.intellij.execution.configurations.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.roots.OrderEnumerator;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
@@ -52,6 +54,19 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       LOG.info(address + " excluded " + excludedPath);
       classpath.remove(excludedPath);
     }
+
+    ApplicationManager.getApplication().runWriteAction(
+      new Runnable() {
+        @Override
+        public void run() {
+          final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
+          if (workingDir != null) {
+            // we need to refresh because IJ might not pick all newly created symlinks
+            VirtualFileManager.getInstance().refreshAndFindFileByUrl(workingDir.getUrl() + "/dist/export-classpath");
+          }
+        }
+      }
+    );
 
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
