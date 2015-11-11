@@ -8,6 +8,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
@@ -24,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +34,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     Pair.create("run", "--jvm-run-jvm-options")
   );
   private final Map<ExternalSystemTaskId, Process> myCancellationMap = ContainerUtil.newConcurrentMap();
+
 
   @Override
   public void executeTasks(
@@ -119,15 +120,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
   public boolean cancelTask(@NotNull ExternalSystemTaskId id, @NotNull ExternalSystemTaskNotificationListener listener)
     throws ExternalSystemException {
     final Process process = myCancellationMap.get(id);
-    if (process != null) {
-      try {
-        process.destroy();
-        return true;
-      }
-      catch (Exception e) {
-        throw new ExternalSystemException(e);
-      }
-    }
+    UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM);
     return true;
   }
 }
