@@ -137,7 +137,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
   }
 
-  private void cleanProjectRoot() throws ExecutionException, IOException {
+  protected void cleanProjectRoot() throws ExecutionException, IOException {
     final File projectDir = new File(myProjectRoot.getPath());
     assertTrue(projectDir.exists());
     if (readOnly) {
