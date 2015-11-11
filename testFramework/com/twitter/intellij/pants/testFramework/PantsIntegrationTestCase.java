@@ -441,7 +441,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       runConfiguration.setVMParameters(vmParams);
     }
     runConfiguration.setMainClass(findClassAndAssert(className));
-    final JUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings = new JUnitRunnerAndConfigurationSettings(runConfiguration);
+    final PantsJUnitRunnerAndConfigurationSettings
+      runnerAndConfigurationSettings = new PantsJUnitRunnerAndConfigurationSettings(runConfiguration);
     final ExecutionEnvironmentBuilder environmentBuilder =
       ExecutionUtil.createEnvironment(DefaultRunExecutor.getRunExecutorInstance(), runnerAndConfigurationSettings);
     final ExecutionEnvironment environment = environmentBuilder.build();

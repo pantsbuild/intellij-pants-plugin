@@ -14,7 +14,7 @@ import com.intellij.openapi.util.Factory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class JUnitRunnerAndConfigurationSettings implements RunnerAndConfigurationSettings {
+public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfigurationSettings {
 
   private boolean myTemporary;
   private String myName = "junitTest";
@@ -25,7 +25,7 @@ public class JUnitRunnerAndConfigurationSettings implements RunnerAndConfigurati
 
   private final JUnitConfiguration myRunConfiguration;
 
-  public JUnitRunnerAndConfigurationSettings(JUnitConfiguration configuration) {
+  public PantsJUnitRunnerAndConfigurationSettings(JUnitConfiguration configuration) {
     myRunConfiguration = configuration;
   }
 
@@ -108,7 +108,7 @@ public class JUnitRunnerAndConfigurationSettings implements RunnerAndConfigurati
     return new Factory<RunnerAndConfigurationSettings>() {
       @Override
       public RunnerAndConfigurationSettings create() {
-        return new JUnitRunnerAndConfigurationSettings(myRunConfiguration);
+        return new PantsJUnitRunnerAndConfigurationSettings(myRunConfiguration);
       }
     };
   }
