@@ -10,3 +10,9 @@ java_library(
     ],
     sources = globs('*.java')
 )
+
+jvm_binary(
+  name = 'test-lib-bin',
+  basename = 'intellij-pants-plugin-test-lib',
+  dependencies = [':test-lib']
+)
