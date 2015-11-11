@@ -206,10 +206,11 @@ test sources, resources, test resources, generated sources, etc).
 * Use IntelliJ IDEA 14 Community Edition as IDEA IC SDK(Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK)
 * Setup the SDK's classpath
   * Add the following to the SDK's classpath
-    * `~/Library/Application Support/IdeaIC14/python/lib/python-community.jar`
-    * `~/Library/Application Support/IdeaIC14/Scala/lib/scala-plugin.jar`
-    * `~/Library/Application Support/IdeaIC14/Scala/lib/jps/*.jar`
-    * `/Applications/IntelliJ IDEA 14 CE.app/Contents/plugins/gradle/lib/gradle.jar`
+    * `~/Library/Application Support/IdeaIC15/python/lib/python.jar`
+    * `~/Library/Application Support/IdeaIC15/Scala/lib/scala-plugin.jar`
+    * `~/Library/Application Support/IdeaIC15/Scala/lib/jps/*.jar`
+    * `/Applications/IntelliJ IDEA 15 CE.app/Contents/plugins/gradle/lib/gradle.jar`
+    * `/Applications/IntelliJ IDEA 15 CE.app/Contents/plugins/junit/lib/idea-junit.jar`
 * Set Scala 2.11.2 as your Scala SDK
 * Make sure that your project is set to configure bytecode compatible with 1.6.  Preferences -> Compiler -> Java Compiler -> Project bytecode version
 * Setup test dependencies
