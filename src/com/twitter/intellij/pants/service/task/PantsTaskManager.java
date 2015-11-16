@@ -74,7 +74,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       }
     }
 
-    commandLine.addParameters("--no-color");
+    commandLine.addParameters("--no-colors");
     if (debuggerSetup != null) {
       if (taskNames.size() > 1) {
         throw new ExternalSystemException(PantsBundle.message("pants.error.multiple.tasks.for.debugging"));

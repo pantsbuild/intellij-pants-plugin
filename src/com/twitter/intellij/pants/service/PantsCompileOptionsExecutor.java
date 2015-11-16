@@ -56,7 +56,7 @@ public class PantsCompileOptionsExecutor {
     @Override
     protected PantsCompilerOptions compute() {
       final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
-      commandLine.addParameters("help-advanced", "compile", "--no-color");
+      commandLine.addParameters("help-advanced", "compile", "--no-colors");
       try {
         final ProcessOutput processOutput = getProcessOutput(commandLine, null);
         final String stdout = processOutput.getStdout();
