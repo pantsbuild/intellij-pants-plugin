@@ -26,6 +26,7 @@ import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
 import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
+import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -112,8 +113,10 @@ public class PantsCompileOptionsExecutor {
       throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", options.getExternalProjectPath()));
     }
     return new PantsCompileOptionsExecutor(
-      workingDir, options,
-      resolveJars, executionOptions != null && executionOptions.isLibsWithSources(),
+      workingDir,
+      options,
+      resolveJars,
+      executionOptions != null && executionOptions.isLibsWithSources(),
       executionOptions != null && executionOptions.isCompileWithIntellij()
     );
   }
@@ -145,8 +148,8 @@ public class PantsCompileOptionsExecutor {
     myWorkingDir = workingDir;
     myOptions = compilerOptions;
     myResolveJars = resolveJars;
-    myCompileWithIntellij = compileWithIntellij;
     myResolveSourcesForJars = resolveSourcesForJars;
+    myCompileWithIntellij = compileWithIntellij;
   }
 
   public String getProjectRelativePath() {
@@ -277,9 +280,10 @@ public class PantsCompileOptionsExecutor {
     }
 
     commandLine.addParameter("export");
-    if (!myResolveJars) {
-      commandLine.addParameter("--no-libraries");
+    if (myResolveSourcesForJars){
+      commandLine.addParameter("--export-libraries-sources");
     }
+
     commandLine.addParameters(getAllTargetAddresses());
 
     if (getOptions().isWithDependees()) {
