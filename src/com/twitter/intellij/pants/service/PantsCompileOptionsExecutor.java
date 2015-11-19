@@ -26,7 +26,6 @@ import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
 import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
-import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
