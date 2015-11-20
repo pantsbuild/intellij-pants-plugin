@@ -46,7 +46,7 @@ public class PantsCompileOptionsExecutor {
   private final File myWorkingDir;
   private final boolean myResolveJars;
   private final boolean myCompileWithIntellij;
-  private final boolean myResolveSourcesForJars;
+  private final boolean myResolveSourcesAndDocsForJars;
 
   /**
    *  Add help-default goal to Pants to get all defaults in machine readable format
@@ -141,13 +141,13 @@ public class PantsCompileOptionsExecutor {
     @NotNull File workingDir,
     @NotNull PantsCompileOptions compilerOptions,
     boolean resolveJars,
-    boolean resolveSourcesForJars,
+    boolean resolveSourcesAndDocsForJars,
     boolean compileWithIntellij
   ) {
     myWorkingDir = workingDir;
     myOptions = compilerOptions;
     myResolveJars = resolveJars;
-    myResolveSourcesForJars = resolveSourcesForJars;
+    myResolveSourcesAndDocsForJars = resolveSourcesAndDocsForJars;
     myCompileWithIntellij = compileWithIntellij;
   }
 
@@ -271,7 +271,7 @@ public class PantsCompileOptionsExecutor {
     // in unit test mode it's always preview but we need to know libraries
     // because some jvm_binary targets are actually Scala ones and we need to
     // set a proper com.twitter.intellij.pants.compiler output folder
-    if (myResolveJars && myResolveSourcesForJars) {
+    if (myResolveJars && myResolveSourcesAndDocsForJars) {
       commandLine.addParameter("resolve.ivy");
       commandLine.addParameter("--confs=default");
       commandLine.addParameter("--confs=sources");
@@ -279,8 +279,9 @@ public class PantsCompileOptionsExecutor {
     }
 
     commandLine.addParameter("export");
-    if (myResolveSourcesForJars){
+    if (myResolveSourcesAndDocsForJars){
       commandLine.addParameter("--export-libraries-sources");
+      commandLine.addParameter("--export-libraries-javadocs");
     }
 
     commandLine.addParameters(getAllTargetAddresses());
