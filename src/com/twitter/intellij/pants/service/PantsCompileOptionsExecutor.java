@@ -115,7 +115,7 @@ public class PantsCompileOptionsExecutor {
       workingDir,
       options,
       resolveJars,
-      executionOptions != null && executionOptions.isLibsWithSources(),
+      executionOptions != null && executionOptions.isLibsWithSourcesAndDocs(),
       executionOptions != null && executionOptions.isCompileWithIntellij()
     );
   }

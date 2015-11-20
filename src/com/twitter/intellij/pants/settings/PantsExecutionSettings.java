@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.settings;
 
 import com.intellij.openapi.externalSystem.model.settings.ExternalSystemExecutionSettings;
-import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,18 +13,18 @@ import java.util.List;
 public class PantsExecutionSettings extends ExternalSystemExecutionSettings implements PantsExecutionOptions {
   private final boolean myWithDependees;
   private final boolean myCompileWithIntellij;
-  private final boolean myLibsWithSources;
+  private final boolean myLibsWithSourcesAndDocs;
   private List<String> myTargetNames;
 
   public PantsExecutionSettings() {
     this(Collections.<String>emptyList(), false, false, true);
   }
 
-  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean compileWithIntellij, boolean libsWithSources) {
+  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean compileWithIntellij, boolean libsWithSourcesAndDocs) {
     myTargetNames = targetNames;
     myWithDependees = withDependees;
     myCompileWithIntellij = compileWithIntellij;
-    myLibsWithSources = libsWithSources;
+    myLibsWithSourcesAndDocs = libsWithSourcesAndDocs;
   }
 
   @NotNull
@@ -42,8 +41,8 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     return myCompileWithIntellij;
   }
 
-  public boolean isLibsWithSources() {
-    return myLibsWithSources;
+  public boolean isLibsWithSourcesAndDocs() {
+    return myLibsWithSourcesAndDocs;
   }
 
   @Override
@@ -56,7 +55,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
 
     if (myWithDependees != settings.myWithDependees) return false;
     if (myCompileWithIntellij != settings.myCompileWithIntellij) return false;
-    if (myLibsWithSources != settings.myLibsWithSources) return false;
+    if (myLibsWithSourcesAndDocs != settings.myLibsWithSourcesAndDocs) return false;
     if (myTargetNames != null ? !myTargetNames.equals(settings.myTargetNames) : settings.myTargetNames != null) return false;
 
     return true;
@@ -68,7 +67,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     result = 31 * result + (myWithDependees ? 1 : 0);
     result = 31 * result + (myTargetNames != null ? myTargetNames.hashCode() : 0);
     result = 31 * result + (myCompileWithIntellij ? 1 : 0);
-    result = 31 * result + (myLibsWithSources ? 1 : 0);
+    result = 31 * result + (myLibsWithSourcesAndDocs ? 1 : 0);
     return result;
   }
 }
