@@ -3,7 +3,18 @@
 
 package com.twitter.intellij.pants.integration;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
+import com.intellij.execution.process.CapturingProcessHandler;
+import com.intellij.execution.process.ProcessOutput;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.jps.incremental.ProjectBuildException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest {
   public void testAnnotation() throws Throwable {
@@ -104,20 +115,46 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   }
 
   public void testJaxb() throws Throwable {
-    doImport("examples/src/java/org/pantsbuild/example/jaxb/main");
+    String projectRelativePath = "examples/src/java/org/pantsbuild/example/jaxb/main";
+    doImport(projectRelativePath);
+    VirtualFile pantsExe = PantsUtil.findPantsExecutable(getProjectPath());
+    //System.out.println(pantsExe.getUrl());
+    //writer.println(pantsExe.getUrl());
 
-    assertModules(
-      "examples_src_resources_org_pantsbuild_example_jaxb_jaxb",
-      "examples_src_resources_org_pantsbuild_example_names_names",
-      "examples_src_java_org_pantsbuild_example_jaxb_main_main",
-      "examples_src_java_org_pantsbuild_example_jaxb_reader_reader"
-    );
-    assertGenModules(1);
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
+    final Process process;
+    try {
+      commandLine.addParameters("--no-colors");
+      commandLine.addParameters("dependencies");
+      commandLine.addParameters(projectRelativePath);
+      process = commandLine.createProcess();
+    }
+    catch (ExecutionException e) {
+      throw new ProjectBuildException(e);
+    }
 
-    makeModules("examples_src_java_org_pantsbuild_example_jaxb_main_main");
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.jaxb.main.ExampleJaxb", "examples_src_java_org_pantsbuild_example_jaxb_main_main"
-    );
+    //PrintWriter writer = new PrintWriter("/Users/yic/ij-test", "UTF-8");
+      final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
+      ProcessOutput output = processHandler.runProcess();
+      //writer.println(output.getStdout());
+      String lines[] = output.getStdout().split("\\r?\\n");
+      Set<String> modules = new HashSet<String>();
+      for (String l : lines) {
+        modules.add(PantsUtil.getCanonicalModuleName(l));
+      }
+      //for (String module : modules) {
+      //  //writer.println(module);
+      //}
+
+      assertModules(modules.toArray(new String[modules.size()]));
+      assertGenModules(1);
+
+      makeModules("examples_src_java_org_pantsbuild_example_jaxb_main_main");
+      assertClassFileInModuleOutput(
+        "org.pantsbuild.example.jaxb.main.ExampleJaxb", "examples_src_java_org_pantsbuild_example_jaxb_main_main"
+      );
+
+    //writer.close();
   }
 
   public void testProtobuf() throws Throwable {
