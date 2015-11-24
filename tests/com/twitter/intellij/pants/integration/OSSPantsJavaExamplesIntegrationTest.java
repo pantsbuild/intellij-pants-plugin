@@ -117,44 +117,16 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testJaxb() throws Throwable {
     String projectRelativePath = "examples/src/java/org/pantsbuild/example/jaxb/main";
     doImport(projectRelativePath);
-    VirtualFile pantsExe = PantsUtil.findPantsExecutable(getProjectPath());
-    //System.out.println(pantsExe.getUrl());
-    //writer.println(pantsExe.getUrl());
 
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
-    final Process process;
-    try {
-      commandLine.addParameters("--no-colors");
-      commandLine.addParameters("dependencies");
-      commandLine.addParameters(projectRelativePath);
-      process = commandLine.createProcess();
-    }
-    catch (ExecutionException e) {
-      throw new ProjectBuildException(e);
-    }
+    //Checking whether the modules loaded in the project are the same as pants dependencies
+    assertModules(getModulesNamesFromPantsDependencies(projectRelativePath));
 
-    //PrintWriter writer = new PrintWriter("/Users/yic/ij-test", "UTF-8");
-      final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
-      ProcessOutput output = processHandler.runProcess();
-      //writer.println(output.getStdout());
-      String lines[] = output.getStdout().split("\\r?\\n");
-      Set<String> modules = new HashSet<String>();
-      for (String l : lines) {
-        modules.add(PantsUtil.getCanonicalModuleName(l));
-      }
-      //for (String module : modules) {
-      //  //writer.println(module);
-      //}
+    assertGenModules(1);
 
-      assertModules(modules.toArray(new String[modules.size()]));
-      assertGenModules(1);
-
-      makeModules("examples_src_java_org_pantsbuild_example_jaxb_main_main");
-      assertClassFileInModuleOutput(
-        "org.pantsbuild.example.jaxb.main.ExampleJaxb", "examples_src_java_org_pantsbuild_example_jaxb_main_main"
-      );
-
-    //writer.close();
+    makeModules("examples_src_java_org_pantsbuild_example_jaxb_main_main");
+    assertClassFileInModuleOutput(
+      "org.pantsbuild.example.jaxb.main.ExampleJaxb", "examples_src_java_org_pantsbuild_example_jaxb_main_main"
+    );
   }
 
   public void testProtobuf() throws Throwable {
@@ -208,5 +180,29 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("intellij-integration_src_java_org_pantsbuild_testproject_resources1_resources1");
+  }
+
+  private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
+    VirtualFile pantsExe = PantsUtil.findPantsExecutable(getProjectPath());
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
+    commandLine.addParameters("--no-colors");
+    commandLine.addParameters("dependencies");
+    commandLine.addParameters(targetName);
+    final Process process;
+    try {
+      process = commandLine.createProcess();
+    }
+    catch (ExecutionException e) {
+      throw new ProjectBuildException(e);
+    }
+
+    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
+    ProcessOutput output = processHandler.runProcess();
+    String lines[] = output.getStdout().split("\\r?\\n");
+    Set<String> modules = new HashSet<String>();
+    for (String l : lines) {
+      modules.add(PantsUtil.getCanonicalModuleName(l));
+    }
+    return modules.toArray(new String[modules.size()]);
   }
 }
