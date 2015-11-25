@@ -6,15 +6,23 @@ package com.twitter.intellij.pants.execution;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
 import com.intellij.execution.configurations.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.roots.OrderEnumerator;
+import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.util.Function;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jdom.Element;
@@ -22,10 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
@@ -49,6 +54,53 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       LOG.info(address + " excluded " + excludedPath);
       classpath.remove(excludedPath);
     }
+
+    ApplicationManager.getApplication().runWriteAction(
+      new Runnable() {
+        @Override
+        public void run() {
+          final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
+          if (workingDir != null) {
+            // we need to refresh because IJ might not pick all newly created symlinks
+            VirtualFileManager.getInstance().refreshAndFindFileByUrl(workingDir.getUrl() + "/dist/export-classpath");
+          }
+        }
+      }
+    );
+
+    final List<String> publishedClasspath = ContainerUtil.newArrayList();
+    processRuntimeModules(
+      module,
+      new Processor<Module>() {
+        @Override
+        public boolean process(Module module) {
+          publishedClasspath.addAll(findPublishedClasspath(module));
+          return true;
+        }
+      }
+    );
+
+    // if current version of Pants supports export-classpath
+    if (!publishedClasspath.isEmpty()) {
+      // remove IJ compiler outputs to reduce amount of arguments.
+      final VirtualFile pantsWorkingDir = PantsUtil.findPantsWorkingDir(module);
+      final List<String> toRemove = ContainerUtil.findAll(
+        classpath.getPathList(),
+        new Condition<String>() {
+          @Override
+          public boolean value(String classpathEntry) {
+            final VirtualFile entry = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(classpathEntry));
+            return pantsWorkingDir != null && entry != null && VfsUtil.isAncestor(pantsWorkingDir, entry, false);
+          }
+        }
+      );
+      for (String pathToRemove : toRemove) {
+        classpath.remove(pathToRemove);
+      }
+      classpath.addAll(publishedClasspath);
+      return;
+    }
+
     processRuntimeModules(
       module,
       new Processor<Module>() {
@@ -57,6 +109,42 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
           final String compilerOutputs = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY));
           classpath.addAll(StringUtil.split(compilerOutputs, File.pathSeparator));
           return true;
+        }
+      }
+    );
+  }
+
+  @NotNull
+  public static List<String> findPublishedClasspath(@NotNull  Module module) {
+    final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
+    final List<String> result = ContainerUtil.newArrayList();
+    for (String targetAddress : StringUtil.split(addresses, ",")) {
+      result.addAll(findPublishedClasspath(module, targetAddress));
+    }
+    return result;
+  }
+
+  @NotNull
+  private static List<String> findPublishedClasspath(Module module, String targetAddress) {
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
+    final VirtualFile classpath = workingDir != null ? workingDir.findFileByRelativePath("dist/export-classpath") : null;
+    final VirtualFile classpathLinks = classpath != null ? classpath.findFileByRelativePath(targetAddress.replace(':', '/')) : null;
+    if (classpathLinks == null) {
+      return Collections.emptyList();
+    }
+    return ContainerUtil.mapNotNull(
+      classpathLinks.getChildren(),
+      new Function<VirtualFile, String>() {
+        @Override
+        public String fun(VirtualFile classpathEntry) {
+          if (classpathEntry.isDirectory()) {
+            // Optimization to not include empty folders.
+            return classpathEntry.getChildren().length > 0 ? classpathEntry.getPath() : null;
+          }
+          if (StringUtil.equalsIgnoreCase(classpathEntry.getExtension(), "jar")) {
+            return classpathEntry.getPath();
+          }
+          return null;
         }
       }
     );

@@ -15,11 +15,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.python.run.AbstractPythonRunConfiguration;
-import com.twitter.intellij.pants.components.PantsProjectComponent;
+import com.twitter.intellij.pants.service.python.component.PantsPythonProjectComponent;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 
-public class PantsPythonProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
+public class PantsPythonProjectComponentImpl extends AbstractProjectComponent implements PantsPythonProjectComponent {
   protected PantsPythonProjectComponentImpl(Project project) {
     super(project);
   }

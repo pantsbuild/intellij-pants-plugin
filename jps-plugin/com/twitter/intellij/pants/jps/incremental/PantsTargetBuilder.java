@@ -74,13 +74,38 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull BuildOutputConsumer outputConsumer,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
-    final String pantsExecutable = target.getPantsExecutable();
-
     if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       context.processMessage(new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, "No changes to compile."));
       return;
     }
 
+    if (supportsExportClasspath(target.getPantsExecutable())) {
+      runCompile(target, holder, context, "export-classpath", "compile").checkSuccess(LOG);
+    }
+    else {
+      runCompile(target, holder, context, "compile").checkSuccess(LOG);
+    }
+  }
+
+  private boolean supportsExportClasspath(@NotNull String pantsExecutable) {
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(new File(pantsExecutable));
+    commandLine.addParameter("goals");
+    try {
+      return PantsUtil.getCmdOutput(commandLine, null).getStdout().contains("export-classpath");
+    }
+    catch (ExecutionException e) {
+      LOG.warn(e);
+      return false;
+    }
+  }
+
+  private ProcessOutput runCompile(
+    @NotNull PantsBuildTarget target,
+    @NotNull DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder,
+    @NotNull final CompileContext context,
+    String ...goals
+  ) throws IOException, ProjectBuildException {
+    final String pantsExecutable = target.getPantsExecutable();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
     final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
@@ -89,7 +114,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
       );
       context.processMessage(new ProgressMessage(recompileMessage));
-      commandLine.addParameters("clean-all", "compile");
+      commandLine.addParameters("clean-all");
+      commandLine.addParameters(goals);
       for (String targetAddress : allNonGenTargets) {
         commandLine.addParameter(targetAddress);
       }
@@ -111,7 +137,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage
       ));
       context.processMessage(new ProgressMessage(recompileMessage));
-      commandLine.addParameters("compile");
+      commandLine.addParameters(goals);
       for (String targetAddress : targetsToCompile) {
         commandLine.addParameter(targetAddress);
       }
@@ -149,8 +175,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         }
       }
     );
-    final ProcessOutput processOutput = processHandler.runProcess();
-    processOutput.checkSuccess(LOG);
+    return processHandler.runProcess();
   }
 
   private boolean hasDirtyTargets(DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder) throws IOException {

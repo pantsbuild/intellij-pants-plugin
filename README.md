@@ -206,16 +206,25 @@ test sources, resources, test resources, generated sources, etc).
 * Use IntelliJ IDEA 14 Community Edition as IDEA IC SDK(Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK)
 * Setup the SDK's classpath
   * Add the following to the SDK's classpath
-    * `~/Library/Application Support/IdeaIC14/python/lib/python-community.jar`
-    * `~/Library/Application Support/IdeaIC14/Scala/lib/scala-plugin.jar`
-    * `~/Library/Application Support/IdeaIC14/Scala/lib/jps/*.jar`
-    * `/Applications/IntelliJ IDEA 14 CE.app/Contents/plugins/gradle/lib/gradle.jar`
+    * `~/Library/Application Support/IdeaIC15/python/lib/python.jar`
+    * `~/Library/Application Support/IdeaIC15/Scala/lib/scala-plugin.jar`
+    * `~/Library/Application Support/IdeaIC15/Scala/lib/jps/*.jar`
+    * `/Applications/IntelliJ IDEA 15 CE.app/Contents/plugins/gradle/lib/gradle.jar`
+    * `/Applications/IntelliJ IDEA 15 CE.app/Contents/plugins/junit/lib/idea-junit.jar`
 * Set Scala 2.11.2 as your Scala SDK
 * Make sure that your project is set to configure bytecode compatible with 1.6.  Preferences -> Compiler -> Java Compiler -> Project bytecode version
 * Setup test dependencies
   * Some of the tests depend on local OSS install.
   * Checkout OSS pants in an adjacent directory to the plugin clone
 * Run tests to verify your installation
+
+### Release process:
+
+* Bump version number in plugin.xml, push the change, make sure travis is green
+* To build from sources a pants.zip distributive simply invoke Build -> Build Artifacts... -> pants -> Rebuild
+* Zip out/artifacts/pants folder into pants.zip
+* Validate the plugin manually in IntelliJ: Preferences -> Plugins -> Install from disk -> pick newely created pants.zip
+* Upload pants.zip to https://plugins.jetbrains.com/plugin/7412
 
 ### Debugging the Plugin from local pants development:
 

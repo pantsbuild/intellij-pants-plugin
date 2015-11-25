@@ -14,6 +14,10 @@
     <projectResolver implementation="com.twitter.intellij.pants.service.python.PythonRequirementsResolver"/>
   </extensions>
   <extensions defaultExtensionNs="com.intellij">
+    <localInspection bundle="com.twitter.intellij.pants.PantsBundle" key="pants.info.mistreated.build.file"
+                     groupName="Pants" enabledByDefault="true"
+                     implementationClass="com.twitter.intellij.pants.inspection.BuildFileTypeInspection"/>
+
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.python.PantsPythonSetupDataService"/>
 
     <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>

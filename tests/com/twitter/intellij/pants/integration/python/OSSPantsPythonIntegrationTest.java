@@ -3,19 +3,21 @@
 
 package com.twitter.intellij.pants.integration.python;
 
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.util.ArrayUtil;
-import com.intellij.util.PlatformUtils;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsPythonIntegrationTest extends OSSPantsIntegrationTest {
   @Override
-  protected boolean shouldRunTest() {
-    return super.shouldRunTest() && PlatformUtils.isCommunityEdition();
+  protected String[] getRequiredPluginIds() {
+    return ArrayUtil.append(super.getRequiredPluginIds(), "PythonCore");
   }
 
   @Override
-  protected String[] getRequiredPluginIds() {
-    return ArrayUtil.append(super.getRequiredPluginIds(), "PythonCore");
+  public void setUp() throws Exception {
+    super.setUp();
+    // todo: Remove if possible. Now the test fails with VfsRootAccess to python interpreter in /opt
+    VfsRootAccess.allowRootAccessTemporarily(myProject, "/");
   }
 
   public void testIntelliJIntegration() throws Throwable {
@@ -25,8 +27,8 @@ public class OSSPantsPythonIntegrationTest extends OSSPantsIntegrationTest {
     }
     doImport(pythonScript);
 
-    assertNotNull(getModule("python_src"));
-    assertNotNull(getModule("python_tests"));
-    assertNotNull(getModule("python_requirements"));
+    assertModuleExists("python_src");
+    assertModuleExists("python_tests");
+    assertModuleExists("python_requirements");
   }
 }

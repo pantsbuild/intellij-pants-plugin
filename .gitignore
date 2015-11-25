@@ -1,3 +1,4 @@
+.idea/encodings.xml
 .idea/dictionaries/
 .idea/highlighting.xml
 .idea/inspectionProfiles/
@@ -6,6 +7,7 @@
 .idea/thriftCompiler.xml
 .idea/workspace.xml
 .DS_Store
+.pids/
 *.class
 *~
 *.pyc

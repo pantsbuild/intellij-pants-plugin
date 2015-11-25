@@ -5,11 +5,19 @@ package com.twitter.intellij.pants.testFramework;
 
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ProgramRunnerUtil;
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.junit.JUnitConfiguration;
+import com.intellij.execution.junit.JUnitConfigurationType;
+import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
+import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.compiler.CompilerMessage;
@@ -31,15 +39,14 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.*;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -51,10 +58,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * If your integration test modifies any source files
@@ -63,7 +67,6 @@ import java.util.List;
  * @see com.twitter.intellij.pants.highlighting.PantsHighlightingIntegrationTest
  */
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
-  private static final String PLUGINS_KEY = "idea.load.plugins.id";
   private static final String PANTS_COMPILER_ENABLED = "pants.compiler.enabled";
   private static final String isolatedPantsIniName = "pants.ini.isolated";
 
@@ -71,7 +74,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   private PantsProjectSettings myProjectSettings;
   private String myRelativeProjectPath = null;
   private CompilerTester myCompilerTester;
-  private String defaultPlugins = null;
 
   protected PantsIntegrationTestCase() {
     this(true);
@@ -83,20 +85,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Override
   public void setUp() throws Exception {
-    defaultPlugins = System.getProperty(PLUGINS_KEY);
-    final String pluginIdsToInstall = StringUtil.join(getRequiredPluginIds(), ",");
-    if (StringUtil.isNotEmpty(pluginIdsToInstall)) {
-      System.setProperty(PLUGINS_KEY, pluginIdsToInstall + "," + defaultPlugins);
-    }
-
     super.setUp();
-
     for (String pluginId : getRequiredPluginIds()) {
       final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
-      assertNotNull(pluginId + " plugin should be in classpath for integration tests", plugin);
-      if (!plugin.isEnabled()) {
-        assertTrue(PluginManagerCore.enablePlugin(pluginId));
-      }
+      assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
+      assertTrue(pluginId + " is not enabled!", plugin.isEnabled());
     }
 
     final boolean usePantsToCompile = Boolean.valueOf(System.getProperty(PANTS_COMPILER_ENABLED, "true"));
@@ -144,7 +137,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
   }
 
-  private void cleanProjectRoot() throws ExecutionException, IOException {
+  protected void cleanProjectRoot() throws ExecutionException, IOException {
     final File projectDir = new File(myProjectRoot.getPath());
     assertTrue(projectDir.exists());
     if (readOnly) {
@@ -215,22 +208,39 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @Nullable
-  private File findClassFile(String className, String moduleName) throws Exception {
+  private VirtualFile findClassFile(String className, String moduleName) throws Exception {
+    final Module module = getModule(moduleName);
+    final VirtualFile pantsWorkingDir = PantsUtil.findPantsWorkingDir(module);
+    assertNotNull("Can't find working dir for module '" + moduleName + "'!", pantsWorkingDir);
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
-    String compilerOutputPaths;
+    List<String> compilerOutputPaths = ContainerUtil.newArrayList();
     if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
       final CompilerModuleExtension moduleExtension =
-        ModuleRootManager.getInstance(getModule(moduleName)).getModuleExtension(CompilerModuleExtension.class);
-      compilerOutputPaths = VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl()) + ":" +
-                            VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests());
+        ModuleRootManager.getInstance(module).getModuleExtension(CompilerModuleExtension.class);
+      compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl()));
+      compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests()));
     } else {
-      compilerOutputPaths = getModule(moduleName).getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY);
-      assertNotNull(compilerOutputPaths);
+      compilerOutputPaths.addAll(StringUtil.split(module.getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY), ":"));
+      compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module));
     }
-    for (String compilerOutputPath : StringUtil.split(compilerOutputPaths, ":")) {
-      final File classFile = new File(new File(compilerOutputPath), className.replace('.', '/') + ".class");
-      if (classFile.exists()) {
-        return classFile;
+    for (String compilerOutputPath : compilerOutputPaths) {
+      VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));
+      if (output == null) {
+        continue;
+      }
+      try {
+        if (StringUtil.equalsIgnoreCase(output.getExtension(), "jar")) {
+          output = JarFileSystem.getInstance().getJarRootForLocalFile(output);
+          assertNotNull(output);
+        }
+        final VirtualFile classFile = output.findFileByRelativePath(className.replace('.', '/') + ".class");
+        if (classFile != null) {
+          return classFile;
+        }
+      }
+      catch (AssertionError assertionError) {
+        // There are some access assertions in tests. Ignore them.
+        assertionError.printStackTrace();
       }
     }
     return null;
@@ -388,6 +398,20 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertUnorderedElementsAreEqual(moduleNames, expectedNames);
   }
 
+  protected void assertModuleExists(String moduleName) {
+    final List<String> moduleNames = ContainerUtil.mapNotNull(
+      ModuleManager.getInstance(myProject).getModules(),
+      new Function<Module, String>() {
+        @Override
+        public String fun(Module module) {
+          return module.getName();
+        }
+      }
+    );
+
+    assertContain(moduleNames, moduleName);
+  }
+
   protected void assertGenModules(int count) {
     final List<Module> genModules = ContainerUtil.findAll(
       ModuleManager.getInstance(myProject).getModules(),
@@ -402,13 +426,35 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertSize(count, genModules);
   }
 
+  public void assertSuccessfulJUnitTest(String moduleName, String className) {
+    final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
+    assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+  }
+
+  public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) {
+    final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
+    final JUnitConfiguration runConfiguration = new JUnitConfiguration("Pants: " + className, myProject, factory);
+    runConfiguration.setWorkingDirectory(PantsUtil.findPantsWorkingDir(getModule(moduleName)).getCanonicalPath());
+    runConfiguration.setModule(getModule(moduleName));
+    runConfiguration.setName(className);
+    if (StringUtil.isNotEmpty(vmParams)) {
+      runConfiguration.setVMParameters(vmParams);
+    }
+    runConfiguration.setMainClass(findClassAndAssert(className));
+    final PantsJUnitRunnerAndConfigurationSettings
+      runnerAndConfigurationSettings = new PantsJUnitRunnerAndConfigurationSettings(runConfiguration);
+    final ExecutionEnvironmentBuilder environmentBuilder =
+      ExecutionUtil.createEnvironment(DefaultRunExecutor.getRunExecutorInstance(), runnerAndConfigurationSettings);
+    final ExecutionEnvironment environment = environmentBuilder.build();
+
+    ProgramRunnerUtil.executeConfiguration(environment, false, false);
+    final OSProcessHandler handler = (OSProcessHandler)environment.getContentToReuse().getProcessHandler();
+    assertTrue(handler.waitFor());
+    return handler;
+  }
 
   @Override
   public void tearDown() throws Exception {
-    if (defaultPlugins != null) {
-      System.setProperty(PLUGINS_KEY, defaultPlugins);
-      defaultPlugins = null;
-    }
     try {
       cleanProjectRoot();
       if (myCompilerTester != null) {

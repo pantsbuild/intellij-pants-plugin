@@ -14,6 +14,7 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
+import com.intellij.util.ObjectUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,6 +55,12 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
   @Nullable
   @Override
   public PsiElement resolve() {
-    return PantsPsiUtil.findTargets(findBuildFile()).get(getText());
+    PsiFile file = findBuildFile();
+    if (file == null) {
+      return null;
+    }
+
+    PsiElement target = PantsPsiUtil.findTargets(file).get(getText());
+    return ObjectUtils.notNull(target, file);
   }
 }

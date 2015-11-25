@@ -22,6 +22,8 @@ def _jar_path_in_lib_folder(base_dir, jar_name):
 
 def _jar_path_in_folder(lib_path, jar_name):
     jar_path = os.path.join(lib_path, jar_name)
+    if not os.path.exists(jar_path):
+        raise Exception('Jar %s does not exists!' % jar_path)
     return jar_path
 
 def _intellij_sdk_classpath():
@@ -45,17 +47,6 @@ def _intellij_sdk_classpath():
     for file in os.listdir(os.path.join(base_dir, 'lib')):
         if file.endswith('.jar'):
             intellij_jars.append(plugin_jar(os.path.join(base_dir, 'lib', file)))
-
-    for plugin_name in os.listdir(os.path.join(base_dir, 'plugins')):
-        plugin_root = os.path.join(base_dir, 'plugins', plugin_name)
-        for jar_path in _find_all_jars(plugin_root):
-            intellij_jars.append(plugin_jar(jar_path, plugin_name))
-
-    external_api_jar_path = os.path.join(os.getcwd(), 'testData', 'external-system-test-api-impl.jar')
-    if not os.path.exists(external_api_jar_path):
-        raise Exception('File %s not exists!' % external_api_jar_path)
-
-    intellij_jars.append(plugin_jar(external_api_jar_path))
 
     return intellij_jars
 
@@ -103,11 +94,16 @@ jar_library(
 )
 
 jar_library(
+    name = 'external-system-test-api',
+    jars = [
+        _intellij_plugin_jar(os.path.join(os.getcwd(), 'testData', 'external-system-test-api.jar'))
+    ]
+)
+
+jar_library(
     name = 'python-plugin',
     jars = [
-        _intellij_plugin_jar(path) for path in _find_jars_for_plugin('python',
-            'python.jar' if is_ultimate() else 'python-community.jar'
-        )
+        _intellij_plugin_jar(path) for path in _find_jars_for_plugin('python', 'python.jar')
     ]
 )
 
@@ -116,6 +112,15 @@ jar_library(
     jars = [
         _intellij_plugin_jar(path) for path in _find_jars_for_plugin('Scala',
             'scala-plugin.jar', 'jps/scala-jps-plugin.jar', 'scala-play-2-jps-plugin.jar', 'compiler-settings.jar'
+        )
+    ]
+)
+
+jar_library(
+    name = 'junit-plugin',
+    jars = [
+        _intellij_plugin_jar(path) for path in _find_all_jars(
+            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'junit', 'lib')
         )
     ]
 )

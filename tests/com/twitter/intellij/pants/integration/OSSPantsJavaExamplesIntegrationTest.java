@@ -3,7 +3,18 @@
 
 package com.twitter.intellij.pants.integration;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
+import com.intellij.execution.process.CapturingProcessHandler;
+import com.intellij.execution.process.ProcessOutput;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.jps.incremental.ProjectBuildException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest {
   public void testAnnotation() throws Throwable {
@@ -104,14 +115,14 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   }
 
   public void testJaxb() throws Throwable {
-    doImport("examples/src/java/org/pantsbuild/example/jaxb/main");
+    String projectRelativePath = "examples/src/java/org/pantsbuild/example/jaxb/main";
+    doImport(projectRelativePath);
 
-    assertModules(
-      "examples_src_resources_org_pantsbuild_example_jaxb_jaxb",
-      "examples_src_resources_org_pantsbuild_example_names_names",
-      "examples_src_java_org_pantsbuild_example_jaxb_main_main",
-      "examples_src_java_org_pantsbuild_example_jaxb_reader_reader"
-    );
+    //Checking whether the modules loaded in the project are the same as pants dependencies
+    String[] moduleNames = getModulesNamesFromPantsDependencies(projectRelativePath);
+    assertTrue(moduleNames.length > 0);
+    assertModules(moduleNames);
+
     assertGenModules(1);
 
     makeModules("examples_src_java_org_pantsbuild_example_jaxb_main_main");
@@ -171,5 +182,29 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("intellij-integration_src_java_org_pantsbuild_testproject_resources1_resources1");
+  }
+
+  private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
+    VirtualFile pantsExe = PantsUtil.findPantsExecutable(getProjectPath());
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
+    commandLine.addParameters("--no-colors");
+    commandLine.addParameters("dependencies");
+    commandLine.addParameters(targetName);
+    final Process process;
+    try {
+      process = commandLine.createProcess();
+    }
+    catch (ExecutionException e) {
+      throw new ProjectBuildException(e);
+    }
+
+    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
+    ProcessOutput output = processHandler.runProcess();
+    String lines[] = output.getStdout().split("\\r?\\n");
+    Set<String> modules = new HashSet<String>();
+    for (String l : lines) {
+      modules.add(PantsUtil.getCanonicalModuleName(l));
+    }
+    return modules.toArray(new String[modules.size()]);
   }
 }

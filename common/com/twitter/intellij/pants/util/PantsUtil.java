@@ -123,7 +123,11 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findFolderWithPex() {
-    final VirtualFile userHomeDir = VfsUtil.getUserHomeDir();
+    return findFolderWithPex(VfsUtil.getUserHomeDir());
+  }
+
+  @Nullable
+  public static VirtualFile findFolderWithPex(@Nullable VirtualFile userHomeDir) {
     return findFileRelativeToDirectory(PEX_RELATIVE_PATH, userHomeDir);
   }
 

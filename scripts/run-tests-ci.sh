@@ -21,4 +21,7 @@ fi
 popd
 popd
 
-./pants $(append_intellij_jvm_options "test.junit") tests:${TEST_SET:-all} $@
+args="test tests:${TEST_SET:-all} $(append_intellij_jvm_options test-junit) $@"
+
+echo "Running ./pants $args"
+./pants $args
