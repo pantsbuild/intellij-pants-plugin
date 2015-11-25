@@ -5,10 +5,6 @@ package com.twitter.intellij.pants.integration;
 
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
-import com.twitter.intellij.pants.util.PantsConstants;
-import com.intellij.openapi.util.text.StringUtil;
-
-import java.util.List;
 
 public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegrationTest {
   public void testHello() throws Throwable {
@@ -45,31 +41,13 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
 
     if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
       makeProject();
-    } else {
+    }
+    else {
       assertContain(makeProject(), "pants: Recompiling 5 targets"); // 3 new modules were added + 2 were touched
     }
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.welcome.WelcomeEverybody", "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
     );
-  }
-
-
-  public void testDebugInfo() throws Throwable {
-    doImport("examples/src/java/org/pantsbuild/example/hello");
-
-    assertModules(
-      "examples_src_resources_org_pantsbuild_example_hello_hello",
-      "examples_src_java_org_pantsbuild_example_hello_main_main",
-      "examples_src_java_org_pantsbuild_example_hello_greet_greet",
-      "examples_src_java_org_pantsbuild_example_hello_simple_simple",
-      "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
-      "examples_src_java_org_pantsbuild_example_hello_module"
-    );
-
-    PantsSettings.getInstance(myProject).setCompileWithDebugInfo(true);
-    PantsSettings.getInstance(myProject).setCompileWithIntellij(false);
-    List<String> output = makeProject();
-    assertContain(output, "pants: " + StringUtil.join(PantsConstants.DEBUG_INFO_ARGUMENTS, " "));
   }
 }
