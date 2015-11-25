@@ -48,7 +48,5 @@ public class PantsConstants {
     CaseInsensitiveStringHashingStrategy.INSTANCE
   );
 
-  public static final List<String> DEBUG_INFO_ARGUMENTS = Arrays.asList(
-    "--compile-zinc-debug-symbols"
-  );
+  public static final String DEBUG_INFO_ARGUMENTS = "--compile-zinc-debug-symbols";
 }

@@ -189,16 +189,38 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   }
 
   public void testDebugInfo() throws Throwable {
+    if (!isOptionCompatibleWithPants("compile", PantsConstants.DEBUG_INFO_ARGUMENTS)){
+      return;
+    }
     doImport("examples/src/java/org/pantsbuild/example/hello/greet");
 
     assertModules(
       "examples_src_java_org_pantsbuild_example_hello_greet_greet"
     );
 
-    PantsSettings.getInstance(myProject).setCompileWithDebugInfo(true);
-    PantsSettings.getInstance(myProject).setCompileWithIntellij(false);
+    PantsSettings settings = PantsSettings.getInstance(myProject);
+    settings.setCompileWithDebugInfo(true);
+    settings.setCompileWithIntellij(false);
     List<String> output = makeProject();
-    assertContain(output, "pants: " + StringUtil.join(PantsConstants.DEBUG_INFO_ARGUMENTS, " "));
+    assertContain(output, "pants: " + PantsConstants.DEBUG_INFO_ARGUMENTS);
+  }
+
+  private boolean isOptionCompatibleWithPants(String goal, String option) throws ProjectBuildException {
+    VirtualFile pantsExe = PantsUtil.findPantsExecutable(getProjectPath());
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
+    commandLine.addParameters("--no-colors");
+    commandLine.addParameters(goal);
+    commandLine.addParameters(option);
+
+    final Process process;
+    try {
+      process = commandLine.createProcess();
+    }
+    catch (ExecutionException e) {
+      throw new ProjectBuildException(e);
+    }
+    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
+    return processHandler.runProcess().getExitCode() == 0;
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {

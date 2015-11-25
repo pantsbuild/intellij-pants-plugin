@@ -147,12 +147,12 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
     if (pantsProjectExtension.isCompileWithDebugInfo()){
-      commandLine.addParameters(PantsConstants.DEBUG_INFO_ARGUMENTS);
+      commandLine.addParameter(PantsConstants.DEBUG_INFO_ARGUMENTS);
       context.processMessage(
         new CompilerMessage(
           PantsConstants.PANTS,
           BuildMessage.Kind.INFO,
-          StringUtil.join(PantsConstants.DEBUG_INFO_ARGUMENTS, " ")
+          PantsConstants.DEBUG_INFO_ARGUMENTS
         )
       );
     }
