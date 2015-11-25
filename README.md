@@ -211,7 +211,7 @@ test sources, resources, test resources, generated sources, etc).
     * `~/Library/Application Support/IdeaIC15/Scala/lib/jps/*.jar`
     * `/Applications/IntelliJ IDEA 15 CE.app/Contents/plugins/gradle/lib/gradle.jar`
     * `/Applications/IntelliJ IDEA 15 CE.app/Contents/plugins/junit/lib/idea-junit.jar`
-* Set Scala 2.11.2 as your Scala SDK
+* Set Scala 2.11.7 as your Scala SDK
 * Make sure that your project is set to configure bytecode compatible with 1.6.  Preferences -> Compiler -> Java Compiler -> Project bytecode version
 * Setup test dependencies
   * Some of the tests depend on local OSS install.
