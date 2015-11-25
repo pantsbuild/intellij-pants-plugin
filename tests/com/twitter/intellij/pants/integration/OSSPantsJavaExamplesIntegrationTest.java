@@ -119,7 +119,9 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     doImport(projectRelativePath);
 
     //Checking whether the modules loaded in the project are the same as pants dependencies
-    assertModules(getModulesNamesFromPantsDependencies(projectRelativePath));
+    String[] moduleNames = getModulesNamesFromPantsDependencies(projectRelativePath);
+    assertTrue(moduleNames.length > 0);
+    assertModules(moduleNames);
 
     assertGenModules(1);
 
