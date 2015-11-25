@@ -1,7 +1,7 @@
 # JVM artifacts that Pants itself depends on.
 
 # common rev for all org.scala-lang%* artifacts
-SCALA_REV = '2.11.2'
+SCALA_REV = '2.11.7'
 
 jar_library(name = 'scala-compiler',
             jars = [
