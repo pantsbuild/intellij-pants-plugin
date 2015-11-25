@@ -208,10 +208,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   private boolean isOptionCompatibleWithPants(String goal, String option) throws ProjectBuildException {
     VirtualFile pantsExe = PantsUtil.findPantsExecutable(getProjectPath());
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
-    commandLine.addParameters("--no-colors");
-    commandLine.addParameters(goal);
-    commandLine.addParameters(option);
-
+    commandLine.addParameters(goal, option);
     final Process process;
     try {
       process = commandLine.createProcess();
@@ -226,9 +223,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
     VirtualFile pantsExe = PantsUtil.findPantsExecutable(getProjectPath());
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
-    commandLine.addParameters("--no-colors");
-    commandLine.addParameters("dependencies");
-    commandLine.addParameters(targetName);
+    commandLine.addParameters("--no-colors", "dependencies", targetName);
     final Process process;
     try {
       process = commandLine.createProcess();
