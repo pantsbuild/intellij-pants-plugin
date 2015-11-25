@@ -34,14 +34,23 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   protected boolean myCompileWithIntellij = false;
+  protected boolean myCompileWithDebugInfo = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
   }
 
+  public boolean isCompileWithDebugInfo() {
+    return myCompileWithDebugInfo;
+  }
+
   public boolean isCompileWithIntellij() {
     return myCompileWithIntellij;
+  }
+
+  public void setCompileWithDebugInfo(boolean isCompileWithDebugInfo) {
+    myCompileWithDebugInfo = isCompileWithDebugInfo;
   }
 
   public void setCompileWithIntellij(boolean compileWithIntellij) {
@@ -82,6 +91,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public MyState getState() {
     final MyState state = new MyState();
     state.setCompileWithIntellij(isCompileWithIntellij());
+    state.setCompileWithDebugInfo(isCompileWithDebugInfo());
     state.setResolverVersion(getResolverVersion());
     fillState(state);
     return state;
@@ -91,6 +101,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public void loadState(MyState state) {
     super.loadState(state);
     setCompileWithIntellij(state.isCompileWithIntellij());
+    setCompileWithDebugInfo(state.isCompileWithDebugInfo());
     setResolverVersion(state.getResolverVersion());
   }
 
@@ -98,6 +109,8 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
     boolean myCompileWithIntellij = false;
+
+    boolean myCompileWithDebugInfo = false;
 
     int myResolverVersion = 0;
 
@@ -124,6 +137,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     public void setResolverVersion(int resolverVersion) {
       myResolverVersion = resolverVersion;
+    }
+
+    public boolean isCompileWithDebugInfo() {
+      return myCompileWithDebugInfo;
+    }
+
+    public void setCompileWithDebugInfo(boolean compileWithDebugInfo) {
+      myCompileWithDebugInfo = compileWithDebugInfo;
     }
   }
 }

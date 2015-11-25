@@ -143,6 +143,20 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     }
 
+
+    final JpsProject jpsProject = context.getProjectDescriptor().getProject();
+    final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
+    if (pantsProjectExtension.isCompileWithDebugInfo()){
+      commandLine.addParameter(PantsConstants.DEBUG_INFO_ARGUMENTS);
+      context.processMessage(
+        new CompilerMessage(
+          PantsConstants.PANTS,
+          BuildMessage.Kind.INFO,
+          PantsConstants.DEBUG_INFO_ARGUMENTS
+        )
+      );
+    }
+
     final Process process;
     try {
       commandLine.addParameters("--no-colors");
@@ -179,7 +193,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     );
     return hasDirtyTargets.get();
-
   }
 
   private Set<String> filterGenTargets(@NotNull Collection<String> addresses) {

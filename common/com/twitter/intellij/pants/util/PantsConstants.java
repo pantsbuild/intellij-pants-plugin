@@ -46,4 +46,6 @@ public class PantsConstants {
       ),
     CaseInsensitiveStringHashingStrategy.INSTANCE
   );
+
+  public static final String DEBUG_INFO_ARGUMENTS = "--compile-zinc-debug-symbols";
 }

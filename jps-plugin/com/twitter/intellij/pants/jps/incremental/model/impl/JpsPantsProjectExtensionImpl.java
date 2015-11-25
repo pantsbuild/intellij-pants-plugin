@@ -10,22 +10,25 @@ import org.jetbrains.jps.model.ex.JpsElementBase;
 public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProjectExtensionImpl> implements JpsPantsProjectExtension {
   private String myPantsExecutablePath;
   private boolean myCompileWithIntellij;
+  private boolean myCompileWithDebugInfo;
 
-  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean compileWithIntellij) {
+  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean compileWithIntellij, boolean compileWithDebugInfo) {
     myPantsExecutablePath = pantsExecutable;
     myCompileWithIntellij = compileWithIntellij;
+    myCompileWithDebugInfo = compileWithDebugInfo;
   }
 
   @NotNull
   @Override
   public JpsPantsProjectExtensionImpl createCopy() {
-    return new JpsPantsProjectExtensionImpl(myPantsExecutablePath, myCompileWithIntellij);
+    return new JpsPantsProjectExtensionImpl(myPantsExecutablePath, myCompileWithIntellij, myCompileWithDebugInfo);
   }
 
   @Override
   public void applyChanges(@NotNull JpsPantsProjectExtensionImpl modified) {
     setPantsExecutablePath(modified.getPantsExecutablePath());
     setCompileWithIntellij(modified.isCompileWithIntellij());
+    setCompileWithDebugInfo(modified.isCompileWithDebugInfo());
   }
 
   @NotNull
@@ -45,7 +48,17 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
   }
 
   @Override
+  public boolean isCompileWithDebugInfo() {
+    return myCompileWithDebugInfo;
+  }
+
+  @Override
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     myCompileWithIntellij = compileWithIntellij;
+  }
+
+  @Override
+  public void setCompileWithDebugInfo(boolean compileWithDebugInfo) {
+    myCompileWithDebugInfo = compileWithDebugInfo;
   }
 }

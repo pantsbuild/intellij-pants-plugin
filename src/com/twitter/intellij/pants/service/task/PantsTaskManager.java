@@ -63,6 +63,11 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     } else {
       commandLine.addParameter(relativeProjectPath + File.separator + "::");
     }
+
+    if (settings.isCompileWithDebugInfo()) {
+      scriptParameters.add(PantsConstants.DEBUG_INFO_ARGUMENTS);
+    }
+
     commandLine.addParameters(scriptParameters);
     for (String goal : taskNames) {
       final String jvmOptionsFlag = goal2JvmOptionsFlag.get(goal);
