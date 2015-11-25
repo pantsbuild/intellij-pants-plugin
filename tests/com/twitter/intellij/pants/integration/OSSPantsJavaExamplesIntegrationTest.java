@@ -8,7 +8,6 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
