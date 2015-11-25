@@ -22,7 +22,12 @@ Find "Pants Support" plugin. Install and Restart IntelliJ.
      ![Import project from BUILD file](images/import_file1.png)
   * Check the targets you want to Import and proceed with the wizard. (Please wait for the targets to show up)
      ![Choose Targets](images/import_file2.png)
-     
+
+#### Importing targets from a script
+  * Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
+  * Select an executable that will use export goal to produce a desirable project structure. 
+    See [an integration test](testData/testprojects/intellij-integration/export1.sh) as an example.
+
 #### Importing several BUILD files/directories(works in IntelliJ 14.1+)
   * Import the first directory/BUILD file
   * Use File -> New -> Module From Existing Sources to import next directories/BUILD files
@@ -172,9 +177,8 @@ test sources, resources, test resources, generated sources, etc).
 
         git checkout -b $FEATURE_BRANCH
 
-* Run tests to verify your installation
+* Push your branch and pass travis ci
 
-        Push your branch and pass travis ci
 
 * Post your first review ([setup instructions](http://pantsbuild.github.io/howto_contribute.html#code-review))
 
