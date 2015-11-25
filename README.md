@@ -8,6 +8,7 @@ Current 1.* version of plugin supports Scala and Java projects only.
 ### Installing the Plugin
 Please use “Plugins” tab: (Main menu: Settings | Plugins) to install the plugin.
 Find "Pants Support" plugin. Install and Restart IntelliJ.
+Optional BUILD file assistance needs Python plugin which will also be suggested by the pants plugin.
 
 ### Importing a Pants Project.
 Using this plugin you can import entire project or specific targets in a BUILD file.
