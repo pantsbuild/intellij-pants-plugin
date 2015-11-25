@@ -41,8 +41,7 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
 
     if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
       makeProject();
-    }
-    else {
+    } else {
       assertContain(makeProject(), "pants: Recompiling 5 targets"); // 3 new modules were added + 2 were touched
     }
 
