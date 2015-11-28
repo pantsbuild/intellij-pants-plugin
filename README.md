@@ -9,9 +9,6 @@ Current 1.* version of plugin supports Scala and Java projects only.
 Please use “Plugins” tab: (Main menu: Settings | Plugins) to install the plugin.
 Find "Pants Support" plugin. Install and Restart IntelliJ.
 
-### Importing a Pants Project.
-Using this plugin you can import entire project or specific targets in a BUILD file.
-
 #### Importing an entire project directory
   * Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
   * Select project directory
@@ -25,12 +22,12 @@ Using this plugin you can import entire project or specific targets in a BUILD f
      ![Import project from BUILD file](images/import_file1.png)
   * Check the targets you want to Import and proceed with the wizard. (Please wait for the targets to show up)
      ![Choose Targets](images/import_file2.png)
-     
+
 #### Importing targets from a script
   * Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
   * Select an executable that will use export goal to produce a desirable project structure. 
     See [an integration test](testData/testprojects/intellij-integration/export1.sh) as an example.
-       
+
 #### Importing several BUILD files/directories(works in IntelliJ 14.1+)
   * Import the first directory/BUILD file
   * Use File -> New -> Module From Existing Sources to import next directories/BUILD files
@@ -180,10 +177,8 @@ test sources, resources, test resources, generated sources, etc).
 
         git checkout -b $FEATURE_BRANCH
 
-* Run tests to verify your installation
+* Push your branch and pass travis ci
 
-        IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" ./scripts/setup-ci-environment.sh
-        ./scripts/run-tests-ci.sh
 
 * Post your first review ([setup instructions](http://pantsbuild.github.io/howto_contribute.html#code-review))
 
@@ -201,9 +196,9 @@ test sources, resources, test resources, generated sources, etc).
 
 ### IntelliJ project setup:
 
-* Download and open IntelliJ IDEA 14 Community Edition
-* Install Python, Scala and Gradle Plugins (If you postpone restart, you can install them all in one go)
-* Use IntelliJ IDEA 14 Community Edition as IDEA IC SDK(Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK)
+* Download and open IntelliJ IDEA 15 Community Edition
+* Install Python, Scala, and Gradle Plugins
+* Use IntelliJ IDEA 15 Community Edition as IDEA IC SDK. Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK
 * Setup the SDK's classpath
   * Add the following to the SDK's classpath
     * `~/Library/Application Support/IdeaIC15/python/lib/python.jar`
@@ -213,17 +208,14 @@ test sources, resources, test resources, generated sources, etc).
     * `/Applications/IntelliJ IDEA 15 CE.app/Contents/plugins/junit/lib/idea-junit.jar`
 * Set Scala 2.11.2 as your Scala SDK
 * Make sure that your project is set to configure bytecode compatible with 1.6.  Preferences -> Compiler -> Java Compiler -> Project bytecode version
-* Setup test dependencies
-  * Some of the tests depend on local OSS install.
-  * Checkout OSS pants in an adjacent directory to the plugin clone
 * Run tests to verify your installation
 
 ### Release process:
 
-* Bump version number in plugin.xml, push the change, make sure travis is green
+* Bump version number in plugin.xml, push the change, make sure travis ci is green
 * To build from sources a pants.zip distributive simply invoke Build -> Build Artifacts... -> pants -> Rebuild
 * Zip out/artifacts/pants folder into pants.zip
-* Validate the plugin manually in IntelliJ: Preferences -> Plugins -> Install from disk -> pick newely created pants.zip
+* Validate the plugin manually in IntelliJ: Preferences -> Plugins -> Install from disk -> pick newly created pants.zip
 * Upload pants.zip to https://plugins.jetbrains.com/plugin/7412
 
 ### Debugging the Plugin from local pants development:
@@ -255,11 +247,15 @@ test sources, resources, test resources, generated sources, etc).
 
   This will bootstrap pants and resolve all the dependencies or else you will get an `ExecutionException` exception for exceeding 30s timeout.
 
-# Running tests with Pants
+# Running plugin tests with Pants
 
-* Use `./scripts/setup-ci-environment.sh` with the latest `IJ_VERSION` and `IJ_BUILD_NUMBER` 
-  environment variables from `.travis.ci` file to load everything for running tests. For example:
+* Use `./scripts/setup-ci-environment.sh` with targeted `IJ_VERSION` and `IJ_BUILD_NUMBER` 
+  environment variables from `.travis.yml` file to load everything for running tests. For example:
   
-        IJ_VERSION="14.1" IJ_BUILD_NUMBER="141.177" ./scripts/setup-ci-environment.sh
+        IJ_VERSION="15.0" IJ_BUILD_NUMBER="143.381" ./scripts/setup-ci-environment.sh
         
 * Execute `./scripts/run-tests-ci.sh` from command-line.
+* Running individual test. For example:
+
+        ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest#testJaxb
+
