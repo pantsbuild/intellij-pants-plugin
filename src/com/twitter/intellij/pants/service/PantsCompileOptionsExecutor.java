@@ -46,7 +46,7 @@ public class PantsCompileOptionsExecutor {
   private final File myWorkingDir;
   private final boolean myResolveJars;
   private final boolean myCompileWithIntellij;
-  private final boolean myResolveSourcesForJars;
+  private final boolean myResolveSourcesAndDocsForJars;
 
   /**
    *  Add help-default goal to Pants to get all defaults in machine readable format
@@ -112,8 +112,10 @@ public class PantsCompileOptionsExecutor {
       throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", options.getExternalProjectPath()));
     }
     return new PantsCompileOptionsExecutor(
-      workingDir, options,
-      resolveJars, executionOptions != null && executionOptions.isLibsWithSources(),
+      workingDir,
+      options,
+      resolveJars,
+      executionOptions != null && executionOptions.isLibsWithSourcesAndDocs(),
       executionOptions != null && executionOptions.isCompileWithIntellij()
     );
   }
@@ -139,14 +141,14 @@ public class PantsCompileOptionsExecutor {
     @NotNull File workingDir,
     @NotNull PantsCompileOptions compilerOptions,
     boolean resolveJars,
-    boolean resolveSourcesForJars,
+    boolean resolveSourcesAndDocsForJars,
     boolean compileWithIntellij
   ) {
     myWorkingDir = workingDir;
     myOptions = compilerOptions;
     myResolveJars = resolveJars;
+    myResolveSourcesAndDocsForJars = resolveSourcesAndDocsForJars;
     myCompileWithIntellij = compileWithIntellij;
-    myResolveSourcesForJars = resolveSourcesForJars;
   }
 
   public String getProjectRelativePath() {
@@ -269,7 +271,7 @@ public class PantsCompileOptionsExecutor {
     // in unit test mode it's always preview but we need to know libraries
     // because some jvm_binary targets are actually Scala ones and we need to
     // set a proper com.twitter.intellij.pants.compiler output folder
-    if (myResolveJars && myResolveSourcesForJars) {
+    if (myResolveJars && myResolveSourcesAndDocsForJars) {
       commandLine.addParameter("resolve.ivy");
       commandLine.addParameter("--confs=default");
       commandLine.addParameter("--confs=sources");
@@ -277,9 +279,11 @@ public class PantsCompileOptionsExecutor {
     }
 
     commandLine.addParameter("export");
-    if (!myResolveJars) {
-      commandLine.addParameter("--no-libraries");
+    if (myResolveSourcesAndDocsForJars){
+      commandLine.addParameter("--export-libraries-sources");
+      commandLine.addParameter("--export-libraries-javadocs");
     }
+
     commandLine.addParameters(getAllTargetAddresses());
 
     if (getOptions().isWithDependees()) {

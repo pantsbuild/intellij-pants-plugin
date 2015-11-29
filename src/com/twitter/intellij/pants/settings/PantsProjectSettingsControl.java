@@ -53,7 +53,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       content.add(myWithDependeesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
     }
 
-    myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources"));
+    myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources.and.docs"));
     myLibsWithSourcesCheckBox.setSelected(false);
     content.add(myLibsWithSourcesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
