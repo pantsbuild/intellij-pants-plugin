@@ -55,18 +55,11 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       classpath.remove(excludedPath);
     }
 
-    ApplicationManager.getApplication().runWriteAction(
-      new Runnable() {
-        @Override
-        public void run() {
-          final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
-          if (workingDir != null) {
-            // we need to refresh because IJ might not pick all newly created symlinks
-            VirtualFileManager.getInstance().refreshAndFindFileByUrl(workingDir.getUrl() + "/dist/export-classpath");
-          }
-        }
-      }
-    );
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
+    if (workingDir != null) {
+      // Refresh the folder because IJ might not pick all newly created symlinks
+      VirtualFileManager.getInstance().refreshAndFindFileByUrl(workingDir.getUrl() + "/dist/export-classpath");
+    }
 
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
