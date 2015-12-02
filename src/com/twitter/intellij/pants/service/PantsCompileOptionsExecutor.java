@@ -80,7 +80,8 @@ public class PantsCompileOptionsExecutor {
         final boolean zincForJava2 = (zincLineIndex + 1) < stdoutLines.size() &&
                                      StringUtil.contains(stdoutLines.get(zincLineIndex + 1), "default: True");
         final boolean separateAnnotationOutput = StringUtil.contains(stdout, "compile.apt");
-        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2, onlyZinc || isZincStrategy, useJmakeForJava, separateAnnotationOutput);
+        final boolean supportZincDebugSymbols = StringUtil.contains(stdout, "compile-zinc-debug-symbols");
+        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2, onlyZinc || isZincStrategy, useJmakeForJava, separateAnnotationOutput, supportZincDebugSymbols);
       }
       catch (ExecutionException e) {
         LOG.warn(e);
@@ -192,6 +193,8 @@ public class PantsCompileOptionsExecutor {
   public PantsCompileOptions getOptions() {
     return myOptions;
   }
+
+  public PantsCompilerOptions getPantsCompilerOptions() {return compilerOptions.getValue(); }
 
   public boolean isCompileWithPants() {
     return !isCompileWithIntellij();
@@ -412,23 +415,25 @@ public class PantsCompileOptionsExecutor {
     }
   }
 
-  private static class PantsCompilerOptions {
+  public static class PantsCompilerOptions {
     private final boolean compileWithIsolatedStrategy;
     private final boolean compileWithZincForJava;
     private final boolean zincForAll;
     private final boolean useJmakeForJava;
     private final boolean separateAnnotationOutput;
+    private final boolean supportZincDebugSymbols;
 
     private PantsCompilerOptions() {
-      this(false, false, false, false, false);
+      this(false, false, false, false, false, false);
     }
 
-    private PantsCompilerOptions(boolean compileWithIsolatedStrategy, boolean compileWithZincForJava, boolean zincForAll, boolean useJmakeForJava, boolean separateAnnotationOutput) {
+    private PantsCompilerOptions(boolean compileWithIsolatedStrategy, boolean compileWithZincForJava, boolean zincForAll, boolean useJmakeForJava, boolean separateAnnotationOutput, boolean supportZincDebugSymbols) {
       this.compileWithIsolatedStrategy = compileWithIsolatedStrategy;
       this.compileWithZincForJava = compileWithZincForJava;
       this.zincForAll = zincForAll;
       this.useJmakeForJava = useJmakeForJava;
       this.separateAnnotationOutput = separateAnnotationOutput;
+      this.supportZincDebugSymbols = supportZincDebugSymbols;
     }
 
     public boolean isCompileWithIsolatedStrategy() {
@@ -450,5 +455,8 @@ public class PantsCompileOptionsExecutor {
     public boolean isSeparateAnnotationOutput() {
       return separateAnnotationOutput;
     }
+
+    public boolean isSupportZincDebugSymbols() { return supportZincDebugSymbols; }
+
   }
 }

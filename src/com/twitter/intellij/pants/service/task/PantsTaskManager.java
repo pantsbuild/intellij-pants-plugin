@@ -18,6 +18,7 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
+import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -64,8 +65,15 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       commandLine.addParameter(relativeProjectPath + File.separator + "::");
     }
 
-    if (settings.isCompileWithDebugInfo()) {
-      scriptParameters.add(PantsConstants.DEBUG_INFO_ARGUMENTS);
+    PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, new PantsExecutionSettings(), false);
+
+    if (settings.isCompileWithDebugInfo() && executor.getPantsCompilerOptions().isSupportZincDebugSymbols()) {
+      commandLine.addParameter(PantsConstants.DEBUG_INFO_ARGUMENT);
+    }
+    else if (settings.isCompileWithDebugInfo()){
+      throw new ExternalSystemException(
+        PantsConstants.DEBUG_INFO_ARGUMENT + " is not supported in this version of pants, please disable \"Generate local debug info\""
+      );
     }
 
     commandLine.addParameters(scriptParameters);
