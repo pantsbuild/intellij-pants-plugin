@@ -22,6 +22,7 @@ import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import com.intellij.psi.PsiMethod;
 
 import java.util.Collections;
 import java.util.List;
@@ -85,14 +86,33 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     }
 
     final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);
+
     if (psiClass != null) {
-      sourceElement.set(psiClass);
-      configuration.setName("Test " + psiClass.getName());
+      PsiMethod psiMethod = null;
+      // Set sourceElement to be the PsiMethod if the right click content matches any class method name
+      for (PsiMethod method : psiClass.getMethods()) {
+        if (method.getName() == psiLocation.getText()) {
+          psiMethod = method;
+          break;
+        }
+      }
+      String testFullyQualfiedName = psiClass.getQualifiedName();
+      if (psiMethod != null) {
+        sourceElement.set(psiMethod);
+        testFullyQualfiedName += "#" + psiMethod.getName();
+        configuration.setName(psiMethod.getName());
+      }
+      else {
+        sourceElement.set(psiClass);
+        configuration.setName(psiClass.getName());
+      }
+
       taskSettings.setScriptParameters(
         "--no-test-junit-suppress-output " +
-        "--test-junit-test=" + psiClass.getQualifiedName()
+        "--test-junit-test=" + testFullyQualfiedName
       );
-    } else {
+    }
+    else {
       final String name = targets.size() == 1 ? targetAddress.getTargetName() : module.getName();
       configuration.setName("Test " + name);
       taskSettings.setScriptParameters("--no-test-junit-suppress-output");
