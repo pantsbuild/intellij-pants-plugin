@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testIntegration.TestIntegrationUtils;
 import com.intellij.util.ObjectUtils;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
@@ -86,14 +87,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);
 
     if (psiClass != null) {
-      PsiMethod psiMethod = null;
-      // Set sourceElement to be the PsiMethod if the right click content matches any class method name
-      for (PsiMethod method : psiClass.getMethods()) {
-        if (method.getName() == psiLocation.getText()) {
-          psiMethod = method;
-          break;
-        }
-      }
+      PsiMethod psiMethod = PsiTreeUtil.getParentOfType(context.getPsiLocation(), PsiMethod.class, false);
       String testFullyQualifiedName = psiClass.getQualifiedName();
       if (psiMethod != null) {
         sourceElement.set(psiMethod);
