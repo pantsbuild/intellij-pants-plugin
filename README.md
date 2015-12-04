@@ -1,7 +1,8 @@
 # intellij-pants-plugin
 
-The intellij-pants-plugin supports importing, compiling and testing [pants](http://pantsbuild.github.io/) projects.
-Current 1.* version of plugin supports Scala and Java projects only.
+* The intellij-pants-plugin supports importing, compiling and testing [pants](http://pantsbuild.github.io/) projects.
+* Latest version of the plugin only supports Scala and Java projects.
+* Latest version of the plugin only works with IntelliJ IDEA 15.0.0 http://download.jetbrains.com/idea/ideaIC-15.0-custom-jdk-bundled.dmg
 
 ## User documentation
 
