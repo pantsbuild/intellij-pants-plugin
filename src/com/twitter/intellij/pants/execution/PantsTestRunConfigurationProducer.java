@@ -121,7 +121,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     }
     else if (testPackage != null) {
       sourceElement.set(testPackage);
-      configuration.setName("Test " + testPackage.getName());
+      configuration.setName("Tests " + testPackage.getName());
 
       String junitTestArgs = "";
       // Iterate through test classes in testPackage that is only in the scope of the module
@@ -137,7 +137,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     }
     else {
       final String name = targets.size() == 1 ? targetAddress.getTargetName() : module.getName();
-      configuration.setName("Test " + name);
+      configuration.setName("Tests " + name);
       taskSettings.setScriptParameters("--no-test-junit-suppress-output");
     }
 
