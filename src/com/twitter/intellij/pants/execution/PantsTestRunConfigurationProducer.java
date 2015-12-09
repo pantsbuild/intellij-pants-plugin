@@ -15,6 +15,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiPackage;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testIntegration.TestIntegrationUtils;
 import com.intellij.util.ObjectUtils;
@@ -61,7 +64,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
      * Note: there is additional issue with PantsTaskManager
      * PantsTaskManager#executeTasks supposed to be invoked in an external process
      * so there is no access to ProjectManager#getOpenProjects() for example.
-    **/
+     **/
     PantsTargetAddress mainTarget = null, testTarget = null;
     for (PantsTargetAddress target : targets) {
       if (target.isMainTarget()) {
@@ -80,13 +83,25 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
 
     final PsiElement psiLocation = context.getPsiLocation();
 
-    if (psiLocation == null || !TestIntegrationUtils.isTest(psiLocation)) {
+    final PsiPackage testPackage;
+    if (psiLocation instanceof PsiPackage) {
+      testPackage = (PsiPackage)psiLocation;
+    }
+    else if (psiLocation instanceof PsiDirectory) {
+      testPackage = JavaDirectoryService.getInstance().getPackage(((PsiDirectory)psiLocation));
+    }
+    else {
+      testPackage = null;
+    }
+
+    if (testPackage == null && (psiLocation == null || !TestIntegrationUtils.isTest(psiLocation))) {
       return false;
     }
 
     final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);
 
     if (psiClass != null) {
+      // Try to determine whether psiLocation is in a method
       PsiMethod psiMethod = PsiTreeUtil.getParentOfType(context.getPsiLocation(), PsiMethod.class, false);
       String testFullyQualifiedName = psiClass.getQualifiedName();
       if (psiMethod != null) {
@@ -102,6 +117,22 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       taskSettings.setScriptParameters(
         "--no-test-junit-suppress-output " +
         "--test-junit-test=" + testFullyQualifiedName
+      );
+    }
+    else if (testPackage != null) {
+      sourceElement.set(testPackage);
+      configuration.setName("Test " + testPackage.getName());
+
+      String junitTestArgs = "";
+      // Iterate through test classes in testPackage that is only in the scope of the module
+      for (PsiClass clazz : testPackage.getClasses(module.getModuleScope())) {
+        if (TestIntegrationUtils.isTest(clazz)) {
+          junitTestArgs += " --test-junit-test=" + clazz.getQualifiedName();
+        }
+      }
+
+      taskSettings.setScriptParameters(
+        "--no-test-junit-suppress-output " + junitTestArgs
       );
     }
     else {
