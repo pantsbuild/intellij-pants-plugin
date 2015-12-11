@@ -130,7 +130,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       // isn't very beneficial. To simplify the plugin we are going to rely on Pants and pass all targets in the project.
       // We can't use project settings because a project can be generated from a script file or is opened with dependeees.
       final Set<String> changedNonGenTargets = filterGenTargets(findTargetAddresses(holder));
-      Set<String> targetsToCompile = changedNonGenTargets;
       String recompileMessage;
       if (changedNonGenTargets.size() == 1) {
         recompileMessage = String.format("Recompiling %s", changedNonGenTargets.iterator().next());
@@ -142,7 +141,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       ));
       context.processMessage(new ProgressMessage(recompileMessage));
       commandLine.addParameters(goals);
-      for (String targetAddress : targetsToCompile) {
+      for (String targetAddress : changedNonGenTargets) {
         commandLine.addParameter(targetAddress);
       }
     }
