@@ -79,11 +79,17 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       return;
     }
 
+    ProcessOutput output;
     if (supportsExportClasspath(target.getPantsExecutable())) {
-      runCompile(target, holder, context, "export-classpath", "compile").checkSuccess(LOG);
+      output = runCompile(target, holder, context, "export-classpath", "compile");
     }
     else {
-      runCompile(target, holder, context, "compile").checkSuccess(LOG);
+      output = runCompile(target, holder, context, "compile");
+    }
+
+    boolean success = output.checkSuccess(LOG);
+    if (!success) {
+      throw new ProjectBuildException(output.getStderr());
     }
   }
 
@@ -124,14 +130,12 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       // isn't very beneficial. To simplify the plugin we are going to rely on Pants and pass all targets in the project.
       // We can't use project settings because a project can be generated from a script file or is opened with dependeees.
       final Set<String> changedNonGenTargets = filterGenTargets(findTargetAddresses(holder));
-      Set<String> targetsToCompile = null;
-      String recompileMessage = null;
+      Set<String> targetsToCompile = changedNonGenTargets;
+      String recompileMessage;
       if (changedNonGenTargets.size() == 1) {
         recompileMessage = String.format("Recompiling %s", changedNonGenTargets.iterator().next());
-        targetsToCompile = changedNonGenTargets;
       } else {
         recompileMessage = String.format("Recompiling %s targets", changedNonGenTargets.size());
-        targetsToCompile = allNonGenTargets;
       }
       context.processMessage(
         new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage
