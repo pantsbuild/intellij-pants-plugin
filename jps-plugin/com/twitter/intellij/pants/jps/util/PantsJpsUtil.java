@@ -31,7 +31,12 @@ public class PantsJpsUtil {
 
   public static boolean isGenTarget(@NotNull String address) {
     return StringUtil.startsWithIgnoreCase(address, ".pants.d") ||
-           StringUtil.startsWithIgnoreCase(address, PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX);
+           StringUtil.startsWithIgnoreCase(address, PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX) ||
+           // Checking "_synthetic_resources" is a temporary fix. It also needs to match the postfix added from pants in
+           // src.python.pants.backend.python.targets.python_target.PythonTarget#_synthetic_resources_target
+           // TODO: The long term solution is collect non-synthetic targets at pre-compile stage
+           // https://github.com/pantsbuild/intellij-pants-plugin/issues/83
+           address.toLowerCase().endsWith("_synthetic_resources");
   }
 
   public static boolean containsPantsModules(Collection<JpsModule> modules) {
