@@ -34,7 +34,6 @@ env:
     - PANTS_SHA="release_0.0.58" TEST_SET=integration
     - PANTS_SHA="release_0.0.57" TEST_SET=integration
     - PANTS_SHA="release_0.0.56" TEST_SET=integration
-    - PANTS_SHA="release_0.0.55" TEST_SET=integration
 
 script:
   - ./scripts/run-tests-ci.sh
