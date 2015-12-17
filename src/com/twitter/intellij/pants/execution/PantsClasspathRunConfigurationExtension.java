@@ -55,19 +55,6 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       classpath.remove(excludedPath);
     }
 
-    ApplicationManager.getApplication().runWriteAction(
-      new Runnable() {
-        @Override
-        public void run() {
-          final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
-          if (workingDir != null) {
-            // we need to refresh because IJ might not pick all newly created symlinks
-            VirtualFileManager.getInstance().refreshAndFindFileByUrl(workingDir.getUrl() + "/dist/export-classpath");
-          }
-        }
-      }
-    );
-
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
       module,
@@ -116,6 +103,14 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   @NotNull
   public static List<String> findPublishedClasspath(@NotNull  Module module) {
+    ApplicationManager.getApplication().runWriteAction(
+      new Runnable() {
+        @Override
+        public void run() {
+          VirtualFileManager.getInstance().syncRefresh();
+        }
+      }
+    );
     final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
     final List<String> result = ContainerUtil.newArrayList();
     for (String targetAddress : StringUtil.split(addresses, ",")) {
