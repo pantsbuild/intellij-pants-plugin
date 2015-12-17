@@ -7,10 +7,10 @@ sudo: false
 language: java
 jdk:
   - oraclejdk7
-#cache:
-#  directories:
-#  - .cache/intellij
-#  - .cache/bootstrap
+cache:
+  directories:
+  - .cache/intellij
+  - .cache/bootstrap
 
 notifications:
   email:
@@ -22,8 +22,8 @@ install: ./scripts/setup-ci-environment.sh
 # General policy is to support pants for the past 10 releases and the current master
 env:
   matrix:
-    - IJ_ULTIMATE=true
     - IJ_ULTIMATE=false
+    - IJ_ULTIMATE=true
     - USE_PANTS_TO_COMPILE=false
     - PANTS_SHA="release_0.0.64" TEST_SET=integration
     - PANTS_SHA="release_0.0.63" TEST_SET=integration
