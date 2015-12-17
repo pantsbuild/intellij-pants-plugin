@@ -20,7 +20,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
 fi
 
-#if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
+if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   echo "Loading $SCALA_PLUGIN_ID and $PYTHON_PLUGIN_ID for $FULL_IJ_BUILD_NUMBER..."
   mkdir -p plugins
   pushd plugins
@@ -34,7 +34,7 @@ fi
 
   popd
   mv plugins ".cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
-#fi
+fi
 
 if [ ! -d .cache/pants ]; then
   echo "Getting latest Pants..."
