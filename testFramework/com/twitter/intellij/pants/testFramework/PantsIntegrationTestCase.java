@@ -19,6 +19,7 @@ import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.compiler.CompilerMessage;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
@@ -209,6 +210,16 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Nullable
   private VirtualFile findClassFile(String className, String moduleName) throws Exception {
+    ApplicationManager.getApplication().runWriteAction(
+      new Runnable() {
+        @Override
+        public void run() {
+            // we need to refresh because IJ might not pick all newly created symlinks
+            VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
+        }
+      }
+    );
+
     final Module module = getModule(moduleName);
     final VirtualFile pantsWorkingDir = PantsUtil.findPantsWorkingDir(module);
     assertNotNull("Can't find working dir for module '" + moduleName + "'!", pantsWorkingDir);

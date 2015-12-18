@@ -59,11 +59,8 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Runnable() {
         @Override
         public void run() {
-          final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
-          if (workingDir != null) {
-            // we need to refresh because IJ might not pick all newly created symlinks
-            VirtualFileManager.getInstance().refreshAndFindFileByUrl(workingDir.getUrl() + "/dist/export-classpath");
-          }
+          // we need to refresh because IJ might not pick all newly created symlinks
+          VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
         }
       }
     );
