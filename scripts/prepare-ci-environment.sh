@@ -5,6 +5,7 @@ set -e
 export CWD=$(pwd)
 export IJ_VERSION="15.0"
 export IJ_BUILD_NUMBER="143.381"
+export EXPECTED_IJ_MD5="947403b117cc7fc3d5ab22eda7def557"
 
 export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
 export IJ_BUILD="IC-${IJ_VERSION}"
