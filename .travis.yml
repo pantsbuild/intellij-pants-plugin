@@ -7,10 +7,10 @@ sudo: false
 language: java
 jdk:
   - oraclejdk7
-cache:
-  directories:
-  - .cache/intellij
-  - .cache/bootstrap
+#cache:
+#  directories:
+#  - .cache/intellij
+#  - .cache/bootstrap
 
 notifications:
   email:
