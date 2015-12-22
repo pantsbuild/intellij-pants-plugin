@@ -6,8 +6,10 @@ package com.twitter.intellij.pants.components.impl;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
+import com.intellij.openapi.keymap.KeymapManager;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
@@ -37,6 +39,12 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(PantsConstants.PLUGIN_ID));
     if (StringUtil.isNotEmpty(basePath) && plugin instanceof IdeaPluginDescriptorImpl) {
       ((IdeaPluginDescriptorImpl)plugin).setPath(new File(basePath));
+    }
+    
+    // Add (Cmd Shift R) as shortcut to refresh the project if there is no shortcut for that action yet.
+    if (KeymapManager.getInstance().getActiveKeymap().getShortcuts("ExternalSystem.RefreshAllProjects").length == 0) {
+      KeymapManager.getInstance().getActiveKeymap()
+        .addShortcut("ExternalSystem.RefreshAllProjects", KeyboardShortcut.fromString("shift meta pressed R"));
     }
   }
 
