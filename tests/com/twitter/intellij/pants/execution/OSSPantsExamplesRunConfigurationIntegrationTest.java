@@ -25,7 +25,7 @@ import java.util.Set;
 
 public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
   public void testClassRunConfiguration() throws Throwable {
-    importHello();
+    doImport("examples/tests/java/org/pantsbuild/example/useantlr");
 
     String classReference = "org.pantsbuild.example.hello.greet.GreetingTest";
     PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
@@ -40,11 +40,12 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
   }
 
   public void testMethodRunConfiguration() throws Throwable {
-    importHello();
+    doImport("examples/tests/java/org/pantsbuild/example/useantlr");
     String classReference = "org.pantsbuild.example.hello.greet.GreetingTest";
     String methodName = "mentionGreetee";
 
     PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
+    assertNotNull(testClass);
     PsiMethod[] testMethods = testClass.findMethodsByName(methodName, false);
     assertEquals(testMethods.length, 1);
     PsiMethod testMethod = testMethods[0];
@@ -56,30 +57,8 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     assertTrue(items.contains("--test-junit-test=" + classReference + "#" + methodName));
   }
 
-  private void importHello() {
-    doImport("examples/tests/java/org/pantsbuild/example/hello");
-
-    assertModules(
-      "examples_src_resources_org_pantsbuild_example_hello_hello",
-      "examples_src_java_org_pantsbuild_example_hello_greet_greet",
-      "examples_tests_java_org_pantsbuild_example_hello_greet_greet",
-      "examples_tests_java_org_pantsbuild_example_hello_module"
-    );
-  }
-
   public void testModuleRunConfiguration() throws Throwable {
     doImport("examples/tests/java/org/pantsbuild/example/useantlr");
-
-    assertModules(
-      "_examples_src_antlr__common_sources",
-      "examples_src_java_org_pantsbuild_example_antlr3_antlr3",
-      "_examples_tests_java_org_pantsbuild_example_useantlr_common_sources",
-      "examples_src_java_org_pantsbuild_example_antlr4_antlr4",
-      "examples_src_antlr_org_pantsbuild_example_exp_exp_antlr3",
-      "examples_src_antlr_org_pantsbuild_example_exp_exp_antlr4",
-      "examples_tests_java_org_pantsbuild_example_useantlr_antlr3_test",
-      "examples_tests_java_org_pantsbuild_example_useantlr_antlr4_test"
-    );
 
     PsiPackage testPackage = JavaPsiFacade.getInstance(myProject).findPackage("org.pantsbuild.example.useantlr");
     assertEquals(testPackage.getDirectories().length, 1);
