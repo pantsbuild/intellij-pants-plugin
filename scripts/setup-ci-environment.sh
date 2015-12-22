@@ -14,7 +14,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
     exit 1
   fi
   {
-    tar zxf --overwrite $IJ_TAR_NAME &&
+    tar zxf $IJ_TAR_NAME &&
     UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1) &&
     mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist" &&
     rm -rf $IJ_TAR_NAME
