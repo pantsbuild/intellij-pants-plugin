@@ -14,7 +14,7 @@ mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   {
   echo "Loading $IJ_BUILD..." &&
-  #wget http://download.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz &&
+  wget http://download.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz &&
   tar_md5=$(md5sum idea${IJ_BUILD}.tar.gz  | awk -F " " '{print $1}') &&
   if [ $tar_md5 != $EXPECTED_IJ_MD5 ];
   then
