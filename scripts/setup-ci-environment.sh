@@ -12,22 +12,21 @@ fi
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
-  {
-  echo "Loading $IJ_BUILD..." &&
-  wget http://download.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz &&
-  tar_md5=$(md5sum idea${IJ_BUILD}.tar.gz  | awk -F " " '{print $1}') &&
+  echo "Loading $IJ_BUILD..."
+  wget http://download.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz
+  tar_md5=$(md5sum idea${IJ_BUILD}.tar.gz  | awk -F " " '{print $1}')
   if [ $tar_md5 != $EXPECTED_IJ_MD5 ];
   then
     echo "IJ tar md5 incorrect" >&2
     exit 1
-  fi &&
-  rm -rf idea${IJ_BUILD}.tar.gz &&
+  fi
+  {
   tar zxf idea${IJ_BUILD}.tar.gz &&
   rm -rf idea${IJ_BUILD}.tar.gz &&
   UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1) &&
   mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
   } || {
-    echo "Failed to download/untar IntelliJ" >&2
+    echo "Failed to untar IntelliJ" >&2
     rm -rf .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist
     exit 1
   }
