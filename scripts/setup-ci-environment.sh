@@ -15,7 +15,8 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   fi
   {
     tar zxf $IJ_TAR_NAME &&
-    mv "$IJ_TAR_NAME" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist" &&
+    UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1) &&
+    mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist" &&
     rm -rf $IJ_TAR_NAME
   } || {
     echo "Failed to untar IntelliJ" >&2
@@ -41,7 +42,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   wget -O python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
   if [ $(md5sum python.zip  | awk -F " " '{print $1}') != $PYTHON_PLUGIN_MD5 ];
   then
-    echo "Scala plugin md5 incorrect" >&2
+    echo "Python plugin md5 incorrect" >&2
     exit 1
   fi
   unzip python.zip
