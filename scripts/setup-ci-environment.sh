@@ -12,19 +12,19 @@ fi
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
+  IJ_TAR_NAME=idea${IJ_BUILD}.tar.gz
   echo "Loading $IJ_BUILD..."
-  wget http://download.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz
-  tar_md5=$(md5sum idea${IJ_BUILD}.tar.gz  | awk -F " " '{print $1}')
+  wget -O $IJ_TAR_NAME http://download.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz
+  tar_md5=$(md5sum $IJ_TAR_NAME  | awk -F " " '{print $1}')
   if [ $tar_md5 != $EXPECTED_IJ_MD5 ];
   then
     echo "IJ tar md5 incorrect" >&2
     exit 1
   fi
   {
-  tar zxf idea${IJ_BUILD}.tar.gz &&
-  rm -rf idea${IJ_BUILD}.tar.gz &&
-  UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1) &&
-  mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
+    tar zxf $IJ_TAR_NAME &&
+    mv "$IJ_TAR_NAME" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist" &&
+    rm -rf $IJ_TAR_NAME
   } || {
     echo "Failed to untar IntelliJ" >&2
     rm -rf .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist
@@ -39,10 +39,10 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
 
   wget -O Scala.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$SCALA_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
   unzip Scala.zip
-  rm -rf Scala.zip
+  #rm -rf Scala.zip
   wget -O python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
   unzip python.zip
-  rm -rf python.zip
+  #rm -rf python.zip
 
   popd
   mv plugins ".cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
