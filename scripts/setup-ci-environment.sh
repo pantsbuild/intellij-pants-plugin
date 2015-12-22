@@ -7,14 +7,14 @@ mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   IJ_TAR_NAME=idea${IJ_BUILD}.tar.gz
   echo "Loading $IJ_BUILD..."
-  wget -O $IJ_TAR_NAME http://download.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz
+  wget -O $IJ_TAR_NAME "http://download.jetbrains.com/idea/$IJ_TAR_NAME"
   if [ $(md5sum $IJ_TAR_NAME  | awk -F " " '{print $1}') != $EXPECTED_IJ_MD5 ];
   then
     echo "IJ tar md5 incorrect" >&2
     exit 1
   fi
   {
-    tar zxf $IJ_TAR_NAME &&
+    tar zxf --overwrite $IJ_TAR_NAME &&
     UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1) &&
     mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist" &&
     rm -rf $IJ_TAR_NAME
