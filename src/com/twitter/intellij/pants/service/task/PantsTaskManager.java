@@ -85,6 +85,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
         throw new ExternalSystemException(PantsBundle.message("pants.error.cannot.debug.task", goal));
       }
       commandLine.addParameter(jvmOptionsFlag + "=" + debuggerSetup);
+      commandLine.addParameter("--compile-zinc-debug-symbols");
     }
 
     listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);
