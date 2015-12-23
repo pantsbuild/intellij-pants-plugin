@@ -2,16 +2,40 @@
 
 set -e
 
+# Important: to update the build number of intellij, you need to update the following hashes:
+# Intellij tarball for Community and Ultimate Edition
+# Scala plugin
+# Python plugin for Community and Ultimate Edition
+
 export CWD=$(pwd)
 export IJ_VERSION="15.0"
 export IJ_BUILD_NUMBER="143.381"
 
-export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-export IJ_BUILD="IC-${IJ_VERSION}"
+get_md5(){
+  if [[ $OSTYPE == *"darwin"* ]]; then
+    echo  $(md5 $1| awk '{print $NF}')
+  else
+    echo  $(md5sum $1| awk '{print $1}')
+  fi
+}
+
 if [[ $IJ_ULTIMATE == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
+  export EXPECTED_IJ_MD5="4da955e200b6e1b4f82ca81871cd01c0"
+  export PYTHON_PLUGIN_ID="Pythonid"
+  export PYTHON_PLUGIN_MD5="ce2e050387e45cd690774bdd5fc171eb"
+else
+  export IJ_BUILD="IC-${IJ_VERSION}"
+  export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
+  export EXPECTED_IJ_MD5="947403b117cc7fc3d5ab22eda7def557"
+  export PYTHON_PLUGIN_ID="PythonCore"
+  export PYTHON_PLUGIN_MD5="023aa42811f0dd9c15a8400ff6256b7f"
 fi
+
+# we will use Community ids to download plugins.
+export SCALA_PLUGIN_ID="org.intellij.scala"
+export SCALA_PLUGIN_MD5="b5bff7d6a30246498aa9daf08490c986"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
@@ -44,3 +68,4 @@ append_intellij_jvm_options() {
 
   echo $cmd
 }
+
