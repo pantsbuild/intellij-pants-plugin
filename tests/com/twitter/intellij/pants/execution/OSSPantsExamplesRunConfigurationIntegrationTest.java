@@ -25,7 +25,7 @@ import java.util.Set;
 
 public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
   public void testClassRunConfiguration() throws Throwable {
-    doImport("examples/tests/java/org/pantsbuild/example/useantlr");
+    doImport("examples/tests/java/org/pantsbuild/example/hello");
 
     String classReference = "org.pantsbuild.example.hello.greet.GreetingTest";
     PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
@@ -40,7 +40,7 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
   }
 
   public void testMethodRunConfiguration() throws Throwable {
-    doImport("examples/tests/java/org/pantsbuild/example/useantlr");
+    doImport("examples/tests/java/org/pantsbuild/example/hello");
     String classReference = "org.pantsbuild.example.hello.greet.GreetingTest";
     String methodName = "mentionGreetee";
 
