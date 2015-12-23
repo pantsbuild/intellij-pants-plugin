@@ -89,13 +89,11 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       sourceElement.set(psiClass);
       configuration.setName("Test " + psiClass.getName());
       taskSettings.setScriptParameters(
-        "--no-test-junit-suppress-output " +
         "--test-junit-test=" + psiClass.getQualifiedName()
       );
     } else {
       final String name = targets.size() == 1 ? targetAddress.getTargetName() : module.getName();
       configuration.setName("Test " + name);
-      taskSettings.setScriptParameters("--no-test-junit-suppress-output");
     }
 
     return true;
