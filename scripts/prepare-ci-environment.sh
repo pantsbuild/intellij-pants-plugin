@@ -13,9 +13,9 @@ export IJ_BUILD_NUMBER="143.381"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
-    echo  $(md5 $1| awk -F " " '{print $4}')
+    echo  $(md5 $1| awk '{print $NF}')
   else
-    echo  $(md5sum $1| awk -F " " '{print $1}')
+    echo  $(md5sum $1| awk '{print $1}')
   fi
 }
 
