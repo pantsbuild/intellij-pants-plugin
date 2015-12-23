@@ -1,23 +1,27 @@
 #!/usr/bin/env bash
 
 source scripts/prepare-ci-environment.sh
-
-# we will use Community ids to download plugins.
-SCALA_PLUGIN_ID="org.intellij.scala"
-PYTHON_PLUGIN_ID="PythonCore"
-if [[ $IJ_ULTIMATE == "true" ]]; then
-  PYTHON_PLUGIN_ID="Pythonid"
-fi
-
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
+  IJ_TAR_NAME=idea${IJ_BUILD}.tar.gz
   echo "Loading $IJ_BUILD..."
-  wget http://download.jetbrains.com/idea/idea${IJ_BUILD}.tar.gz
-  tar zxf idea${IJ_BUILD}.tar.gz
-  rm -rf idea${IJ_BUILD}.tar.gz
-  UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1)
-  mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
+  wget -O $IJ_TAR_NAME "http://download.jetbrains.com/idea/$IJ_TAR_NAME"
+  if [ $(get_md5 $IJ_TAR_NAME) != $EXPECTED_IJ_MD5 ];
+  then
+    echo "IJ tar md5 incorrect" >&2
+    exit 1
+  fi
+  {
+    tar zxf $IJ_TAR_NAME &&
+    UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1) &&
+    mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist" &&
+    rm -f $IJ_TAR_NAME
+  } || {
+    echo "Failed to untar IntelliJ" >&2
+    rm -rf .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist
+    exit 1
+  }
 fi
 
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
@@ -26,11 +30,22 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   pushd plugins
 
   wget -O Scala.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$SCALA_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
+  if [ $(get_md5 Scala.zip) != $SCALA_PLUGIN_MD5 ];
+  then
+    echo "Scala plugin md5 incorrect" >&2
+    exit 1
+  fi
   unzip Scala.zip
-  rm -rf Scala.zip
+  rm -f Scala.zip
+
   wget -O python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
+  if [ $(get_md5 python.zip) != $PYTHON_PLUGIN_MD5 ];
+  then
+    echo "Python plugin md5 incorrect" >&2
+    exit 1
+  fi
   unzip python.zip
-  rm -rf python.zip
+  rm -f python.zip
 
   popd
   mv plugins ".cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
