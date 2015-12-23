@@ -12,11 +12,11 @@ export IJ_VERSION="15.0"
 export IJ_BUILD_NUMBER="143.381"
 
 get_md5(){
-if [[ $OSTYPE == *"darwin"* ]]; then
-  echo  $(md5 $1| awk -F " " '{print $4}')
-else
-  echo  $(md5sum $1| awk -F " " '{print $1}')
-fi
+  if [[ $OSTYPE == *"darwin"* ]]; then
+    echo  $(md5 $1| awk -F " " '{print $4}')
+  else
+    echo  $(md5sum $1| awk -F " " '{print $1}')
+  fi
 }
 
 if [[ $IJ_ULTIMATE == "true" ]]; then
