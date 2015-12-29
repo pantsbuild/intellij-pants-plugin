@@ -25,9 +25,12 @@ import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import com.intellij.util.containers.ContainerUtil;
 
 import java.util.Collections;
 import java.util.List;
+
+import com.intellij.util.Function;
 
 public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
   protected PantsTestRunConfigurationProducer() {
@@ -56,33 +59,12 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
 
     /**
-     * todo: try to find a better way to handle multiple targets per external project
-     * it's a big issue for targets with common source roots
-     * but it's also a sign of a bad targets layout.
-     * For now we'll try to find a `main` target or a target with 'test' in it's name.
-     *
-     * Note: there is additional issue with PantsTaskManager
-     * PantsTaskManager#executeTasks supposed to be invoked in an external process
-     * so there is no access to ProjectManager#getOpenProjects() for example.
+     * Add the module's folder:: to target_roots
      **/
-    PantsTargetAddress mainTarget = null, testTarget = null;
-    for (PantsTargetAddress target : targets) {
-      if (target.isMainTarget()) {
-        mainTarget = target;
-        break;
-      }
-      if (StringUtil.startsWith(target.getTargetName(), "test")) {
-        testTarget = target;
-      }
-    }
-    final PantsTargetAddress targetAddress =
-      ObjectUtils.notNull(mainTarget, ObjectUtils.notNull(testTarget, targets.iterator().next()));
-
-    taskSettings.setExternalProjectPath(FileUtil.join(workingDir.getPath(), targetAddress.toString()));
+    taskSettings.setExternalProjectPath(FileUtil.join(workingDir.getPath(), targets.iterator().next().getPath()));
     taskSettings.setTaskNames(Collections.singletonList("test"));
 
     final PsiElement psiLocation = context.getPsiLocation();
-
     final PsiPackage testPackage;
     if (psiLocation instanceof PsiPackage) {
       testPackage = (PsiPackage)psiLocation;
@@ -115,9 +97,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       }
 
       taskSettings.setScriptParameters(
-        "--no-test-junit-suppress-output " +
         "--test-junit-test=" + testFullyQualifiedName
-        "--test-junit-test=" + psiClass.getQualifiedName()
       );
     }
     else if (testPackage != null) {
@@ -137,8 +117,9 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       );
     }
     else {
-      final String name = targets.size() == 1 ? targetAddress.getTargetName() : module.getName();
-      configuration.setName("Test " + name);
+      return false;
+      //final String name = targets.size() == 1 ? targetAddress.getTargetName() : module.getName();
+      //configuration.setName("Test " + name);
     }
 
     return true;
