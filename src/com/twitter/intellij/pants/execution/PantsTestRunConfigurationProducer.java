@@ -117,6 +117,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       taskSettings.setScriptParameters(
         "--no-test-junit-suppress-output " +
         "--test-junit-test=" + testFullyQualifiedName
+        "--test-junit-test=" + psiClass.getQualifiedName()
       );
     }
     else if (testPackage != null) {
@@ -132,13 +133,12 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       }
 
       taskSettings.setScriptParameters(
-        "--no-test-junit-suppress-output " + junitTestArgs
+        junitTestArgs
       );
     }
     else {
       final String name = targets.size() == 1 ? targetAddress.getTargetName() : module.getName();
-      configuration.setName("Tests " + name);
-      taskSettings.setScriptParameters("--no-test-junit-suppress-output");
+      configuration.setName("Test " + name);
     }
 
     return true;
