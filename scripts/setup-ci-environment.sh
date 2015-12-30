@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+rm -rf .cache
 source scripts/prepare-ci-environment.sh
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
