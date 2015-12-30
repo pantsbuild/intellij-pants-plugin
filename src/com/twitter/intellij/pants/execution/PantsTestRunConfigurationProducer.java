@@ -20,17 +20,13 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testIntegration.TestIntegrationUtils;
-import com.intellij.util.ObjectUtils;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import com.intellij.util.containers.ContainerUtil;
 
 import java.util.Collections;
 import java.util.List;
-
-import com.intellij.util.Function;
 
 public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
   protected PantsTestRunConfigurationProducer() {
