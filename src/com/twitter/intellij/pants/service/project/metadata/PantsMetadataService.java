@@ -25,6 +25,8 @@ import java.util.Collections;
 
 
 public class PantsMetadataService implements ProjectDataService<TargetMetadata, Module> {
+  private static final Gson gson = new Gson();
+
   @NotNull
   @Override
   public Key<TargetMetadata> getTargetDataKey() {
@@ -47,7 +49,7 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
         module.setOption(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY, StringUtil.join(metadata.getCompilerOutputs(), File.pathSeparator));
         module.setOption(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY, StringUtil.join(metadata.getLibraryExcludes(), ","));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY, StringUtil.join(metadata.getTargetAddresses(), ","));
-        module.setOption(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY,  (new Gson()).toJson(metadata.getTargetAddressInfos()));
+        module.setOption(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY, gson.toJson(metadata.getTargetAddressInfos()));
       }
     }
   }

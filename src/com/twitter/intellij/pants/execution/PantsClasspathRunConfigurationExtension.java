@@ -4,9 +4,12 @@
 package com.twitter.intellij.pants.execution;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
 import com.intellij.execution.configurations.*;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -33,10 +36,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
-
+import java.lang.reflect.Type;
 
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
   protected static final Logger LOG = Logger.getInstance(PantsClasspathRunConfigurationExtension.class);
+  private static final Gson gson = new Gson();
+  private static final Type type = new TypeToken<HashSet<TargetAddressInfo>>(){}.getType();
 
   @Override
   public <T extends RunConfigurationBase> void updateJavaParameters(
@@ -67,13 +72,19 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
     );
 
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(PantsUtil.findPantsWorkingDir(module).getPath());
+    commandLine.addParameters("options", "--no-colors");
+    final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandLine, null);
+    final String stdout = processOutput.getStdout();
+    final boolean hasExportClassPathNamingStyle = StringUtil.contains(stdout, "export-classpath.use_old_naming_style");
+
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
       module,
       new Processor<Module>() {
         @Override
         public boolean process(Module module) {
-          publishedClasspath.addAll(findPublishedClasspath(module));
+          publishedClasspath.addAll(findPublishedClasspath(module, hasExportClassPathNamingStyle));
           return true;
         }
       }
@@ -114,24 +125,42 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   }
 
   @NotNull
-  public static List<String> findPublishedClasspath(@NotNull  Module module) {
-    final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
-    Set<TargetAddressInfo> targetInfoSet = (new Gson()).fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), HashSet.class);
+  public static List<String> findPublishedClasspath(@NotNull  Module module, boolean hasExportClassPathNamingStyle) {
     final List<String> result = ContainerUtil.newArrayList();
-    for (String targetAddress : StringUtil.split(addresses, ",")) {
-      result.addAll(findPublishedClasspath(module, targetAddress));
+    Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), type);
+    if (hasExportClassPathNamingStyle && targetInfoSet.iterator().next().getId() != null){
+      for (TargetAddressInfo ta: targetInfoSet){
+        result.addAll(findPublishedClasspath(module, null, ta));
+      }
+    }
+    else{
+      final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
+      for (String targetAddress : StringUtil.split(addresses, ",")) {
+        result.addAll(findPublishedClasspath(module, targetAddress, null));
+      }
     }
     return result;
   }
 
   @NotNull
-  private static List<String> findPublishedClasspath(Module module, String targetAddress) {
+  private static List<String> findPublishedClasspath(Module module, String targetAddress, TargetAddressInfo targetAddressInfo) {
     final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
     final VirtualFile classpath = workingDir != null ? workingDir.findFileByRelativePath("dist/export-classpath") : null;
-    final VirtualFile classpathLinks = classpath != null ? classpath.findFileByRelativePath(targetAddress.replace(':', '/')) : null;
+    if (classpath == null) {
+      return Collections.emptyList();
+    }
+    final VirtualFile classpathLinks;
+    if (targetAddressInfo != null) {
+      classpathLinks = classpath.findFileByRelativePath(targetAddressInfo.getId());
+    }
+    else{
+      classpathLinks = classpath.findFileByRelativePath(targetAddress.replace(':', '/'));
+    }
+
     if (classpathLinks == null) {
       return Collections.emptyList();
     }
+
     return ContainerUtil.mapNotNull(
       classpathLinks.getChildren(),
       new Function<VirtualFile, String>() {

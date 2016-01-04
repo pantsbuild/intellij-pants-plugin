@@ -149,9 +149,26 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     }
 
+    // Find out whether "export-classpath-use-old-naming-style" is supported
+    final GeneralCommandLine optionCommandLine = PantsUtil.defaultCommandLine(pantsExecutable);
+    optionCommandLine.addParameters("options", "--no-colors");
+    final boolean hasExportClassPathNamingStyle;
+    try{
+      final ProcessOutput processOutput = PantsUtil.getProcessOutput(optionCommandLine, null);
+      final String stdout = processOutput.getStdout();
+      hasExportClassPathNamingStyle = StringUtil.contains(stdout, "export-classpath.use_old_naming_style");
+    }
+    catch(ExecutionException e){
+      throw new ProjectBuildException("./pants options failed");
+    }
+
+    commandLine.addParameters("--no-colors");
+    if (hasExportClassPathNamingStyle) {
+      commandLine.addParameters("--no-export-classpath-use-old-naming-style");
+    }
+
     final Process process;
     try {
-      commandLine.addParameters("--no-colors");
       process = commandLine.createProcess();
     }
     catch (ExecutionException e) {
