@@ -3,9 +3,9 @@
 
 package com.twitter.intellij.pants.integration;
 
-  import com.intellij.execution.process.OSProcessHandler;
-  import com.intellij.util.ArrayUtil;
-  import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.util.ArrayUtil;
+import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest {
   @Override
@@ -19,7 +19,8 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
 
     makeModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
-    assertSuccessfulJUnitTest("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
+    assertSuccessfulJUnitTest(
+      "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
     final OSProcessHandler processHandler = runJUnitTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects",
       "org.pantsbuild.testprojects.JUnitIntegrationTest",

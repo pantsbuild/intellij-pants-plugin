@@ -28,7 +28,7 @@ public class PantsJpsModelSerializerExtension extends JpsModelSerializerExtensio
   // same as in ExternalSystemConstants but it is used in an external process so we can't use it directly
   @NonNls @NotNull public static final String EXTERNAL_SYSTEM_ID_KEY = "external.system.id";
   @NonNls @NotNull public static final String LINKED_PROJECT_PATH_KEY = "external.linked.project.path";
-
+  public static final Gson gson = new Gson();
   @Nullable
   public static JpsPantsModuleExtension findPantsModuleExtension(@Nullable JpsModule module) {
     return module != null ? module.getContainer().getChild(JpsPantsModuleExtension.ROLE) : null;
@@ -62,8 +62,7 @@ public class PantsJpsModelSerializerExtension extends JpsModelSerializerExtensio
     final String linkedProjectPath = rootElement.getAttributeValue(LINKED_PROJECT_PATH_KEY);
     final String targetAddressesValue = StringUtil.nullize(rootElement.getAttributeValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
     final String addressInfosJson = StringUtil.nullize(rootElement.getAttributeValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY));
-    //Gson x = new Gson();
-    Set<TargetAddressInfo> targetInfoSet = (new Gson()).fromJson(addressInfosJson, HashSet.class);
+    Set<TargetAddressInfo> targetInfoSet = gson.fromJson(addressInfosJson, HashSet.class);
     if (PantsConstants.PANTS.equals(externalSystemId) && targetAddressesValue != null && linkedProjectPath != null) {
       final Set<String> targetAddresses = new HashSet<String>(StringUtil.split(targetAddressesValue, ","));
       final JpsPantsModuleExtensionImpl moduleExtensionElement =

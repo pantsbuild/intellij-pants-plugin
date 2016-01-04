@@ -37,7 +37,9 @@ public class TargetAddressInfo {
   }
 
   @NotNull
-  public String getId() { return id; }
+  public String getId() {
+    return id;
+  }
 
   @NotNull
   public Globs getGlobs() {
