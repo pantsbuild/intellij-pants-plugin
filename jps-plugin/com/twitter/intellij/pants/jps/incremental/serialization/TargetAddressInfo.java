@@ -1,0 +1,1 @@
+../../../../../../../../src/com/twitter/intellij/pants/service/project/model/TargetAddressInfo.java
