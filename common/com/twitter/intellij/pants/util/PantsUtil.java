@@ -576,4 +576,11 @@ public class PantsUtil {
       }
     );
   }
+
+  public static ProcessOutput getProcessOutput(
+    @NotNull GeneralCommandLine command,
+    @Nullable ProcessAdapter processAdapter
+  ) throws ExecutionException {
+    return getOutput(command.createProcess(), processAdapter);
+  }
 }

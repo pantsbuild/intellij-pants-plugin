@@ -37,6 +37,9 @@ public class TargetAddressInfo {
   }
 
   @NotNull
+  public String getId() { return id; }
+
+  @NotNull
   public Globs getGlobs() {
     return globs != null ? globs : Globs.EMPTY;
   }
