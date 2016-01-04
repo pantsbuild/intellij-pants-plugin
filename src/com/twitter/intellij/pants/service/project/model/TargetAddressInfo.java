@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
+import com.twitter.intellij.pants.service.project.model.Globs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +30,8 @@ public class TargetAddressInfo {
   private String pants_target_type = null;
 
   private boolean is_code_gen;
+
+  private String id;
 
   public TargetAddressInfo() {
   }

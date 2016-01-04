@@ -34,6 +34,7 @@ public class PantsConstants {
   public static final String PANTS_COMPILER_OUTPUTS_KEY = "pants.compiler.outputs";
   public static final String PANTS_LIBRARY_EXCLUDES_KEY = "pants.library.excludes";
   public static final String PANTS_TARGET_ADDRESSES_KEY = "pants.target.addresses";
+  public static final String PANTS_TARGET_ADDRESS_INFOS_KEY = "pants.target.address.infos";
 
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(

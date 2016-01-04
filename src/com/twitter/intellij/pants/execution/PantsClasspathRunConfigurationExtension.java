@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.execution;
 
+import com.google.gson.Gson;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
 import com.intellij.execution.configurations.*;
@@ -23,6 +24,7 @@ import com.intellij.util.Function;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jdom.Element;
@@ -114,6 +116,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   @NotNull
   public static List<String> findPublishedClasspath(@NotNull  Module module) {
     final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
+    Set<TargetAddressInfo> targetInfoSet = (new Gson()).fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), HashSet.class);
     final List<String> result = ContainerUtil.newArrayList();
     for (String targetAddress : StringUtil.split(addresses, ",")) {
       result.addAll(findPublishedClasspath(module, targetAddress));

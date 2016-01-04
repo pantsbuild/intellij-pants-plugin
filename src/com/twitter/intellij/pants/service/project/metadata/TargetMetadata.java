@@ -7,6 +7,7 @@ import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -24,6 +25,7 @@ public class TargetMetadata extends AbstractExternalEntityData {
   private Set<String> myCompilerOutputs = Collections.emptySet();
   private Set<String> myLibraryExcludes = Collections.emptySet();
   private Set<String> myTargetAddresses = Collections.emptySet();
+  private Set<TargetAddressInfo> myTargetAddressInfos = Collections.emptySet();
 
   public TargetMetadata(ProjectSystemId systemId, @NotNull String moduleName) {
     super(systemId);
@@ -40,9 +42,19 @@ public class TargetMetadata extends AbstractExternalEntityData {
     return myTargetAddresses;
   }
 
+
   public void setTargetAddresses(Collection<String> targetAddresses) {
     myTargetAddresses = new HashSet<String>(targetAddresses);
   }
+
+  public Set<TargetAddressInfo> getTargetAddressInfos() {
+    return myTargetAddressInfos;
+  }
+
+  public void setTargetAddressInfos(Set<TargetAddressInfo> targetAddressInfos) {
+    myTargetAddressInfos = new HashSet<TargetAddressInfo>(targetAddressInfos);
+  }
+
 
   @NotNull
   public Set<String> getLibraryExcludes() {
