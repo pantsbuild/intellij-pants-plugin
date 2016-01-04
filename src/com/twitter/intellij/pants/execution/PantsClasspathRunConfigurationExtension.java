@@ -8,14 +8,12 @@ import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
 import com.intellij.execution.configurations.*;
-import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.roots.OrderEnumerator;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
@@ -35,8 +33,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
 import java.lang.reflect.Type;
+import java.util.*;
 
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
   protected static final Logger LOG = Logger.getInstance(PantsClasspathRunConfigurationExtension.class);
@@ -125,15 +123,15 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   }
 
   @NotNull
-  public static List<String> findPublishedClasspath(@NotNull  Module module, boolean hasExportClassPathNamingStyle) {
+  public static List<String> findPublishedClasspath(@NotNull Module module, boolean hasExportClassPathNamingStyle) {
     final List<String> result = ContainerUtil.newArrayList();
     Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), type);
-    if (hasExportClassPathNamingStyle && targetInfoSet.iterator().next().getId() != null){
-      for (TargetAddressInfo ta: targetInfoSet){
+    if (hasExportClassPathNamingStyle && targetInfoSet.iterator().next().getId() != null) {
+      for (TargetAddressInfo ta : targetInfoSet) {
         result.addAll(findPublishedClasspath(module, null, ta));
       }
     }
-    else{
+    else {
       final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
       for (String targetAddress : StringUtil.split(addresses, ",")) {
         result.addAll(findPublishedClasspath(module, targetAddress, null));
@@ -153,7 +151,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     if (targetAddressInfo != null) {
       classpathLinks = classpath.findFileByRelativePath(targetAddressInfo.getId());
     }
-    else{
+    else {
       classpathLinks = classpath.findFileByRelativePath(targetAddress.replace(':', '/'));
     }
 
@@ -187,7 +185,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Processor<Module>() {
         @Override
         public boolean process(Module module) {
-          final String targets  = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+          final String targets = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
           final String excludes = module.getOptionValue(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY);
           for (String exclude : StringUtil.split(StringUtil.notNullize(excludes), ",")) {
             result.put(exclude, StringUtil.notNullize(targets, module.getName()));

@@ -14,10 +14,10 @@ public class JpsPantsModuleExtensionImpl extends JpsElementBase<JpsPantsModuleEx
   private String myConfigPath;
   private Set<String> myTargetAddresses;
   private Set<TargetAddressInfo> myTargetAddressInfoSet;
-  public JpsPantsModuleExtensionImpl(@NotNull String configPath, @NotNull Set<String> address, @NotNull Set<TargetAddressInfo> targetInfo) {
+  public JpsPantsModuleExtensionImpl(@NotNull String configPath, @NotNull Set<String> address, @NotNull Set<TargetAddressInfo> targetAddressInfoSet) {
     myConfigPath = configPath;
     myTargetAddresses = address;
-    myTargetAddressInfoSet = targetInfo;
+    myTargetAddressInfoSet = targetAddressInfoSet;
   }
 
   @NotNull

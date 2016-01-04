@@ -28,10 +28,8 @@ public interface JpsPantsModuleExtension extends JpsElement {
 
   void setConfigPath(@NotNull String configPath);
 
-
   @NotNull
   Set<TargetAddressInfo> getTargetAddressInfoSet();
 
   void setTargetAddressInfoSet(@NotNull Set<TargetAddressInfo> targetAddressInfoSet);
-
 }
