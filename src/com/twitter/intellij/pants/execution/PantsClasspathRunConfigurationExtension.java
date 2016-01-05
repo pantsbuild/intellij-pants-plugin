@@ -71,11 +71,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
     );
 
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(PantsUtil.findPantsWorkingDir(module).getPath());
-    commandLine.addParameters("options", "--no-colors");
-    final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandLine, null);
-    final String stdout = processOutput.getStdout();
-    final boolean hasExportClassPathNamingStyle = StringUtil.contains(stdout, PantsConstants.PANTS_EXPORT_CLASSPATH_NAMING_STYLE_OPTION);
+    final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(PantsUtil.findPantsExecutable(module.getProject().getProjectFilePath()).getPath());
 
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
@@ -83,7 +79,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Processor<Module>() {
         @Override
         public boolean process(Module module) {
-          publishedClasspath.addAll(findPublishedClasspath(module, hasExportClassPathNamingStyle));
+          publishedClasspath.addAll(findPublishedClasspath(module, hasTargetIdInExport));
           return true;
         }
       }

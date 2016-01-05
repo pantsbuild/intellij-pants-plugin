@@ -599,21 +599,23 @@ public class PantsUtil {
     }
   }
 
-  public static boolean hasTargetIdInExport(final String pantsExecutable) {
-    class SimpleExportResult {
-      public String version;
-    }
 
-    final GeneralCommandLine exportCommandline = defaultCommandLine(pantsExecutable);
-    exportCommandline.addParameters("export", "--no-colors");
+  class SimpleExportResult {
+    public String version;
+    public String getVersion() {return version; }
+  }
+
+  public static boolean hasTargetIdInExport(final String pantsExecutable) {
+    final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
+    commandline.addParameters("export", "--no-colors");
     try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
+      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       final String stdOut = processOutput.getStdout();
       SimpleExportResult simpleExportResult = (new Gson()).fromJson(stdOut, SimpleExportResult.class);
-      return versionCompare(simpleExportResult.version, "1.0.5") >= 0;
+      return versionCompare(simpleExportResult.getVersion(), "1.0.5") >= 0;
     }
     catch (ExecutionException e) {
-      throw new PantsException("Failed:" + exportCommandline.getCommandLineString());
+      throw new PantsException("Failed:" + commandline.getCommandLineString());
     }
   }
 
