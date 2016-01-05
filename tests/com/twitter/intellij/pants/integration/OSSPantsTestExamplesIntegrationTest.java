@@ -19,8 +19,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
 
     makeModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
-    assertSuccessfulJUnitTest(
-      "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
+    assertSuccessfulJUnitTest("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
     final OSProcessHandler processHandler = runJUnitTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects",
       "org.pantsbuild.testprojects.JUnitIntegrationTest",
