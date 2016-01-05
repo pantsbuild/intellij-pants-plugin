@@ -41,7 +41,7 @@ public class TargetMetadata extends AbstractExternalEntityData {
   public Set<String> getTargetAddresses() {
     return myTargetAddresses;
   }
-  
+
   public void setTargetAddresses(Collection<String> targetAddresses) {
     myTargetAddresses = new HashSet<String>(targetAddresses);
   }
