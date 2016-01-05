@@ -156,7 +156,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     try{
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(optionCommandLine, null);
       final String stdout = processOutput.getStdout();
-      hasExportClassPathNamingStyle = StringUtil.contains(stdout, "export-classpath.use_old_naming_style");
+      hasExportClassPathNamingStyle = StringUtil.contains(stdout, PantsConstants.PANTS_EXPORT_CLASSPATH_USE_TARGET_ID);
     }
     catch(ExecutionException e){
       throw new ProjectBuildException("./pants options failed");

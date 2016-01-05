@@ -74,7 +74,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     commandLine.addParameters("options", "--no-colors");
     final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandLine, null);
     final String stdout = processOutput.getStdout();
-    final boolean hasExportClassPathNamingStyle = StringUtil.contains(stdout, "export-classpath.use_old_naming_style");
+    final boolean hasExportClassPathNamingStyle = StringUtil.contains(stdout, PantsConstants.PANTS_EXPORT_CLASSPATH_USE_TARGET_ID);
 
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
