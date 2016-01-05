@@ -39,7 +39,8 @@ import java.util.*;
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
   protected static final Logger LOG = Logger.getInstance(PantsClasspathRunConfigurationExtension.class);
   private static final Gson gson = new Gson();
-  private static final Type type = new TypeToken<HashSet<TargetAddressInfo>>(){}.getType();
+  private static final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {
+  }.getType();
 
   @Override
   public <T extends RunConfigurationBase> void updateJavaParameters(
@@ -147,34 +148,51 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     if (classpath == null) {
       return Collections.emptyList();
     }
-    final VirtualFile classpathLinks;
+    // Handle classpath with target.id
     if (targetAddressInfo != null) {
-      classpathLinks = classpath.findFileByRelativePath(targetAddressInfo.getId());
-    }
-    else {
-      classpathLinks = classpath.findFileByRelativePath(targetAddress.replace(':', '/'));
-    }
-
-    if (classpathLinks == null) {
-      return Collections.emptyList();
-    }
-
-    return ContainerUtil.mapNotNull(
-      classpathLinks.getChildren(),
-      new Function<VirtualFile, String>() {
-        @Override
-        public String fun(VirtualFile classpathEntry) {
-          if (classpathEntry.isDirectory()) {
-            // Optimization to not include empty folders.
-            return classpathEntry.getChildren().length > 0 ? classpathEntry.getPath() : null;
-          }
-          if (StringUtil.equalsIgnoreCase(classpathEntry.getExtension(), "jar")) {
-            return classpathEntry.getPath();
-          }
-          return null;
+      List<String> paths = ContainerUtil.newArrayList();
+      int count = 0;
+      while (true) {
+        VirtualFile classpathLinkFolder = classpath.findFileByRelativePath(targetAddressInfo.getId() + "-" + count);
+        VirtualFile classpathLinkFile = classpath.findFileByRelativePath(targetAddressInfo.getId() + "-" + count + ".jar");
+        if (classpathLinkFolder != null && classpathLinkFolder.isDirectory()) {
+          paths.add(classpathLinkFolder.getPath());
+          break;
+        }
+        else if (classpathLinkFile != null) {
+          paths.add(classpathLinkFile.getPath());
+          count++;
+        }
+        else {
+          break;
         }
       }
-    );
+      System.out.println(paths);
+      return paths;
+    }
+    // Handle old naming style classpath
+    else {
+      VirtualFile classpathLinks = classpath.findFileByRelativePath(targetAddress.replace(':', '/'));
+      if (classpathLinks == null) {
+        return Collections.emptyList();
+      }
+      return ContainerUtil.mapNotNull(
+        classpathLinks.getChildren(),
+        new Function<VirtualFile, String>() {
+          @Override
+          public String fun(VirtualFile classpathEntry) {
+            if (classpathEntry.isDirectory()) {
+              // Optimization to not include empty folders.
+              return classpathEntry.getChildren().length > 0 ? classpathEntry.getPath() : null;
+            }
+            if (StringUtil.equalsIgnoreCase(classpathEntry.getExtension(), "jar")) {
+              return classpathEntry.getPath();
+            }
+            return null;
+          }
+        }
+      );
+    }
   }
 
   @NotNull

@@ -36,7 +36,6 @@ public class TargetAddressInfo {
   public TargetAddressInfo() {
   }
 
-  @NotNull
   public String getId() {
     return id;
   }
