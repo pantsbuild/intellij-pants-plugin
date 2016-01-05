@@ -101,7 +101,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected String[] getRequiredPluginIds() {
-    return new String[]{ "org.intellij.scala" };
+    return new String[]{"org.intellij.scala"};
   }
 
   @Override
@@ -163,13 +163,14 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
           }
         }
       }
-    } else {
+    }
+    else {
       cmd("git", "reset", "--hard");
       cmd("git", "clean", "-fdx");
     }
   }
 
-  private void cmd(String ...args) throws ExecutionException {
+  private void cmd(String... args) throws ExecutionException {
     final GeneralCommandLine commandLine = new GeneralCommandLine(args);
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
@@ -214,8 +215,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       new Runnable() {
         @Override
         public void run() {
-            // we need to refresh because IJ might not pick all newly created symlinks
-            VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
+          // we need to refresh because IJ might not pick all newly created symlinks
+          VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
         }
       }
     );
@@ -230,26 +231,13 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         ModuleRootManager.getInstance(module).getModuleExtension(CompilerModuleExtension.class);
       compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl()));
       compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests()));
-    } else {
-      //compilerOutputPaths.addAll(StringUtil.split(module.getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY), ":"));
-
-      //System.out.println("Before");
-      //System.out.println(compilerOutputPaths);
-
-      final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(PantsUtil.findPantsWorkingDir(module).getPath());
-      commandLine.addParameters("options", "--no-colors");
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandLine, null);
-      final String stdOut = processOutput.getStdout();
-      final boolean hasExportClassPathNamingStyle = StringUtil.contains(stdOut, PantsConstants.PANTS_EXPORT_CLASSPATH_USE_TARGET_ID);
-
-      compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, hasExportClassPathNamingStyle));
-      //System.out.println("After");
-      //System.out.println(compilerOutputPaths);
+    }
+    else {
+      VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(PantsUtil.findPantsWorkingDir(module).getPath());
+      compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, PantsUtil.hasTargetIdInExport(pantsExecutable.getPath())));
     }
     for (String compilerOutputPath : compilerOutputPaths) {
       VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));
-      //System.out.println("Output");
-      //System.out.println(output);
       if (output == null) {
         continue;
       }
@@ -399,12 +387,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   /**
-   *  Same as super method except it doesn't check for gen modules.
-   *  It appeared names of gen modules are changing from time to time
-   *  and we can't use a determenistic one because we run tests
-   *  for different version of pants.
-   *
-   *  Use assertGenModules instead.
+   * Same as super method except it doesn't check for gen modules.
+   * It appeared names of gen modules are changing from time to time
+   * and we can't use a determenistic one because we run tests
+   * for different version of pants.
+   * <p/>
+   * Use assertGenModules instead.
    */
   @Override
   protected void assertModules(String... expectedNames) {
