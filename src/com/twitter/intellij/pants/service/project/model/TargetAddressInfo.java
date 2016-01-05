@@ -95,6 +95,11 @@ public class TargetAddressInfo {
 
 
   public String getCanonicalId() {
-    return PantsUtil.getCanonicalTargetId(targetAddress);
+    if (getId() != null){
+      return getId();
+    }
+    else {
+      return PantsUtil.getCanonicalTargetId(targetAddress);
+    }
   }
 }

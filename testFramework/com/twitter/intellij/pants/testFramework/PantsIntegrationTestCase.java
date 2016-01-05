@@ -231,18 +231,25 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl()));
       compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests()));
     } else {
-      compilerOutputPaths.addAll(StringUtil.split(module.getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY), ":"));
+      //compilerOutputPaths.addAll(StringUtil.split(module.getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY), ":"));
+
+      //System.out.println("Before");
+      //System.out.println(compilerOutputPaths);
 
       final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(PantsUtil.findPantsWorkingDir(module).getPath());
       commandLine.addParameters("options", "--no-colors");
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandLine, null);
-      final String stdout = processOutput.getStdout();
-      final boolean hasExportClassPathNamingStyle = StringUtil.contains(stdout, PantsConstants.PANTS_EXPORT_CLASSPATH_USE_TARGET_ID);
+      final String stdOut = processOutput.getStdout();
+      final boolean hasExportClassPathNamingStyle = StringUtil.contains(stdOut, PantsConstants.PANTS_EXPORT_CLASSPATH_USE_TARGET_ID);
 
       compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, hasExportClassPathNamingStyle));
+      //System.out.println("After");
+      //System.out.println(compilerOutputPaths);
     }
     for (String compilerOutputPath : compilerOutputPaths) {
       VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));
+      //System.out.println("Output");
+      //System.out.println(output);
       if (output == null) {
         continue;
       }
