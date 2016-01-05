@@ -36,7 +36,7 @@ public class PantsConstants {
   public static final String PANTS_TARGET_ADDRESSES_KEY = "pants.target.addresses";
   public static final String PANTS_TARGET_ADDRESS_INFOS_KEY = "pants.target.address.infos";
 
-  public static final String PANTS_EXPORT_CLASSPATH_USE_TARGET_ID = "export-classpath.use_old_naming_style";
+  public static final String PANTS_EXPORT_CLASSPATH_NAMING_STYLE_OPTION = "export-classpath.use_old_naming_style";
 
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(

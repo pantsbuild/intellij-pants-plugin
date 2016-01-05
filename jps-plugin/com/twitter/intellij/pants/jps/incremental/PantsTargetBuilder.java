@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.jps.incremental;
 
-import com.google.gson.Gson;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
@@ -49,10 +48,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
   public PantsTargetBuilder() {
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
-  }
-
-  private class SimpleExportResult {
-    public String version;
   }
 
   @NotNull
@@ -156,36 +151,17 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     }
 
-    // Find out whether "export-classpath-use-old-naming-style" is supported
-    final GeneralCommandLine optionCommandLine = PantsUtil.defaultCommandLine(pantsExecutable);
-    optionCommandLine.addParameters("options", "--no-colors");
-    final boolean hasExportClassPathNamingStyle;
-    try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(optionCommandLine, null);
-      final String stdout = processOutput.getStdout();
-      hasExportClassPathNamingStyle = StringUtil.contains(stdout, PantsConstants.PANTS_EXPORT_CLASSPATH_USE_TARGET_ID);
-    }
-    catch (ExecutionException e) {
-      throw new ProjectBuildException("./pants options failed");
-    }
+    // Find out whether "export-classpath-use-old-naming-style" exists
+    final boolean hasExportClassPathNamingStyle =
+      PantsUtil.getPantsOptions(pantsExecutable).contains(PantsConstants.PANTS_EXPORT_CLASSPATH_NAMING_STYLE_OPTION);
+    final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
 
-    final boolean exportContainsTargetId;
-    final GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
-    exportCommandline.addParameters("export", "--no-colors");
-    try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
-      final String stdOut = processOutput.getStdout();
-      SimpleExportResult simpleExportResult = (new Gson()).fromJson(stdOut, SimpleExportResult.class);
-      exportContainsTargetId = versionCompare(simpleExportResult.version, "1.0.5") >= 0;
-    }
-    catch (ExecutionException e) {
-      throw new ProjectBuildException("./pants options failed");
-    }
-
-    commandLine.addParameters("--no-colors");
-    if (hasExportClassPathNamingStyle && exportContainsTargetId) {
+    // "export-classpath-use-old-naming-style" is soon to be removed.
+    // so add this flag only if target id is exported and this flag supported.
+    if (hasExportClassPathNamingStyle && hasTargetIdInExport) {
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
+    commandLine.addParameters("--no-colors");
 
     final Process process;
     try {
