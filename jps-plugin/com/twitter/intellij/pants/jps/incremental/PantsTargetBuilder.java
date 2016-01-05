@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.jps.incremental;
 
+import com.google.gson.Gson;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
@@ -48,6 +49,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
   public PantsTargetBuilder() {
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
+  }
+
+  private class SimpleExportResult {
+    public String version;
   }
 
   @NotNull
@@ -110,7 +115,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull PantsBuildTarget target,
     @NotNull DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder,
     @NotNull final CompileContext context,
-    String ...goals
+    String... goals
   ) throws IOException, ProjectBuildException {
     final String pantsExecutable = target.getPantsExecutable();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
@@ -128,7 +133,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       for (String targetAddress : allNonGenTargets) {
         commandLine.addParameter(targetAddress);
       }
-    } else {
+    }
+    else {
       // Pants does compile incrementally and it appeared calling Pants for only findTargetAddresses(holder) targets
       // isn't very beneficial. To simplify the plugin we are going to rely on Pants and pass all targets in the project.
       // We can't use project settings because a project can be generated from a script file or is opened with dependeees.
@@ -136,12 +142,13 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       String recompileMessage;
       if (changedNonGenTargets.size() == 1) {
         recompileMessage = String.format("Recompiling %s", changedNonGenTargets.iterator().next());
-      } else {
+      }
+      else {
         recompileMessage = String.format("Recompiling %s targets", changedNonGenTargets.size());
       }
       context.processMessage(
         new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage
-      ));
+        ));
       context.processMessage(new ProgressMessage(recompileMessage));
       commandLine.addParameters(goals);
       for (String targetAddress : changedNonGenTargets) {
@@ -153,17 +160,30 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final GeneralCommandLine optionCommandLine = PantsUtil.defaultCommandLine(pantsExecutable);
     optionCommandLine.addParameters("options", "--no-colors");
     final boolean hasExportClassPathNamingStyle;
-    try{
+    try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(optionCommandLine, null);
       final String stdout = processOutput.getStdout();
       hasExportClassPathNamingStyle = StringUtil.contains(stdout, PantsConstants.PANTS_EXPORT_CLASSPATH_USE_TARGET_ID);
     }
-    catch(ExecutionException e){
+    catch (ExecutionException e) {
+      throw new ProjectBuildException("./pants options failed");
+    }
+
+    final boolean exportContainsTargetId;
+    final GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
+    exportCommandline.addParameters("export", "--no-colors");
+    try {
+      final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
+      final String stdOut = processOutput.getStdout();
+      SimpleExportResult simpleExportResult = (new Gson()).fromJson(stdOut, SimpleExportResult.class);
+      exportContainsTargetId = versionCompare(simpleExportResult.version, "1.0.5") >= 0;
+    }
+    catch (ExecutionException e) {
       throw new ProjectBuildException("./pants options failed");
     }
 
     commandLine.addParameters("--no-colors");
-    if (hasExportClassPathNamingStyle) {
+    if (hasExportClassPathNamingStyle && exportContainsTargetId) {
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
 
@@ -202,7 +222,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     );
     return hasDirtyTargets.get();
-
   }
 
   private Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
@@ -260,5 +279,38 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       message.getFilePath(),
       -1L, -1L, -1L, message.getLineNumber() + 1, -1L
     );
+  }
+
+  /**
+   * Compares two version strings.
+   * <p/>
+   * Use this instead of String.compareTo() for a non-lexicographical
+   * comparison that works for version strings. e.g. "1.10".compareTo("1.6").
+   *
+   * @param str1 a string of ordinal numbers separated by decimal points.
+   * @param str2 a string of ordinal numbers separated by decimal points.
+   * @return The result is a negative integer if str1 is _numerically_ less than str2.
+   * The result is a positive integer if str1 is _numerically_ greater than str2.
+   * The result is zero if the strings are _numerically_ equal.
+   * @note It does not work if "1.10" is supposed to be equal to "1.10.0".
+   */
+  public Integer versionCompare(String str1, String str2) {
+    String[] vals1 = str1.split("\\.");
+    String[] vals2 = str2.split("\\.");
+    int i = 0;
+    // set index to first non-equal ordinal or length of shortest version string
+    while (i < vals1.length && i < vals2.length && vals1[i].equals(vals2[i])) {
+      i++;
+    }
+    // compare first non-equal ordinal number
+    if (i < vals1.length && i < vals2.length) {
+      int diff = Integer.valueOf(vals1[i]).compareTo(Integer.valueOf(vals2[i]));
+      return Integer.signum(diff);
+    }
+    // the strings are equal or one string is a substring of the other
+    // e.g. "1.2.3" = "1.2.3" or "1.2.3" < "1.2.3.4"
+    else {
+      return Integer.signum(vals1.length - vals2.length);
+    }
   }
 }

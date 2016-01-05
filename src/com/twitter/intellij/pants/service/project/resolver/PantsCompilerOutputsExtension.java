@@ -75,8 +75,8 @@ public class PantsCompilerOutputsExtension implements PantsResolverExtension {
       new Function<TargetAddressInfo, String>() {
         @Override
         public String fun(TargetAddressInfo targetAddressInfo) {
-          final String targetId = targetAddressInfo.getCanonicalId();
-          return ".pants.d/compile/jvm/" + executor.compilerFolderForTarget(targetAddressInfo) + "/isolated-classes/" + targetId;
+          final String targetId = targetAddressInfo.getId();
+          return ".pants.d/compile/" + executor.compilerFolderForTarget(targetAddressInfo) + "/isolated-classes/" + targetId;
         }
       }
     );
@@ -89,7 +89,7 @@ public class PantsCompilerOutputsExtension implements PantsResolverExtension {
       new Function<TargetAddressInfo, String>() {
         @Override
         public String fun(TargetAddressInfo targetAddressInfo) {
-          return ".pants.d/compile/jvm/" + executor.compilerFolderForTarget(targetAddressInfo) + "/classes";
+          return ".pants.d/compile/" + executor.compilerFolderForTarget(targetAddressInfo) + "/classes";
         }
       }
     );

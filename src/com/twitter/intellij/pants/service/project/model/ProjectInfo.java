@@ -32,6 +32,13 @@ public class ProjectInfo {
   // name to info
   protected Map<String, TargetInfo> targets;
 
+  protected String version;
+
+  @NotNull
+  public String getVersion() {
+    return version;
+  }
+
   @Nullable
   protected PythonSetup python_setup = null;
 
