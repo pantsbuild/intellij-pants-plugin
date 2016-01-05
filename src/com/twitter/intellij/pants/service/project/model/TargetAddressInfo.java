@@ -93,9 +93,8 @@ public class TargetAddressInfo {
     return StringUtil.equals("jar_library", getInternalPantsTargetType());
   }
 
-
   public String getCanonicalId() {
-    if (getId() != null){
+    if (getId() != null) {
       return getId();
     }
     else {
