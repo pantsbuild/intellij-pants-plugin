@@ -71,7 +71,9 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
     );
 
-    final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(PantsUtil.findPantsExecutable(module.getProject().getProjectFilePath()).getPath());
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(configuration.getProject().getProjectFile());
+    final boolean hasTargetIdInExport =
+      pantsExecutable != null ? PantsUtil.hasTargetIdInExport(pantsExecutable.getPath()) : false;
 
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
@@ -120,14 +122,16 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   }
 
   @NotNull
-  public static List<String> findPublishedClasspath(@NotNull Module module, boolean hasExportClassPathNamingStyle) {
+  public static List<String> findPublishedClasspath(@NotNull Module module, boolean hasTargetIdInExport) {
     final List<String> result = ContainerUtil.newArrayList();
     Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), type);
-    if (hasExportClassPathNamingStyle && targetInfoSet.iterator().next().getId() != null) {
+    // The new way to find classpath by target id
+    if (hasTargetIdInExport && targetInfoSet.iterator().next().getId() != null) {
       for (TargetAddressInfo ta : targetInfoSet) {
         result.addAll(findPublishedClasspath(module, null, ta));
       }
     }
+    // The old way to find classpath by target address
     else {
       final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
       for (String targetAddress : StringUtil.split(addresses, ",")) {

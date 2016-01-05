@@ -620,6 +620,7 @@ public class PantsUtil {
   }
 
   /**
+   * Copied from: http://stackoverflow.com/questions/6701948/efficient-way-to-compare-version-strings-in-java
    * Compares two version strings.
    * <p/>
    * Use this instead of String.compareTo() for a non-lexicographical
