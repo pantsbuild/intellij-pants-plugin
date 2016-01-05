@@ -232,7 +232,14 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests()));
     } else {
       compilerOutputPaths.addAll(StringUtil.split(module.getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY), ":"));
-      compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, true));
+
+      final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(PantsUtil.findPantsWorkingDir(module).getPath());
+      commandLine.addParameters("options", "--no-colors");
+      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandLine, null);
+      final String stdout = processOutput.getStdout();
+      final boolean hasExportClassPathNamingStyle = StringUtil.contains(stdout, PantsConstants.PANTS_EXPORT_CLASSPATH_USE_TARGET_ID);
+
+      compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, hasExportClassPathNamingStyle));
     }
     for (String compilerOutputPath : compilerOutputPaths) {
       VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));

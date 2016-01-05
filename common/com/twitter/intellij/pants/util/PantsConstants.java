@@ -36,6 +36,8 @@ public class PantsConstants {
   public static final String PANTS_TARGET_ADDRESSES_KEY = "pants.target.addresses";
   public static final String PANTS_TARGET_ADDRESS_INFOS_KEY = "pants.target.address.infos";
 
+  public static final String PANTS_EXPORT_CLASSPATH_USE_TARGET_ID = "export-classpath.use_old_naming_style";
+
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(
       "android_binary", "android_resources", "annotation_processor", "artifact", "artifactory", "bundle", "consume_thrift_libraries",
