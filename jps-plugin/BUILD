@@ -22,6 +22,6 @@ resources(
 
 jar_library(name='gson',
             jars=[
-                jar(org='com.google.code.gson', name='gson', rev='2.3.1', url = "file://" + os.path.join(os.getcwd(),'lib'))
+                jar(org='com.google.code.gson', name='gson', rev='2.3.1', url = "file://" + os.path.join(os.getcwd(),'jps-plugin','lib'))
             ])
 
