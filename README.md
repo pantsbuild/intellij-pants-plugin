@@ -199,6 +199,7 @@ test sources, resources, test resources, generated sources, etc).
 
 * Download and open IntelliJ IDEA 15 Community Edition
 * Install Python, Scala, and Gradle Plugins
+* Open the project via File -> Open, then select the plugin source folder. Do not import the plugin source as pants project because the plugin does not work on itself.
 * Use IntelliJ IDEA 15 Community Edition as IDEA IC SDK. Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK
 * Setup the SDK's classpath
   * Add the following to the SDK's classpath
