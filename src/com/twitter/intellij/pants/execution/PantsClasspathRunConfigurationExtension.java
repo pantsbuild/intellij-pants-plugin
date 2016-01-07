@@ -71,7 +71,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
     );
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(configuration.getProject().getProjectFile());
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
     final boolean hasTargetIdInExport =
       pantsExecutable != null ? PantsUtil.hasTargetIdInExport(pantsExecutable.getPath()) : false;
 
