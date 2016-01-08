@@ -11,9 +11,9 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class NewLibraryInfo extends HashMap<String, String> {
-  public final String DEFAULT = "default";
-  public final String JAVADOC = "javadoc";
-  public final String SOURCES = "sources";
+  public static final String DEFAULT = "default";
+  public static final String JAVADOC = "javadoc";
+  public static final String SOURCES = "sources";
 
   public NewLibraryInfo() {
   }
@@ -36,11 +36,15 @@ public class NewLibraryInfo extends HashMap<String, String> {
 
   public ArrayList<String> getJarsWithCustomClassifiers() {
     ArrayList<String> result = new ArrayList<String>();
-    Iterator it = entrySet().iterator();
+    Iterator<Map.Entry<String, String>> it = entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry pair = (Map.Entry)it.next();
-      if (pair.getKey() != DEFAULT && pair.getKey() != JAVADOC && pair.getKey() != SOURCES) {
-        result.add((String)pair.getValue());
+      Map.Entry<String, String> pair = it.next();
+      String key = pair.getKey();
+      if (key.equals(DEFAULT) || key.equals(JAVADOC) || key.equals(SOURCES)) {
+        continue;
+      }
+      else{
+        result.add(pair.getValue());
       }
     }
     return result;

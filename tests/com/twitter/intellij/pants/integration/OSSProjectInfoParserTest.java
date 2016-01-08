@@ -58,7 +58,7 @@ public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {
     assertTrue(lib.getJarsWithCustomClassifiers().size() == 1);
     assertTrue(lib.getJarsWithCustomClassifiers().iterator().next().endsWith("hadoop-common-2.7.1-tests.jar"));
 
-    assertNull(lib.getJavadoc());
-    assertNull(lib.getSources());
+    assertTrue(lib.getJavadoc().endsWith("hadoop-common-2.7.1-javadoc.jar"));
+    assertTrue(lib.getSources().endsWith("hadoop-common-2.7.1-sources.jar"));
   }
 }
