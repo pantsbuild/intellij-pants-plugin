@@ -44,7 +44,7 @@ public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {
     assertFalse(greetTarget.isScalaTarget());
   }
 
-  public void testTargetjars() {
+  public void testTargetJars() {
     final ProjectInfo info = resolveProjectInfo("intellij-integration/3rdparty/hadoop/");
 
     final TargetInfo welcomeTarget = info.getTarget("intellij-integration/3rdparty/hadoop:hadoop-stuff");
@@ -54,6 +54,8 @@ public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {
     assertNotNull(lib);
 
     assertTrue(lib.getDefault().endsWith("hadoop-common-2.7.1.jar"));
+
+    assertTrue(lib.getJarsWithCustomClassifiers().size() == 1);
     assertTrue(lib.getJarsWithCustomClassifiers().iterator().next().endsWith("hadoop-common-2.7.1-tests.jar"));
 
     assertNull(lib.getJavadoc());
