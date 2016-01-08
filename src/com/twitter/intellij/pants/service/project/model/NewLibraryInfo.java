@@ -34,7 +34,7 @@ public class NewLibraryInfo extends HashMap<String, String> {
     return get(JAVADOC);
   }
 
-  public ArrayList<String> getClassifiedJars() {
+  public ArrayList<String> getJarsWithCustomClassifiers() {
     ArrayList<String> result = new ArrayList<String>();
     Iterator it = entrySet().iterator();
     while (it.hasNext()) {

@@ -10,7 +10,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
-import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.NewLibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
@@ -19,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 
 public class PantsLibrariesExtension implements PantsResolverExtension {
@@ -52,7 +50,7 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
         addPathLoLibrary(libraryData, executor, LibraryPathType.SOURCE, libraryInfo.getSources());
         addPathLoLibrary(libraryData, executor, LibraryPathType.DOC, libraryInfo.getJavadoc());
 
-        for (String otherLibraryInfo : libraryInfo.getClassifiedJars()) {
+        for (String otherLibraryInfo : libraryInfo.getJarsWithCustomClassifiers()) {
           addPathLoLibrary(libraryData, executor, LibraryPathType.BINARY, otherLibraryInfo);
         }
       }
