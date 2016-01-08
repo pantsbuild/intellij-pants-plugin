@@ -59,7 +59,7 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
   }
 
   public void testModuleRunConfiguration() throws Throwable {
-    doImport("examples/tests/java/org/pantsbuild/example/useantlr");
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
     PsiPackage testPackage = JavaPsiFacade.getInstance(myProject).findPackage("org.pantsbuild.testproject.testjvms");
     assertEquals(testPackage.getDirectories().length, 1);
