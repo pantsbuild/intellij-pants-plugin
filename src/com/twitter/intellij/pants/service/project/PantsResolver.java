@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class PantsResolver {
-  public static final int VERSION = 11;
+  public static final int VERSION = 12;
 
   protected static final Logger LOG = Logger.getInstance(PantsResolver.class);
   protected final PantsCompileOptionsExecutor myExecutor;
