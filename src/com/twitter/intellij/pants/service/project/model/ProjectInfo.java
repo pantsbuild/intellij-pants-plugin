@@ -17,8 +17,10 @@ public class ProjectInfo {
   public static ProjectInfo fromJson(@NotNull String data) {
     final GsonBuilder builder = new GsonBuilder();
     builder.registerTypeAdapter(TargetInfo.class, TargetInfoDeserializer.INSTANCE);
+    builder.registerTypeAdapter(NewLibraryInfo.class, NewLibraryInfoDeserializer.INSTANCE);
     final ProjectInfo projectInfo = builder.create().fromJson(data, ProjectInfo.class);
     projectInfo.initTargetAddresses();
+
     return projectInfo;
   }
 
@@ -28,7 +30,7 @@ public class ProjectInfo {
 
   private final Logger LOG = Logger.getInstance(getClass());
   // id(org:name:version) to jars
-  protected Map<String, LibraryInfo> libraries;
+  protected Map<String, NewLibraryInfo> libraries;
   // name to info
   protected Map<String, TargetInfo> targets;
 
@@ -47,15 +49,15 @@ public class ProjectInfo {
     );
   }
 
-  public List<Map.Entry<String, LibraryInfo>> getSortedLibraries() {
+  public List<Map.Entry<String, NewLibraryInfo>> getSortedLibraries() {
     return getSortedEntries(getLibraries());
   }
 
-  public Map<String, LibraryInfo> getLibraries() {
+  public Map<String, NewLibraryInfo> getLibraries() {
     return libraries;
   }
 
-  public void setLibraries(Map<String, LibraryInfo> libraries) {
+  public void setLibraries(Map<String, NewLibraryInfo> libraries) {
     this.libraries = libraries;
   }
 
@@ -77,7 +79,7 @@ public class ProjectInfo {
   }
 
   @Nullable
-  public LibraryInfo getLibraries(@NotNull String libraryId) {
+  public NewLibraryInfo getLibraries(@NotNull String libraryId) {
     if (libraries.containsKey(libraryId) && libraries.get(libraryId).getDefault() != null) {
       return libraries.get(libraryId);
     }
@@ -86,12 +88,12 @@ public class ProjectInfo {
       return null;
     }
     final String libraryName = libraryId.substring(0, versionIndex);
-    for (Map.Entry<String, LibraryInfo> libIdAndJars : libraries.entrySet()) {
+    for (Map.Entry<String, NewLibraryInfo> libIdAndJars : libraries.entrySet()) {
       final String currentLibraryId = libIdAndJars.getKey();
       if (!StringUtil.startsWith(currentLibraryId, libraryName + ":")) {
         continue;
       }
-      final LibraryInfo currentInfo = libIdAndJars.getValue();
+      final NewLibraryInfo currentInfo = libIdAndJars.getValue();
       if (currentInfo != null) {
         LOG.info("Using " + currentLibraryId + " instead of " + libraryId);
         return currentInfo;
@@ -145,7 +147,7 @@ public class ProjectInfo {
   }
 
   /**
-   *  Helper method to get a distribution by target type.
+   * Helper method to get a distribution by target type.
    */
   public Map<String, Integer> getTargetsDistribution() {
     final Map<String, Integer> result = new HashMap<String, Integer>();

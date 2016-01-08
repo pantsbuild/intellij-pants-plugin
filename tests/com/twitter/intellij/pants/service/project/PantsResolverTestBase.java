@@ -76,10 +76,10 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
       )
     );
 
-    final Map<String, LibraryInfo> libraries = new HashMap<String, LibraryInfo>();
+    final Map<String, NewLibraryInfo> libraries = new HashMap<String, NewLibraryInfo>();
     for (TargetInfo targetInfo : result.getTargets().values()) {
       for (String libraryId : targetInfo.getLibraries()) {
-        libraries.put(libraryId, new LibraryInfo(libraryId.replace('.', File.separatorChar)));
+        libraries.put(libraryId, new NewLibraryInfo(libraryId.replace('.', File.separatorChar)));
       }
     }
     result.setLibraries(libraries);

@@ -7,6 +7,7 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
+import com.twitter.intellij.pants.service.project.model.NewLibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class PantsScalaUtil {
 
@@ -54,7 +56,7 @@ public class PantsScalaUtil {
         @Override
         public boolean value(TargetInfo info) {
           for (String libraryId : info.getLibraries()) {
-            final LibraryInfo libraryInfo = projectInfo.getLibraries().get(libraryId);
+            final NewLibraryInfo libraryInfo = projectInfo.getLibraries().get(libraryId);
             final String libraryJarPath = libraryInfo != null ? libraryInfo.getDefault() : null;
             if (isScalaLib(libraryId) && libraryJarPath != null && !getScalaLibFile(libraryJarPath, scalaCompiler).exists()) {
               return true;

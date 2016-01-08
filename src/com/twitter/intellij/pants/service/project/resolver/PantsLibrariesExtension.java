@@ -11,6 +11,7 @@ import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
+import com.twitter.intellij.pants.service.project.model.NewLibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 public class PantsLibrariesExtension implements PantsResolverExtension {
@@ -40,7 +42,7 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
       final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, jarTarget);
 
       for (String libraryId : targetInfo.getLibraries()) {
-        final LibraryInfo libraryInfo = projectInfo.getLibraries(libraryId);
+        final NewLibraryInfo libraryInfo = projectInfo.getLibraries(libraryId);
         if (libraryInfo == null) {
           LOG.debug("Couldn't find library " + libraryId);
           continue;
@@ -49,6 +51,10 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
         addPathLoLibrary(libraryData, executor, LibraryPathType.BINARY, libraryInfo.getDefault());
         addPathLoLibrary(libraryData, executor, LibraryPathType.SOURCE, libraryInfo.getSources());
         addPathLoLibrary(libraryData, executor, LibraryPathType.DOC, libraryInfo.getJavadoc());
+
+        for (String otherLibraryInfo : libraryInfo.getClassifiedJars()) {
+          addPathLoLibrary(libraryData, executor, LibraryPathType.BINARY, otherLibraryInfo);
+        }
       }
 
       idToLibraryData.put(jarTarget, libraryData);
