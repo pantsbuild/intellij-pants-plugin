@@ -25,24 +25,25 @@ import java.util.Set;
 
 public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
   public void testClassRunConfiguration() throws Throwable {
-    doImport("examples/tests/java/org/pantsbuild/example/hello");
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
-    String classReference = "org.pantsbuild.example.hello.greet.GreetingTest";
+    String classReference = "org.pantsbuild.testproject.testjvms.TestSix";
     PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
     assertNotNull(testClass);
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testClass);
 
     // esc.getSettings().getScriptParameters() will return something like:
-    // "--no-test-junit-suppress-output --test-junit-test=org.pantsbuild.example.hello.greet.GreetingTest"
+    // "--no-test-junit-suppress-output --test-junit-test=org.pantsbuild.testproject.testjvms.TestSix --no-colors"
     Set<String> items = new HashSet<String>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
     assertTrue(items.contains("--test-junit-test=" + classReference));
   }
 
   public void testMethodRunConfiguration() throws Throwable {
-    doImport("examples/tests/java/org/pantsbuild/example/hello");
-    String classReference = "org.pantsbuild.example.hello.greet.GreetingTest";
-    String methodName = "mentionGreetee";
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
+
+    String classReference = "org.pantsbuild.testproject.testjvms.TestSix";
+    String methodName = "testSix";
 
     PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
     assertNotNull(testClass);
@@ -60,14 +61,15 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
   public void testModuleRunConfiguration() throws Throwable {
     doImport("examples/tests/java/org/pantsbuild/example/useantlr");
 
-    PsiPackage testPackage = JavaPsiFacade.getInstance(myProject).findPackage("org.pantsbuild.example.useantlr");
+    PsiPackage testPackage = JavaPsiFacade.getInstance(myProject).findPackage("org.pantsbuild.testproject.testjvms");
     assertEquals(testPackage.getDirectories().length, 1);
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testPackage.getDirectories()[0]);
 
     Set<String> items = new HashSet<String>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
-    assertTrue(items.contains("--test-junit-test=org.pantsbuild.example.useantlr.Antlr3Test"));
-    assertTrue(items.contains("--test-junit-test=org.pantsbuild.example.useantlr.Antlr4Test"));
+    assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestSix"));
+    assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestSeven"));
+    assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestEight"));
   }
 
   @NotNull
