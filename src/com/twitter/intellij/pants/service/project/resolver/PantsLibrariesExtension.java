@@ -10,7 +10,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
-import com.twitter.intellij.pants.service.project.model.NewLibraryInfo;
+import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -40,7 +40,7 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
       final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, jarTarget);
 
       for (String libraryId : targetInfo.getLibraries()) {
-        final NewLibraryInfo libraryInfo = projectInfo.getLibraries(libraryId);
+        final LibraryInfo libraryInfo = projectInfo.getLibraries(libraryId);
         if (libraryInfo == null) {
           LOG.debug("Couldn't find library " + libraryId);
           continue;

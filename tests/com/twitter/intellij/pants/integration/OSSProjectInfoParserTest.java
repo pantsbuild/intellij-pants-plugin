@@ -7,7 +7,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolver;
-import com.twitter.intellij.pants.service.project.model.NewLibraryInfo;
+import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -50,7 +50,7 @@ public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {
     final TargetInfo welcomeTarget = info.getTarget("intellij-integration/3rdparty/hadoop:hadoop-stuff");
     assertNotNull(welcomeTarget);
 
-    NewLibraryInfo lib = info.getLibraries("org.apache.hadoop:hadoop-common:2.7.1");
+    LibraryInfo lib = info.getLibraries("org.apache.hadoop:hadoop-common:2.7.1");
     assertNotNull(lib);
 
     assertTrue(lib.getDefault().endsWith("hadoop-common-2.7.1.jar"));

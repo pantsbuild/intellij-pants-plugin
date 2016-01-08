@@ -10,15 +10,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class NewLibraryInfo extends HashMap<String, String> {
+public class LibraryInfo extends HashMap<String, String> {
   public static final String DEFAULT = "default";
   public static final String JAVADOC = "javadoc";
   public static final String SOURCES = "sources";
 
-  public NewLibraryInfo() {
+  public LibraryInfo() {
   }
 
-  public NewLibraryInfo(@Nullable String defaultPath) {
+  public LibraryInfo(@Nullable String defaultPath) {
     put(DEFAULT, defaultPath);
   }
 
