@@ -7,6 +7,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Ref;
@@ -149,6 +150,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         commandLine.addParameter(targetAddress);
       }
     }
+
+    commandLine.addParameter(PantsUtil.getJdkParameter(ProjectJdkTable.getInstance()));
 
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =

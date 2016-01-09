@@ -25,6 +25,8 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
+import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
@@ -56,7 +58,8 @@ public class PantsUtil {
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
     if (vFile == null) {
       return null;
-    } else if (vFile.isDirectory()) {
+    }
+    else if (vFile.isDirectory()) {
       return ContainerUtil.find(
         vFile.getChildren(),
         new Condition<VirtualFile>() {
@@ -267,7 +270,7 @@ public class PantsUtil {
   }
 
   public static String removeWhitespace(@NotNull String text) {
-    return text.replaceAll("\\s","");
+    return text.replaceAll("\\s", "");
   }
 
   public static boolean isGeneratableFile(@NotNull String path) {
@@ -281,14 +284,16 @@ public class PantsUtil {
            FileUtilRt.extensionEquals(path, PantsConstants.PROTOBUF_EXT);
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public static String getCanonicalModuleName(@NotNull @NonNls String targetName) {
     // Do not use ':' because it is used as a separator in a classpath
     // while running the app. As well as path separators
     return replaceDelimitersInTargetName(targetName, '_');
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public static String getCanonicalTargetId(@NotNull @NonNls String targetName) {
     return replaceDelimitersInTargetName(targetName, '.');
   }
@@ -344,7 +349,7 @@ public class PantsUtil {
   }
 
   public static boolean isResource(PantsSourceType sourceType) {
-    return sourceType == PantsSourceType.RESOURCE  || sourceType == PantsSourceType.TEST_RESOURCE;
+    return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
   }
 
   @Nullable
@@ -370,7 +375,8 @@ public class PantsUtil {
   public static VirtualFile findBUILDFileForModule(@NotNull Module module) {
     final String linkedPantsBUILD = getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
     final String linkedPantsBUILDUrl = linkedPantsBUILD != null ? VfsUtil.pathToUrl(linkedPantsBUILD) : null;
-    final VirtualFile virtualFile = linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
+    final VirtualFile virtualFile =
+      linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
     if (virtualFile == null) {
       return null;
     }
@@ -555,10 +561,10 @@ public class PantsUtil {
     return Boolean.valueOf(System.getProperty("pants.compiler.isolated.strategy"));
   }
 
-  @Contract(pure=true)
+  @Contract(pure = true)
   public static <T> boolean forall(@NotNull Iterable<T> iterable, @NotNull Condition<T> condition) {
     for (T value : iterable) {
-      if(!condition.value(value)) {
+      if (!condition.value(value)) {
         return false;
       }
     }
@@ -566,7 +572,7 @@ public class PantsUtil {
   }
 
   @NotNull
-  public static  <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
+  public static <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
     return ContainerUtil.mapNotNull(
       ExternalSystemApiUtil.findAll(dataNode, key),
       new Function<DataNode<T>, T>() {
@@ -584,6 +590,15 @@ public class PantsUtil {
   ) throws ExecutionException {
     return getOutput(command.createProcess(), processAdapter);
   }
+
+  public static String getJdkParameter(final ProjectJdkTable jdkTable) {
+    jdkTable.getAllJdks();
+    String javaHome = ((JavaAwareProjectJdkTableImpl)jdkTable).getInternalJdk().getHomeDirectory().getParent().getPath();
+    HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
+    distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(javaHome));
+    return "--jvm-distributions-paths=" + (new Gson()).toJson(distributionFlag);
+  }
+}
 
   public static String getPantsOptions(final String pantsExecutable) {
     final GeneralCommandLine exportCommandline = defaultCommandLine(pantsExecutable);

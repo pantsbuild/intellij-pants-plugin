@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.service.task;
 
+import com.google.gson.Gson;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
@@ -13,6 +14,7 @@ import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.task.AbstractExternalSystemTaskManager;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.util.containers.ContainerUtil;
@@ -21,12 +23,12 @@ import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExecutionSettings> {
   public static final Map<String, String> goal2JvmOptionsFlag = ContainerUtil.newHashMap(
@@ -60,7 +62,8 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       for (String targetName : settings.getTargetNames()) {
         commandLine.addParameter(relativeProjectPath + ":" + targetName);
       }
-    } else {
+    }
+    else {
       commandLine.addParameter(relativeProjectPath + File.separator + "::");
     }
     commandLine.addParameters(scriptParameters);
@@ -86,6 +89,8 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       }
       commandLine.addParameter(jvmOptionsFlag + "=" + debuggerSetup);
     }
+
+    commandLine.addParameter(PantsUtil.getJdkParameter(ProjectJdkTable.getInstance()));
 
     listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);
     try {
