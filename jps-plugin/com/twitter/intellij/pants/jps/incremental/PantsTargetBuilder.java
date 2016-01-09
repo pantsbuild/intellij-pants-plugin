@@ -115,7 +115,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final String pantsExecutable = target.getPantsExecutable();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
     final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
-    final Set<TargetAddressInfo> x = target.getTargetAddressInfoSet();
 
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargets.size());
