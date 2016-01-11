@@ -14,7 +14,7 @@ import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import org.jetbrains.annotations.NotNull;
 
-public class OSSProjectInfoParserTest extends OSSPantsIntegrationTest {
+public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   private static Consumer<String> STRING_CONSUMER = new Consumer<String>() {
     public void consume(final String t) {
     }
