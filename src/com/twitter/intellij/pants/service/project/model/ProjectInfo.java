@@ -17,7 +17,7 @@ public class ProjectInfo {
   public static ProjectInfo fromJson(@NotNull String data) {
     final GsonBuilder builder = new GsonBuilder();
     builder.registerTypeAdapter(TargetInfo.class, TargetInfoDeserializer.INSTANCE);
-    builder.registerTypeAdapter(LibraryInfo.class, NewLibraryInfoDeserializer.INSTANCE);
+    builder.registerTypeAdapter(LibraryInfo.class, LibraryInfoDeserializer.INSTANCE);
     final ProjectInfo projectInfo = builder.create().fromJson(data, ProjectInfo.class);
     projectInfo.initTargetAddresses();
 

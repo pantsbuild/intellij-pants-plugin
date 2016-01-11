@@ -8,8 +8,8 @@ import com.google.gson.*;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-public class NewLibraryInfoDeserializer implements JsonDeserializer<LibraryInfo> {
-  public static NewLibraryInfoDeserializer INSTANCE = new NewLibraryInfoDeserializer();
+public class LibraryInfoDeserializer implements JsonDeserializer<LibraryInfo> {
+  public static LibraryInfoDeserializer INSTANCE = new LibraryInfoDeserializer();
 
   @Override
   public LibraryInfo deserialize(JsonElement element, Type type, final JsonDeserializationContext context) throws JsonParseException {
