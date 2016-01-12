@@ -41,7 +41,6 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import org.jetbrains.annotations.*;
-import org.jetbrains.jps.incremental.ProjectBuildException;
 
 import java.io.File;
 import java.io.IOException;
