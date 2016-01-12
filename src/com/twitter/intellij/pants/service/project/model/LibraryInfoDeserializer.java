@@ -16,7 +16,7 @@ public class LibraryInfoDeserializer implements JsonDeserializer<LibraryInfo> {
     LibraryInfo result = new LibraryInfo();
     final JsonObject object = element.getAsJsonObject();
     for (Map.Entry<String, JsonElement> node : object.entrySet()) {
-      result.put(node.getKey(), node.getValue().getAsString());
+      result.addJar(node.getKey(), node.getValue().getAsString());
     }
     return result;
   }

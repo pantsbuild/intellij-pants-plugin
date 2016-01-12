@@ -20,6 +20,10 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     }
   };
 
+  protected void assertPathContainsJar(String path, String jarName) {
+    assertTrue(String.format("%s is not found in path %s", jarName, path), path.endsWith(jarName));
+  }
+
   @NotNull
   public ProjectInfo resolveProjectInfo(@NotNull String relativeProjectPath) {
     final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), relativeProjectPath);
@@ -53,12 +57,11 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     LibraryInfo lib = info.getLibraries("org.apache.hadoop:hadoop-common:2.7.1");
     assertNotNull(lib);
 
-    assertTrue(lib.getDefault().endsWith("hadoop-common-2.7.1.jar"));
+    assertPathContainsJar(lib.getDefault(), "hadoop-common-2.7.1.jar");
+    assertPathContainsJar(lib.getJavadoc(), "hadoop-common-2.7.1-javadoc.jar");
+    assertPathContainsJar(lib.getSources(), "hadoop-common-2.7.1-sources.jar");
 
-    assertTrue(lib.getJarsWithCustomClassifiers().size() == 1);
-    assertTrue(lib.getJarsWithCustomClassifiers().iterator().next().endsWith("hadoop-common-2.7.1-tests.jar"));
-
-    assertTrue(lib.getJavadoc().endsWith("hadoop-common-2.7.1-javadoc.jar"));
-    assertTrue(lib.getSources().endsWith("hadoop-common-2.7.1-sources.jar"));
+    assertEquals(lib.getJarsWithCustomClassifiers().size(), 1);
+    assertPathContainsJar(lib.getJarsWithCustomClassifiers().iterator().next(), "hadoop-common-2.7.1-tests.jar");
   }
 }
