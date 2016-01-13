@@ -36,6 +36,6 @@ public class OSSPantsIncrementalCompilationIntegrationTest extends OSSPantsInteg
     modify("org.pantsbuild.example.hello.exe.Exe");
     modify("org.pantsbuild.example.hello.welcome.WelcomeEverybody");
 
-    assertContain(makeProject(), "pants: Recompiling 5 targets");
+    assertContain(makeProject(), "pants: Recompiling all 5 targets");
   }
 }
