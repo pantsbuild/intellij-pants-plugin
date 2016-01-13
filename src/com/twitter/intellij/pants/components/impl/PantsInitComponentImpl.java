@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.updateSettings.impl.UpdateChecker;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
@@ -40,6 +41,9 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     if (StringUtil.isNotEmpty(basePath) && plugin instanceof IdeaPluginDescriptorImpl) {
       ((IdeaPluginDescriptorImpl)plugin).setPath(new File(basePath));
     }
+
+
+    UpdateChecker.getDisabledToUpdatePlugins();
 
     // Add (Cmd Shift R) as shortcut to refresh the project if there is no shortcut for that action yet.
     if (KeymapManager.getInstance().getActiveKeymap().getShortcuts("ExternalSystem.RefreshAllProjects").length == 0) {
