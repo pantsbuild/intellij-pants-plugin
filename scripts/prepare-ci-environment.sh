@@ -56,7 +56,6 @@ append_intellij_jvm_options() {
     "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/rt/jps-plugin-system.jar"
     "-Dpants.compiler.enabled=${USE_PANTS_TO_COMPILE:-true}"
     "-Dpants.compiler.isolated.strategy=${USE_ISOLATED_STRATEGY:-true}"
-    "-Djunit.allowed.roots=$CWD/.cache"
     # "-Dcompiler.process.debug.port=5006"
   )
   for jvm_option in ${INTELLIJ_JVM_OPTIONS[@]}
