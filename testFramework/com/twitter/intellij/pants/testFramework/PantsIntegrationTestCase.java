@@ -87,8 +87,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    VfsRootAccess.allowRootAccess(myRelativeProjectPath);
-    VfsRootAccess.allowRootAccess("hello/im/yolo");
+    VfsRootAccess.allowRootAccess("*");
     for (String pluginId : getRequiredPluginIds()) {
       final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
       assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
