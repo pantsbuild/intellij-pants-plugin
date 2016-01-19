@@ -56,7 +56,7 @@ if [ ! -d .cache/pants ]; then
   git clone https://github.com/pantsbuild/pants
   echo "Bootstrapping Pants and Ivy..."
   pushd pants
-  ./pants resolve examples/src/scala/:: examples/src/java/:: BUILD:
+  ./pants goals
   popd
   popd
 fi
@@ -66,6 +66,3 @@ if [ ! -d .cache/jdk-libs ]; then
   mkdir -p .cache/jdk-libs
   cp "${JAVA_HOME:-/usr/lib/jvm/java-1.7.0}/lib/sa-jdi.jar" "${JAVA_HOME:-/usr/lib/jvm/java-1.7.0}/lib/tools.jar" .cache/jdk-libs
 fi
-
-echo "Bootstrapping Pants..."
-./pants goals
