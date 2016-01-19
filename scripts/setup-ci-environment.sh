@@ -2,6 +2,12 @@
 source scripts/prepare-ci-environment.sh
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
+if [ ! -d .cache/jdk-libs ]; then
+  echo "Copying JDK libs..."
+  mkdir -p .cache/jdk-libs
+  cp "$JAVA_HOME/lib/sa-jdi.jar" "$JAVA_HOME/lib/tools.jar" .cache/jdk-libs
+fi
+
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   IJ_TAR_NAME=idea${IJ_BUILD}.tar.gz
   echo "Loading $IJ_BUILD..."
@@ -59,10 +65,4 @@ if [ ! -d .cache/pants ]; then
   ./pants goals
   popd
   popd
-fi
-
-if [ ! -d .cache/jdk-libs ]; then
-  echo "Copying JDK libs..."
-  mkdir -p .cache/jdk-libs
-  cp "${JAVA_HOME:-/usr/lib/jvm/java-1.7.0}/lib/sa-jdi.jar" "${JAVA_HOME:-/usr/lib/jvm/java-1.7.0}/lib/tools.jar" .cache/jdk-libs
 fi
