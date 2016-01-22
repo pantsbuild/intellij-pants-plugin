@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.jps.incremental.model;
 
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.JpsElement;
@@ -26,4 +27,9 @@ public interface JpsPantsModuleExtension extends JpsElement {
   String getConfigPath();
 
   void setConfigPath(@NotNull String configPath);
+
+  @NotNull
+  Set<TargetAddressInfo> getTargetAddressInfoSet();
+
+  void setTargetAddressInfoSet(@NotNull Set<TargetAddressInfo> targetAddressInfoSet);
 }

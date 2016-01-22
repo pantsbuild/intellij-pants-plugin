@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
+import com.twitter.intellij.pants.service.project.model.Globs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +31,13 @@ public class TargetAddressInfo {
 
   private boolean is_code_gen;
 
+  private String id;
+
   public TargetAddressInfo() {
+  }
+
+  public String getId() {
+    return id;
   }
 
   @NotNull
@@ -86,8 +93,12 @@ public class TargetAddressInfo {
     return StringUtil.equals("jar_library", getInternalPantsTargetType());
   }
 
-
   public String getCanonicalId() {
-    return PantsUtil.getCanonicalTargetId(targetAddress);
+    if (getId() != null) {
+      return getId();
+    }
+    else {
+      return PantsUtil.getCanonicalTargetId(targetAddress);
+    }
   }
 }

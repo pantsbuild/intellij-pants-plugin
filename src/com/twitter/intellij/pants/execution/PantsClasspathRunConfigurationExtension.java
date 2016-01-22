@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.execution;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
 import com.intellij.execution.configurations.*;
@@ -11,7 +13,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.roots.OrderEnumerator;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
@@ -23,6 +24,7 @@ import com.intellij.util.Function;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jdom.Element;
@@ -30,11 +32,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.*;
-
 
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
   protected static final Logger LOG = Logger.getInstance(PantsClasspathRunConfigurationExtension.class);
+  private static final Gson gson = new Gson();
 
   @Override
   public <T extends RunConfigurationBase> void updateJavaParameters(
@@ -65,13 +68,17 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
     );
 
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
+    final boolean hasTargetIdInExport =
+      pantsExecutable != null ? PantsUtil.hasTargetIdInExport(pantsExecutable.getPath()) : false;
+
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
       module,
       new Processor<Module>() {
         @Override
         public boolean process(Module module) {
-          publishedClasspath.addAll(findPublishedClasspath(module));
+          publishedClasspath.addAll(findPublishedClasspath(module, hasTargetIdInExport));
           return true;
         }
       }
@@ -112,20 +119,66 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   }
 
   @NotNull
-  public static List<String> findPublishedClasspath(@NotNull  Module module) {
-    final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
+  public static List<String> findPublishedClasspath(@NotNull Module module, boolean hasTargetIdInExport) {
     final List<String> result = ContainerUtil.newArrayList();
-    for (String targetAddress : StringUtil.split(addresses, ",")) {
-      result.addAll(findPublishedClasspath(module, targetAddress));
+    // This is type for Gson to figure the data type to deserialize
+    final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {
+    }.getType();
+    Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), type);
+    // The new way to find classpath by target id
+    if (hasTargetIdInExport && targetInfoSet != null && targetInfoSet.size() > 0 && targetInfoSet.iterator().next().getId() != null) {
+      for (TargetAddressInfo ta : targetInfoSet) {
+        result.addAll(findPublishedClasspathByTargetId(module, ta));
+      }
+    }
+    // The old way to find classpath by target address
+    else {
+      final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
+      for (String targetAddress : StringUtil.split(addresses, ",")) {
+        result.addAll(findPublishedClasspathByTargetAddress(module, targetAddress));
+      }
     }
     return result;
   }
 
   @NotNull
-  private static List<String> findPublishedClasspath(Module module, String targetAddress) {
+  private static List<String> findPublishedClasspathByTargetId(@NotNull Module module, @NotNull TargetAddressInfo targetAddressInfo) {
     final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
     final VirtualFile classpath = workingDir != null ? workingDir.findFileByRelativePath("dist/export-classpath") : null;
-    final VirtualFile classpathLinks = classpath != null ? classpath.findFileByRelativePath(targetAddress.replace(':', '/')) : null;
+    if (classpath == null) {
+      return Collections.emptyList();
+    }
+    // Handle classpath with target.id
+    List<String> paths = ContainerUtil.newArrayList();
+    int count = 0;
+    while (true) {
+      VirtualFile classpathLinkFolder = classpath.findFileByRelativePath(targetAddressInfo.getId() + "-" + count);
+      VirtualFile classpathLinkFile = classpath.findFileByRelativePath(targetAddressInfo.getId() + "-" + count + ".jar");
+      if (classpathLinkFolder != null && classpathLinkFolder.isDirectory()) {
+        paths.add(classpathLinkFolder.getPath());
+        break;
+      }
+      else if (classpathLinkFile != null) {
+        paths.add(classpathLinkFile.getPath());
+        count++;
+      }
+      else {
+        break;
+      }
+    }
+    return paths;
+  }
+
+  @Deprecated
+  @NotNull
+  private static List<String> findPublishedClasspathByTargetAddress(@NotNull Module module, @NotNull String targetAddress) {
+    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
+    final VirtualFile classpath = workingDir != null ? workingDir.findFileByRelativePath("dist/export-classpath") : null;
+    if (classpath == null) {
+      return Collections.emptyList();
+    }
+    // Handle old naming style classpath
+    VirtualFile classpathLinks = classpath.findFileByRelativePath(targetAddress.replace(':', '/'));
     if (classpathLinks == null) {
       return Collections.emptyList();
     }
@@ -155,7 +208,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Processor<Module>() {
         @Override
         public boolean process(Module module) {
-          final String targets  = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+          final String targets = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
           final String excludes = module.getOptionValue(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY);
           for (String exclude : StringUtil.split(StringUtil.notNullize(excludes), ",")) {
             result.put(exclude, StringUtil.notNullize(targets, module.getName()));

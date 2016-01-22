@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.jps.incremental.model.impl;
 
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsModuleExtension;
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.ex.JpsElementBase;
 
@@ -12,10 +13,11 @@ import java.util.Set;
 public class JpsPantsModuleExtensionImpl extends JpsElementBase<JpsPantsModuleExtensionImpl> implements JpsPantsModuleExtension {
   private String myConfigPath;
   private Set<String> myTargetAddresses;
-
-  public JpsPantsModuleExtensionImpl(@NotNull String configPath, @NotNull Set<String> address) {
+  private Set<TargetAddressInfo> myTargetAddressInfoSet;
+  public JpsPantsModuleExtensionImpl(@NotNull String configPath, @NotNull Set<String> address, @NotNull Set<TargetAddressInfo> targetAddressInfoSet) {
     myConfigPath = configPath;
     myTargetAddresses = address;
+    myTargetAddressInfoSet = targetAddressInfoSet;
   }
 
   @NotNull
@@ -43,12 +45,22 @@ public class JpsPantsModuleExtensionImpl extends JpsElementBase<JpsPantsModuleEx
   @NotNull
   @Override
   public JpsPantsModuleExtensionImpl createCopy() {
-    return new JpsPantsModuleExtensionImpl(myConfigPath, myTargetAddresses);
+    return new JpsPantsModuleExtensionImpl(myConfigPath, myTargetAddresses, myTargetAddressInfoSet);
+  }
+
+  @NotNull
+  @Override
+  public Set<TargetAddressInfo> getTargetAddressInfoSet() { return myTargetAddressInfoSet;}
+
+  @Override
+  public void setTargetAddressInfoSet(@NotNull Set<TargetAddressInfo> targetAddressInfoSet){
+    myTargetAddressInfoSet = targetAddressInfoSet;
   }
 
   @Override
   public void applyChanges(@NotNull JpsPantsModuleExtensionImpl modified) {
     modified.setConfigPath(getConfigPath());
     modified.setTargetAddresses(getTargetAddresses());
+    modified.setTargetAddressInfoSet(getTargetAddressInfoSet());
   }
 }

@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.jps.incremental.model;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
 import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.builders.BuildTargetLoader;
@@ -37,12 +38,15 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
     final boolean compileWithPants = pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij();
 
     final Set<String> allTargetAddresses = new HashSet<String>();
+    final Set<TargetAddressInfo> targetAddressInfoSet = new HashSet<TargetAddressInfo>();
     for (JpsPantsModuleExtension moduleExtension : PantsJpsUtil.findPantsModules(jpsProject.getModules())) {
       allTargetAddresses.addAll(moduleExtension.getTargetAddresses());
+      targetAddressInfoSet.addAll(moduleExtension.getTargetAddressInfoSet());
     }
 
     return compileWithPants && PantsJpsUtil.containsPantsModules(jpsProject.getModules()) ?
-           new PantsBuildTarget(pantsProjectExtension.getPantsExecutablePath(), new HashSet<String>(allTargetAddresses)) : null;
+           new PantsBuildTarget(
+             pantsProjectExtension.getPantsExecutablePath(), new HashSet<String>(allTargetAddresses), targetAddressInfoSet) : null;
   }
 
   @NotNull

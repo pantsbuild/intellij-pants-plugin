@@ -18,6 +18,7 @@ import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
 import com.twitter.intellij.pants.jps.incremental.model.PantsSourceRootDescriptor;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
 import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
+import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -109,11 +110,12 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull PantsBuildTarget target,
     @NotNull DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder,
     @NotNull final CompileContext context,
-    String ...goals
+    String... goals
   ) throws IOException, ProjectBuildException {
     final String pantsExecutable = target.getPantsExecutable();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
     final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
+
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargets.size());
       context.processMessage(
@@ -125,7 +127,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       for (String targetAddress : allNonGenTargets) {
         commandLine.addParameter(targetAddress);
       }
-    } else {
+    }
+    else {
       // Pants does compile incrementally and it appeared calling Pants for only findTargetAddresses(holder) targets
       // isn't very beneficial. To simplify the plugin we are going to rely on Pants and pass all targets in the project.
       // We can't use project settings because a project can be generated from a script file or is opened with dependeees.
@@ -133,12 +136,13 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       String recompileMessage;
       if (changedNonGenTargets.size() == 1) {
         recompileMessage = String.format("Recompiling %s", changedNonGenTargets.iterator().next());
-      } else {
+      }
+      else {
         recompileMessage = String.format("Recompiling %s targets", changedNonGenTargets.size());
       }
       context.processMessage(
         new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage
-      ));
+        ));
       context.processMessage(new ProgressMessage(recompileMessage));
       commandLine.addParameters(goals);
       for (String targetAddress : changedNonGenTargets) {
@@ -146,9 +150,20 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     }
 
+    // Find out whether "export-classpath-use-old-naming-style" exists
+    final boolean hasExportClassPathNamingStyle =
+      PantsUtil.getPantsOptions(pantsExecutable).contains(PantsConstants.PANTS_EXPORT_CLASSPATH_NAMING_STYLE_OPTION);
+    final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
+
+    // "export-classpath-use-old-naming-style" is soon to be removed.
+    // so add this flag only if target id is exported and this flag supported.
+    if (hasExportClassPathNamingStyle && hasTargetIdInExport) {
+      commandLine.addParameters("--no-export-classpath-use-old-naming-style");
+    }
+    commandLine.addParameters("--no-colors");
+
     final Process process;
     try {
-      commandLine.addParameters("--no-colors");
       process = commandLine.createProcess();
     }
     catch (ExecutionException e) {
@@ -182,7 +197,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     );
     return hasDirtyTargets.get();
-
   }
 
   private Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
