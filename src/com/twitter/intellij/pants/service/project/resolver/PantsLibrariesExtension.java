@@ -49,6 +49,10 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
         addPathLoLibrary(libraryData, executor, LibraryPathType.BINARY, libraryInfo.getDefault());
         addPathLoLibrary(libraryData, executor, LibraryPathType.SOURCE, libraryInfo.getSources());
         addPathLoLibrary(libraryData, executor, LibraryPathType.DOC, libraryInfo.getJavadoc());
+
+        for (String otherLibraryInfo : libraryInfo.getJarsWithCustomClassifiers()) {
+          addPathLoLibrary(libraryData, executor, LibraryPathType.BINARY, otherLibraryInfo);
+        }
       }
 
       idToLibraryData.put(jarTarget, libraryData);
