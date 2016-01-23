@@ -6,6 +6,11 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.ide.FileSelectInContext;
+import com.intellij.ide.SelectInContext;
+import com.intellij.ide.SelectInTarget;
+import com.intellij.ide.projectView.ProjectView;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
@@ -19,12 +24,16 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotifica
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.Consumer;
-import com.intellij.util.PathUtil;
+import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
+import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -35,7 +44,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   protected static final Logger LOG = Logger.getInstance(PantsSystemProjectResolver.class);
@@ -59,6 +67,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
     task2executor.remove(id);
+    // Non-blocking function
+    if (id.findProject() != null){
+      switchToProjectFilesTreeView(id.findProject(), projectPath);
+    }
     return projectDataNode;
   }
 
@@ -146,5 +158,53 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   public boolean cancelTask(@NotNull ExternalSystemTaskId taskId, @NotNull ExternalSystemTaskNotificationListener listener) {
     final PantsCompileOptionsExecutor executor = task2executor.remove(taskId);
     return executor != null && executor.cancelAllProcesses();
+  }
+
+  private void switchToProjectFilesTreeView(final Project project, final String projectPath) {
+    ApplicationManager.getApplication().invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        if (ProjectView.getInstance(project).getPaneIds().contains(ProjectFilesViewPane.ID)) {
+          ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
+          focusOnImportedDirectory(project, projectPath);
+          return;
+        }
+        else {
+          // Wait then launch another non-blocking thread to check GUI ready before exiting this UI thread.
+          try {
+            Thread.sleep(1000);
+          }
+          catch (InterruptedException e) {
+          }
+          switchToProjectFilesTreeView(project, projectPath);
+        }
+      }
+    });
+  }
+
+  private void focusOnImportedDirectory(final Project project, final String projectPath) {
+    ApplicationManager.getApplication().invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        if (ModuleManager.getInstance(project).getModules().length > 0) {
+          final VirtualFile target = VirtualFileManager.getInstance().findFileByUrl("file://" + projectPath);
+          SelectInContext selectInContext = new FileSelectInContext(project, target);
+          for (SelectInTarget selectInTarget : ProjectView.getInstance(project).getSelectInTargets()) {
+            if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
+              selectInTarget.selectIn(selectInContext, false);
+            }
+          }
+          return;
+        }
+        else {
+          try {
+            Thread.sleep(1000);
+          }
+          catch (InterruptedException e) {
+          }
+        }
+        focusOnImportedDirectory(project, projectPath);
+      }
+    });
   }
 }
