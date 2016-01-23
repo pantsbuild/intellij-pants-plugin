@@ -169,12 +169,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           return;
         }
         else {
-          // Wait then launch another non-blocking thread to check GUI ready before exiting this UI thread.
-          try {
-            Thread.sleep(1000);
-          }
-          catch (InterruptedException e) {
-          }
+          // Launch another UI thread to check ProjectFilesTreeView is ready which will be placed at the end of the UI thread queue
           switchToProjectFilesTreeView(project, projectPath);
         }
       }
@@ -197,11 +192,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           return;
         }
         else {
-          try {
-            Thread.sleep(1000);
-          }
-          catch (InterruptedException e) {
-          }
           focusOnImportedDirectory(project, projectPath);
         }
       }
