@@ -67,7 +67,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
     task2executor.remove(id);
     // Non-blocking function
-    if (id.findProject() != null){
+    if (id.findProject() != null) {
       switchToProjectFilesTreeView(id.findProject(), projectPath);
     }
     return projectDataNode;
@@ -87,7 +87,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       executor.getWorkingDir().getPath() + "/.idea/pants-projects/" + executor.getProjectRelativePath(),
       executor.getProjectPath()
     );
-    final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData> (ProjectKeys.PROJECT, projectData, null);
+    final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
 
     if (!isPreviewMode) {
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);
@@ -191,6 +191,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           for (SelectInTarget selectInTarget : ProjectView.getInstance(project).getSelectInTargets()) {
             if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
               selectInTarget.selectIn(selectInContext, false);
+              break;
             }
           }
           return;
@@ -201,8 +202,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           }
           catch (InterruptedException e) {
           }
+          focusOnImportedDirectory(project, projectPath);
         }
-        focusOnImportedDirectory(project, projectPath);
       }
     });
   }
