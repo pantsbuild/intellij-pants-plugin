@@ -163,6 +163,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
+        if (ProjectView.getInstance(project) == null){
+          return;
+        }
         if (ProjectView.getInstance(project).getPaneIds().contains(ProjectFilesViewPane.ID)) {
           ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
           focusOnImportedDirectory(project, projectPath);
