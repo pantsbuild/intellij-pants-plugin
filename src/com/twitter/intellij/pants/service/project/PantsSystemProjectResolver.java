@@ -67,7 +67,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
     task2executor.remove(id);
     // Non-blocking function
-    if (id.findProject() != null) {
+    if (id.findProject() != null && !ApplicationManager.getApplication().isUnitTestMode()) {
       switchToProjectFilesTreeView(id.findProject(), projectPath);
     }
     return projectDataNode;
@@ -163,9 +163,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
-        if (ProjectView.getInstance(project) == null){
-          return;
-        }
         if (ProjectView.getInstance(project).getPaneIds().contains(ProjectFilesViewPane.ID)) {
           ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
           focusOnImportedDirectory(project, projectPath);
