@@ -16,13 +16,6 @@ import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
-import com.intellij.openapi.vcs.VcsConfiguration;
-import com.intellij.openapi.vfs.VirtualFile;
-import java.util.ArrayList;
-import java.util.Arrays;
-import com.intellij.openapi.vcs.ProjectLevelVcsManager;
-import com.intellij.openapi.updateSettings.impl.UpdateChecker;
-
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
   protected PantsProjectComponentImpl(Project project) {
@@ -53,15 +46,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               PantsUtil.refreshAllProjects(myProject);
             }
           }
-
-
-          //Find the .idea folder
-          VirtualFile dir = myProject.getBaseDir();
-          while (dir.getParent().getPath().contains(".idea")) {
-            dir = dir.getParent();
-          }
-          VcsConfiguration.getInstance(myProject).addIgnoredUnregisteredRoots(Arrays.asList(dir.getPath()));
-          //ProjectLevelVcsManager.getInstance(myProject).get
         }
       }
     );
