@@ -17,8 +17,10 @@ public class ProjectInfo {
   public static ProjectInfo fromJson(@NotNull String data) {
     final GsonBuilder builder = new GsonBuilder();
     builder.registerTypeAdapter(TargetInfo.class, TargetInfoDeserializer.INSTANCE);
+    builder.registerTypeAdapter(LibraryInfo.class, LibraryInfoDeserializer.INSTANCE);
     final ProjectInfo projectInfo = builder.create().fromJson(data, ProjectInfo.class);
     projectInfo.initTargetAddresses();
+
     return projectInfo;
   }
 
@@ -152,7 +154,7 @@ public class ProjectInfo {
   }
 
   /**
-   *  Helper method to get a distribution by target type.
+   * Helper method to get a distribution by target type.
    */
   public Map<String, Integer> getTargetsDistribution() {
     final Map<String, Integer> result = new HashMap<String, Integer>();

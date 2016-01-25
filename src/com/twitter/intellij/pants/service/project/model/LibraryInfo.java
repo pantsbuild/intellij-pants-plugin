@@ -3,77 +3,71 @@
 
 package com.twitter.intellij.pants.service.project.model;
 
-import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class LibraryInfo {
-  @Nullable
-  @SerializedName("default")
-  protected String myDefault;
-  @Nullable
-  @SerializedName("sources")
-  protected String mySources;
-  @Nullable
-  @SerializedName("javadoc")
-  protected String myJavadoc;
+  public static final String DEFAULT = "default";
+  public static final String JAVADOC = "javadoc";
+  public static final String SOURCES = "sources";
+
+  private HashMap<String, String> contents;
 
   public LibraryInfo() {
+    contents = new HashMap<String, String>();
   }
 
   public LibraryInfo(@Nullable String defaultPath) {
-    myDefault = defaultPath;
+    contents.put(DEFAULT, defaultPath);
   }
 
-  public LibraryInfo(@Nullable String defaultPath, @Nullable String sourcesPath, @Nullable String javadocPath) {
-    myDefault = defaultPath;
-    mySources = sourcesPath;
-    myJavadoc = javadocPath;
+  public void addJar(String classifier, String path) {
+    contents.put(classifier, path);
   }
 
-  @Nullable
+  public Map<String, String> getContents() {
+    return contents;
+  }
+
   public String getDefault() {
-    return myDefault;
+    return contents.get(DEFAULT);
   }
 
-  public void setDefault(@Nullable String aDefault) {
-    myDefault = aDefault;
-  }
-
-  @Nullable
   public String getSources() {
-    return mySources;
+    return contents.get(SOURCES);
   }
 
-  public void setSources(@Nullable String sources) {
-    mySources = sources;
-  }
-
-  @Nullable
   public String getJavadoc() {
-    return myJavadoc;
+    return contents.get(JAVADOC);
   }
 
-  public void setJavadoc(@Nullable String javadoc) {
-    myJavadoc = javadoc;
+  public List<String> getJarsWithCustomClassifiers() {
+    ArrayList<String> result = new ArrayList<String>();
+
+    for (String key : contents.keySet()) {
+      if (key.equals(DEFAULT) || key.equals(JAVADOC) || key.equals(SOURCES)) {
+        continue;
+      }
+      else {
+        result.add(contents.get(key));
+      }
+    }
+    return result;
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
-    LibraryInfo info = (LibraryInfo)o;
-
-    if (myDefault != null ? !myDefault.equals(info.myDefault) : info.myDefault != null) return false;
-    if (mySources != null ? !mySources.equals(info.mySources) : info.mySources != null) return false;
-    return !(myJavadoc != null ? !myJavadoc.equals(info.myJavadoc) : info.myJavadoc != null);
+    return ((LibraryInfo)o).getContents().equals(contents);
   }
 
   @Override
   public int hashCode() {
-    int result = myDefault != null ? myDefault.hashCode() : 0;
-    result = 31 * result + (mySources != null ? mySources.hashCode() : 0);
-    result = 31 * result + (myJavadoc != null ? myJavadoc.hashCode() : 0);
-    return result;
+    return contents.hashCode();
   }
 }
