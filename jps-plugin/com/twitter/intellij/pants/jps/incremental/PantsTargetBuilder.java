@@ -7,7 +7,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Ref;
@@ -19,7 +18,6 @@ import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
 import com.twitter.intellij.pants.jps.incremental.model.PantsSourceRootDescriptor;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
 import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
-import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -151,8 +149,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     }
 
-    commandLine.addParameter(PantsUtil.getJdkParameter(ProjectJdkTable.getInstance()));
-
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =
       PantsUtil.getPantsOptions(pantsExecutable).contains(PantsConstants.PANTS_EXPORT_CLASSPATH_NAMING_STYLE_OPTION);
@@ -163,6 +159,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (hasExportClassPathNamingStyle && hasTargetIdInExport) {
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
+
+    final JpsProject jpsProject = context.getProjectDescriptor().getProject();
+    final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
+    commandLine.addParameter(PantsUtil.getJdkDistributionFlag(pantsProjectExtension.getJdkPath()));
     commandLine.addParameters("--no-colors");
 
     final Process process;

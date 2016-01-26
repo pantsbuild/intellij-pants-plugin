@@ -11,6 +11,8 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.JpsProject;
+import org.jetbrains.jps.model.java.JpsJavaSdkType;
+import org.jetbrains.jps.model.library.impl.sdk.JpsSdkImpl;
 import org.jetbrains.jps.model.serialization.JpsProjectExtensionSerializer;
 
 import java.io.File;
@@ -45,9 +47,11 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     }
     final boolean compileWithIntellij =
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
+    String sdkName = project.getSdkReferencesTable().getSdkReference(JpsJavaSdkType.INSTANCE).getSdkName();
+    String jdkPath = ((JpsSdkImpl) project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName).getProperties()).getHomePath();
 
     final JpsPantsProjectExtension projectExtension =
-      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij);
+      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij, jdkPath);
 
     project.getContainer().setChild(JpsPantsProjectExtension.ROLE, projectExtension);
   }

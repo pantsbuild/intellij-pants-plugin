@@ -591,14 +591,18 @@ public class PantsUtil {
     return getOutput(command.createProcess(), processAdapter);
   }
 
-  public static String getJdkParameter(final ProjectJdkTable jdkTable) {
-    jdkTable.getAllJdks();
-    String javaHome = ((JavaAwareProjectJdkTableImpl)jdkTable).getInternalJdk().getHomeDirectory().getParent().getPath();
+  public static String getJdkParameter() {
+    String javaHome = ((JavaAwareProjectJdkTableImpl)ProjectJdkTable.getInstance()).getInternalJdk().getHomeDirectory().getParent().getPath();
+    return getJdkDistributionFlag(javaHome);
+  }
+
+
+  public static String getJdkDistributionFlag(final String jdkPath) {
     HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
-    distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(javaHome));
+    distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
     return "--jvm-distributions-paths=" + (new Gson()).toJson(distributionFlag);
   }
-}
+
 
   public static String getPantsOptions(final String pantsExecutable) {
     final GeneralCommandLine exportCommandline = defaultCommandLine(pantsExecutable);

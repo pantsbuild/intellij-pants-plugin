@@ -20,4 +20,7 @@ public interface JpsPantsProjectExtension extends JpsElement {
   boolean isCompileWithIntellij();
 
   void setCompileWithIntellij(boolean compileWithIntellij);
+
+  @NotNull
+  String getJdkPath();
 }
