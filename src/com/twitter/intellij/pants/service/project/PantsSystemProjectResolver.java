@@ -66,11 +66,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
     task2executor.remove(id);
-    // Non-blocking function
-
     Project ideProject = id.findProject();
     if (ideProject != null && !ApplicationManager.getApplication().isUnitTestMode()) {
-      switchToProjectFilesTreeView(ideProject, projectPath);
+      queueSwitchToProjectFilesTreeView(ideProject, projectPath);
     }
     return projectDataNode;
   }
@@ -161,23 +159,23 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     return executor != null && executor.cancelAllProcesses();
   }
 
-  private void switchToProjectFilesTreeView(final Project project, final String projectPath) {
+  private void queueSwitchToProjectFilesTreeView(final Project project, final String projectPath) {
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
         if (ProjectView.getInstance(project).getPaneIds().contains(ProjectFilesViewPane.ID)) {
           ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
-          focusOnImportedDirectory(project, projectPath);
+          queueSelectImportedDirectory(project, projectPath);
         }
         else {
-          // Reschedule checking if ProjectFilesTreeView is ready
-          switchToProjectFilesTreeView(project, projectPath);
+          // Reschedule checking whether ProjectFilesTreeView is ready
+          queueSwitchToProjectFilesTreeView(project, projectPath);
         }
       }
     });
   }
 
-  private void focusOnImportedDirectory(final Project project, final String projectPath) {
+  private void queueSelectImportedDirectory(final Project project, final String projectPath) {
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
@@ -192,8 +190,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           }
         }
         else {
-          // Reschedule checking if modules are loaded
-          focusOnImportedDirectory(project, projectPath);
+          // Reschedule checking whether modules are loaded
+          queueSelectImportedDirectory(project, projectPath);
         }
       }
     });
