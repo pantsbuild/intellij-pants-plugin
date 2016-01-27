@@ -15,6 +15,7 @@ public class PantsProjectCompilerForm {
   private JPanel myMainPanel;
   private JComboBox myCompilerComboBox;
   private JTextPane myDescriptionTextPane;
+  private JCheckBox myEnforceJdkCheckBox;
 
   private final CompilerValue myPantsCompiler =
     new CompilerValue(PantsBundle.message("pants.compile.pants.compiler"), PantsBundle.message("pants.compile.pants.compiler.description"));
@@ -27,6 +28,9 @@ public class PantsProjectCompilerForm {
         @Override
         public void actionPerformed(ActionEvent e) {
           Object selectedItem = myCompilerComboBox.getSelectedItem();
+          if (selectedItem instanceof CompilerValue) {
+            myEnforceJdkCheckBox.setEnabled(((CompilerValue) selectedItem).getName().equals(myPantsCompiler.getName()));
+          }
           myDescriptionTextPane.setText(
             selectedItem instanceof CompilerValue ? ((CompilerValue)selectedItem).getDescription() : ""
           );
@@ -41,6 +45,14 @@ public class PantsProjectCompilerForm {
     return myMainPanel;
   }
 
+  public boolean isEnforceJdk() {
+    return myEnforceJdkCheckBox.isSelected();
+  }
+
+  public void setEnforceJdk(boolean enforceJdk){
+      myEnforceJdkCheckBox.setSelected(enforceJdk);
+  }
+
   public JComboBox getCompilerComboBox() {
     return myCompilerComboBox;
   }
@@ -52,8 +64,10 @@ public class PantsProjectCompilerForm {
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     if (compileWithIntellij) {
       myCompilerComboBox.setSelectedItem(myIJCompiler);
+      myEnforceJdkCheckBox.setEnabled(false);
     } else {
       myCompilerComboBox.setSelectedItem(myPantsCompiler);
+      myEnforceJdkCheckBox.setEnabled(true);
     }
   }
 

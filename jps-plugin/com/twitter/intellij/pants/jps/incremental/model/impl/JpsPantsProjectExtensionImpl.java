@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.jps.incremental.model.impl;
 
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.ex.JpsElementBase;
 
 public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProjectExtensionImpl> implements JpsPantsProjectExtension {
@@ -12,7 +13,7 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
   private boolean myCompileWithIntellij;
   private String myJdkPath;
 
-  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean compileWithIntellij, @NotNull String jdkPath) {
+  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean compileWithIntellij, @Nullable String jdkPath) {
     myPantsExecutablePath = pantsExecutable;
     myCompileWithIntellij = compileWithIntellij;
     myJdkPath = jdkPath;
@@ -30,7 +31,7 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
     setCompileWithIntellij(modified.isCompileWithIntellij());
   }
 
-  @NotNull
+  @Nullable
   @Override
   public String getJdkPath() {
     return myJdkPath;

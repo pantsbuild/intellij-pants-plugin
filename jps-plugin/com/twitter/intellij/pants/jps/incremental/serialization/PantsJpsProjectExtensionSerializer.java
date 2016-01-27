@@ -19,10 +19,11 @@ import java.io.File;
 
 public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSerializer {
 
-  private static final String COMPILE_WITH_INTELLIJ   = "compileWithIntellij";
+  private static final String COMPILE_WITH_INTELLIJ = "compileWithIntellij";
+  private static final String ENFORCE_JDK = "enforceJdk";
   private static final String LINKED_PROJECT_SETTINGS = "linkedExternalProjectsSettings";
-  private static final String EXTERNAL_PROJECT_PATH   = "externalProjectPath";
-  private static final String PROJECT_SETTINGS        = "PantsProjectSettings";
+  private static final String EXTERNAL_PROJECT_PATH = "externalProjectPath";
+  private static final String PROJECT_SETTINGS = "PantsProjectSettings";
 
   @Nullable
   public static JpsPantsProjectExtension findPantsProjectExtension(@NotNull JpsProject project) {
@@ -47,9 +48,14 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     }
     final boolean compileWithIntellij =
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
-    String sdkName = project.getSdkReferencesTable().getSdkReference(JpsJavaSdkType.INSTANCE).getSdkName();
-    String jdkPath = ((JpsSdkImpl) project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName).getProperties()).getHomePath();
+    final boolean enforceJdk = Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, ENFORCE_JDK, "false"));
+    final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(project);
 
+    String sdkName = project.getSdkReferencesTable().getSdkReference(JpsJavaSdkType.INSTANCE).getSdkName();
+    String jdkPath = enforceJdk
+                     ? ((JpsSdkImpl)project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName).getProperties())
+                       .getHomePath()
+                     : null;
     final JpsPantsProjectExtension projectExtension =
       new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij, jdkPath);
 

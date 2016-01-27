@@ -34,10 +34,19 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   protected boolean myCompileWithIntellij = false;
+  protected boolean myEnforceJdk = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
+  }
+
+  public void setEnforceJdk(boolean enforceJdk) {
+    myEnforceJdk = enforceJdk;
+  }
+
+  public boolean isEnforceJdk() {
+    return myEnforceJdk;
   }
 
   public boolean isCompileWithIntellij() {
@@ -70,6 +79,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   protected void copyExtraSettingsFrom(@NotNull PantsSettings settings) {
     setCompileWithIntellij(settings.isCompileWithIntellij());
     setResolverVersion(settings.getResolverVersion());
+    setEnforceJdk(settings.isEnforceJdk());
   }
 
   @Override
@@ -83,6 +93,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     final MyState state = new MyState();
     state.setCompileWithIntellij(isCompileWithIntellij());
     state.setResolverVersion(getResolverVersion());
+    state.setEnforceJdk(isEnforceJdk());
     fillState(state);
     return state;
   }
@@ -92,18 +103,27 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     super.loadState(state);
     setCompileWithIntellij(state.isCompileWithIntellij());
     setResolverVersion(state.getResolverVersion());
+    setEnforceJdk(state.isEnforceJdk());
   }
 
   public static class MyState implements State<PantsProjectSettings> {
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
     boolean myCompileWithIntellij = false;
-
+    boolean myEnforceJdk = false;
     int myResolverVersion = 0;
 
     @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
     public Set<PantsProjectSettings> getLinkedExternalProjectsSettings() {
       return myLinkedExternalProjectsSettings;
+    }
+
+    public void setEnforceJdk(boolean enforceJdk) {
+      myEnforceJdk = enforceJdk;
+    }
+
+    public boolean isEnforceJdk() {
+      return myEnforceJdk;
     }
 
     public void setLinkedExternalProjectsSettings(Set<PantsProjectSettings> settings) {
