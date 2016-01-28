@@ -608,8 +608,7 @@ public class PantsUtil {
 
   /**
    * @param project JpsProject
-   * @return Path to JDK if exists, else null
-   * because users will know --jvm-distributions-paths flag is passed but there is trouble find the jdk path
+   * @return Path to IDEA Porject JDK if exists, else null
    */
   @Nullable
   public static String getJdkPathFromExternalBuilder(@NotNull JpsProject project) {
@@ -624,8 +623,12 @@ public class PantsUtil {
     return null;
   }
 
+  /**
+   * @return Path to IDEA Porject JDK if exists, else null
+   */
   @Nullable
   public static String getJdkPathFromIntelliJCore() {
+    // Followed example in com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.setUpInWriteAction()
     final Sdk sdk = JavaAwareProjectJdkTableImpl.getInstanceEx().getInternalJdk();
     String javaHome = null;
     if (sdk.getHomeDirectory() != null) {
@@ -634,6 +637,11 @@ public class PantsUtil {
     return javaHome;
   }
 
+  /**
+   * @param jdkPath path to IDEA Project JDK
+   * @return --jvm-distributions-paths with the parameter if jdkPath is not null,
+   * otherwise the flag with empty parameter so user can tell there is issue finding the IDEA project JDK.
+   */
   @NotNull
   public static String getJvmDistributionPathParameter(@Nullable final String jdkPath) {
     if (jdkPath != null) {
