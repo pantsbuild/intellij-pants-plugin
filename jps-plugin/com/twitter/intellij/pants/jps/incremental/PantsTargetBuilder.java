@@ -162,8 +162,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
-    if (pantsProjectExtension.getJdkPath() != null) {
-      commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(pantsProjectExtension.getJdkPath()));
+    if (pantsProjectExtension.getOptionalJdkPath() != null) {
+      commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(pantsProjectExtension.getOptionalJdkPath()));
     }
     commandLine.addParameters("--no-colors");
 

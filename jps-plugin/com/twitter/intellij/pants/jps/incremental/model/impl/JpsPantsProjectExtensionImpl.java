@@ -11,18 +11,18 @@ import org.jetbrains.jps.model.ex.JpsElementBase;
 public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProjectExtensionImpl> implements JpsPantsProjectExtension {
   private String myPantsExecutablePath;
   private boolean myCompileWithIntellij;
-  private String myJdkPath;
+  private String myOptionalJdkPath;
 
-  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean compileWithIntellij, @Nullable String jdkPath) {
+  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean compileWithIntellij, @Nullable String optionalJdkPath) {
     myPantsExecutablePath = pantsExecutable;
     myCompileWithIntellij = compileWithIntellij;
-    myJdkPath = jdkPath;
+    myOptionalJdkPath = optionalJdkPath;
   }
 
   @NotNull
   @Override
   public JpsPantsProjectExtensionImpl createCopy() {
-    return new JpsPantsProjectExtensionImpl(myPantsExecutablePath, myCompileWithIntellij, myJdkPath);
+    return new JpsPantsProjectExtensionImpl(myPantsExecutablePath, myCompileWithIntellij, myOptionalJdkPath);
   }
 
   @Override
@@ -32,9 +32,8 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
   }
 
   @Nullable
-  @Override
-  public String getJdkPath() {
-    return myJdkPath;
+  public String getOptionalJdkPath() {
+    return myOptionalJdkPath;
   }
 
   @NotNull

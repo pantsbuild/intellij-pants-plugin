@@ -49,17 +49,17 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     final boolean compileWithIntellij =
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
     final boolean useIdeaProjectJdk = Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, ENFORCE_JDK, "false"));
-    final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(project);
 
-    String sdkName = project.getSdkReferencesTable().getSdkReference(JpsJavaSdkType.INSTANCE).getSdkName();
-    String jdkPath = useIdeaProjectJdk
-                     ? ((JpsSdkImpl)project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName).getProperties())
-                       .getHomePath()
-                     : null;
+    String jdkPath = useIdeaProjectJdk ? getJpsProjectJdkPath(project): null;
     final JpsPantsProjectExtension projectExtension =
       new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij, jdkPath);
 
     project.getContainer().setChild(JpsPantsProjectExtension.ROLE, projectExtension);
+  }
+
+  private String getJpsProjectJdkPath(@NotNull JpsProject project) {
+    String sdkName = project.getSdkReferencesTable().getSdkReference(JpsJavaSdkType.INSTANCE).getSdkName();
+    return ((JpsSdkImpl)project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName).getProperties()).getHomePath();
   }
 
   @Override
