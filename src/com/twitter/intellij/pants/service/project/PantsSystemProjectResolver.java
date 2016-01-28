@@ -37,6 +37,7 @@ import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,6 +62,19 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     if (projectPath.startsWith(".pants.d")) {
       return null;
+    }
+    // Checking whether the pants executable of the targets to import is the same as the existing project's pants executable.
+    final Project existingIdeProject = id.findProject();
+    final VirtualFile existingPantsExe =
+      existingIdeProject == null ? null : PantsUtil.findPantsExecutable(existingIdeProject.getProjectFile());
+    if (existingPantsExe != null) {
+      final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
+      if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
+        throw new ExternalSystemException(String.format(
+          "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
+          existingPantsExe, newPantExe
+        ));
+      }
     }
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings, !isPreviewMode);
     task2executor.put(id, executor);
