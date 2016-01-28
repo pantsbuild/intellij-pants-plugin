@@ -201,7 +201,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     List<String> output = makeProject();
     assertTrue(StringUtil.join(output,"\n").contains(PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION));
 
-    modify("org.pantsbuild.example.hello.greet.GreetingTest");
+    modify("org.pantsbuild.example.hello.greet.Greeting");
     settings.setUseIdeaProjectJdk(false);
     output = makeProject();
     assertFalse(StringUtil.join(output,"\n").contains(PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION));
