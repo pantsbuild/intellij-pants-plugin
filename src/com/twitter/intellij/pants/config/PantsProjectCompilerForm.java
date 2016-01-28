@@ -15,7 +15,7 @@ public class PantsProjectCompilerForm {
   private JPanel myMainPanel;
   private JComboBox myCompilerComboBox;
   private JTextPane myDescriptionTextPane;
-  private JCheckBox myEnforceJdkCheckBox;
+  private JCheckBox myUseIdeaProjectJdkCheckBox;
 
   private final CompilerValue myPantsCompiler =
     new CompilerValue(PantsBundle.message("pants.compile.pants.compiler"), PantsBundle.message("pants.compile.pants.compiler.description"));
@@ -29,7 +29,7 @@ public class PantsProjectCompilerForm {
         public void actionPerformed(ActionEvent e) {
           Object selectedItem = myCompilerComboBox.getSelectedItem();
           if (selectedItem instanceof CompilerValue) {
-            myEnforceJdkCheckBox.setEnabled(((CompilerValue) selectedItem).getName().equals(myPantsCompiler.getName()));
+            myUseIdeaProjectJdkCheckBox.setEnabled(((CompilerValue) selectedItem).getName().equals(myPantsCompiler.getName()));
           }
           myDescriptionTextPane.setText(
             selectedItem instanceof CompilerValue ? ((CompilerValue)selectedItem).getDescription() : ""
@@ -45,12 +45,12 @@ public class PantsProjectCompilerForm {
     return myMainPanel;
   }
 
-  public boolean isEnforceJdk() {
-    return myEnforceJdkCheckBox.isSelected();
+  public boolean isUseIdeaProjectJdk() {
+    return myUseIdeaProjectJdkCheckBox.isSelected();
   }
 
-  public void setEnforceJdk(boolean enforceJdk){
-      myEnforceJdkCheckBox.setSelected(enforceJdk);
+  public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk){
+      myUseIdeaProjectJdkCheckBox.setSelected(useIdeaProjectJdk);
   }
 
   public JComboBox getCompilerComboBox() {
@@ -64,10 +64,10 @@ public class PantsProjectCompilerForm {
   public void setCompileWithIntellij(boolean compileWithIntellij) {
     if (compileWithIntellij) {
       myCompilerComboBox.setSelectedItem(myIJCompiler);
-      myEnforceJdkCheckBox.setEnabled(false);
+      myUseIdeaProjectJdkCheckBox.setEnabled(false);
     } else {
       myCompilerComboBox.setSelectedItem(myPantsCompiler);
-      myEnforceJdkCheckBox.setEnabled(true);
+      myUseIdeaProjectJdkCheckBox.setEnabled(true);
     }
   }
 

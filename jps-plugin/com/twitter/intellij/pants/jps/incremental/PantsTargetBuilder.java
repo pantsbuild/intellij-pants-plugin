@@ -162,7 +162,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
-    if (pantsProjectExtension.getJdkPath() != null){
+    if (pantsProjectExtension.getJdkPath() != null) {
       commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(pantsProjectExtension.getJdkPath()));
     }
     commandLine.addParameters("--no-colors");
@@ -170,6 +170,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final Process process;
     try {
       process = commandLine.createProcess();
+      context.processMessage(new CompilerMessage("pants invocation", BuildMessage.Kind.INFO, commandLine.getCommandLineString()));
     }
     catch (ExecutionException e) {
       throw new ProjectBuildException(e);

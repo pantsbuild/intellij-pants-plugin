@@ -608,7 +608,7 @@ public class PantsUtil {
   public static String getJvmDistributionPathParameter(final String jdkPath) {
     HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
     distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
-    return "--jvm-distributions-paths=" + (new Gson()).toJson(distributionFlag);
+    return PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION + "=" + new Gson().toJson(distributionFlag);
   }
 
   class SimpleExportResult {
@@ -622,7 +622,7 @@ public class PantsUtil {
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       final String stdOut = processOutput.getStdout();
-      SimpleExportResult simpleExportResult = (new Gson()).fromJson(stdOut, SimpleExportResult.class);
+      SimpleExportResult simpleExportResult = new Gson().fromJson(stdOut, SimpleExportResult.class);
       return versionCompare(simpleExportResult.getVersion(), "1.0.5") >= 0;
     }
     catch (ExecutionException e) {

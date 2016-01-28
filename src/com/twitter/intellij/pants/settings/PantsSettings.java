@@ -34,19 +34,19 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   protected boolean myCompileWithIntellij = false;
-  protected boolean myEnforceJdk = false;
+  protected boolean myUseIdeaProjectJdk = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
   }
 
-  public void setEnforceJdk(boolean enforceJdk) {
-    myEnforceJdk = enforceJdk;
+  public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
+    myUseIdeaProjectJdk = useIdeaProjectJdk;
   }
 
-  public boolean isEnforceJdk() {
-    return myEnforceJdk;
+  public boolean isUseIdeaProjectJdk() {
+    return myUseIdeaProjectJdk;
   }
 
   public boolean isCompileWithIntellij() {
@@ -79,7 +79,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   protected void copyExtraSettingsFrom(@NotNull PantsSettings settings) {
     setCompileWithIntellij(settings.isCompileWithIntellij());
     setResolverVersion(settings.getResolverVersion());
-    setEnforceJdk(settings.isEnforceJdk());
+    setUseIdeaProjectJdk(settings.isUseIdeaProjectJdk());
   }
 
   @Override
@@ -93,7 +93,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     final MyState state = new MyState();
     state.setCompileWithIntellij(isCompileWithIntellij());
     state.setResolverVersion(getResolverVersion());
-    state.setEnforceJdk(isEnforceJdk());
+    state.setUseIdeaProjectJdk(isUseIdeaProjectJdk());
     fillState(state);
     return state;
   }
@@ -103,14 +103,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     super.loadState(state);
     setCompileWithIntellij(state.isCompileWithIntellij());
     setResolverVersion(state.getResolverVersion());
-    setEnforceJdk(state.isEnforceJdk());
+    setUseIdeaProjectJdk(state.isUseIdeaProjectJdk());
   }
 
   public static class MyState implements State<PantsProjectSettings> {
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
     boolean myCompileWithIntellij = false;
-    boolean myEnforceJdk = false;
+    boolean myUseIdeaProjectJdk = false;
     int myResolverVersion = 0;
 
     @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
@@ -118,12 +118,12 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
       return myLinkedExternalProjectsSettings;
     }
 
-    public void setEnforceJdk(boolean enforceJdk) {
-      myEnforceJdk = enforceJdk;
+    public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
+      myUseIdeaProjectJdk = useIdeaProjectJdk;
     }
 
-    public boolean isEnforceJdk() {
-      return myEnforceJdk;
+    public boolean isUseIdeaProjectJdk() {
+      return myUseIdeaProjectJdk;
     }
 
     public void setLinkedExternalProjectsSettings(Set<PantsProjectSettings> settings) {

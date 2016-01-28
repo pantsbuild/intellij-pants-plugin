@@ -20,7 +20,7 @@ import java.io.File;
 public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSerializer {
 
   private static final String COMPILE_WITH_INTELLIJ = "compileWithIntellij";
-  private static final String ENFORCE_JDK = "enforceJdk";
+  private static final String ENFORCE_JDK = "useIdeaProjectJdk";
   private static final String LINKED_PROJECT_SETTINGS = "linkedExternalProjectsSettings";
   private static final String EXTERNAL_PROJECT_PATH = "externalProjectPath";
   private static final String PROJECT_SETTINGS = "PantsProjectSettings";
@@ -48,11 +48,11 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     }
     final boolean compileWithIntellij =
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
-    final boolean enforceJdk = Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, ENFORCE_JDK, "false"));
+    final boolean useIdeaProjectJdk = Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, ENFORCE_JDK, "false"));
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(project);
 
     String sdkName = project.getSdkReferencesTable().getSdkReference(JpsJavaSdkType.INSTANCE).getSdkName();
-    String jdkPath = enforceJdk
+    String jdkPath = useIdeaProjectJdk
                      ? ((JpsSdkImpl)project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName).getProperties())
                        .getHomePath()
                      : null;

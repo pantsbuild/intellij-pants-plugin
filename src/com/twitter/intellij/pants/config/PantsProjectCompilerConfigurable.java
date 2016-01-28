@@ -59,16 +59,15 @@ public class PantsProjectCompilerConfigurable extends BaseConfigurable implement
   @Override
   public boolean isModified() {
     return PantsSettings.getInstance(myProject).isCompileWithIntellij() != myCompilerForm.isCompileWithIntellij()
-      || PantsSettings.getInstance(myProject).isEnforceJdk() != myCompilerForm.isEnforceJdk();
+      || PantsSettings.getInstance(myProject).isUseIdeaProjectJdk() != myCompilerForm.isUseIdeaProjectJdk();
   }
 
   @Override
   public void apply() throws ConfigurationException {
     final PantsSettings pantsSettings = PantsSettings.getInstance(myProject);
     final boolean refreshNeeded = pantsSettings.isCompileWithIntellij() != myCompilerForm.isCompileWithIntellij();
-    //final boolean refreshNeeded = isModified();
     pantsSettings.setCompileWithIntellij(myCompilerForm.isCompileWithIntellij());
-    pantsSettings.setEnforceJdk(myCompilerForm.isEnforceJdk());
+    pantsSettings.setUseIdeaProjectJdk(myCompilerForm.isUseIdeaProjectJdk());
     if (refreshNeeded) {
       PantsUtil.refreshAllProjects(myProject);
     }
@@ -77,7 +76,7 @@ public class PantsProjectCompilerConfigurable extends BaseConfigurable implement
   @Override
   public void reset() {
     myCompilerForm.setCompileWithIntellij(PantsSettings.getInstance(myProject).isCompileWithIntellij());
-    myCompilerForm.setEnforceJdk(PantsSettings.getInstance(myProject).isEnforceJdk());
+    myCompilerForm.setUseIdeaProjectJdk(PantsSettings.getInstance(myProject).isUseIdeaProjectJdk());
   }
 
   @Override

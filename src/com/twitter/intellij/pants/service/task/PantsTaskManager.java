@@ -88,7 +88,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       commandLine.addParameter(jvmOptionsFlag + "=" + debuggerSetup);
     }
 
-    if (settings.isEnforceJdk()) {
+    if (settings.isUseIdeaProjectJdk()) {
       commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter());
     }
 
