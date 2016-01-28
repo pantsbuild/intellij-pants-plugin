@@ -160,12 +160,12 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
 
-    final JpsProject jpsProject = context.getProjectDescriptor().getProject();
-    final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
+    final JpsPantsProjectExtension pantsProjectExtension =
+      PantsJpsProjectExtensionSerializer.findPantsProjectExtension(context.getProjectDescriptor().getProject());
     if (pantsProjectExtension.getOptionalJdkPath() != null) {
       commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(pantsProjectExtension.getOptionalJdkPath()));
     }
-    commandLine.addParameters("--no-colors");
+    commandLine.addParameter("--no-colors");
 
     final Process process;
     try {
