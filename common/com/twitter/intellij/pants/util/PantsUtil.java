@@ -25,7 +25,7 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.ProjectJdkTable;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Condition;
@@ -43,6 +43,11 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import org.jetbrains.annotations.*;
+import org.jetbrains.jps.model.JpsProject;
+import org.jetbrains.jps.model.java.JpsJavaSdkType;
+import org.jetbrains.jps.model.library.JpsLibrary;
+import org.jetbrains.jps.model.library.impl.sdk.JpsSdkImpl;
+import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 
 import java.io.File;
 import java.io.IOException;
@@ -600,15 +605,45 @@ public class PantsUtil {
     }
   }
 
-  public static String getJvmDistributionPathParameter() {
-    String javaHome = ((JavaAwareProjectJdkTableImpl)ProjectJdkTable.getInstance()).getInternalJdk().getHomeDirectory().getParent().getPath();
-    return getJvmDistributionPathParameter(javaHome);
+
+  /**
+   * @param project JpsProject
+   * @return Path to JDK if exists, else null
+   * because users will know --jvm-distributions-paths flag is passed but there is trouble find the jdk path
+   */
+  @Nullable
+  public static String getJdkPathFromExternalBuilder(@NotNull JpsProject project) {
+    JpsSdkReference sdkReference = project.getSdkReferencesTable().getSdkReference(JpsJavaSdkType.INSTANCE);
+    if (sdkReference != null) {
+      String sdkName = sdkReference.getSdkName();
+      JpsLibrary lib = project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName);
+      if (lib != null && lib.getProperties() instanceof JpsSdkImpl) {
+        return ((JpsSdkImpl)lib.getProperties()).getHomePath();
+      }
+    }
+    return null;
   }
 
-  public static String getJvmDistributionPathParameter(final String jdkPath) {
-    HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
-    distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
-    return PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION + "=" + new Gson().toJson(distributionFlag);
+  @Nullable
+  public static String getJdkPathFromIntelliJCore() {
+    final Sdk sdk = JavaAwareProjectJdkTableImpl.getInstanceEx().getInternalJdk();
+    String javaHome = null;
+    if (sdk.getHomeDirectory() != null) {
+      javaHome = sdk.getHomeDirectory().getParent().getPath();
+    }
+    return javaHome;
+  }
+
+  @NotNull
+  public static String getJvmDistributionPathParameter(@Nullable final String jdkPath) {
+    if (jdkPath != null) {
+      HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
+      distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
+      return PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION + "=" + new Gson().toJson(distributionFlag);
+    }
+    else {
+      return PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION + "={}";
+    }
   }
 
   class SimpleExportResult {

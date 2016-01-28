@@ -11,8 +11,6 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.JpsProject;
-import org.jetbrains.jps.model.java.JpsJavaSdkType;
-import org.jetbrains.jps.model.library.impl.sdk.JpsSdkImpl;
 import org.jetbrains.jps.model.serialization.JpsProjectExtensionSerializer;
 
 import java.io.File;
@@ -50,16 +48,11 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
     final boolean useIdeaProjectJdk = Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, ENFORCE_JDK, "false"));
 
-    String optionalJdkPath = useIdeaProjectJdk ? getJpsProjectJdkPath(project): null;
+    String optionalJdkPath = useIdeaProjectJdk ? PantsUtil.getJdkPathFromExternalBuilder(project) : null;
     final JpsPantsProjectExtension projectExtension =
-      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij, optionalJdkPath);
+      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij, useIdeaProjectJdk);
 
     project.getContainer().setChild(JpsPantsProjectExtension.ROLE, projectExtension);
-  }
-
-  private String getJpsProjectJdkPath(@NotNull JpsProject project) {
-    String sdkName = project.getSdkReferencesTable().getSdkReference(JpsJavaSdkType.INSTANCE).getSdkName();
-    return ((JpsSdkImpl)project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName).getProperties()).getHomePath();
   }
 
   @Override
