@@ -20,7 +20,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private List<String> myTargetNames;
 
   public PantsExecutionSettings() {
-    this(Collections.<String>emptyList(), false, false, true,false);
+    this(Collections.<String>emptyList(), false, false, true, false);
   }
 
   public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean compileWithIntellij, boolean libsWithSourcesAndDocs, boolean useIdeaProjectJdk) {
