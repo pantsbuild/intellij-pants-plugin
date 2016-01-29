@@ -89,7 +89,12 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     }
 
     if (settings.isUseIdeaProjectJdk()) {
-      commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
+      try{
+        commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
+      }
+      catch(Exception e){
+        throw new ExternalSystemException(e);
+      }
     }
 
     listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);

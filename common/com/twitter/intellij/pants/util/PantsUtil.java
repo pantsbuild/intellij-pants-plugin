@@ -608,7 +608,7 @@ public class PantsUtil {
 
   /**
    * @param project JpsProject
-   * @return Path to IDEA Porject JDK if exists, else null
+   * @return Path to IDEA Project JDK if exists, else null
    */
   @Nullable
   public static String getJdkPathFromExternalBuilder(@NotNull JpsProject project) {
@@ -624,7 +624,7 @@ public class PantsUtil {
   }
 
   /**
-   * @return Path to IDEA Porject JDK if exists, else null
+   * @return Path to IDEA Project JDK if exists, else null
    */
   @Nullable
   public static String getJdkPathFromIntelliJCore() {
@@ -643,14 +643,14 @@ public class PantsUtil {
    * otherwise the flag with empty parameter so user can tell there is issue finding the IDEA project JDK.
    */
   @NotNull
-  public static String getJvmDistributionPathParameter(@Nullable final String jdkPath) {
+  public static String getJvmDistributionPathParameter(@Nullable final String jdkPath) throws Exception {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
       distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
       return PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION + "=" + new Gson().toJson(distributionFlag);
     }
     else {
-      return PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION + "={}";
+      throw new Exception("No IDEA Project JDK Found");
     }
   }
 
