@@ -6,6 +6,11 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.ide.FileSelectInContext;
+import com.intellij.ide.SelectInContext;
+import com.intellij.ide.SelectInTarget;
+import com.intellij.ide.projectView.ProjectView;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
@@ -19,12 +24,16 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotifica
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.Consumer;
-import com.intellij.util.PathUtil;
+import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
+import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -35,7 +44,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   protected static final Logger LOG = Logger.getInstance(PantsSystemProjectResolver.class);
@@ -55,10 +63,27 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (projectPath.startsWith(".pants.d")) {
       return null;
     }
+    // Checking whether the pants executable of the targets to import is the same as the existing project's pants executable.
+    final Project existingIdeProject = id.findProject();
+    final VirtualFile existingPantsExe =
+      existingIdeProject == null ? null : PantsUtil.findPantsExecutable(existingIdeProject.getProjectFile());
+    if (existingPantsExe != null) {
+      final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
+      if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
+        throw new ExternalSystemException(String.format(
+          "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
+          existingPantsExe, newPantExe
+        ));
+      }
+    }
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings, !isPreviewMode);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
     task2executor.remove(id);
+    Project ideProject = id.findProject();
+    if (ideProject != null && !ApplicationManager.getApplication().isUnitTestMode()) {
+      queueSwitchToProjectFilesTreeView(ideProject, projectPath);
+    }
     return projectDataNode;
   }
 
@@ -76,7 +101,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       executor.getWorkingDir().getPath() + "/.idea/pants-projects/" + executor.getProjectRelativePath(),
       executor.getProjectPath()
     );
-    final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData> (ProjectKeys.PROJECT, projectData, null);
+    final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
 
     if (!isPreviewMode) {
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);
@@ -146,5 +171,43 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   public boolean cancelTask(@NotNull ExternalSystemTaskId taskId, @NotNull ExternalSystemTaskNotificationListener listener) {
     final PantsCompileOptionsExecutor executor = task2executor.remove(taskId);
     return executor != null && executor.cancelAllProcesses();
+  }
+
+  private void queueSwitchToProjectFilesTreeView(final Project project, final String projectPath) {
+    ApplicationManager.getApplication().invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        if (ProjectView.getInstance(project).getPaneIds().contains(ProjectFilesViewPane.ID)) {
+          ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
+          queueSelectImportedDirectory(project, projectPath);
+        }
+        else {
+          // Reschedule checking whether ProjectFilesTreeView is ready
+          queueSwitchToProjectFilesTreeView(project, projectPath);
+        }
+      }
+    });
+  }
+
+  private void queueSelectImportedDirectory(final Project project, final String projectPath) {
+    ApplicationManager.getApplication().invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        if (ModuleManager.getInstance(project).getModules().length > 0) {
+          final VirtualFile target = VirtualFileManager.getInstance().findFileByUrl("file://" + projectPath);
+          SelectInContext selectInContext = new FileSelectInContext(project, target);
+          for (SelectInTarget selectInTarget : ProjectView.getInstance(project).getSelectInTargets()) {
+            if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
+              selectInTarget.selectIn(selectInContext, false);
+              break;
+            }
+          }
+        }
+        else {
+          // Reschedule checking whether modules are loaded
+          queueSelectImportedDirectory(project, projectPath);
+        }
+      }
+    });
   }
 }
