@@ -7,6 +7,41 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.3.11</p>
+      <ul>
+        <li>UX enhancement: auto zoom in at the target/directory imported</li>
+        <li>Abort importing directory or target if it uses a different pants executable</li>
+        <li>Disable IDEA incremental compilation logic and delegate the optimization to Pants</li>
+        <li>Add option to use IDEA Project JDK for Pants compilation via Preferences -> Compiler -> Pants</li>
+      </ul>
+      <p>1.3.10</p>
+      <ul>
+        <li>Right clicking on method and package will offer Pants run configurations</li>
+        <li>Include 15.0.3</li>
+      </ul>
+      <p>1.3.9</p>
+      <ul>
+        <li>Add shortcut 'Cmd Shift R' to refresh pants project</li>
+        <li>Remove --no-test-junit-suppress-output</li>
+      </ul>
+      <p>1.3.8</p>
+      <ul>
+        <li>Fix failure to pick up new classpath from VFS</li>
+      </ul>
+      <p>1.3.7</p>
+      <ul>
+        <li>Fix junit run's silent error</li>
+        <li>Fix junit run's recompile logic</li>
+        <li>Add temp filter to exclude synthetic_resources from compiling</li>
+      </ul>
+      <p>1.3.6.20151210</p>
+      <ul>
+        <li>Include IJ 15.0.2 build number</li>
+      </ul>
+      <p>1.3.6.20151129 5c0858519db4219cbf31815f5832b4f1cb392329</p>
+      <ul>
+        <li>Fix loading libraries sources and docs</li>
+      </ul>
       <p>1.3.6:</p>
       <ul>
         <li>Python Support</li>
@@ -137,11 +172,11 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.3.6.20151116</version>
+  <version>1.3.11</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
-  <idea-version since-build="143.1" until-build="143.1184"/>
+  <idea-version since-build="143.1" until-build="143.1823"/>
 
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
