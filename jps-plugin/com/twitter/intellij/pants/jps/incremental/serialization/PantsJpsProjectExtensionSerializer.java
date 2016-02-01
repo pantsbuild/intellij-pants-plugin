@@ -17,10 +17,11 @@ import java.io.File;
 
 public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSerializer {
 
-  private static final String COMPILE_WITH_INTELLIJ   = "compileWithIntellij";
+  private static final String COMPILE_WITH_INTELLIJ = "compileWithIntellij";
+  private static final String ENFORCE_JDK = "useIdeaProjectJdk";
   private static final String LINKED_PROJECT_SETTINGS = "linkedExternalProjectsSettings";
-  private static final String EXTERNAL_PROJECT_PATH   = "externalProjectPath";
-  private static final String PROJECT_SETTINGS        = "PantsProjectSettings";
+  private static final String EXTERNAL_PROJECT_PATH = "externalProjectPath";
+  private static final String PROJECT_SETTINGS = "PantsProjectSettings";
 
   @Nullable
   public static JpsPantsProjectExtension findPantsProjectExtension(@NotNull JpsProject project) {
@@ -45,9 +46,11 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     }
     final boolean compileWithIntellij =
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
+    final boolean useIdeaProjectJdk = Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, ENFORCE_JDK, "false"));
 
+    String optionalJdkPath = useIdeaProjectJdk ? PantsUtil.getJdkPathFromExternalBuilder(project) : null;
     final JpsPantsProjectExtension projectExtension =
-      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij);
+      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij, useIdeaProjectJdk);
 
     project.getContainer().setChild(JpsPantsProjectExtension.ROLE, projectExtension);
   }

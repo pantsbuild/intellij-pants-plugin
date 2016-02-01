@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.jps.incremental.model;
 
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.JpsElement;
 import org.jetbrains.jps.model.JpsElementChildRole;
 import org.jetbrains.jps.model.ex.JpsElementChildRoleBase;
@@ -20,4 +21,7 @@ public interface JpsPantsProjectExtension extends JpsElement {
   boolean isCompileWithIntellij();
 
   void setCompileWithIntellij(boolean compileWithIntellij);
+
+  @Nullable
+  boolean isUseIdeaProjectJdk();
 }

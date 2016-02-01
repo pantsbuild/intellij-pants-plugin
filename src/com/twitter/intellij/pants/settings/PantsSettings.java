@@ -34,10 +34,19 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   protected boolean myCompileWithIntellij = false;
+  protected boolean myUseIdeaProjectJdk = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
+  }
+
+  public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
+    myUseIdeaProjectJdk = useIdeaProjectJdk;
+  }
+
+  public boolean isUseIdeaProjectJdk() {
+    return myUseIdeaProjectJdk;
   }
 
   public boolean isCompileWithIntellij() {
@@ -70,6 +79,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   protected void copyExtraSettingsFrom(@NotNull PantsSettings settings) {
     setCompileWithIntellij(settings.isCompileWithIntellij());
     setResolverVersion(settings.getResolverVersion());
+    setUseIdeaProjectJdk(settings.isUseIdeaProjectJdk());
   }
 
   @Override
@@ -83,6 +93,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     final MyState state = new MyState();
     state.setCompileWithIntellij(isCompileWithIntellij());
     state.setResolverVersion(getResolverVersion());
+    state.setUseIdeaProjectJdk(isUseIdeaProjectJdk());
     fillState(state);
     return state;
   }
@@ -92,18 +103,27 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     super.loadState(state);
     setCompileWithIntellij(state.isCompileWithIntellij());
     setResolverVersion(state.getResolverVersion());
+    setUseIdeaProjectJdk(state.isUseIdeaProjectJdk());
   }
 
   public static class MyState implements State<PantsProjectSettings> {
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
     boolean myCompileWithIntellij = false;
-
+    boolean myUseIdeaProjectJdk = false;
     int myResolverVersion = 0;
 
     @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
     public Set<PantsProjectSettings> getLinkedExternalProjectsSettings() {
       return myLinkedExternalProjectsSettings;
+    }
+
+    public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
+      myUseIdeaProjectJdk = useIdeaProjectJdk;
+    }
+
+    public boolean isUseIdeaProjectJdk() {
+      return myUseIdeaProjectJdk;
     }
 
     public void setLinkedExternalProjectsSettings(Set<PantsProjectSettings> settings) {

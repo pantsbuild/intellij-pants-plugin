@@ -14,17 +14,21 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private final boolean myWithDependees;
   private final boolean myCompileWithIntellij;
   private final boolean myLibsWithSourcesAndDocs;
+
+
+  private final boolean myUseIdeaProjectJdk;
   private List<String> myTargetNames;
 
   public PantsExecutionSettings() {
-    this(Collections.<String>emptyList(), false, false, true);
+    this(Collections.<String>emptyList(), false, false, true, false);
   }
 
-  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean compileWithIntellij, boolean libsWithSourcesAndDocs) {
+  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean compileWithIntellij, boolean libsWithSourcesAndDocs, boolean useIdeaProjectJdk) {
     myTargetNames = targetNames;
     myWithDependees = withDependees;
     myCompileWithIntellij = compileWithIntellij;
     myLibsWithSourcesAndDocs = libsWithSourcesAndDocs;
+    myUseIdeaProjectJdk = useIdeaProjectJdk;
   }
 
   @NotNull
@@ -45,6 +49,10 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     return myLibsWithSourcesAndDocs;
   }
 
+  public boolean isUseIdeaProjectJdk() {
+    return myUseIdeaProjectJdk;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -52,7 +60,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     if (!super.equals(o)) return false;
 
     PantsExecutionSettings settings = (PantsExecutionSettings)o;
-
+    if (myUseIdeaProjectJdk != settings.myUseIdeaProjectJdk) return false;
     if (myWithDependees != settings.myWithDependees) return false;
     if (myCompileWithIntellij != settings.myCompileWithIntellij) return false;
     if (myLibsWithSourcesAndDocs != settings.myLibsWithSourcesAndDocs) return false;
@@ -68,6 +76,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     result = 31 * result + (myTargetNames != null ? myTargetNames.hashCode() : 0);
     result = 31 * result + (myCompileWithIntellij ? 1 : 0);
     result = 31 * result + (myLibsWithSourcesAndDocs ? 1 : 0);
+    result = 31 * result + (myUseIdeaProjectJdk ? 1 : 0);
     return result;
   }
 }

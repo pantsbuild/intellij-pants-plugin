@@ -25,6 +25,8 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
@@ -41,6 +43,11 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import org.jetbrains.annotations.*;
+import org.jetbrains.jps.model.JpsProject;
+import org.jetbrains.jps.model.java.JpsJavaSdkType;
+import org.jetbrains.jps.model.library.JpsLibrary;
+import org.jetbrains.jps.model.library.impl.sdk.JpsSdkImpl;
+import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 
 import java.io.File;
 import java.io.IOException;
@@ -599,6 +606,54 @@ public class PantsUtil {
   }
 
 
+  /**
+   * @param project JpsProject
+   * @return Path to IDEA Project JDK if exists, else null
+   */
+  @Nullable
+  public static String getJdkPathFromExternalBuilder(@NotNull JpsProject project) {
+    JpsSdkReference sdkReference = project.getSdkReferencesTable().getSdkReference(JpsJavaSdkType.INSTANCE);
+    if (sdkReference != null) {
+      String sdkName = sdkReference.getSdkName();
+      JpsLibrary lib = project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName);
+      if (lib != null && lib.getProperties() instanceof JpsSdkImpl) {
+        return ((JpsSdkImpl)lib.getProperties()).getHomePath();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * @return Path to IDEA Project JDK if exists, else null
+   */
+  @Nullable
+  public static String getJdkPathFromIntelliJCore() {
+    // Followed example in com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.setUpInWriteAction()
+    final Sdk sdk = JavaAwareProjectJdkTableImpl.getInstanceEx().getInternalJdk();
+    String javaHome = null;
+    if (sdk.getHomeDirectory() != null) {
+      javaHome = sdk.getHomeDirectory().getParent().getPath();
+    }
+    return javaHome;
+  }
+
+  /**
+   * @param jdkPath path to IDEA Project JDK
+   * @return --jvm-distributions-paths with the parameter if jdkPath is not null,
+   * otherwise the flag with empty parameter so user can tell there is issue finding the IDEA project JDK.
+   */
+  @NotNull
+  public static String getJvmDistributionPathParameter(@Nullable final String jdkPath) throws Exception {
+    if (jdkPath != null) {
+      HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
+      distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
+      return PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION + "=" + new Gson().toJson(distributionFlag);
+    }
+    else {
+      throw new Exception("No IDEA Project JDK Found");
+    }
+  }
+
   class SimpleExportResult {
     public String version;
     public String getVersion() {return version; }
@@ -610,7 +665,7 @@ public class PantsUtil {
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       final String stdOut = processOutput.getStdout();
-      SimpleExportResult simpleExportResult = (new Gson()).fromJson(stdOut, SimpleExportResult.class);
+      SimpleExportResult simpleExportResult = new Gson().fromJson(stdOut, SimpleExportResult.class);
       return versionCompare(simpleExportResult.getVersion(), "1.0.5") >= 0;
     }
     catch (ExecutionException e) {

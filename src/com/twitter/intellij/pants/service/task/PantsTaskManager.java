@@ -60,7 +60,8 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       for (String targetName : settings.getTargetNames()) {
         commandLine.addParameter(relativeProjectPath + ":" + targetName);
       }
-    } else {
+    }
+    else {
       commandLine.addParameter(relativeProjectPath + File.separator + "::");
     }
     commandLine.addParameters(scriptParameters);
@@ -85,6 +86,15 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
         throw new ExternalSystemException(PantsBundle.message("pants.error.cannot.debug.task", goal));
       }
       commandLine.addParameter(jvmOptionsFlag + "=" + debuggerSetup);
+    }
+
+    if (settings.isUseIdeaProjectJdk()) {
+      try{
+        commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
+      }
+      catch(Exception e){
+        throw new ExternalSystemException(e);
+      }
     }
 
     listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);

@@ -18,7 +18,6 @@ import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
 import com.twitter.intellij.pants.jps.incremental.model.PantsSourceRootDescriptor;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
 import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
-import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -138,11 +137,24 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (hasExportClassPathNamingStyle && hasTargetIdInExport) {
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
-    commandLine.addParameters("--no-colors");
+
+    final JpsProject jpsProject = context.getProjectDescriptor().getProject();
+    final JpsPantsProjectExtension pantsProjectExtension =
+      PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
+    if (pantsProjectExtension.isUseIdeaProjectJdk()) {
+      try{
+        commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromExternalBuilder(jpsProject)));
+      }
+      catch(Exception e){
+        throw new ProjectBuildException(e);
+      }
+    }
+    commandLine.addParameter("--no-colors");
 
     final Process process;
     try {
       process = commandLine.createProcess();
+      context.processMessage(new CompilerMessage("pants invocation", BuildMessage.Kind.INFO, commandLine.getCommandLineString()));
     }
     catch (ExecutionException e) {
       throw new ProjectBuildException(e);

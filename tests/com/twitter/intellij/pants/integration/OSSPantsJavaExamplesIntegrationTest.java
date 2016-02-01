@@ -8,12 +8,16 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.jps.incremental.ProjectBuildException;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest {
@@ -182,6 +186,25 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     makeModules("intellij-integration_src_java_org_pantsbuild_testproject_resources1_resources1");
+  }
+
+  public void testCompileWithProjectJdk() throws Throwable {
+    doImport("examples/src/java/org/pantsbuild/example/hello/greet");
+
+    assertModules(
+      "examples_src_java_org_pantsbuild_example_hello_greet_greet"
+    );
+
+    PantsSettings settings = PantsSettings.getInstance(myProject);
+    settings.setUseIdeaProjectJdk(true);
+    settings.setCompileWithIntellij(false);
+    List<String> output = makeProject();
+    assertTrue(StringUtil.join(output,"\n").contains(PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION));
+
+    modify("org.pantsbuild.example.hello.greet.Greeting");
+    settings.setUseIdeaProjectJdk(false);
+    output = makeProject();
+    assertFalse(StringUtil.join(output,"\n").contains(PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION));
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
