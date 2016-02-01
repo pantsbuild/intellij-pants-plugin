@@ -46,7 +46,7 @@ The plugin can invoke any Pants commands via Pants Tasks.
     ![Configure Pants Task](images/tasks/configure_pants_task.png)
   * Run the Task
     ![Configured Pants Task](images/tasks/task_run.png)
-  * To debug a task simply press Debug button next to Run button.
+  * To debug a task simply press Debug button next to Run button. **If local variable info is incomplete due to "Variables debug info not available", please only use Pants configuration and NOT JUnit configuration to debug.** ![Debug Info](images/variables_debug_info_not_available.png)
   * Note: you can create a task for any goal
     ![Bundle Task](images/tasks/bundle_task.png)
     
