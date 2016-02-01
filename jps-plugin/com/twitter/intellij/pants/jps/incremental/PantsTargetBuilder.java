@@ -114,40 +114,18 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   ) throws IOException, ProjectBuildException {
     final String pantsExecutable = target.getPantsExecutable();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
-    final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
-
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
-      final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargets.size());
-      context.processMessage(
-        new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
-      );
-      context.processMessage(new ProgressMessage(recompileMessage));
       commandLine.addParameters("clean-all");
-      commandLine.addParameters(goals);
-      for (String targetAddress : allNonGenTargets) {
-        commandLine.addParameter(targetAddress);
-      }
     }
-    else {
-      // Pants does compile incrementally and it appeared calling Pants for only findTargetAddresses(holder) targets
-      // isn't very beneficial. To simplify the plugin we are going to rely on Pants and pass all targets in the project.
-      // We can't use project settings because a project can be generated from a script file or is opened with dependeees.
-      final Set<String> changedNonGenTargets = filterGenTargets(findTargetAddresses(holder));
-      String recompileMessage;
-      if (changedNonGenTargets.size() == 1) {
-        recompileMessage = String.format("Recompiling %s", changedNonGenTargets.iterator().next());
-      }
-      else {
-        recompileMessage = String.format("Recompiling %s targets", changedNonGenTargets.size());
-      }
-      context.processMessage(
-        new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage
-        ));
-      context.processMessage(new ProgressMessage(recompileMessage));
-      commandLine.addParameters(goals);
-      for (String targetAddress : changedNonGenTargets) {
-        commandLine.addParameter(targetAddress);
-      }
+    final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
+    final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargets.size());
+    context.processMessage(
+      new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
+    );
+    context.processMessage(new ProgressMessage(recompileMessage));
+    commandLine.addParameters(goals);
+    for (String targetAddress : allNonGenTargets) {
+      commandLine.addParameter(targetAddress);
     }
 
     // Find out whether "export-classpath-use-old-naming-style" exists
