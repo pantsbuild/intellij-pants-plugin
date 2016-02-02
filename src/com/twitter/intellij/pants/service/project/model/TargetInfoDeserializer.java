@@ -7,6 +7,7 @@ import com.google.common.collect.Iterators;
 import com.google.gson.*;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
@@ -32,10 +33,10 @@ public class TargetInfoDeserializer implements JsonDeserializer<TargetInfo> {
         }
       }
     );
-    final com.twitter.intellij.pants.model.TargetAddressInfo
-      addressInfo = context.deserialize(element, com.twitter.intellij.pants.model.TargetAddressInfo.class);
+    final TargetAddressInfo
+      addressInfo = context.deserialize(element, TargetAddressInfo.class);
     return new TargetInfo(
-      new HashSet<com.twitter.intellij.pants.model.TargetAddressInfo>(Collections.singleton(addressInfo)),
+      new HashSet<TargetAddressInfo>(Collections.singleton(addressInfo)),
       new HashSet<String>(targets),
       new HashSet<String>(libraries),
       new HashSet<String>(excludes),

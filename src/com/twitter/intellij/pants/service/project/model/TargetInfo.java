@@ -15,7 +15,7 @@ import java.util.*;
 
 public class TargetInfo {
 
-  protected Set<com.twitter.intellij.pants.model.TargetAddressInfo> addressInfos = Collections.emptySet();
+  protected Set<TargetAddressInfo> addressInfos = Collections.emptySet();
 
   /**
    * List of libraries. Just names.
@@ -34,12 +34,12 @@ public class TargetInfo {
    */
   protected Set<SourceRoot> roots = Collections.emptySet();
 
-  public TargetInfo(com.twitter.intellij.pants.model.TargetAddressInfo...addressInfos) {
+  public TargetInfo(TargetAddressInfo...addressInfos) {
     setAddressInfos(ContainerUtil.newHashSet(addressInfos));
   }
 
   public TargetInfo(
-    Set<com.twitter.intellij.pants.model.TargetAddressInfo> addressInfos,
+    Set<TargetAddressInfo> addressInfos,
     Set<String> targets,
     Set<String> libraries,
     Set<String> excludes,
@@ -52,11 +52,11 @@ public class TargetInfo {
     setRoots(roots);
   }
 
-  public Set<com.twitter.intellij.pants.model.TargetAddressInfo> getAddressInfos() {
+  public Set<TargetAddressInfo> getAddressInfos() {
     return addressInfos;
   }
 
-  public void setAddressInfos(Set<com.twitter.intellij.pants.model.TargetAddressInfo> addressInfos) {
+  public void setAddressInfos(Set<TargetAddressInfo> addressInfos) {
     this.addressInfos = addressInfos;
   }
 
@@ -116,9 +116,9 @@ public class TargetInfo {
   public boolean isTest() {
     return ContainerUtil.exists(
       getAddressInfos(),
-      new Condition<com.twitter.intellij.pants.model.TargetAddressInfo>() {
+      new Condition<TargetAddressInfo>() {
         @Override
-        public boolean value(com.twitter.intellij.pants.model.TargetAddressInfo info) {
+        public boolean value(TargetAddressInfo info) {
           return PantsUtil.getSourceTypeForTargetType(info.getTargetType()).toExternalSystemSourceType().isTest();
         }
       }
@@ -128,7 +128,7 @@ public class TargetInfo {
   @NotNull
   public PantsSourceType getSourcesType() {
     // todo: take it smarter
-    final Iterator<com.twitter.intellij.pants.model.TargetAddressInfo> iterator = getAddressInfos().iterator();
+    final Iterator<TargetAddressInfo> iterator = getAddressInfos().iterator();
     return iterator.hasNext() ? PantsUtil.getSourceTypeForTargetType(iterator.next().getTargetType()) : PantsSourceType.SOURCE;
   }
 
@@ -142,9 +142,9 @@ public class TargetInfo {
   public boolean isJarLibrary() {
     return PantsUtil.forall(
       getAddressInfos(),
-      new Condition<com.twitter.intellij.pants.model.TargetAddressInfo>() {
+      new Condition<TargetAddressInfo>() {
         @Override
-        public boolean value(com.twitter.intellij.pants.model.TargetAddressInfo info) {
+        public boolean value(TargetAddressInfo info) {
           return info.isJarLibrary();
         }
       }
@@ -154,9 +154,9 @@ public class TargetInfo {
   public boolean isScalaTarget() {
     return ContainerUtil.exists(
       getAddressInfos(),
-      new Condition<com.twitter.intellij.pants.model.TargetAddressInfo>() {
+      new Condition<TargetAddressInfo>() {
         @Override
-        public boolean value(com.twitter.intellij.pants.model.TargetAddressInfo info) {
+        public boolean value(TargetAddressInfo info) {
           return info.isScala();
         }
       }
@@ -166,9 +166,9 @@ public class TargetInfo {
   public boolean isPythonTarget() {
     return ContainerUtil.exists(
       getAddressInfos(),
-      new Condition<com.twitter.intellij.pants.model.TargetAddressInfo>() {
+      new Condition<TargetAddressInfo>() {
         @Override
-        public boolean value(com.twitter.intellij.pants.model.TargetAddressInfo info) {
+        public boolean value(TargetAddressInfo info) {
           return info.isPython();
         }
       }

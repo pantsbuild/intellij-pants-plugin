@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
@@ -147,7 +148,7 @@ public class ProjectInfo {
     for (Map.Entry<String, TargetInfo> entry : targets.entrySet()) {
       final TargetInfo info = entry.getValue();
       final String address = entry.getKey();
-      for (com.twitter.intellij.pants.model.TargetAddressInfo addressInfo : info.getAddressInfos()) {
+      for (TargetAddressInfo addressInfo : info.getAddressInfos()) {
         addressInfo.setTargetAddress(address);
       }
     }
@@ -159,7 +160,7 @@ public class ProjectInfo {
   public Map<String, Integer> getTargetsDistribution() {
     final Map<String, Integer> result = new HashMap<String, Integer>();
     for (TargetInfo targetInfo : targets.values()) {
-      for (com.twitter.intellij.pants.model.TargetAddressInfo addressInfo : targetInfo.getAddressInfos()) {
+      for (TargetAddressInfo addressInfo : targetInfo.getAddressInfos()) {
         final String type = addressInfo.getInternalPantsTargetType();
         final int currentValue = ContainerUtil.getOrCreate(result, type, 0);
         result.put(type, currentValue + 1);
