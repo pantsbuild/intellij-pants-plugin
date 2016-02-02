@@ -11,7 +11,8 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.model.*;
+import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.*;
 import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
@@ -234,7 +235,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
 
     @Override
     public TargetInfo build() {
-      final com.twitter.intellij.pants.model.TargetAddressInfo addressInfo = new com.twitter.intellij.pants.model.TargetAddressInfo();
+      final TargetAddressInfo addressInfo = new TargetAddressInfo();
       addressInfo.setPantsTargetType(type);
       return new TargetInfo(Collections.singleton(addressInfo), targets, libraries, excludes, roots);
     }
