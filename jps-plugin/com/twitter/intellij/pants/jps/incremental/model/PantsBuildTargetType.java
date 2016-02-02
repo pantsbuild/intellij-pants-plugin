@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.jps.incremental.model;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
 import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
-import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.builders.BuildTargetLoader;

@@ -9,7 +9,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsModuleExtension;
 import com.twitter.intellij.pants.jps.incremental.model.impl.JpsPantsModuleExtensionImpl;
-import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;

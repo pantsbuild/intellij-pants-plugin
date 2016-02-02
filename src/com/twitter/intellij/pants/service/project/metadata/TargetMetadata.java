@@ -7,7 +7,7 @@ import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
-import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

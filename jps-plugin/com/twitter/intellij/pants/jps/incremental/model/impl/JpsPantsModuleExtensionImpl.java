@@ -4,7 +4,7 @@
 package com.twitter.intellij.pants.jps.incremental.model.impl;
 
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsModuleExtension;
-import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.ex.JpsElementBase;
 

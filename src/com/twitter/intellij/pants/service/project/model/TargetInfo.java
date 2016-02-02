@@ -5,7 +5,7 @@ package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.model.*;
 import com.twitter.intellij.pants.util.PantsScalaUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +15,7 @@ import java.util.*;
 
 public class TargetInfo {
 
-  protected Set<TargetAddressInfo> addressInfos = Collections.emptySet();
+  protected Set<com.twitter.intellij.pants.model.TargetAddressInfo> addressInfos = Collections.emptySet();
 
   /**
    * List of libraries. Just names.
@@ -34,12 +34,12 @@ public class TargetInfo {
    */
   protected Set<SourceRoot> roots = Collections.emptySet();
 
-  public TargetInfo(TargetAddressInfo ...addressInfos) {
+  public TargetInfo(com.twitter.intellij.pants.model.TargetAddressInfo...addressInfos) {
     setAddressInfos(ContainerUtil.newHashSet(addressInfos));
   }
 
   public TargetInfo(
-    Set<TargetAddressInfo> addressInfos,
+    Set<com.twitter.intellij.pants.model.TargetAddressInfo> addressInfos,
     Set<String> targets,
     Set<String> libraries,
     Set<String> excludes,
@@ -52,11 +52,11 @@ public class TargetInfo {
     setRoots(roots);
   }
 
-  public Set<TargetAddressInfo> getAddressInfos() {
+  public Set<com.twitter.intellij.pants.model.TargetAddressInfo> getAddressInfos() {
     return addressInfos;
   }
 
-  public void setAddressInfos(Set<TargetAddressInfo> addressInfos) {
+  public void setAddressInfos(Set<com.twitter.intellij.pants.model.TargetAddressInfo> addressInfos) {
     this.addressInfos = addressInfos;
   }
 
@@ -116,9 +116,9 @@ public class TargetInfo {
   public boolean isTest() {
     return ContainerUtil.exists(
       getAddressInfos(),
-      new Condition<TargetAddressInfo>() {
+      new Condition<com.twitter.intellij.pants.model.TargetAddressInfo>() {
         @Override
-        public boolean value(TargetAddressInfo info) {
+        public boolean value(com.twitter.intellij.pants.model.TargetAddressInfo info) {
           return PantsUtil.getSourceTypeForTargetType(info.getTargetType()).toExternalSystemSourceType().isTest();
         }
       }
@@ -128,7 +128,7 @@ public class TargetInfo {
   @NotNull
   public PantsSourceType getSourcesType() {
     // todo: take it smarter
-    final Iterator<TargetAddressInfo> iterator = getAddressInfos().iterator();
+    final Iterator<com.twitter.intellij.pants.model.TargetAddressInfo> iterator = getAddressInfos().iterator();
     return iterator.hasNext() ? PantsUtil.getSourceTypeForTargetType(iterator.next().getTargetType()) : PantsSourceType.SOURCE;
   }
 
@@ -142,9 +142,9 @@ public class TargetInfo {
   public boolean isJarLibrary() {
     return PantsUtil.forall(
       getAddressInfos(),
-      new Condition<TargetAddressInfo>() {
+      new Condition<com.twitter.intellij.pants.model.TargetAddressInfo>() {
         @Override
-        public boolean value(TargetAddressInfo info) {
+        public boolean value(com.twitter.intellij.pants.model.TargetAddressInfo info) {
           return info.isJarLibrary();
         }
       }
@@ -154,9 +154,9 @@ public class TargetInfo {
   public boolean isScalaTarget() {
     return ContainerUtil.exists(
       getAddressInfos(),
-      new Condition<TargetAddressInfo>() {
+      new Condition<com.twitter.intellij.pants.model.TargetAddressInfo>() {
         @Override
-        public boolean value(TargetAddressInfo info) {
+        public boolean value(com.twitter.intellij.pants.model.TargetAddressInfo info) {
           return info.isScala();
         }
       }
@@ -166,9 +166,9 @@ public class TargetInfo {
   public boolean isPythonTarget() {
     return ContainerUtil.exists(
       getAddressInfos(),
-      new Condition<TargetAddressInfo>() {
+      new Condition<com.twitter.intellij.pants.model.TargetAddressInfo>() {
         @Override
-        public boolean value(TargetAddressInfo info) {
+        public boolean value(com.twitter.intellij.pants.model.TargetAddressInfo info) {
           return info.isPython();
         }
       }

@@ -24,7 +24,7 @@ import com.intellij.util.Function;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jdom.Element;

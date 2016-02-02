@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.jps.incremental.model;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.Processor;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsModelSerializerExtension;
-import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;

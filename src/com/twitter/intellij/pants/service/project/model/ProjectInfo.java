@@ -147,7 +147,7 @@ public class ProjectInfo {
     for (Map.Entry<String, TargetInfo> entry : targets.entrySet()) {
       final TargetInfo info = entry.getValue();
       final String address = entry.getKey();
-      for (TargetAddressInfo addressInfo : info.getAddressInfos()) {
+      for (com.twitter.intellij.pants.model.TargetAddressInfo addressInfo : info.getAddressInfos()) {
         addressInfo.setTargetAddress(address);
       }
     }
@@ -159,7 +159,7 @@ public class ProjectInfo {
   public Map<String, Integer> getTargetsDistribution() {
     final Map<String, Integer> result = new HashMap<String, Integer>();
     for (TargetInfo targetInfo : targets.values()) {
-      for (TargetAddressInfo addressInfo : targetInfo.getAddressInfos()) {
+      for (com.twitter.intellij.pants.model.TargetAddressInfo addressInfo : targetInfo.getAddressInfos()) {
         final String type = addressInfo.getInternalPantsTargetType();
         final int currentValue = ContainerUtil.getOrCreate(result, type, 0);
         result.put(type, currentValue + 1);

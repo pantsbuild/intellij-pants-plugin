@@ -1,1 +1,0 @@
-../../../../../../../../src/com/twitter/intellij/pants/service/project/model/Globs.java
