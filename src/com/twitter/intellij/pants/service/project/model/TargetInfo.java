@@ -34,7 +34,7 @@ public class TargetInfo {
    */
   protected Set<SourceRoot> roots = Collections.emptySet();
 
-  public TargetInfo(TargetAddressInfo...addressInfos) {
+  public TargetInfo(TargetAddressInfo ...addressInfos) {
     setAddressInfos(ContainerUtil.newHashSet(addressInfos));
   }
 
