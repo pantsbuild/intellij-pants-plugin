@@ -1,11 +1,11 @@
-// Copyright 2015 Pants project contributors (see CONTRIBUTORS.md).
+// Copyright 2016 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.service.project.model;
+package com.twitter.intellij.pants.model;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
-import com.twitter.intellij.pants.service.project.model.Globs;
+import com.twitter.intellij.pants.model.Globs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

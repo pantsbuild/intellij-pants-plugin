@@ -7,6 +7,7 @@ import com.google.common.collect.Iterators;
 import com.google.gson.*;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;

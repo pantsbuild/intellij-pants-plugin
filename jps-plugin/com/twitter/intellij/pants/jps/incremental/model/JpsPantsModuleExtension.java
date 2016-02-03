@@ -3,7 +3,7 @@
 
 package com.twitter.intellij.pants.jps.incremental.model;
 
-import com.twitter.intellij.pants.service.project.model.TargetAddressInfo;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.JpsElement;
