@@ -9,6 +9,7 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsModuleExtension;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsModelSerializerExtension;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.module.JpsModule;
@@ -17,26 +18,16 @@ import java.util.Collection;
 import java.util.List;
 
 public class PantsJpsUtil {
-  public static boolean containsGenTarget(@NotNull Collection<String> addresses) {
+  public static boolean containsGenTarget(@NotNull Collection<TargetAddressInfo> targetAddressInfoSet) {
     return ContainerUtil.exists(
-      addresses,
-      new Condition<String>() {
+      targetAddressInfoSet,
+      new Condition<TargetAddressInfo>() {
         @Override
-        public boolean value(String value) {
-          return isGenTarget(value);
+        public boolean value(TargetAddressInfo value) {
+          return value.is_synthetic();
         }
       }
     );
-  }
-
-  public static boolean isGenTarget(@NotNull String address) {
-    return StringUtil.startsWithIgnoreCase(address, ".pants.d") ||
-           StringUtil.startsWithIgnoreCase(address, PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX) ||
-           // Checking "_synthetic_resources" is a temporary fix. It also needs to match the postfix added from pants in
-           // src.python.pants.backend.python.targets.python_target.PythonTarget#_synthetic_resources_target
-           // TODO: The long term solution is collect non-synthetic targets at pre-compile stage
-           // https://github.com/pantsbuild/intellij-pants-plugin/issues/83
-           address.toLowerCase().endsWith("_synthetic_resources");
   }
 
   public static boolean containsPantsModules(Collection<JpsModule> modules) {

@@ -7,11 +7,9 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTarget;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
@@ -40,8 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
@@ -116,7 +113,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameters("clean-all");
     }
-    final Set<String> allNonGenTargetAddresses = filterGenTargets(target.getTargetAddressInfoSet());
+    final List<String> allNonGenTargetAddresses = filterGenTargets(target.getTargetAddressInfoSet());
 
     final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargetAddresses.size());
     context.processMessage(
@@ -124,9 +121,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     );
     context.processMessage(new ProgressMessage(recompileMessage));
     commandLine.addParameters(goals);
-    for (String targetAddress : allNonGenTargetAddresses) {
-      commandLine.addParameter(targetAddress);
-    }
+    commandLine.addParameters(allNonGenTargetAddresses);
 
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =
@@ -179,7 +174,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       new FileProcessor<PantsSourceRootDescriptor, PantsBuildTarget>() {
         @Override
         public boolean apply(PantsBuildTarget target, File file, PantsSourceRootDescriptor root) throws IOException {
-          if (!PantsJpsUtil.containsGenTarget(root.getTargetAddresses())) {
+          if (!PantsJpsUtil.containsGenTarget(root.getTargetAddressInfoSet())) {
             hasDirtyTargets.set(true);
             return false;
           }
@@ -190,9 +185,9 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return hasDirtyTargets.get();
   }
 
-  private Set<String> filterGenTargets(@NotNull Collection<TargetAddressInfo> targetAddressInfos) {
-    Set<String> addresses = Collections.emptySet();
-    for (TargetAddressInfo targetAddressInfo: targetAddressInfos) {
+  private List<String> filterGenTargets(@NotNull Collection<TargetAddressInfo> targetAddressInfoCollection) {
+    List<String> addresses = Collections.emptyList();
+    for (TargetAddressInfo targetAddressInfo: targetAddressInfoCollection) {
       if (!targetAddressInfo.is_synthetic()) {
         addresses.add(targetAddressInfo.getTargetAddress());
       }

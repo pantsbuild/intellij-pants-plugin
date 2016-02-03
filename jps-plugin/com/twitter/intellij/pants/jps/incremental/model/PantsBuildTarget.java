@@ -79,14 +79,14 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
         @Override
         public boolean process(ModuleBuildTarget target) {
           final JpsPantsModuleExtension moduleExtension = PantsJpsModelSerializerExtension.findPantsModuleExtension(target.getModule());
-          final Set<String> targetAddresses = moduleExtension != null ?
-                                              moduleExtension.getTargetAddresses() : Collections.<String>emptySet();
+          final Set<TargetAddressInfo> targetAddressInfoSet = moduleExtension != null ?
+                                              moduleExtension.getTargetAddressInfoSet() : Collections.<TargetAddressInfo>emptySet();
           final List<JavaSourceRootDescriptor> descriptors = target.computeRootDescriptors(model, index, ignoredFileIndex, dataPaths);
           for (JavaSourceRootDescriptor javaSourceRootDescriptor : descriptors) {
             result.add(
               new PantsSourceRootDescriptor(
                 PantsBuildTarget.this,
-                targetAddresses,
+                targetAddressInfoSet,
                 javaSourceRootDescriptor.getRootFile(),
                 javaSourceRootDescriptor.isGenerated(),
                 javaSourceRootDescriptor.getExcludedRoots()
@@ -138,11 +138,6 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
   @NotNull
   public String getPantsExecutable() {
     return myPantsExecutable;
-  }
-
-  @NotNull
-  public Set<String> getTargetAddresses() {
-    return myTargetAddresses;
   }
 
   @NotNull
