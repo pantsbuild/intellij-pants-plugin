@@ -73,8 +73,7 @@ public class PantsCompilerOutputsExtension implements PantsResolverExtension {
       new Function<TargetAddressInfo, String>() {
         @Override
         public String fun(TargetAddressInfo targetAddressInfo) {
-          final String targetId = targetAddressInfo.getCanonicalId();
-          return ".pants.d/compile/jvm/zinc/isolated-classes/" + targetId;
+          return ".pants.d/compile/jvm/zinc/isolated-classes/";
         }
       }
     );
