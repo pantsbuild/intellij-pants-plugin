@@ -45,7 +45,6 @@ public class PantsCompileOptionsExecutor {
   private final PantsCompileOptions myOptions;
   private final File myWorkingDir;
   private final boolean myResolveJars;
-  private final boolean myCompileWithIntellij;
   private final boolean myResolveSourcesAndDocsForJars;
 
   @NotNull
@@ -74,8 +73,7 @@ public class PantsCompileOptionsExecutor {
       workingDir,
       options,
       resolveJars,
-      executionOptions != null && executionOptions.isLibsWithSourcesAndDocs(),
-      executionOptions != null && executionOptions.isCompileWithIntellij()
+      executionOptions != null && executionOptions.isLibsWithSourcesAndDocs()
     );
   }
 
@@ -86,8 +84,7 @@ public class PantsCompileOptionsExecutor {
       new File(""),
       new MyPantsCompileOptions("", new PantsExecutionSettings()),
       false,
-      true,
-      false
+      true
     ) {
     };
   }
@@ -96,14 +93,12 @@ public class PantsCompileOptionsExecutor {
     @NotNull File workingDir,
     @NotNull PantsCompileOptions compilerOptions,
     boolean resolveJars,
-    boolean resolveSourcesAndDocsForJars,
-    boolean compileWithIntellij
+    boolean resolveSourcesAndDocsForJars
   ) {
     myWorkingDir = workingDir;
     myOptions = compilerOptions;
     myResolveJars = resolveJars;
     myResolveSourcesAndDocsForJars = resolveSourcesAndDocsForJars;
-    myCompileWithIntellij = compileWithIntellij;
   }
 
   public String getProjectRelativePath() {
@@ -148,14 +143,6 @@ public class PantsCompileOptionsExecutor {
   @NotNull
   public PantsCompileOptions getOptions() {
     return myOptions;
-  }
-
-  public boolean isCompileWithPants() {
-    return !isCompileWithIntellij();
-  }
-
-  public boolean isCompileWithIntellij() {
-    return myCompileWithIntellij;
   }
 
   @NotNull

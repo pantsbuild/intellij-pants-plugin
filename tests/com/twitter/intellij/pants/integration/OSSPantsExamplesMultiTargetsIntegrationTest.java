@@ -39,11 +39,7 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe"
     );
 
-    if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
-      makeProject();
-    } else {
-      assertContain(makeProject(), "pants: Recompiling all 8 targets");
-    }
+    assertContain(makeProject(), "pants: Recompiling all 8 targets");
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.welcome.WelcomeEverybody", "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
