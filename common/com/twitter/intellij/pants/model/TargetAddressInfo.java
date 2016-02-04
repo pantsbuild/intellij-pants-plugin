@@ -10,15 +10,8 @@ import com.twitter.intellij.pants.model.Globs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Type;
-import java.util.HashSet;
 
 public class TargetAddressInfo {
-  /**
-   * Constant type for gson to figure out the data type to deserialize
-   */
-  public static final Type TYPE = new TypeToken<HashSet<TargetAddressInfo>>(){}.getType();
-
   /**
    * Target addresses.
    */
@@ -39,7 +32,7 @@ public class TargetAddressInfo {
   private String pants_target_type = null;
 
   private boolean is_code_gen;
-  
+
   private boolean is_synthetic;
 
   private String id;

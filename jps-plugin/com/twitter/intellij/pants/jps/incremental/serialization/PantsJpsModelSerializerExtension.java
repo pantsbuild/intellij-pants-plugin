@@ -62,7 +62,7 @@ public class PantsJpsModelSerializerExtension extends JpsModelSerializerExtensio
     final String linkedProjectPath = rootElement.getAttributeValue(LINKED_PROJECT_PATH_KEY);
     final String targetAddressesValue = StringUtil.nullize(rootElement.getAttributeValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
     final String addressInfosJson = StringUtil.nullize(rootElement.getAttributeValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY));
-    Set<TargetAddressInfo> targetInfoSet = gson.fromJson(addressInfosJson, TargetAddressInfo.TYPE);
+    Set<TargetAddressInfo> targetInfoSet = gson.fromJson(addressInfosJson, PantsConstants.TARGET_ADDRESS_INFO_HASHSET_TYPE);
 
     if (PantsConstants.PANTS.equals(externalSystemId) && targetAddressesValue != null && linkedProjectPath != null) {
       final Set<String> targetAddresses = new HashSet<String>(StringUtil.split(targetAddressesValue, ","));

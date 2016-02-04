@@ -121,7 +121,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   @NotNull
   public static List<String> findPublishedClasspath(@NotNull Module module, boolean hasTargetIdInExport) {
     final List<String> result = ContainerUtil.newArrayList();
-    Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), TargetAddressInfo.TYPE);
+    Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), PantsConstants.TARGET_ADDRESS_INFO_HASHSET_TYPE);
     // The new way to find classpath by target id
     if (hasTargetIdInExport && targetInfoSet != null && targetInfoSet.size() > 0 && targetInfoSet.iterator().next().getId() != null) {
       for (TargetAddressInfo ta : targetInfoSet) {
