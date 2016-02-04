@@ -3,13 +3,18 @@
 
 package com.twitter.intellij.pants.model;
 
+import com.google.gson.reflect.TypeToken;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
-import com.twitter.intellij.pants.model.Globs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Type;
+import java.util.HashSet;
+
 public class TargetAddressInfo {
+  // This is constant type for Gson to figure the data type to deserialize
+  public static final Type TYPE = new TypeToken<HashSet<TargetAddressInfo>>(){}.getType();
   /**
    * Target addresses.
    */
