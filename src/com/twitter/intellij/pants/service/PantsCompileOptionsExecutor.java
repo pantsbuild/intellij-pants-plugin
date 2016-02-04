@@ -55,37 +55,7 @@ public class PantsCompileOptionsExecutor {
     @NotNull
     @Override
     protected PantsCompilerOptions compute() {
-      final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
-      commandLine.addParameters("help-advanced", "compile", "--no-colors");
-      try {
-        final ProcessOutput processOutput = getProcessOutput(commandLine, null);
-        final String stdout = processOutput.getStdout();
-        final boolean isIsolated = StringUtil.contains(stdout, "default: isolated") ||
-                                   !StringUtil.contains(stdout, "default: global");
-        final List<String> stdoutLines = processOutput.getStdoutLines(true);
-        final boolean isZincStrategy = StringUtil.contains(stdout, "--compile-zinc-strategy");
-        final boolean useJmakeForJava = StringUtil.contains(stdout, "compile-java-use-jmake (default: True)");
-        final int zincLineIndex = ContainerUtil.indexOf(
-          stdoutLines,
-          new Condition<String>() {
-            @Override
-            public boolean value(String line) {
-              return StringUtil.contains(line, "compile-zinc-java-enabled");
-            }
-          }
-        );
-        final boolean onlyZinc = zincLineIndex < 0;
-        final boolean zincForJava1 = zincLineIndex >= 0 &&
-                                     StringUtil.contains(stdoutLines.get(zincLineIndex), "default: True");
-        final boolean zincForJava2 = (zincLineIndex + 1) < stdoutLines.size() &&
-                                     StringUtil.contains(stdoutLines.get(zincLineIndex + 1), "default: True");
-        final boolean separateAnnotationOutput = StringUtil.contains(stdout, "compile.apt");
-        return new PantsCompilerOptions(isIsolated, zincForJava1 || zincForJava2, onlyZinc || isZincStrategy, useJmakeForJava, separateAnnotationOutput);
-      }
-      catch (ExecutionException e) {
-        LOG.warn(e);
-        return new PantsCompilerOptions();
-      }
+      return new PantsCompilerOptions(true, true, true, false , false);
     }
   };
 
@@ -343,17 +313,7 @@ public class PantsCompileOptionsExecutor {
   }
 
   public String compilerFolderForTarget(@NotNull TargetAddressInfo targetAddressInfo) {
-    final PantsCompilerOptions options = compilerOptions.getValue();
-    if (targetAddressInfo.isAnnotationProcessor() && options.isSeparateAnnotationOutput()) {
-      return "apt";
-    }
-    if (targetAddressInfo.isScala()) {
-      return options.isZincForAll() ? "zinc" : "scala";
-    }
-    if (options.isZincForAll() && !options.isUseJmakeForJava()) {
-      return "zinc";
-    }
-    return options.isCompileWithZincForJava() ? "zinc-java" : "java";
+    return "zinc";
   }
 
   public boolean isIsolatedStrategy() {

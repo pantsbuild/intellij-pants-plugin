@@ -51,9 +51,7 @@ public class PantsCompilerOutputsExtension implements PantsResolverExtension {
     if (PantsUtil.isResource(targetInfo.getSourcesType()) || targetInfo.isDummy()) {
       return;
     }
-    final List<String> compilerOutputRelativePaths = executor.isIsolatedStrategy() ?
-                                                     getIsolatedCompilerOutputPath(targetInfo, executor) :
-                                                     getCompilerOutputPath(targetInfo, executor);
+    final List<String> compilerOutputRelativePaths = getIsolatedCompilerOutputPath(targetInfo, executor);
     final List<String> compilerOutputAbsolutePaths = ContainerUtil.map(
       compilerOutputRelativePaths,
       new Function<String, String>() {
@@ -77,19 +75,6 @@ public class PantsCompilerOutputsExtension implements PantsResolverExtension {
         public String fun(TargetAddressInfo targetAddressInfo) {
           final String targetId = targetAddressInfo.getCanonicalId();
           return ".pants.d/compile/jvm/" + executor.compilerFolderForTarget(targetAddressInfo) + "/isolated-classes/" + targetId;
-        }
-      }
-    );
-  }
-
-  @NotNull
-  private List<String> getCompilerOutputPath(@NotNull TargetInfo targetInfo, @NotNull final PantsCompileOptionsExecutor executor) {
-    return ContainerUtil.map(
-      targetInfo.getAddressInfos(),
-      new Function<TargetAddressInfo, String>() {
-        @Override
-        public String fun(TargetAddressInfo targetAddressInfo) {
-          return ".pants.d/compile/jvm/" + executor.compilerFolderForTarget(targetAddressInfo) + "/classes";
         }
       }
     );
