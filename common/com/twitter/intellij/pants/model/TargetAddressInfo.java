@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.model;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
+import com.twitter.intellij.pants.model.Globs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,8 +39,7 @@ public class TargetAddressInfo {
   private String pants_target_type = null;
 
   private boolean is_code_gen;
-
-
+  
   private boolean is_synthetic;
 
   private String id;
