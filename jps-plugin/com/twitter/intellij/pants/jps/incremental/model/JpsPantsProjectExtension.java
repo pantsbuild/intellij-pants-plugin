@@ -22,6 +22,5 @@ public interface JpsPantsProjectExtension extends JpsElement {
 
   void setCompileWithIntellij(boolean compileWithIntellij);
 
-  @Nullable
   boolean isUseIdeaProjectJdk();
 }

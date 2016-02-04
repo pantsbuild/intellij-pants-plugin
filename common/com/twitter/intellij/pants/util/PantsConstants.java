@@ -31,7 +31,6 @@ public class PantsConstants {
   protected static final String ANTLR_4_EXT = "g4";
   protected static final String PROTOBUF_EXT = "proto";
 
-  public static final String PANTS_COMPILER_OUTPUTS_KEY = "pants.compiler.outputs";
   public static final String PANTS_LIBRARY_EXCLUDES_KEY = "pants.library.excludes";
   public static final String PANTS_TARGET_ADDRESSES_KEY = "pants.target.addresses";
   public static final String PANTS_TARGET_ADDRESS_INFOS_KEY = "pants.target.address.infos";

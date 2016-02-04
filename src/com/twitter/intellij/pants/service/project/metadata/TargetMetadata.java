@@ -22,10 +22,9 @@ public class TargetMetadata extends AbstractExternalEntityData {
     Key.create(TargetMetadata.class, ProjectKeys.MODULE.getProcessingWeight() + 1);
 
   private final String myModuleName;
-  private Set<String> myCompilerOutputs = Collections.emptySet();
   private Set<String> myLibraryExcludes = Collections.emptySet();
   private Set<String> myTargetAddresses = Collections.emptySet();
-  private Set<TargetAddressInfo> myTargetAddressInfos = Collections.emptySet();
+  private Set<TargetAddressInfo> myTargetAddressInfoSet = Collections.emptySet();
 
   public TargetMetadata(ProjectSystemId systemId, @NotNull String moduleName) {
     super(systemId);
@@ -46,12 +45,12 @@ public class TargetMetadata extends AbstractExternalEntityData {
     myTargetAddresses = new HashSet<String>(targetAddresses);
   }
 
-  public Set<TargetAddressInfo> getTargetAddressInfos() {
-    return myTargetAddressInfos;
+  public Set<TargetAddressInfo> getTargetAddressInfoSet() {
+    return myTargetAddressInfoSet;
   }
 
-  public void setTargetAddressInfos(Set<TargetAddressInfo> targetAddressInfos) {
-    myTargetAddressInfos = new HashSet<TargetAddressInfo>(targetAddressInfos);
+  public void setTargetAddressInfoSet(Set<TargetAddressInfo> targetAddressInfoSet) {
+    myTargetAddressInfoSet = new HashSet<TargetAddressInfo>(targetAddressInfoSet);
   }
 
   @NotNull
@@ -61,14 +60,5 @@ public class TargetMetadata extends AbstractExternalEntityData {
 
   public void setLibraryExcludes(Set<String> libraryExcludes) {
     myLibraryExcludes = libraryExcludes;
-  }
-
-  @NotNull
-  public Set<String> getCompilerOutputs() {
-    return myCompilerOutputs;
-  }
-
-  public void setCompilerOutputs(Set<String> compilerOutputs) {
-    myCompilerOutputs = compilerOutputs;
   }
 }

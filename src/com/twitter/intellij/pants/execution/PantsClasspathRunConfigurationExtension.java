@@ -70,7 +70,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
     VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
     final boolean hasTargetIdInExport =
-      pantsExecutable != null ? PantsUtil.hasTargetIdInExport(pantsExecutable.getPath()) : false;
+      pantsExecutable != null && PantsUtil.hasTargetIdInExport(pantsExecutable.getPath());
 
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
@@ -102,20 +102,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
         classpath.remove(pathToRemove);
       }
       classpath.addAll(publishedClasspath);
-      return;
     }
-
-    processRuntimeModules(
-      module,
-      new Processor<Module>() {
-        @Override
-        public boolean process(Module module) {
-          final String compilerOutputs = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY));
-          classpath.addAll(StringUtil.split(compilerOutputs, File.pathSeparator));
-          return true;
-        }
-      }
-    );
   }
 
   @NotNull

@@ -48,7 +48,6 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
       Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, COMPILE_WITH_INTELLIJ, "false"));
     final boolean useIdeaProjectJdk = Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, ENFORCE_JDK, "false"));
 
-    String optionalJdkPath = useIdeaProjectJdk ? PantsUtil.getJdkPathFromExternalBuilder(project) : null;
     final JpsPantsProjectExtension projectExtension =
       new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij, useIdeaProjectJdk);
 

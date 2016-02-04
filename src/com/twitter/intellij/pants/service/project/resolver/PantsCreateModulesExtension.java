@@ -94,7 +94,7 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
         }
       )
     );
-    metadata.setTargetAddressInfos(targetInfo.getAddressInfos());
+    metadata.setTargetAddressInfoSet(targetInfo.getAddressInfos());
     metadata.setLibraryExcludes(targetInfo.getExcludes());
     moduleDataNode.createChild(TargetMetadata.KEY, metadata);
 

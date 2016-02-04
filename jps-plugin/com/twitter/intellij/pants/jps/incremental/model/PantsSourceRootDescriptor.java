@@ -78,7 +78,7 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
     PantsSourceRootDescriptor that = (PantsSourceRootDescriptor)o;
 
     if (myGeneratedSources != that.myGeneratedSources) return false;
-    if (!myRoot.equals(that.myRoot)) return false;
+    if (!FileUtil.filesEqual(myRoot, that.myRoot)) return false;
     if (!myExcludes.equals(that.myExcludes)) return false;
     if (myTargetAddress != null ? !myTargetAddress.equals(that.myTargetAddress) : that.myTargetAddress != null) return false;
     return myTarget.equals(that.myTarget);
