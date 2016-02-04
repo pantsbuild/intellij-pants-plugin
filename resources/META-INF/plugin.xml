@@ -189,7 +189,6 @@
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsCreateModulesExtension" order="first"/>
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsSourceRootsExtension"/>
-    <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsCompilerOutputsExtension"/>
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsModuleDependenciesExtension"/>
     <projectResolver implementation="com.twitter.intellij.pants.service.project.resolver.PantsLibrariesExtension"/>
   </extensions>
