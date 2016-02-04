@@ -103,9 +103,6 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
       classpath.addAll(publishedClasspath);
     }
-    else{
-      throw new ExecutionException("export-classpath not supported by pants");
-    }
   }
 
   @NotNull
