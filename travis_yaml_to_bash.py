@@ -21,11 +21,11 @@ start = '''case "${CI_SHARD}" in'''
 end = '''esac'''
 default = '''\
 *)
-  exit 1'''
+  exit 0'''
 
 script='''\
 echo $IJ_ULTIMATE
-echo PANTS_SHA
+echo $PANTS_SHA
 ./scripts/setup-ci-environment.sh
 ./scripts/run-tests-ci.sh
 '''
