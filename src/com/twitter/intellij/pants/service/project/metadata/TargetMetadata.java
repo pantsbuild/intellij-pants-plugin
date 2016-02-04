@@ -62,13 +62,4 @@ public class TargetMetadata extends AbstractExternalEntityData {
   public void setLibraryExcludes(Set<String> libraryExcludes) {
     myLibraryExcludes = libraryExcludes;
   }
-
-  @NotNull
-  public Set<String> getCompilerOutputs() {
-    return myCompilerOutputs;
-  }
-
-  public void setCompilerOutputs(Set<String> compilerOutputs) {
-    myCompilerOutputs = compilerOutputs;
-  }
 }

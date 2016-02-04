@@ -46,7 +46,6 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
       final TargetMetadata metadata = node.getData();
       final Module module = modelsProvider.findIdeModule(metadata.getModuleName());
       if (module != null) {
-        module.setOption(PantsConstants.PANTS_COMPILER_OUTPUTS_KEY, StringUtil.join(metadata.getCompilerOutputs(), File.pathSeparator));
         module.setOption(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY, StringUtil.join(metadata.getLibraryExcludes(), ","));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY, StringUtil.join(metadata.getTargetAddresses(), ","));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY, gson.toJson(metadata.getTargetAddressInfos()));
