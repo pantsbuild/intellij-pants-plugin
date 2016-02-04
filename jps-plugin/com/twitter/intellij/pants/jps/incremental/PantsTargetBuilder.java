@@ -36,9 +36,7 @@ import org.jetbrains.jps.model.JpsProject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
@@ -113,7 +111,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameters("clean-all");
     }
-    final List<String> allNonGenTargetAddresses = filterGenTargets(target.getTargetAddressInfoSet());
+    final List<String> allNonGenTargetAddresses = getUniqueNonSyntheticTargetAddresses(target.getTargetAddressInfoSet());
 
     final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargetAddresses.size());
     context.processMessage(
@@ -138,10 +136,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final JpsPantsProjectExtension pantsProjectExtension =
       PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
     if (pantsProjectExtension.isUseIdeaProjectJdk()) {
-      try{
+      try {
         commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromExternalBuilder(jpsProject)));
       }
-      catch(Exception e){
+      catch (Exception e) {
         throw new ProjectBuildException(e);
       }
     }
@@ -185,14 +183,14 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return hasDirtyTargets.get();
   }
 
-  private List<String> filterGenTargets(@NotNull Collection<TargetAddressInfo> targetAddressInfoCollection) {
-    List<String> addresses = Collections.emptyList();
-    for (TargetAddressInfo targetAddressInfo: targetAddressInfoCollection) {
+  private List<String> getUniqueNonSyntheticTargetAddresses(@NotNull Collection<TargetAddressInfo> targetAddressInfoCollection) {
+    Set<String> uniqueAddresses = new HashSet<String>();
+    for (TargetAddressInfo targetAddressInfo : targetAddressInfoCollection) {
       if (!targetAddressInfo.is_synthetic()) {
-        addresses.add(targetAddressInfo.getTargetAddress());
+        uniqueAddresses.add(targetAddressInfo.getTargetAddress());
       }
     }
-    return addresses;
+    return new ArrayList<String>(uniqueAddresses);
   }
 
   @NotNull

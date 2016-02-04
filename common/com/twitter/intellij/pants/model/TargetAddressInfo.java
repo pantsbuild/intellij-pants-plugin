@@ -13,8 +13,11 @@ import java.lang.reflect.Type;
 import java.util.HashSet;
 
 public class TargetAddressInfo {
-  // This is constant type for Gson to figure the data type to deserialize
+  /**
+   * Constant type for gson to figure out the data type to deserialize
+   */
   public static final Type TYPE = new TypeToken<HashSet<TargetAddressInfo>>(){}.getType();
+
   /**
    * Target addresses.
    */
