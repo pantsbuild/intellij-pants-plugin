@@ -34,7 +34,8 @@ with open(".travis.yml", 'r') as stream:
     components.append(default)
     components.append(end)
     final_output = '\n'.join(components)
-    with open(sys.argv[1], 'w') as f:
-        f.write(final_output)
+    print(final_output)
+    # with open(sys.argv[1], 'w') as f:
+    #     f.write(final_output)
 
 
