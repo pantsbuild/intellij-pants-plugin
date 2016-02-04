@@ -3,24 +3,11 @@
 import yaml
 import sys
 
-'''the final output will look something like:
-case "${CI_SHARD}" in
-0) IJ_ULTIMATE=false
- ;;
-1) IJ_ULTIMATE=true
- ;;
-2) USE_PANTS_TO_COMPILE=false
- ;;
-3) PANTS_SHA="release_0.0.69" TEST_SET=integration
- ;;
-*)
-  exit 1
-'''
-
 start = '''case "${CI_SHARD}" in'''
 end = '''esac'''
 default = '''\
 *)
+  echo 'Redundant shard. Nothing to run here'
   exit 0'''
 
 script='''\
