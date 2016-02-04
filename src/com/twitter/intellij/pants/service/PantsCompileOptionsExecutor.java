@@ -297,10 +297,6 @@ public class PantsCompileOptionsExecutor {
     return true;
   }
 
-  public String compilerFolderForTarget(@NotNull TargetAddressInfo targetAddressInfo) {
-    return "zinc";
-  }
-
   public String getAbsolutePathFromWorkingDir(@NotNull String relativePath) {
     return new File(getWorkingDir(), relativePath).getPath();
   }
