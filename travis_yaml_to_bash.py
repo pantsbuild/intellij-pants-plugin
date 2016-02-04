@@ -24,6 +24,10 @@ default = '''\
 *)
   exit 1'''
 
+script='''\
+./scripts/setup-ci-environment.sh
+./scripts/run-tests-ci.sh
+'''
 components=[start]
 with open(".travis.yml", 'r') as stream:
     yml = yaml.load(stream)
@@ -33,6 +37,7 @@ with open(".travis.yml", 'r') as stream:
         # print line
     components.append(default)
     components.append(end)
+    components.append(script)
     final_output = '\n'.join(components)
     print(final_output)
     # with open(sys.argv[1], 'w') as f:
