@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.model;
 
-import com.google.gson.reflect.TypeToken;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import com.twitter.intellij.pants.model.Globs;

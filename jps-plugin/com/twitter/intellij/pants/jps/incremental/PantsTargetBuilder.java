@@ -111,15 +111,14 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameters("clean-all");
     }
-    final List<String> allNonGenTargetAddresses = getUniqueNonSyntheticTargetAddresses(target.getTargetAddressInfoSet());
-
-    final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargetAddresses.size());
+    final List<String> allUniqueNonSyntheticTargetAddresses = getUniqueNonSyntheticTargetAddresses(target.getTargetAddressInfoSet());
+    final String recompileMessage = String.format("Recompiling all %s targets", allUniqueNonSyntheticTargetAddresses.size());
     context.processMessage(
       new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
     );
     context.processMessage(new ProgressMessage(recompileMessage));
     commandLine.addParameters(goals);
-    commandLine.addParameters(allNonGenTargetAddresses);
+    commandLine.addParameters(allUniqueNonSyntheticTargetAddresses);
 
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =
