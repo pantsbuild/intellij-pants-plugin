@@ -21,6 +21,7 @@ import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -59,7 +60,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-
+    VfsRootAccess.allowRootAccess("/");
     myModule.setOption(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, PantsConstants.SYSTEM_ID.getId());
 
     final String pyPluginId = "PythonCore";
