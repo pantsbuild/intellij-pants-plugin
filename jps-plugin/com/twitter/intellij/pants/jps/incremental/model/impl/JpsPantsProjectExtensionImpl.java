@@ -10,25 +10,22 @@ import org.jetbrains.jps.model.ex.JpsElementBase;
 
 public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProjectExtensionImpl> implements JpsPantsProjectExtension {
   private String myPantsExecutablePath;
-  private boolean myCompileWithIntellij;
   private boolean myUseIdeaProjectJdk;
 
-  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean compileWithIntellij, boolean useIdeaProjectJdk) {
+  public JpsPantsProjectExtensionImpl(@NotNull String pantsExecutable, boolean useIdeaProjectJdk) {
     myPantsExecutablePath = pantsExecutable;
-    myCompileWithIntellij = compileWithIntellij;
     myUseIdeaProjectJdk = useIdeaProjectJdk;
   }
 
   @NotNull
   @Override
   public JpsPantsProjectExtensionImpl createCopy() {
-    return new JpsPantsProjectExtensionImpl(myPantsExecutablePath, myCompileWithIntellij, myUseIdeaProjectJdk);
+    return new JpsPantsProjectExtensionImpl(myPantsExecutablePath, myUseIdeaProjectJdk);
   }
 
   @Override
   public void applyChanges(@NotNull JpsPantsProjectExtensionImpl modified) {
     setPantsExecutablePath(modified.getPantsExecutablePath());
-    setCompileWithIntellij(modified.isCompileWithIntellij());
   }
 
   public boolean isUseIdeaProjectJdk() {
@@ -44,15 +41,5 @@ public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProject
   @Override
   public void setPantsExecutablePath(@NotNull String path) {
     myPantsExecutablePath = path;
-  }
-
-  @Override
-  public boolean isCompileWithIntellij() {
-    return myCompileWithIntellij;
-  }
-
-  @Override
-  public void setCompileWithIntellij(boolean compileWithIntellij) {
-    myCompileWithIntellij = compileWithIntellij;
   }
 }

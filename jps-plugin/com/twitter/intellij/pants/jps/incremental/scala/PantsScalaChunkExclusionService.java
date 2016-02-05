@@ -22,10 +22,9 @@ public class PantsScalaChunkExclusionService extends ChunkExclusionService {
 
     final JpsPantsProjectExtension pantsProjectExtension =
       PantsJpsProjectExtensionSerializer.findPantsProjectExtension(modules.iterator().next().getProject());
-    if (pantsProjectExtension == null || pantsProjectExtension.isCompileWithIntellij()) {
+    if (pantsProjectExtension == null) {
       return false;
     }
-
     return PantsJpsUtil.containsPantsModules(modules);
   }
 }

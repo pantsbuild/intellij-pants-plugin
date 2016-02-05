@@ -123,14 +123,13 @@ public class PantsManager implements
 
       @NotNull
       public PantsExecutionSettings getExecutionsSettingsFromPath(@NotNull Project ideProject, @NotNull String projectPath) {
-        boolean compileWithIntellij = PantsSettings.getInstance(ideProject).isCompileWithIntellij();
         boolean isUseIdeaProjectJdk = PantsSettings.getInstance(ideProject).isUseIdeaProjectJdk();
 
         final PantsTargetAddress absoluteTargetAddress = PantsTargetAddress.fromString(projectPath, true);
 
         if (absoluteTargetAddress != null) {
           return new PantsExecutionSettings(
-            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, compileWithIntellij, true, isUseIdeaProjectJdk
+            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, true, isUseIdeaProjectJdk
           );
         }
 
@@ -143,7 +142,7 @@ public class PantsManager implements
                                       ((PantsProjectSettings)projectSettings).isWithDependees();
         final boolean libsWithSources = projectSettings instanceof PantsProjectSettings &&
                                         ((PantsProjectSettings)projectSettings).isLibsWithSources();
-        return new PantsExecutionSettings(targets, withDependees, compileWithIntellij, libsWithSources, isUseIdeaProjectJdk);
+        return new PantsExecutionSettings(targets, withDependees, libsWithSources, isUseIdeaProjectJdk);
       }
     };
   }

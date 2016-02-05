@@ -49,7 +49,7 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     final boolean useIdeaProjectJdk = Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, ENFORCE_JDK, "false"));
 
     final JpsPantsProjectExtension projectExtension =
-      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), compileWithIntellij, useIdeaProjectJdk);
+      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), useIdeaProjectJdk);
 
     project.getContainer().setChild(JpsPantsProjectExtension.ROLE, projectExtension);
   }

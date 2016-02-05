@@ -68,8 +68,6 @@ import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
  * @see com.twitter.intellij.pants.highlighting.PantsHighlightingIntegrationTest
  */
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
-  private static final String PANTS_COMPILER_ENABLED = "pants.compiler.enabled";
-  private static final String isolatedPantsIniName = "pants.ini.isolated";
 
   private final boolean readOnly;
   private PantsProjectSettings myProjectSettings;
@@ -93,9 +91,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
       assertTrue(pluginId + " is not enabled!", plugin.isEnabled());
     }
-
-    final boolean usePantsToCompile = Boolean.valueOf(System.getProperty(PANTS_COMPILER_ENABLED, "true"));
-    PantsSettings.getInstance(myProject).setCompileWithIntellij(!usePantsToCompile);
 
     myProjectSettings = new PantsProjectSettings();
     myCompilerTester = null;
@@ -124,18 +119,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       }
 
       PantsUtil.copyDirContent(projectTemplateFolder, projectDir);
-    }
-
-
-    final File isolatedIni = new File(projectDir, isolatedPantsIniName);
-    // isolatedIni doesn't exist after global strategy was removed.
-    if (PantsUtil.isIsolatedStrategyTestFlagEnabled() && isolatedIni.exists()) {
-      final File originalIni = new File(projectDir, "pants.ini");
-      final File originalIniCopy = new File(projectDir, "pants.ini.copy");
-      FileUtil.copy(originalIni, originalIniCopy);
-      // There is no way to pass env vars to com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder.
-      // So let's just emulate the override.
-      FileUtil.appendToFile(originalIni, "\n" + FileUtil.loadFile(isolatedIni));
     }
   }
 
@@ -227,16 +210,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertNotNull("Can't find working dir for module '" + moduleName + "'!", pantsWorkingDir);
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
     List<String> compilerOutputPaths = ContainerUtil.newArrayList();
-    if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
-      final CompilerModuleExtension moduleExtension =
-        ModuleRootManager.getInstance(module).getModuleExtension(CompilerModuleExtension.class);
-      compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrl()));
-      compilerOutputPaths.add(VfsUtil.urlToPath(moduleExtension.getCompilerOutputUrlForTests()));
-    }
-    else {
-      VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(PantsUtil.findPantsWorkingDir(module).getPath());
-      compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, PantsUtil.hasTargetIdInExport(pantsExecutable.getPath())));
-    }
+
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(PantsUtil.findPantsWorkingDir(module).getPath());
+    compilerOutputPaths.addAll(
+      PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, PantsUtil.hasTargetIdInExport(pantsExecutable.getPath())));
+
     for (String compilerOutputPath : compilerOutputPaths) {
       VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));
       if (output == null) {
@@ -366,11 +344,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         }
       }
     );
-    if (!PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
-      final String noChanges = "pants: No changes to compile.";
-      final String compiledSuccessfully = "pants: SUCCESS";
-      assertTrue("Compilation wasn't successful!", rawMessages.contains(noChanges) || rawMessages.contains(compiledSuccessfully));
-    }
+
+    final String noChanges = "pants: No changes to compile.";
+    final String compiledSuccessfully = "pants: SUCCESS";
+    assertTrue("Compilation wasn't successful!", rawMessages.contains(noChanges) || rawMessages.contains(compiledSuccessfully));
     return rawMessages;
   }
 

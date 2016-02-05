@@ -21,10 +21,6 @@ import java.util.Set;
 public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtension {
   @Override
   public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
-    if (executor.isCompileWithIntellij()) {
-      // no optimization for IJ compilation
-      return;
-    }
     for (TargetInfo info : projectInfo.getTargets().values()) {
       if (!PantsUtil.isResource(info.getSourcesType())) {
         info.setRoots(compressRootsIfPossible(info.getRoots()));
