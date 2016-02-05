@@ -121,18 +121,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
       PantsUtil.copyDirContent(projectTemplateFolder, projectDir);
     }
-
-
-    final File isolatedIni = new File(projectDir, isolatedPantsIniName);
-    // isolatedIni doesn't exist after global strategy was removed.
-    if (PantsUtil.isIsolatedStrategyTestFlagEnabled() && isolatedIni.exists()) {
-      final File originalIni = new File(projectDir, "pants.ini");
-      final File originalIniCopy = new File(projectDir, "pants.ini.copy");
-      FileUtil.copy(originalIni, originalIniCopy);
-      // There is no way to pass env vars to com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder.
-      // So let's just emulate the override.
-      FileUtil.appendToFile(originalIni, "\n" + FileUtil.loadFile(isolatedIni));
-    }
   }
 
   protected void cleanProjectRoot() throws ExecutionException, IOException {
