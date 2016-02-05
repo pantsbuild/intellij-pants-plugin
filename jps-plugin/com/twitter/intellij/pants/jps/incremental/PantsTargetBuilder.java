@@ -59,9 +59,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   public void buildStarted(CompileContext context) {
     super.buildStarted(context);
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
-    final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
-    final boolean compileWithPants = pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij();
-    if (compileWithPants && PantsJpsUtil.containsPantsModules(jpsProject.getModules())) {
+    if (PantsJpsUtil.containsPantsModules(jpsProject.getModules())) {
       // disable only for imported projects
       JavaBuilder.IS_ENABLED.set(context, Boolean.FALSE);
     }
