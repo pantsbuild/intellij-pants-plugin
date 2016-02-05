@@ -75,9 +75,4 @@ public class PantsProjectCompilerConfigurable extends BaseConfigurable implement
   @Override
   public void disposeUIResources() {
   }
-
-  @Override
-  public JComponent getPreferredFocusedComponent() {
-    return myCompilerForm.getCompilerComboBox();
-  }
 }

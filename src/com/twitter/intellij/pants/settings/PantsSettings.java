@@ -97,7 +97,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public static class MyState implements State<PantsProjectSettings> {
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
-    boolean myCompileWithIntellij = false;
     boolean myUseIdeaProjectJdk = false;
     int myResolverVersion = 0;
 
