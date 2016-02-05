@@ -42,7 +42,7 @@ export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
 export OSS_PANTS_HOME="$CWD/.cache/pants"
 export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
 
-export IDEA_TEST_HOME="$CWD/.pants.d/intellij/plugins-sandbox/test"
+export IDEA_TEST_HOME="$CWD/.cache/intellij/plugins-sandbox/test"
 
 append_intellij_jvm_options() {
   scope=$1
