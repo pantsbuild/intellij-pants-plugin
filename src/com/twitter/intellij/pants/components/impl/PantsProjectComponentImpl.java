@@ -34,14 +34,8 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         public void run() {
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
-            pantsSettings instanceof PantsSettings &&
-            ((PantsSettings)pantsSettings).getResolverVersion() != PantsResolver.VERSION &&
-            ((PantsSettings)pantsSettings).getResolverVersion() != 0;
+            pantsSettings instanceof PantsSettings && ((PantsSettings)pantsSettings).getResolverVersion() != PantsResolver.VERSION;
           if (resolverVersionMismatch && /* additional check */PantsUtil.isPantsProject(myProject)) {
-            System.out.println(myProject.getBaseDir().getCanonicalPath());
-            System.out.println(((PantsSettings)pantsSettings).getResolverVersion());
-            System.out.println(PantsResolver.VERSION);
-            System.out.println(myProject.getBaseDir());
             final int answer = Messages.showYesNoDialog(
               myProject,
               PantsBundle.message("pants.project.generated.with.old.version", myProject.getName()),
