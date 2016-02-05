@@ -59,8 +59,8 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
 
   @Override
   protected void setUp() throws Exception {
-    super.setUp();
     VfsRootAccess.allowRootAccess("/");
+    super.setUp();
     myModule.setOption(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, PantsConstants.SYSTEM_ID.getId());
 
     final String pyPluginId = "PythonCore";
