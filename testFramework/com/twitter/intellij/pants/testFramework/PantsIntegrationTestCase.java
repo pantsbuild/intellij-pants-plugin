@@ -68,7 +68,6 @@ import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
  * @see com.twitter.intellij.pants.highlighting.PantsHighlightingIntegrationTest
  */
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
-  private static final String isolatedPantsIniName = "pants.ini.isolated";
 
   private final boolean readOnly;
   private PantsProjectSettings myProjectSettings;
