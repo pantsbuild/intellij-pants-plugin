@@ -50,8 +50,6 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     @NotNull final Editor editor,
     @NotNull final PsiClass psiClass
   ) throws Exception {
-    // we should be able to compile it even with a missing dependency
-    // because we are compiling via compile goal
     assertCompilationFailed("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     WriteCommandAction.runWriteCommandAction(
