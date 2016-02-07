@@ -128,13 +128,13 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     }
 
     // Find out whether "export-classpath-use-old-naming-style" exists
-    final boolean hasExportClassPathNamingStyle =
+    final boolean supportExportClasspathNamingStyle =
       PantsUtil.supportExportClasspathNamingStyle(pantsExecutable);
     final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
 
     // "export-classpath-use-old-naming-style" is soon to be removed.
     // so add this flag only if target id is exported and this flag supported.
-    if (hasExportClassPathNamingStyle && hasTargetIdInExport) {
+    if (supportExportClasspathNamingStyle && hasTargetIdInExport) {
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
 
