@@ -50,6 +50,8 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       return;
     }
     final PathsList classpath = params.getClassPath();
+    params.setUseDynamicClasspath(true);
+    params.setUseClasspathJar(true);
 
     for (Map.Entry<String, String> excludedPathEntry : findAllExcludedJars(classpath.getPathList(), findExcludes(module)).entrySet()) {
       final String excludedPath = excludedPathEntry.getKey();
