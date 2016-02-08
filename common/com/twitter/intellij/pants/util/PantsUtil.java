@@ -674,8 +674,12 @@ public class PantsUtil {
   }
 
   public static boolean supportExportClasspathNamingStyle(final String pantsExecutable) {
+    return supportsGoalOption(pantsExecutable, "export-classpath", "--no-export-classpath-use-old-naming-style");
+  }
+
+  public static boolean supportsGoalOption(final String pantsExecutable, String goal, String option) {
     final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export-classpath", "--no-export-classpath-use-old-naming-style", "--no-colors");
+    commandline.addParameters(goal, option);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       return processOutput.getExitCode() == 0;
@@ -684,6 +688,7 @@ public class PantsUtil {
       throw new PantsException("Failed:" + commandline.getCommandLineString());
     }
   }
+
   /**
    * Copied from: http://stackoverflow.com/questions/6701948/efficient-way-to-compare-version-strings-in-java
    * Compares two version strings.
