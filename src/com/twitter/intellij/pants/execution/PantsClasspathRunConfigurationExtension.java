@@ -51,8 +51,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     }
     /**
      * This enables dynamic classpath only when idea.dynamic.classpath=true is set in idea.properties as well.
-     * For logic and documentation, please follow
-     * com.intellij.execution.configurations.CommandLineBuilder#createFromJavaParameters(com.intellij.execution.configurations.SimpleJavaParameters, com.intellij.openapi.project.Project, boolean)
+     * See {@link com.intellij.execution.configurations.CommandLineBuilder}
      */
     params.setUseDynamicClasspath(true);
 
