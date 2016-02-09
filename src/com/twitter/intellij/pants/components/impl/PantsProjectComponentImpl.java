@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.components.impl;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
@@ -32,6 +33,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
       new Runnable() {
         @Override
         public void run() {
+          PropertiesComponent.getInstance(myProject).setValue("dynamic.classpath", true);
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
             pantsSettings instanceof PantsSettings && ((PantsSettings)pantsSettings).getResolverVersion() != PantsResolver.VERSION;
