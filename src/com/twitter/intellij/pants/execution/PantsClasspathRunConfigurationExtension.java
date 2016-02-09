@@ -49,9 +49,14 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     if (module == null) {
       return;
     }
-    final PathsList classpath = params.getClassPath();
+    /**
+     * This enables dynamic classpath only when idea.dynamic.classpath=true is set in idea.properties as well.
+     * For logic and documentation, please follow
+     * com.intellij.execution.configurations.CommandLineBuilder#createFromJavaParameters(com.intellij.execution.configurations.SimpleJavaParameters, com.intellij.openapi.project.Project, boolean)
+     */
     params.setUseDynamicClasspath(true);
-    params.setUseClasspathJar(true);
+
+    final PathsList classpath = params.getClassPath();
 
     for (Map.Entry<String, String> excludedPathEntry : findAllExcludedJars(classpath.getPathList(), findExcludes(module)).entrySet()) {
       final String excludedPath = excludedPathEntry.getKey();
