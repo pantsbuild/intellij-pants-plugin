@@ -3,14 +3,17 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.gson.reflect.TypeToken;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.util.text.CaseInsensitiveStringHashingStrategy;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
-
 
 public class PantsConstants {
   public static final String PANTS = "pants";
@@ -49,4 +52,9 @@ public class PantsConstants {
       ),
     CaseInsensitiveStringHashingStrategy.INSTANCE
   );
+
+  /**
+   * Constant type for gson to figure out the data type to deserialize
+   */
+  public static final Type TARGET_ADDRESS_INFO_HASHSET_TYPE = new TypeToken<HashSet<TargetAddressInfo>>(){}.getType();
 }

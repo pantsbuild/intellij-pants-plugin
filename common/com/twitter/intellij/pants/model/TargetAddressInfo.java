@@ -9,6 +9,7 @@ import com.twitter.intellij.pants.model.Globs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+
 public class TargetAddressInfo {
   /**
    * Target addresses.
@@ -31,9 +32,15 @@ public class TargetAddressInfo {
 
   private boolean is_code_gen;
 
+  private boolean is_synthetic;
+
   private String id;
 
   public TargetAddressInfo() {
+  }
+
+  public boolean is_synthetic() {
+    return is_synthetic;
   }
 
   public String getId() {

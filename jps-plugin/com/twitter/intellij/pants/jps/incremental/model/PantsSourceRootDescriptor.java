@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.jps.incremental.model;
 
 import com.intellij.openapi.util.io.FileUtil;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.builders.BuildRootDescriptor;
 
@@ -16,27 +17,30 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
   public final boolean myGeneratedSources;
   @NotNull
   private final Set<File> myExcludes;
-  private final Set<String> myTargetAddress;
   @NotNull
   private final PantsBuildTarget myTarget;
 
+  private final Set<TargetAddressInfo> myTargetAddressInfoSet;
+
+
+
   public PantsSourceRootDescriptor(
     @NotNull PantsBuildTarget target,
-    @NotNull Set<String> targetAddress,
+    @NotNull Set<TargetAddressInfo> targetAddressInfoSet,
     @NotNull File root,
     boolean isGenerated,
     @NotNull Set<File> excludes
   ) {
     myTarget = target;
-    myTargetAddress = targetAddress;
+    myTargetAddressInfoSet = targetAddressInfoSet;
     myRoot = root;
     myGeneratedSources = isGenerated;
     myExcludes = excludes;
   }
 
   @NotNull
-  public Set<String> getTargetAddresses() {
-    return myTargetAddress;
+  public Set<TargetAddressInfo> getTargetAddressInfoSet() {
+    return myTargetAddressInfoSet;
   }
 
   @NotNull
@@ -80,7 +84,7 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
     if (myGeneratedSources != that.myGeneratedSources) return false;
     if (!FileUtil.filesEqual(myRoot, that.myRoot)) return false;
     if (!myExcludes.equals(that.myExcludes)) return false;
-    if (myTargetAddress != null ? !myTargetAddress.equals(that.myTargetAddress) : that.myTargetAddress != null) return false;
+    if (myTargetAddressInfoSet != null ? !myTargetAddressInfoSet.equals(that.myTargetAddressInfoSet) : that.myTargetAddressInfoSet != null) return false;
     return myTarget.equals(that.myTarget);
   }
 
@@ -89,7 +93,7 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
     int result = myRoot.hashCode();
     result = 31 * result + (myGeneratedSources ? 1 : 0);
     result = 31 * result + myExcludes.hashCode();
-    result = 31 * result + (myTargetAddress != null ? myTargetAddress.hashCode() : 0);
+    result = 31 * result + (myTargetAddressInfoSet != null ? myTargetAddressInfoSet.hashCode() : 0);
     result = 31 * result + myTarget.hashCode();
     return result;
   }

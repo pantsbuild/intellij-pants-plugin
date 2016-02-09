@@ -7,17 +7,16 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTarget;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
 import com.twitter.intellij.pants.jps.incremental.model.PantsSourceRootDescriptor;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
 import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -37,10 +36,9 @@ import org.jetbrains.jps.model.JpsProject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.HashSet;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
@@ -81,10 +79,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
     ProcessOutput output;
     if (supportsExportClasspath(target.getPantsExecutable())) {
-      output = runCompile(target, holder, context, "export-classpath", "compile");
+      output = runCompile(target, context, "export-classpath", "compile");
     }
     else {
-      output = runCompile(target, holder, context, "compile");
+      output = runCompile(target, context, "compile");
     }
 
     boolean success = output.checkSuccess(LOG);
@@ -107,7 +105,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
   private ProcessOutput runCompile(
     @NotNull PantsBuildTarget target,
-    @NotNull DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder,
     @NotNull final CompileContext context,
     String... goals
   ) throws IOException, ProjectBuildException {
@@ -116,17 +113,16 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameters("clean-all");
     }
-    final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
-    final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargets.size());
+    final Set<String> allUniqueNonSyntheticTargetAddresses = getUniqueNonSyntheticTargetAddresses(target.getTargetAddressInfoSet());
+    final String recompileMessage = String.format("Recompiling all %s targets", allUniqueNonSyntheticTargetAddresses.size());
     context.processMessage(
       new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
     );
     context.processMessage(new ProgressMessage(recompileMessage));
     commandLine.addParameters(goals);
-    for (String targetAddress : allNonGenTargets) {
+    for (String targetAddress : allUniqueNonSyntheticTargetAddresses) {
       commandLine.addParameter(targetAddress);
     }
-
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =
       PantsUtil.getPantsOptions(pantsExecutable).contains(PantsConstants.PANTS_EXPORT_CLASSPATH_NAMING_STYLE_OPTION);
@@ -142,10 +138,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final JpsPantsProjectExtension pantsProjectExtension =
       PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
     if (pantsProjectExtension.isUseIdeaProjectJdk()) {
-      try{
+      try {
         commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromExternalBuilder(jpsProject)));
       }
-      catch(Exception e){
+      catch (Exception e) {
         throw new ProjectBuildException(e);
       }
     }
@@ -178,7 +174,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       new FileProcessor<PantsSourceRootDescriptor, PantsBuildTarget>() {
         @Override
         public boolean apply(PantsBuildTarget target, File file, PantsSourceRootDescriptor root) throws IOException {
-          if (!PantsJpsUtil.containsGenTarget(root.getTargetAddresses())) {
+          if (!PantsJpsUtil.containsGenTarget(root.getTargetAddressInfoSet())) {
             hasDirtyTargets.set(true);
             return false;
           }
@@ -189,34 +185,14 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return hasDirtyTargets.get();
   }
 
-  private Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
-    return new HashSet<String>(
-      ContainerUtil.filter(
-        addresses,
-        new Condition<String>() {
-          @Override
-          public boolean value(String targetAddress) {
-            return !PantsJpsUtil.isGenTarget(targetAddress);
-          }
-        }
-      )
-    );
-  }
-
-  @NotNull
-  private Set<String> findTargetAddresses(@NotNull DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder)
-    throws IOException {
-    final Set<String> addresses = new HashSet<String>();
-    holder.processDirtyFiles(
-      new FileProcessor<PantsSourceRootDescriptor, PantsBuildTarget>() {
-        @Override
-        public boolean apply(PantsBuildTarget target, File file, PantsSourceRootDescriptor root) throws IOException {
-          addresses.addAll(root.getTargetAddresses());
-          return true;
-        }
+  private Set<String> getUniqueNonSyntheticTargetAddresses(@NotNull Set<TargetAddressInfo> targetAddressInfoCollection) {
+    Set<String> uniqueAddresses = new HashSet<String>();
+    for (TargetAddressInfo targetAddressInfo : targetAddressInfoCollection) {
+      if (!targetAddressInfo.is_synthetic()) {
+        uniqueAddresses.add(targetAddressInfo.getTargetAddress());
       }
-    );
-    return addresses;
+    }
+    return uniqueAddresses;
   }
 
   @NotNull
