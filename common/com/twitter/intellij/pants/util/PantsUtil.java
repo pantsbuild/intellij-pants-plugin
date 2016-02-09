@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -677,6 +678,7 @@ public class PantsUtil {
     return supportsGoalOption(pantsExecutable, "export-classpath", "--no-export-classpath-use-old-naming-style");
   }
 
+  @VisibleForTesting
   public static boolean supportsGoalOption(final String pantsExecutable, String goal, String option) {
     final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
     commandline.addParameters(goal, option);
