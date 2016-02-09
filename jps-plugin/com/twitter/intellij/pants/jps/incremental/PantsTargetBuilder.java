@@ -36,7 +36,9 @@ import org.jetbrains.jps.model.JpsProject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
+import java.util.HashSet;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
@@ -111,15 +113,16 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameters("clean-all");
     }
-    final List<String> allUniqueNonSyntheticTargetAddresses = getUniqueNonSyntheticTargetAddresses(target.getTargetAddressInfoSet());
+    final Set<String> allUniqueNonSyntheticTargetAddresses = getUniqueNonSyntheticTargetAddresses(target.getTargetAddressInfoSet());
     final String recompileMessage = String.format("Recompiling all %s targets", allUniqueNonSyntheticTargetAddresses.size());
     context.processMessage(
       new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
     );
     context.processMessage(new ProgressMessage(recompileMessage));
     commandLine.addParameters(goals);
-    commandLine.addParameters(allUniqueNonSyntheticTargetAddresses);
-
+    for (String targetAddress : allUniqueNonSyntheticTargetAddresses) {
+      commandLine.addParameter(targetAddress);
+    }
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =
       PantsUtil.getPantsOptions(pantsExecutable).contains(PantsConstants.PANTS_EXPORT_CLASSPATH_NAMING_STYLE_OPTION);
@@ -182,14 +185,14 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return hasDirtyTargets.get();
   }
 
-  private List<String> getUniqueNonSyntheticTargetAddresses(@NotNull Collection<TargetAddressInfo> targetAddressInfoCollection) {
+  private Set<String> getUniqueNonSyntheticTargetAddresses(@NotNull Set<TargetAddressInfo> targetAddressInfoCollection) {
     Set<String> uniqueAddresses = new HashSet<String>();
     for (TargetAddressInfo targetAddressInfo : targetAddressInfoCollection) {
       if (!targetAddressInfo.is_synthetic()) {
         uniqueAddresses.add(targetAddressInfo.getTargetAddress());
       }
     }
-    return new ArrayList<String>(uniqueAddresses);
+    return uniqueAddresses;
   }
 
   @NotNull
