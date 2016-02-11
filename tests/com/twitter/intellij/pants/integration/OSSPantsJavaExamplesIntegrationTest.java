@@ -197,7 +197,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     PantsSettings settings = PantsSettings.getInstance(myProject);
     settings.setUseIdeaProjectJdk(true);
-    settings.setCompileWithIntellij(false);
     List<String> output = makeProject();
     assertTrue(StringUtil.join(output,"\n").contains(PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION));
 

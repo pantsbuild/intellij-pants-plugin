@@ -20,7 +20,6 @@ env:
   matrix:
     - IJ_ULTIMATE=false
     - IJ_ULTIMATE=true
-    - USE_PANTS_TO_COMPILE=false
     - PANTS_SHA="release_0.0.69" TEST_SET=integration
     - PANTS_SHA="release_0.0.68" TEST_SET=integration
     - PANTS_SHA="release_0.0.67" TEST_SET=integration

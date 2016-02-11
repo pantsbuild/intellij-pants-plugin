@@ -59,9 +59,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   public void buildStarted(CompileContext context) {
     super.buildStarted(context);
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
-    final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
-    final boolean compileWithPants = pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij();
-    if (compileWithPants && PantsJpsUtil.containsPantsModules(jpsProject.getModules())) {
+    if (PantsJpsUtil.containsPantsModules(jpsProject.getModules())) {
       // disable only for imported projects
       JavaBuilder.IS_ENABLED.set(context, Boolean.FALSE);
     }
@@ -78,30 +76,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       context.processMessage(new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, "No changes to compile."));
       return;
     }
-
-    ProcessOutput output;
-    if (supportsExportClasspath(target.getPantsExecutable())) {
-      output = runCompile(target, holder, context, "export-classpath", "compile");
-    }
-    else {
-      output = runCompile(target, holder, context, "compile");
-    }
-
+    final ProcessOutput output = runCompile(target, holder, context, "export-classpath", "compile");
     boolean success = output.checkSuccess(LOG);
     if (!success) {
       throw new ProjectBuildException(output.getStderr());
-    }
-  }
-
-  private boolean supportsExportClasspath(@NotNull String pantsExecutable) {
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(new File(pantsExecutable));
-    commandLine.addParameter("goals");
-    try {
-      return PantsUtil.getCmdOutput(commandLine, null).getStdout().contains("export-classpath");
-    }
-    catch (ExecutionException e) {
-      LOG.warn(e);
-      return false;
     }
   }
 

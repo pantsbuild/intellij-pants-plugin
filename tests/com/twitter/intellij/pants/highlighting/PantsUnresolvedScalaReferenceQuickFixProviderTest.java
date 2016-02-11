@@ -13,8 +13,6 @@ import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.quickfix.AddPantsTargetDependencyFix;
-import com.twitter.intellij.pants.settings.PantsSettings;
-import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -44,50 +42,15 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
 
     assertModuleModuleDeps("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
-    // In CI we run all tests with both compiler options. See .travis.yml
-    // But in this test we also checking the difference between compiler options.
-    // We are checking that we can compile the project with Pants even with a missing dependency
-    // and we do not compile project with Pants again if no source files were changed.
-    if (PantsSettings.getInstance(myProject).isCompileWithIntellij() || PantsUtil.isIsolatedStrategyTestFlagEnabled()) {
-      testIntentionIfCompilingWithIntelliJ(intention, editor, psiClass);
-    } else {
-      testIntentionIfCompilingWithPants(intention, editor, psiClass);
-    }
+    testIntention(intention, editor, psiClass);
   }
 
-  private void testIntentionIfCompilingWithIntelliJ(
+  private void testIntention(
     @NotNull final AddPantsTargetDependencyFix intention,
     @NotNull final Editor editor,
     @NotNull final PsiClass psiClass
   ) throws Exception {
     assertCompilationFailed("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
-
-    WriteCommandAction.runWriteCommandAction(
-      myProject,
-      new Runnable() {
-        @Override
-        public void run() {
-          intention.invoke(myProject, editor, psiClass.getContainingFile());
-        }
-      }
-    );
-
-    assertModuleModuleDeps(
-      "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
-      "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
-    );
-
-    makeProject();
-  }
-
-  private void testIntentionIfCompilingWithPants(
-    @NotNull final AddPantsTargetDependencyFix intention,
-    @NotNull final Editor editor,
-    @NotNull final PsiClass psiClass
-  ) throws Exception {
-    // we should be able to compile it even with a missing dependency
-    // because we are compiling via compile goal
-    makeModules("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     WriteCommandAction.runWriteCommandAction(
       myProject,

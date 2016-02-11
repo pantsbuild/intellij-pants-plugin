@@ -101,12 +101,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
         }
       );
     assertNotEmpty(errorMessages);
-    final boolean compileWithIntellij = PantsSettings.getInstance(myTestFixture.getProject()).isCompileWithIntellij();
-    if (compileWithIntellij) {
-      assertNotEmpty(errorMessages);
-    } else {
-      assertContainsElements(errorMessages, "pants: FAILURE");
-    }
+    assertContainsElements(errorMessages, "pants: FAILURE");
   }
 
   public void testWelcomeTest() throws Throwable {
@@ -123,9 +118,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     assertSize(1, contentRoots);
     final List<SourceFolder> testSourceRoots = contentRoots[0].getSourceFolders(JavaSourceRootType.TEST_SOURCE);
     assertSize(1, testSourceRoots);
-    if (!PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
-      assertTrue(testSourceRoots.iterator().next().getUrl().endsWith("examples/tests/scala"));
-    }
+    assertTrue(testSourceRoots.iterator().next().getUrl().endsWith("examples/tests/scala"));
 
     makeProject();
 

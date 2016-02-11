@@ -58,33 +58,21 @@ public class PantsProjectCompilerConfigurable extends BaseConfigurable implement
 
   @Override
   public boolean isModified() {
-    return PantsSettings.getInstance(myProject).isCompileWithIntellij() != myCompilerForm.isCompileWithIntellij()
-      || PantsSettings.getInstance(myProject).isUseIdeaProjectJdk() != myCompilerForm.isUseIdeaProjectJdk();
+    return PantsSettings.getInstance(myProject).isUseIdeaProjectJdk() != myCompilerForm.isUseIdeaProjectJdk();
   }
 
   @Override
   public void apply() throws ConfigurationException {
     final PantsSettings pantsSettings = PantsSettings.getInstance(myProject);
-    final boolean refreshNeeded = pantsSettings.isCompileWithIntellij() != myCompilerForm.isCompileWithIntellij();
-    pantsSettings.setCompileWithIntellij(myCompilerForm.isCompileWithIntellij());
     pantsSettings.setUseIdeaProjectJdk(myCompilerForm.isUseIdeaProjectJdk());
-    if (refreshNeeded) {
-      PantsUtil.refreshAllProjects(myProject);
-    }
   }
 
   @Override
   public void reset() {
-    myCompilerForm.setCompileWithIntellij(PantsSettings.getInstance(myProject).isCompileWithIntellij());
     myCompilerForm.setUseIdeaProjectJdk(PantsSettings.getInstance(myProject).isUseIdeaProjectJdk());
   }
 
   @Override
   public void disposeUIResources() {
-  }
-
-  @Override
-  public JComponent getPreferredFocusedComponent() {
-    return myCompilerForm.getCompilerComboBox();
   }
 }

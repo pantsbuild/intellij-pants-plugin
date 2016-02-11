@@ -247,11 +247,6 @@ public class PantsUtil {
       commandLine.getEnvironment().put("PANTS_DEV", "1");
     }
 
-    final File isolatedIni = new File(pantsExecutable.getParentFile(), "pants.ini.isolated");
-    if (PantsUtil.isIsolatedStrategyTestFlagEnabled() && isolatedIni.exists()) {
-      commandLine.getEnvironment().put("PANTS_CONFIG_OVERRIDE", "['" + isolatedIni.getAbsolutePath() + "']");
-    }
-
     final String pantsExecutablePath = StringUtil.notNullize(
       System.getProperty("pants.executable.path"),
       pantsExecutable.getAbsolutePath()
@@ -556,10 +551,6 @@ public class PantsUtil {
     int index = name.lastIndexOf('.');
     if (index < 0) return name;
     return name.substring(0, index);
-  }
-
-  public static boolean isIsolatedStrategyTestFlagEnabled() {
-    return Boolean.valueOf(System.getProperty("pants.compiler.isolated.strategy"));
   }
 
   @Contract(pure=true)

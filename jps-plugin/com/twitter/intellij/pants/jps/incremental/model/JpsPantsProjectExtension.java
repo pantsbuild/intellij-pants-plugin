@@ -18,9 +18,5 @@ public interface JpsPantsProjectExtension extends JpsElement {
 
   void setPantsExecutablePath(@NotNull String path);
 
-  boolean isCompileWithIntellij();
-
-  void setCompileWithIntellij(boolean compileWithIntellij);
-
   boolean isUseIdeaProjectJdk();
 }

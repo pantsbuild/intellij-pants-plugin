@@ -54,8 +54,6 @@ append_intellij_jvm_options() {
     "-Didea.home.path=$IDEA_TEST_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
     "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/rt/jps-plugin-system.jar:$CWD/jps-plugin/lib/gson-2.3.1.jar"
-    "-Dpants.compiler.enabled=${USE_PANTS_TO_COMPILE:-true}"
-    "-Dpants.compiler.isolated.strategy=${USE_ISOLATED_STRATEGY:-true}"
     # "-Dcompiler.process.debug.port=5006"
   )
   for jvm_option in ${INTELLIJ_JVM_OPTIONS[@]}
