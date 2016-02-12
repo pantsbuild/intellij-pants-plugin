@@ -12,9 +12,6 @@ public class OSSPantsIncrementalCompilationIntegrationTest extends OSSPantsInteg
   }
 
   public void testHelloByTargetName() throws Throwable {
-    if (PantsSettings.getInstance(myProject).isCompileWithIntellij()) {
-      return;
-    }
     doImport("examples/src/scala/org/pantsbuild/example/hello/BUILD", "hello");
 
     assertModules(

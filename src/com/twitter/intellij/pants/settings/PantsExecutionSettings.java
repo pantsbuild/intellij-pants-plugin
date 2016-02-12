@@ -12,7 +12,6 @@ import java.util.List;
 
 public class PantsExecutionSettings extends ExternalSystemExecutionSettings implements PantsExecutionOptions {
   private final boolean myWithDependees;
-  private final boolean myCompileWithIntellij;
   private final boolean myLibsWithSourcesAndDocs;
 
 
@@ -20,13 +19,12 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private List<String> myTargetNames;
 
   public PantsExecutionSettings() {
-    this(Collections.<String>emptyList(), false, false, true, false);
+    this(Collections.<String>emptyList(), false, true, false);
   }
 
-  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean compileWithIntellij, boolean libsWithSourcesAndDocs, boolean useIdeaProjectJdk) {
+  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean libsWithSourcesAndDocs, boolean useIdeaProjectJdk) {
     myTargetNames = targetNames;
     myWithDependees = withDependees;
-    myCompileWithIntellij = compileWithIntellij;
     myLibsWithSourcesAndDocs = libsWithSourcesAndDocs;
     myUseIdeaProjectJdk = useIdeaProjectJdk;
   }
@@ -39,10 +37,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   @Override
   public boolean isWithDependees() {
     return myWithDependees;
-  }
-
-  public boolean isCompileWithIntellij() {
-    return myCompileWithIntellij;
   }
 
   public boolean isLibsWithSourcesAndDocs() {
@@ -62,7 +56,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     PantsExecutionSettings settings = (PantsExecutionSettings)o;
     if (myUseIdeaProjectJdk != settings.myUseIdeaProjectJdk) return false;
     if (myWithDependees != settings.myWithDependees) return false;
-    if (myCompileWithIntellij != settings.myCompileWithIntellij) return false;
     if (myLibsWithSourcesAndDocs != settings.myLibsWithSourcesAndDocs) return false;
     if (myTargetNames != null ? !myTargetNames.equals(settings.myTargetNames) : settings.myTargetNames != null) return false;
 
@@ -74,7 +67,6 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     int result = super.hashCode();
     result = 31 * result + (myWithDependees ? 1 : 0);
     result = 31 * result + (myTargetNames != null ? myTargetNames.hashCode() : 0);
-    result = 31 * result + (myCompileWithIntellij ? 1 : 0);
     result = 31 * result + (myLibsWithSourcesAndDocs ? 1 : 0);
     result = 31 * result + (myUseIdeaProjectJdk ? 1 : 0);
     return result;

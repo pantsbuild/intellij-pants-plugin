@@ -35,7 +35,6 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   public PantsBuildTarget getTarget(JpsModel model) {
     final JpsProject jpsProject = model.getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
-    final boolean compileWithPants = pantsProjectExtension != null && !pantsProjectExtension.isCompileWithIntellij();
 
     final Set<String> allTargetAddresses = new HashSet<String>();
     final Set<TargetAddressInfo> targetAddressInfoSet = new HashSet<TargetAddressInfo>();
@@ -44,7 +43,7 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
       targetAddressInfoSet.addAll(moduleExtension.getTargetAddressInfoSet());
     }
 
-    return compileWithPants && PantsJpsUtil.containsPantsModules(jpsProject.getModules()) ?
+    return PantsJpsUtil.containsPantsModules(jpsProject.getModules()) ?
            new PantsBuildTarget(
              pantsProjectExtension.getPantsExecutablePath(), new HashSet<String>(allTargetAddresses), targetAddressInfoSet) : null;
   }

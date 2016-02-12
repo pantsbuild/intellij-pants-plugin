@@ -68,9 +68,6 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
       final DataNode<ModuleData> moduleDataNode = modules.get(targetAddress);
 
       createContentRoots(moduleDataNode, targetInfo);
-      if (executor.isCompileWithIntellij()) {
-        addExcludesToContentRoots(targetInfo, findChildren(moduleDataNode, ProjectKeys.CONTENT_ROOT));
-      }
     }
   }
 

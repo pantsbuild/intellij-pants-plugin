@@ -33,7 +33,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     return pantsSettings;
   }
 
-  protected boolean myCompileWithIntellij = false;
   protected boolean myUseIdeaProjectJdk = false;
   protected int myResolverVersion = 0;
 
@@ -47,14 +46,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
   public boolean isUseIdeaProjectJdk() {
     return myUseIdeaProjectJdk;
-  }
-
-  public boolean isCompileWithIntellij() {
-    return myCompileWithIntellij;
-  }
-
-  public void setCompileWithIntellij(boolean compileWithIntellij) {
-    myCompileWithIntellij = compileWithIntellij;
   }
 
   public int getResolverVersion() {
@@ -77,7 +68,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
   @Override
   protected void copyExtraSettingsFrom(@NotNull PantsSettings settings) {
-    setCompileWithIntellij(settings.isCompileWithIntellij());
     setResolverVersion(settings.getResolverVersion());
     setUseIdeaProjectJdk(settings.isUseIdeaProjectJdk());
   }
@@ -91,7 +81,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   @Override
   public MyState getState() {
     final MyState state = new MyState();
-    state.setCompileWithIntellij(isCompileWithIntellij());
     state.setResolverVersion(getResolverVersion());
     state.setUseIdeaProjectJdk(isUseIdeaProjectJdk());
     fillState(state);
@@ -101,7 +90,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   @Override
   public void loadState(MyState state) {
     super.loadState(state);
-    setCompileWithIntellij(state.isCompileWithIntellij());
     setResolverVersion(state.getResolverVersion());
     setUseIdeaProjectJdk(state.isUseIdeaProjectJdk());
   }
@@ -109,7 +97,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   public static class MyState implements State<PantsProjectSettings> {
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
-    boolean myCompileWithIntellij = false;
     boolean myUseIdeaProjectJdk = false;
     int myResolverVersion = 0;
 
@@ -128,14 +115,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     public void setLinkedExternalProjectsSettings(Set<PantsProjectSettings> settings) {
       myLinkedExternalProjectsSettings = settings;
-    }
-
-    public boolean isCompileWithIntellij() {
-      return myCompileWithIntellij;
-    }
-
-    public void setCompileWithIntellij(boolean compileWithIntellij) {
-      myCompileWithIntellij = compileWithIntellij;
     }
 
     public int getResolverVersion() {
