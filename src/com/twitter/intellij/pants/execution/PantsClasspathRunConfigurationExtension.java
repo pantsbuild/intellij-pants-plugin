@@ -50,7 +50,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       return;
     }
     /**
-     * This enables dynamic classpath for this particular run. This prevents argument too long errors caused by long classpaths.
+     * This enables dynamic classpath for this particular run and prevents argument too long errors caused by long classpaths.
      */
     params.setUseDynamicClasspath(true);
 
