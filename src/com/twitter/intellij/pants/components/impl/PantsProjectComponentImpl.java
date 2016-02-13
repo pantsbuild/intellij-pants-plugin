@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.components.impl;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
@@ -32,6 +33,12 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
       new Runnable() {
         @Override
         public void run() {
+          /**
+           * Set project to allow dynamic classpath for JUnit run. Still requires any junit run to specify dynamic classpath in
+           * {@link com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension#updateJavaParameters}
+           * IDEA's logic: {@link com.intellij.execution.configurations.CommandLineBuilder}
+           */
+          PropertiesComponent.getInstance(myProject).setValue("dynamic.classpath", true);
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
             pantsSettings instanceof PantsSettings && ((PantsSettings)pantsSettings).getResolverVersion() != PantsResolver.VERSION;

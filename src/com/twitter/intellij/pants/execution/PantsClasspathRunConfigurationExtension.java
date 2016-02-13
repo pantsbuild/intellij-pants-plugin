@@ -49,6 +49,11 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     if (module == null) {
       return;
     }
+    /**
+     * This enables dynamic classpath for this particular run and prevents argument too long errors caused by long classpaths.
+     */
+    params.setUseDynamicClasspath(true);
+
     final PathsList classpath = params.getClassPath();
 
     for (Map.Entry<String, String> excludedPathEntry : findAllExcludedJars(classpath.getPathList(), findExcludes(module)).entrySet()) {
