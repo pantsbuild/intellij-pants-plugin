@@ -7,6 +7,11 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.3.12</p>
+      <ul>
+        <li>Performance improvement: removal of IntelliJ compiler option and stale classpath collection mechanism</li>
+        <li>JUnit runner uses dynamic classpath to prevent argument too long error</li>
+      </ul>
       <p>1.3.11</p>
       <ul>
         <li>UX enhancement: auto zoom in at the target/directory imported</li>
@@ -172,11 +177,11 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.3.11</version>
+  <version>1.3.12</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
-  <idea-version since-build="143.1" until-build="143.1823"/>
+  <idea-version since-build="143.1" until-build="143.9999"/>
 
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
