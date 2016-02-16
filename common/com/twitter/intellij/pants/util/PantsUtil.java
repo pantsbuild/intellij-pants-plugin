@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -658,6 +659,23 @@ public class PantsUtil {
       final String stdOut = processOutput.getStdout();
       SimpleExportResult simpleExportResult = new Gson().fromJson(stdOut, SimpleExportResult.class);
       return versionCompare(simpleExportResult.getVersion(), "1.0.5") >= 0;
+    }
+    catch (ExecutionException e) {
+      throw new PantsException("Failed:" + commandline.getCommandLineString());
+    }
+  }
+
+  public static boolean supportExportClasspathNamingStyle(final String pantsExecutable) {
+    return supportsGoalOption(pantsExecutable, "export-classpath", "--no-export-classpath-use-old-naming-style");
+  }
+
+  @VisibleForTesting
+  public static boolean supportsGoalOption(final String pantsExecutable, String goal, String option) {
+    final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
+    commandline.addParameters(goal, option);
+    try {
+      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
+      return processOutput.getExitCode() == 0;
     }
     catch (ExecutionException e) {
       throw new PantsException("Failed:" + commandline.getCommandLineString());
