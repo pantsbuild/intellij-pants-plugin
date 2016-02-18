@@ -163,46 +163,46 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static File findPantsWorkingDir(@NotNull File file) {
+  public static File findBuildRoot(@NotNull File file) {
     final File pantsExecutable = findPantsExecutable(file);
     return pantsExecutable != null ? pantsExecutable.getParentFile() : null;
   }
 
   @Nullable
-  public static VirtualFile findPantsWorkingDir(@NotNull String filePath) {
+  public static VirtualFile findBuildRoot(@NotNull String filePath) {
     final VirtualFile pantsExecutable = findPantsExecutable(filePath);
     return pantsExecutable != null ? pantsExecutable.getParent() : null;
   }
 
   @Nullable
-  public static VirtualFile findPantsWorkingDir(@NotNull Project project) {
-    return findPantsWorkingDir(project.getProjectFile());
+  public static VirtualFile findBuildRoot(@NotNull Project project) {
+    return findBuildRoot(project.getProjectFile());
   }
 
   @Nullable
-  public static VirtualFile findPantsWorkingDir(@NotNull PsiFile psiFile) {
+  public static VirtualFile findBuildRoot(@NotNull PsiFile psiFile) {
     final VirtualFile virtualFile = psiFile.getOriginalFile().getVirtualFile();
-    return virtualFile != null ? findPantsWorkingDir(virtualFile) : findPantsWorkingDir(psiFile.getProject());
+    return virtualFile != null ? findBuildRoot(virtualFile) : findBuildRoot(psiFile.getProject());
   }
 
   @Nullable
-  public static VirtualFile findPantsWorkingDir(@NotNull Module module) {
+  public static VirtualFile findBuildRoot(@NotNull Module module) {
     final VirtualFile moduleFile = module.getModuleFile();
     if (moduleFile != null) {
-      return findPantsWorkingDir(moduleFile);
+      return findBuildRoot(moduleFile);
     }
     final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
     for (VirtualFile contentRoot : rootManager.getContentRoots()) {
-      final VirtualFile pantsWorkingDir = findPantsWorkingDir(contentRoot);
-      if (pantsWorkingDir != null) {
-        return pantsWorkingDir;
+      final VirtualFile buildRoot = findBuildRoot(contentRoot);
+      if (buildRoot != null) {
+        return buildRoot;
       }
     }
     return null;
   }
 
   @Nullable
-  public static VirtualFile findPantsWorkingDir(@Nullable VirtualFile file) {
+  public static VirtualFile findBuildRoot(@Nullable VirtualFile file) {
     final VirtualFile pantsExecutable = findPantsExecutable(file);
     return pantsExecutable != null ? pantsExecutable.getParent() : null;
   }
@@ -352,8 +352,8 @@ public class PantsUtil {
   @Nullable
   public static Module findModuleForBUILDFile(@NotNull Project project, @Nullable final VirtualFile file) {
     if (file == null || !isBUILDFileName(file.getName())) return null;
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(project.getProjectFile());
-    if (workingDir == null) {
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(project.getProjectFile());
+    if (buildRoot == null) {
       return null;
     }
     return ContainerUtil.find(
@@ -405,8 +405,8 @@ public class PantsUtil {
 
   @Nullable
   public static String getRelativeProjectPath(@NotNull File projectFile) {
-    final File workingDir = findPantsWorkingDir(projectFile);
-    return workingDir == null ? null : getRelativeProjectPath(workingDir, projectFile);
+    final File buildRoot = findBuildRoot(projectFile);
+    return buildRoot == null ? null : getRelativeProjectPath(buildRoot, projectFile);
   }
 
   @Nullable
@@ -440,19 +440,19 @@ public class PantsUtil {
     if (absoluteVirtualFile != null) {
       return absoluteVirtualFile;
     }
-    return findFileRelativeToPantsWorkingDir(project, fileOrDirPath);
+    return findFileRelativeToBuildRoot(project, fileOrDirPath);
   }
 
   @Nullable
-  public static VirtualFile findFileRelativeToPantsWorkingDir(@NotNull Project project, @NotNull String fileOrDirPath) {
-    final VirtualFile workingDir = findPantsWorkingDir(project);
-    return findFileRelativeToDirectory(fileOrDirPath, workingDir);
+  public static VirtualFile findFileRelativeToBuildRoot(@NotNull Project project, @NotNull String fileOrDirPath) {
+    final VirtualFile buildRoot = findBuildRoot(project);
+    return findFileRelativeToDirectory(fileOrDirPath, buildRoot);
   }
 
   @Nullable
-  public static VirtualFile findFileRelativeToPantsWorkingDir(@NotNull PsiFile psiFile, @NotNull String fileOrDirPath) {
-    final VirtualFile workingDir = findPantsWorkingDir(psiFile);
-    return findFileRelativeToDirectory(fileOrDirPath, workingDir);
+  public static VirtualFile findFileRelativeToBuildRoot(@NotNull PsiFile psiFile, @NotNull String fileOrDirPath) {
+    final VirtualFile buildRoot = findBuildRoot(psiFile);
+    return findFileRelativeToDirectory(fileOrDirPath, buildRoot);
   }
 
   @Nullable

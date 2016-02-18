@@ -92,14 +92,14 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     // if current version of Pants supports export-classpath
     if (!publishedClasspath.isEmpty()) {
       // remove IJ compiler outputs to reduce amount of arguments.
-      final VirtualFile pantsWorkingDir = PantsUtil.findPantsWorkingDir(module);
+      final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
       final List<String> toRemove = ContainerUtil.findAll(
         classpath.getPathList(),
         new Condition<String>() {
           @Override
           public boolean value(String classpathEntry) {
             final VirtualFile entry = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(classpathEntry));
-            return pantsWorkingDir != null && entry != null && VfsUtil.isAncestor(pantsWorkingDir, entry, false);
+            return buildRoot != null && entry != null && VfsUtil.isAncestor(buildRoot, entry, false);
           }
         }
       );
@@ -135,8 +135,8 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   @NotNull
   private static List<String> findPublishedClasspathByTargetId(@NotNull Module module, @NotNull TargetAddressInfo targetAddressInfo) {
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
-    final VirtualFile classpath = workingDir != null ? workingDir.findFileByRelativePath("dist/export-classpath") : null;
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    final VirtualFile classpath = buildRoot != null ? buildRoot.findFileByRelativePath("dist/export-classpath") : null;
     if (classpath == null) {
       return Collections.emptyList();
     }
@@ -164,8 +164,8 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   @Deprecated
   @NotNull
   private static List<String> findPublishedClasspathByTargetAddress(@NotNull Module module, @NotNull String targetAddress) {
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
-    final VirtualFile classpath = workingDir != null ? workingDir.findFileByRelativePath("dist/export-classpath") : null;
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    final VirtualFile classpath = buildRoot != null ? buildRoot.findFileByRelativePath("dist/export-classpath") : null;
     if (classpath == null) {
       return Collections.emptyList();
     }

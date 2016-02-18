@@ -9,9 +9,6 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
-import com.intellij.openapi.util.AtomicNotNullLazyValue;
-import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -20,11 +17,9 @@ import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.PantsExecutionException;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
-import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
@@ -65,12 +60,12 @@ public class PantsCompileOptionsExecutor {
     } else {
       options = new MyPantsCompileOptions(externalProjectPath, executionOptions);
     }
-    final File workingDir = PantsUtil.findPantsWorkingDir(new File(options.getExternalProjectPath()));
-    if (workingDir == null || !workingDir.exists()) {
+    final File buildRoot = PantsUtil.findBuildRoot(new File(options.getExternalProjectPath()));
+    if (buildRoot == null || !buildRoot.exists()) {
       throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", options.getExternalProjectPath()));
     }
     return new PantsCompileOptionsExecutor(
-      workingDir,
+      buildRoot,
       options,
       resolveJars,
       executionOptions != null && executionOptions.isLibsWithSourcesAndDocs()

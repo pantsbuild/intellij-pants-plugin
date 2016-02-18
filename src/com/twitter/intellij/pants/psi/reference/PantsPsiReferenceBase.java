@@ -83,6 +83,6 @@ public abstract class PantsPsiReferenceBase implements PsiReference {
 
   @Nullable
   protected VirtualFile findFile(@NotNull String relativePath) {
-    return PantsUtil.findFileRelativeToPantsWorkingDir(myElement.getContainingFile(), relativePath);
+    return PantsUtil.findFileRelativeToBuildRoot(myElement.getContainingFile(), relativePath);
   }
 }

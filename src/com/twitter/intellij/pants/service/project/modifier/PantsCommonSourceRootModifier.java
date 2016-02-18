@@ -84,7 +84,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
   private String findPantsWorkingDirPath(@NotNull Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets) {
     final Set<Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>>> entries = sourceRoot2Targets.entrySet();
     final String root = entries.iterator().next().getKey().getRawSourceRoot();
-    final VirtualFile dir = entries.isEmpty() || StringUtil.isEmpty(root) ? null : PantsUtil.findPantsWorkingDir(root);
+    final VirtualFile dir = entries.isEmpty() || StringUtil.isEmpty(root) ? null : PantsUtil.findBuildRoot(root);
 
     return dir != null ? dir.getPath() : "_";
   }

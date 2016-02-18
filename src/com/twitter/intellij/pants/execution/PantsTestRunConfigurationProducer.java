@@ -43,8 +43,8 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     if (module == null) {
       return false;
     }
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(module);
-    if (workingDir == null) {
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    if (buildRoot == null) {
       return false;
     }
     final List<PantsTargetAddress> targets = PantsUtil.getTargetAddressesFromModule(module);
@@ -61,7 +61,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     /**
      * Add the module's folder:: to target_roots
      **/
-    taskSettings.setExternalProjectPath(FileUtil.join(workingDir.getPath(), targets.iterator().next().getPath()));
+    taskSettings.setExternalProjectPath(FileUtil.join(buildRoot.getPath(), targets.iterator().next().getPath()));
     taskSettings.setTaskNames(Collections.singletonList("test"));
 
     final PsiPackage testPackage;

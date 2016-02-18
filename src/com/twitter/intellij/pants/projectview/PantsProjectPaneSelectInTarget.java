@@ -54,9 +54,9 @@ public class PantsProjectPaneSelectInTarget extends ProjectViewSelectInTarget {
       if (projectFileIndex.isInLibraryClasses(vFile) || projectFileIndex.isInLibrarySource(vFile)) {
         return true;
       }
-      final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(myProject.getBaseDir());
+      final VirtualFile buildRoot = PantsUtil.findBuildRoot(myProject.getBaseDir());
 
-      return workingDir != null && VfsUtil.isAncestor(workingDir, vFile, false);
+      return buildRoot != null && VfsUtil.isAncestor(buildRoot, vFile, false);
     }
 
     return false;

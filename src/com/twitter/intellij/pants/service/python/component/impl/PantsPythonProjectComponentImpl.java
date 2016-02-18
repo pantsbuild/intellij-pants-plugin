@@ -42,9 +42,9 @@ public class PantsPythonProjectComponentImpl extends AbstractProjectComponent im
           }
           final String workingDirectory = ((AbstractPythonRunConfiguration)runConfiguration).getWorkingDirectory();
           if (StringUtil.isEmpty(workingDirectory)) {
-            final VirtualFile pantsWorkingDir = PantsUtil.findPantsWorkingDir(myProject);
-            if (pantsWorkingDir != null) {
-              ((AbstractPythonRunConfiguration)runConfiguration).setWorkingDirectory(pantsWorkingDir.getCanonicalPath());
+            final VirtualFile projectBuildRoot = PantsUtil.findBuildRoot(myProject);
+            if (projectBuildRoot != null) {
+              ((AbstractPythonRunConfiguration)runConfiguration).setWorkingDirectory(projectBuildRoot.getCanonicalPath());
             }
           }
         }

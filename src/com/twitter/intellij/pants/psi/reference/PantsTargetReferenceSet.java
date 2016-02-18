@@ -40,8 +40,8 @@ public class PantsTargetReferenceSet {
 
   @NotNull
   private List<PsiReference> getFileReferences(@NotNull PyStringLiteralExpression expression) {
-    final VirtualFile pantsWorkingDir = PantsUtil.findPantsWorkingDir(expression.getContainingFile());
-    if (pantsWorkingDir == null) {
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(expression.getContainingFile());
+    if (buildRoot == null) {
       return Collections.emptyList();
     }
 

@@ -44,8 +44,8 @@ public class ProjectFilesViewProjectNode extends AbstractProjectNode {
   @NotNull
   @Override
   public Collection<? extends AbstractTreeNode> getChildren() {
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(myProject);
-    final VirtualFile projectDir = workingDir != null ? workingDir : myProject.getBaseDir();
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(myProject);
+    final VirtualFile projectDir = buildRoot != null ? buildRoot : myProject.getBaseDir();
     if (projectDir == null) {
       LOG.warn(String.format("Couldn't find project directory for project '%s'", myProject.getName()));
       return Collections.emptyList();
@@ -62,8 +62,8 @@ public class ProjectFilesViewProjectNode extends AbstractProjectNode {
 
   @Override
   public boolean contains(@NotNull VirtualFile file) {
-    final VirtualFile projectWorkingDir = PantsUtil.findPantsWorkingDir(myProject.getBaseDir());
+    final VirtualFile projectBuildRoot = PantsUtil.findBuildRoot(myProject.getBaseDir());
     return super.contains(file) ||
-           (projectWorkingDir != null && VfsUtil.isAncestor(projectWorkingDir, file, true));
+           (projectBuildRoot != null && VfsUtil.isAncestor(projectBuildRoot, file, true));
   }
 }

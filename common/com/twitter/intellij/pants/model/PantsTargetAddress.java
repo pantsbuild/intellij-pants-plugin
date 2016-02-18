@@ -32,8 +32,8 @@ public class PantsTargetAddress {
 
   @NotNull
   public String getRelativePath() {
-    final File workingDir = PantsUtil.findPantsWorkingDir(new File(getPath()));
-    final String relativePath = workingDir != null ? PantsUtil.getRelativeProjectPath(workingDir, getPath()) : null;
+    final File buildRoot = PantsUtil.findBuildRoot(new File(getPath()));
+    final String relativePath = buildRoot != null ? PantsUtil.getRelativeProjectPath(buildRoot, getPath()) : null;
     return StringUtil.notNullize(relativePath, getPath());
   }
 

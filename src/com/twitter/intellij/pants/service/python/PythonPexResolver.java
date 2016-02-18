@@ -29,9 +29,9 @@ public class PythonPexResolver implements PantsResolverExtension {
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules
   ) {
-    final VirtualFile workingDir = PantsUtil.findPantsWorkingDir(projectDataNode.getData().getLinkedExternalProjectPath());
-    final VirtualFile bootstrappedPants = workingDir != null ? workingDir.findChild(PantsConstants.PANTS_PEX) : null;
-    final VirtualFile pexFile = bootstrappedPants != null ? bootstrappedPants : findSpecificPexVersionInHomeDirectory(workingDir);
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(projectDataNode.getData().getLinkedExternalProjectPath());
+    final VirtualFile bootstrappedPants = buildRoot != null ? buildRoot.findChild(PantsConstants.PANTS_PEX) : null;
+    final VirtualFile pexFile = bootstrappedPants != null ? bootstrappedPants : findSpecificPexVersionInHomeDirectory(buildRoot);
     if (pexFile != null) {
       final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, PantsConstants.PANTS_LIBRARY_NAME);
       libraryData.addPath(LibraryPathType.BINARY, pexFile.getPath());

@@ -31,8 +31,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
-import com.intellij.openapi.roots.CompilerModuleExtension;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
@@ -49,7 +47,6 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
-import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.intellij.lang.annotations.Language;
@@ -206,12 +203,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     );
 
     final Module module = getModule(moduleName);
-    final VirtualFile pantsWorkingDir = PantsUtil.findPantsWorkingDir(module);
-    assertNotNull("Can't find working dir for module '" + moduleName + "'!", pantsWorkingDir);
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    assertNotNull("Can't find working dir for module '" + moduleName + "'!", buildRoot);
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
     List<String> compilerOutputPaths = ContainerUtil.newArrayList();
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(PantsUtil.findPantsWorkingDir(module).getPath());
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(PantsUtil.findBuildRoot(module).getPath());
     compilerOutputPaths.addAll(
       PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, PantsUtil.hasTargetIdInExport(pantsExecutable.getPath())));
 
@@ -425,7 +422,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) {
     final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
     final JUnitConfiguration runConfiguration = new JUnitConfiguration("Pants: " + className, myProject, factory);
-    runConfiguration.setWorkingDirectory(PantsUtil.findPantsWorkingDir(getModule(moduleName)).getCanonicalPath());
+    runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).getCanonicalPath());
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
     if (StringUtil.isNotEmpty(vmParams)) {
