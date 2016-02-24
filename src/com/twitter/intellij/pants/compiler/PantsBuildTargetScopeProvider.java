@@ -35,8 +35,8 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
 
     for (Map.Entry<Key, Object> entry : baseScope.exportUserData().entrySet()) {
       if (entry.getKey().toString().equals("RUN_CONFIGURATION")) {
-        if (entry.getValue() instanceof  JUnitConfiguration){
-          JUnitConfiguration config = (JUnitConfiguration) entry.getValue();
+        if (entry.getValue() instanceof JUnitConfiguration) {
+          JUnitConfiguration config = (JUnitConfiguration)entry.getValue();
           Module[] targetModules = config.getModules();
           for (int i = 0; i < targetModules.length; i++) {
             builder.addTargetId(targetModules[i].getName());

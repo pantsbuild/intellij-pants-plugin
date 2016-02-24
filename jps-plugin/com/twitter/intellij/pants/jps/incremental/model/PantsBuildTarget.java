@@ -45,7 +45,7 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
   }
 
   public void addJUnitRunModule(@Nullable String moduleName) {
-    if (moduleName == null || moduleName.equals(PantsConstants.PANTS)){
+    if (moduleName == null || moduleName.equals(PantsConstants.PANTS)) {
       return;
     }
     myJUnitRunModules.add(moduleName);

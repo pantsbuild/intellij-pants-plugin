@@ -38,9 +38,9 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   }
 
   @Nullable
-  public PantsBuildTarget getTarget(JpsModel model, @Nullable String targetId) {
-    if (targetId != null) {
-      myPantsBuildTargetInstance.addJUnitRunModule(targetId);
+  public PantsBuildTarget getTarget(JpsModel model, @Nullable String moduleName) {
+    if (moduleName != null) {
+      myPantsBuildTargetInstance.addJUnitRunModule(moduleName);
     }
 
     final JpsProject jpsProject = model.getProject();
@@ -64,8 +64,8 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
     return new BuildTargetLoader<PantsBuildTarget>() {
       @Nullable
       @Override
-      public PantsBuildTarget createTarget(@Nullable String targetId) {
-        return getTarget(model, targetId);
+      public PantsBuildTarget createTarget(@Nullable String moduleName) {
+        return getTarget(model, moduleName);
       }
     };
   }
