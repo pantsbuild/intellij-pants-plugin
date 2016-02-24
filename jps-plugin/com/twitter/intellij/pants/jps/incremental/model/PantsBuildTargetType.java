@@ -40,7 +40,7 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   @Nullable
   public PantsBuildTarget getTarget(JpsModel model, @Nullable String targetId) {
     if (targetId != null) {
-      myPantsBuildTargetInstance.addTestTargetId(targetId);
+      myPantsBuildTargetInstance.addJUnitRunModule(targetId);
     }
 
     final JpsProject jpsProject = model.getProject();

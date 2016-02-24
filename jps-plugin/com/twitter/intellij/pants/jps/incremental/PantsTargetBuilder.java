@@ -97,7 +97,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     commandLine.addParameters(goals);
 
     String recompileMessage = "";
-    Set<String> runConfigurationModules = target.getTargetModules();
+    Set<String> runConfigurationModules = target.getJUnitRunModules();
     if (runConfigurationModules.size() == 1) {
       for (String targetAddress : target.getTargetAddresses()) {
         if (runConfigurationModules.contains(PantsUtil.getCanonicalModuleName(targetAddress))) {

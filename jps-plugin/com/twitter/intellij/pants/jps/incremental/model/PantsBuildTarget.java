@@ -37,18 +37,18 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
   @NotNull
   private Set<TargetAddressInfo> myTargetAddressInfoSet;
   @NotNull
-  Set<String> myTargetModules;
+  Set<String> myJUnitRunModules;
 
   @NotNull
-  public Set<String> getTargetModules() {
-    return myTargetModules;
+  public Set<String> getJUnitRunModules() {
+    return myJUnitRunModules;
   }
 
-  public void addTestTargetId(@Nullable String targetIdToTest) {
-    if (targetIdToTest == null || targetIdToTest.equals(PantsConstants.PANTS)){
+  public void addJUnitRunModule(@Nullable String moduleName) {
+    if (moduleName == null || moduleName.equals(PantsConstants.PANTS)){
       return;
     }
-    myTargetModules.add(targetIdToTest);
+    myJUnitRunModules.add(moduleName);
   }
 
   protected PantsBuildTarget(
@@ -60,7 +60,7 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
     myPantsExecutable = pantsExecutable;
     myTargetAddresses = addresses;
     myTargetAddressInfoSet = targetAddressInfoSet;
-    myTargetModules = new HashSet<String>();
+    myJUnitRunModules = new HashSet<String>();
   }
 
   @Override
