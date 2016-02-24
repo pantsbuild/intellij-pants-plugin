@@ -36,6 +36,20 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
   private final String myPantsExecutable;
   @NotNull
   private Set<TargetAddressInfo> myTargetAddressInfoSet;
+  @NotNull
+  Set<String> myTargetModules;
+
+  @NotNull
+  public Set<String> getTargetModules() {
+    return myTargetModules;
+  }
+
+  public void addTestTargetId(@Nullable String targetIdToTest) {
+    if (targetIdToTest == null || targetIdToTest.equals(PantsConstants.PANTS)){
+      return;
+    }
+    myTargetModules.add(targetIdToTest);
+  }
 
   protected PantsBuildTarget(
     @NotNull String pantsExecutable,
@@ -46,6 +60,7 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
     myPantsExecutable = pantsExecutable;
     myTargetAddresses = addresses;
     myTargetAddressInfoSet = targetAddressInfoSet;
+    myTargetModules = new HashSet<String>();
   }
 
   @Override

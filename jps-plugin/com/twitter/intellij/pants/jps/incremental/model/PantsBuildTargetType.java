@@ -20,6 +20,11 @@ import java.util.Set;
 
 public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   public static PantsBuildTargetType INSTANCE = new PantsBuildTargetType();
+  /**
+   * This is the `target` that will eventually be passed into
+   * {@link com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder#build}
+   */
+  public static PantsBuildTarget myPantsBuildTargetInstance;
 
   protected PantsBuildTargetType() {
     super("pants-goal-compile");
@@ -28,11 +33,16 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   @NotNull
   @Override
   public List<PantsBuildTarget> computeAllTargets(@NotNull JpsModel model) {
-    return ContainerUtil.createMaybeSingletonList(getTarget(model));
+    myPantsBuildTargetInstance = getTarget(model, null);
+    return ContainerUtil.createMaybeSingletonList(myPantsBuildTargetInstance);
   }
 
   @Nullable
-  public PantsBuildTarget getTarget(JpsModel model) {
+  public PantsBuildTarget getTarget(JpsModel model, @Nullable String targetId) {
+    if (targetId != null) {
+      myPantsBuildTargetInstance.addTestTargetId(targetId);
+    }
+
     final JpsProject jpsProject = model.getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
 
@@ -54,8 +64,8 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
     return new BuildTargetLoader<PantsBuildTarget>() {
       @Nullable
       @Override
-      public PantsBuildTarget createTarget(@NotNull String targetId) {
-        return getTarget(model);
+      public PantsBuildTarget createTarget(@Nullable String targetId) {
+        return getTarget(model, targetId);
       }
     };
   }

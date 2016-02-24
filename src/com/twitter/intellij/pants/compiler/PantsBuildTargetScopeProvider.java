@@ -30,7 +30,7 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
     final TargetTypeBuildScope.Builder builder =
       TargetTypeBuildScope.newBuilder()
         .setTypeId(PantsBuildTargetType.INSTANCE.getTypeId())
-        .setAllTargets(false)
+        .setAllTargets(true)
         .setForceBuild(forceBuild);
 
     for (Map.Entry<Key, Object> entry : baseScope.exportUserData().entrySet()) {
@@ -40,6 +40,8 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
           Module[] targetModules = config.getModules();
           for (int i = 0; i < targetModules.length; i++) {
             builder.addTargetId(targetModules[i].getName());
+            // Set compile all target to false if we know what exactly to compile from JUnit Configuration.
+            builder.setAllTargets(false);
           }
         }
       }

@@ -94,16 +94,34 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameters("clean-all");
     }
-    final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
-    final String recompileMessage = String.format("Recompiling all %s targets", allNonGenTargets.size());
+    commandLine.addParameters(goals);
+
+    String recompileMessage = "";
+    Set<String> runConfigurationModules = target.getTargetModules();
+    if (runConfigurationModules.size() == 1) {
+      for (String targetAddress : target.getTargetAddresses()) {
+        if (runConfigurationModules.contains(PantsUtil.getCanonicalModuleName(targetAddress))) {
+          commandLine.addParameter(targetAddress);
+          recompileMessage = String.format("Compiling %s", targetAddress);
+          break;
+        }
+      }
+    }
+    else if (runConfigurationModules.size() > 1) {
+      throw new ProjectBuildException(String.format("More than one target to compile: %s", runConfigurationModules.toString()));
+    }
+    else {
+      final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
+      recompileMessage = String.format("Recompiling all %s targets", allNonGenTargets.size());
+      for (String targetAddress : allNonGenTargets) {
+        commandLine.addParameter(targetAddress);
+      }
+    }
+
     context.processMessage(
       new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
     );
     context.processMessage(new ProgressMessage(recompileMessage));
-    commandLine.addParameters(goals);
-    for (String targetAddress : allNonGenTargets) {
-      commandLine.addParameter(targetAddress);
-    }
 
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =
@@ -119,11 +137,11 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
     final JpsPantsProjectExtension pantsProjectExtension =
       PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
-    if (pantsProjectExtension.isUseIdeaProjectJdk()) {
-      try{
+    if (pantsProjectExtension != null && pantsProjectExtension.isUseIdeaProjectJdk()) {
+      try {
         commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromExternalBuilder(jpsProject)));
       }
-      catch(Exception e){
+      catch (Exception e) {
         throw new ProjectBuildException(e);
       }
     }
