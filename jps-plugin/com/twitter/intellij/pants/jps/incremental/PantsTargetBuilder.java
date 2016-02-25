@@ -79,17 +79,19 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
     Set<String> targetAddressesToCompile = getTargetsAddressesOfAffectedModules(target, context);
-    boolean isLastBuildSuccessAndSameTargets = checkLastBuild(target, targetAddressesToCompile);
-    if (isLastBuildSuccessAndSameTargets && !hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
-      context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, "No changes to compile."));
-      return;
+    if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
+      // Checking last build is expensive, so only do so inside the if statement.
+      boolean isLastBuildSuccessAndSameTargets = checkLastBuild(target, targetAddressesToCompile);
+      if (isLastBuildSuccessAndSameTargets) {
+        context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, "No changes to compile."));
+        return;
+      }
     }
     final ProcessOutput output = runCompile(target, targetAddressesToCompile, context, "export-classpath", "compile");
     boolean success = output.checkSuccess(LOG);
     if (!success) {
       throw new ProjectBuildException(output.getStderr());
     }
-
     writeSuccessfulBuild(target, targetAddressesToCompile);
   }
 
@@ -108,6 +110,15 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     for (String targetAddress : targetAddressesToCompile) {
       commandLine.addParameter(targetAddress);
     }
+    final String recompileMessage;
+    if (targetAddressesToCompile.size() == 1) {
+      recompileMessage = String.format("Compiling %s...", targetAddressesToCompile.iterator().next());
+    }
+    else{
+      recompileMessage = String.format("Compiling %s targets", targetAddressesToCompile.size());
+    }
+    context.processMessage(new ProgressMessage(recompileMessage));
+    context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
 
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =
@@ -188,7 +199,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         }
       }
       if (unrecognizedModuleNames.isEmpty()) {
-        final String recompileMessage = String.format("Compiling %s", targetAddressToCompile.toString());
+        final String recompileMessage = String.format("Collecting %s", targetAddressToCompile.toString());
         context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
         context.processMessage(new ProgressMessage(recompileMessage));
         return targetAddressToCompile;
@@ -196,7 +207,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
       /** At least one module has no corresponding target address because module name may be processed by any class under
        * {@link com.twitter.intellij.pants.service.project.modifier}.
-       * Thus falling back to compile all targets.
+       * Thus falling back to collecting all targets.
        */
       String warning_message = String.format(
         "No matching target address found for module: %s. Possible reasons as listed:\n" +
@@ -205,12 +216,12 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         "Empty target\n" +
         "Cyclic dependencies\n" +
         "Unsupported target types\n" +
-        "Thus falling back to compile all targets in project.\n", unrecognizedModuleNames.toString());
+        "Thus falling back to collecting all targets in project.\n", unrecognizedModuleNames.toString());
       context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.WARNING, warning_message));
     }
 
 
-    final String recompileMessage = String.format("Compiling all %s targets", allNonGenTargets.size());
+    final String recompileMessage = String.format("Collecting all %s targets", allNonGenTargets.size());
     context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
     context.processMessage(new ProgressMessage(recompileMessage));
     return allNonGenTargets;
