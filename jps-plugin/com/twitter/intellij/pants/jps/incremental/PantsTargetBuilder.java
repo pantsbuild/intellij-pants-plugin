@@ -74,10 +74,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull BuildOutputConsumer outputConsumer,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
-    if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
-      context.processMessage(new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, "No changes to compile."));
-      return;
-    }
     final ProcessOutput output = runCompile(target, holder, context, "export-classpath", "compile");
     boolean success = output.checkSuccess(LOG);
     if (!success) {
