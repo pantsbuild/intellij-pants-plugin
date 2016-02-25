@@ -78,7 +78,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull BuildOutputConsumer outputConsumer,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
-    Set<String> targetAddressesToCompile = getTargetsToCompile(target, context);
+    Set<String> targetAddressesToCompile = getTargetsAddressesOfAffectedModules(target, context);
     boolean isLastBuildSuccessAndSameTargets = checkLastBuild(target, targetAddressesToCompile);
     if (isLastBuildSuccessAndSameTargets && !hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, "No changes to compile."));
@@ -163,16 +163,17 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
    * @return
    * @throws ProjectBuildException
    */
-  private Set<String> getTargetsToCompile(@NotNull PantsBuildTarget target, @NotNull CompileContext context)
+  private Set<String> getTargetsAddressesOfAffectedModules(@NotNull PantsBuildTarget target, @NotNull CompileContext context)
     throws ProjectBuildException {
-    Set<String> runConfigurationModules = target.getAffectedModules();
+    final Set<String> runConfigurationModules = target.getAffectedModules();
+    final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
 
     if (runConfigurationModules.size() > 0) {
       // Check whether all module names have corresponding target addresses.
 
       // Map from module name to target address
       HashMap<String, String> knownModuleNameToAddress = ContainerUtil.newHashMap();
-      for (String address : target.getTargetAddresses()) {
+      for (String address : allNonGenTargets) {
         knownModuleNameToAddress.put(PantsUtil.getCanonicalModuleName(address), address);
       }
 
@@ -208,7 +209,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.WARNING, warning_message));
     }
 
-    final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
+
     final String recompileMessage = String.format("Compiling all %s targets", allNonGenTargets.size());
     context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
     context.processMessage(new ProgressMessage(recompileMessage));
