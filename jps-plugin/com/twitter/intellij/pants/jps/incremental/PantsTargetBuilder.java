@@ -167,6 +167,9 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         }
       }
       if (unrecognizedModuleNames.isEmpty()) {
+        final String recompileMessage = String.format("Compiling %s", targetAddressToCompile.toString());
+        context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
+        context.processMessage(new ProgressMessage(recompileMessage));
         return targetAddressToCompile;
       }
 
@@ -184,7 +187,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.WARNING, warning_message));
     }
     final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
-    final String recompileMessage = String.format("Compiling all %s targets", allNonGenTargets.size());
+    final String recompileMessage = String.format("Compiling %s targets", allNonGenTargets.size());
     context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
     context.processMessage(new ProgressMessage(recompileMessage));
     return allNonGenTargets;
