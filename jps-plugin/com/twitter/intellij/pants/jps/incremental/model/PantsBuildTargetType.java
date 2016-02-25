@@ -33,16 +33,18 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   @NotNull
   @Override
   public List<PantsBuildTarget> computeAllTargets(@NotNull JpsModel model) {
-    myPantsBuildTargetInstance = getTarget(model, null);
+    myPantsBuildTargetInstance = getTarget(model);
     return ContainerUtil.createMaybeSingletonList(myPantsBuildTargetInstance);
   }
 
-  @Nullable
-  public PantsBuildTarget getTarget(JpsModel model, @Nullable String moduleName) {
-    if (moduleName != null) {
+  public void addTargetId(@Nullable String moduleName) {
+    if (myPantsBuildTargetInstance != null && moduleName != null) {
       myPantsBuildTargetInstance.addJUnitRunModule(moduleName);
     }
+  }
 
+  @Nullable
+  public PantsBuildTarget getTarget(JpsModel model) {
     final JpsProject jpsProject = model.getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
 
@@ -65,7 +67,8 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
       @Nullable
       @Override
       public PantsBuildTarget createTarget(@Nullable String moduleName) {
-        return getTarget(model, moduleName);
+        addTargetId(moduleName);
+        return getTarget(model);
       }
     };
   }

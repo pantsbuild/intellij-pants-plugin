@@ -4,7 +4,6 @@ java_library(
         '3rdparty/intellij:sdk',
         '3rdparty/intellij:python-plugin',
         '3rdparty/intellij:scala-plugin',
-        '3rdparty/intellij:junit-plugin',
         'common',
         'jps-plugin',
         ':pants-intellij-plugin-scala'
@@ -21,7 +20,6 @@ scala_library(
         '3rdparty/intellij:sdk',
         '3rdparty/intellij:python-plugin',
         '3rdparty/intellij:scala-plugin',
-        '3rdparty/intellij:junit-plugin',
         'common',
         'jps-plugin',
     ],

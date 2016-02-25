@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.jps.incremental.model;
 
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.Processor;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsModelSerializerExtension;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -37,18 +38,18 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
   @NotNull
   private Set<TargetAddressInfo> myTargetAddressInfoSet;
   @NotNull
-  Set<String> myJUnitRunModules;
+  Set<String> myAffectedModules;
 
   @NotNull
-  public Set<String> getJUnitRunModules() {
-    return myJUnitRunModules;
+  public Set<String> getAffectedModules() {
+    return myAffectedModules;
   }
 
   public void addJUnitRunModule(@Nullable String moduleName) {
     if (moduleName == null || moduleName.equals(PantsConstants.PANTS)) {
       return;
     }
-    myJUnitRunModules.add(moduleName);
+    myAffectedModules.add(moduleName);
   }
 
   protected PantsBuildTarget(
@@ -60,7 +61,7 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
     myPantsExecutable = pantsExecutable;
     myTargetAddresses = addresses;
     myTargetAddressInfoSet = targetAddressInfoSet;
-    myJUnitRunModules = new HashSet<String>();
+    myAffectedModules = ContainerUtil.newHashSet();
   }
 
   @Override

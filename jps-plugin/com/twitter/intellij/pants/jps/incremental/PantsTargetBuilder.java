@@ -37,7 +37,12 @@ import org.jetbrains.jps.model.JpsProject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Set;
+
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
@@ -145,24 +150,24 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
   private Set<String> getTargetsToCompile(@NotNull PantsBuildTarget target, @NotNull CompileContext context)
     throws ProjectBuildException {
-    Set<String> runConfigurationModules = target.getJUnitRunModules();
+    Set<String> runConfigurationModules = target.getAffectedModules();
 
     if (runConfigurationModules.size() > 0) {
       // Check whether all module names have corresponding target addresses.
 
       // Map from module name to target address
       HashMap<String, String> knownModuleNameToAddress = ContainerUtil.newHashMap();
-      for (String address: target.getTargetAddresses()){
+      for (String address : target.getTargetAddresses()) {
         knownModuleNameToAddress.put(PantsUtil.getCanonicalModuleName(address), address);
       }
 
       Set<String> targetAddressToCompile = ContainerUtil.newHashSet();
       Set<String> unrecognizedModuleNames = ContainerUtil.newHashSet();
-      for (String moduleName: runConfigurationModules) {
-        if (knownModuleNameToAddress.containsKey(moduleName)){
+      for (String moduleName : runConfigurationModules) {
+        if (knownModuleNameToAddress.containsKey(moduleName)) {
           targetAddressToCompile.add(knownModuleNameToAddress.get(moduleName));
         }
-        else{
+        else {
           unrecognizedModuleNames.add(moduleName);
         }
       }
