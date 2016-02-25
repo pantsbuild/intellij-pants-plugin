@@ -37,10 +37,7 @@ import org.jetbrains.jps.model.JpsProject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
@@ -96,32 +93,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     }
     commandLine.addParameters(goals);
 
-    String recompileMessage = "";
-    Set<String> runConfigurationModules = target.getJUnitRunModules();
-    if (runConfigurationModules.size() == 1) {
-      for (String targetAddress : target.getTargetAddresses()) {
-        if (runConfigurationModules.contains(PantsUtil.getCanonicalModuleName(targetAddress))) {
-          commandLine.addParameter(targetAddress);
-          recompileMessage = String.format("Compiling %s", targetAddress);
-          break;
-        }
-      }
+    Set<String> targetAddressesToCompile = getTargetsToCompile(target, context);
+    for (String targetAddress : targetAddressesToCompile) {
+      commandLine.addParameter(targetAddress);
     }
-    else if (runConfigurationModules.size() > 1) {
-      throw new ProjectBuildException(String.format("More than one target to compile: %s", runConfigurationModules.toString()));
-    }
-    else {
-      final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
-      recompileMessage = String.format("Recompiling all %s targets", allNonGenTargets.size());
-      for (String targetAddress : allNonGenTargets) {
-        commandLine.addParameter(targetAddress);
-      }
-    }
-
-    context.processMessage(
-      new CompilerMessage(PantsConstants.PANTS, BuildMessage.Kind.INFO, recompileMessage)
-    );
-    context.processMessage(new ProgressMessage(recompileMessage));
 
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =
@@ -166,6 +141,53 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     );
     return processHandler.runProcess();
+  }
+
+  private Set<String> getTargetsToCompile(@NotNull PantsBuildTarget target, @NotNull CompileContext context)
+    throws ProjectBuildException {
+    Set<String> runConfigurationModules = target.getJUnitRunModules();
+
+    if (runConfigurationModules.size() > 0) {
+      // Check whether all module names have corresponding target addresses.
+
+      // Map from module name to target address
+      HashMap<String, String> knownModuleNameToAddress = ContainerUtil.newHashMap();
+      for (String address: target.getTargetAddresses()){
+        knownModuleNameToAddress.put(PantsUtil.getCanonicalModuleName(address), address);
+      }
+
+      Set<String> targetAddressToCompile = ContainerUtil.newHashSet();
+      Set<String> unrecognizedModuleNames = ContainerUtil.newHashSet();
+      for (String moduleName: runConfigurationModules) {
+        if (knownModuleNameToAddress.containsKey(moduleName)){
+          targetAddressToCompile.add(knownModuleNameToAddress.get(moduleName));
+        }
+        else{
+          unrecognizedModuleNames.add(moduleName);
+        }
+      }
+      if (unrecognizedModuleNames.isEmpty()) {
+        return targetAddressToCompile;
+      }
+
+      /** At least one module has no corresponding target address because module name may be processed by any class under
+       * {@link com.twitter.intellij.pants.service.project.modifier}.
+       * Thus falling back to compile all targets.
+       */
+      String warning_message = String.format("No matching target address found for module: %s. Possible reasons as listed:\n" +
+                                             "Module name compressed due to too long target address\n" +
+                                             "Modules sharing the same source root\n" +
+                                             "Empty target\n" +
+                                             "Cyclic dependencies\n" +
+                                             "Unsupported target types\n" +
+                                             "Thus falling back to compile all targets in project.", unrecognizedModuleNames.toString());
+      context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.WARNING, warning_message));
+    }
+    final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
+    final String recompileMessage = String.format("Compiling all %s targets", allNonGenTargets.size());
+    context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
+    context.processMessage(new ProgressMessage(recompileMessage));
+    return allNonGenTargets;
   }
 
   private boolean hasDirtyTargets(DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder) throws IOException {

@@ -146,7 +146,6 @@
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
   <depends optional="true" config-file="pants-scala.xml">org.intellij.scala</depends>
-  <depends optional="false">JUnit</depends>
 
   <application-components>
    <component>

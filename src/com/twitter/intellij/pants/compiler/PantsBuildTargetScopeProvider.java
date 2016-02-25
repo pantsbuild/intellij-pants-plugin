@@ -4,19 +4,16 @@
 package com.twitter.intellij.pants.compiler;
 
 import com.intellij.compiler.impl.BuildTargetScopeProvider;
-import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompilerFilter;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.api.CmdlineRemoteProto.Message.ControllerMessage.ParametersMessage.TargetTypeBuildScope;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
   @NotNull
@@ -33,18 +30,10 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
         .setAllTargets(true)
         .setForceBuild(forceBuild);
 
-    for (Map.Entry<Key, Object> entry : baseScope.exportUserData().entrySet()) {
-      if (entry.getKey().toString().equals("RUN_CONFIGURATION")) {
-        if (entry.getValue() instanceof JUnitConfiguration) {
-          JUnitConfiguration config = (JUnitConfiguration)entry.getValue();
-          Module[] targetModules = config.getModules();
-          for (int i = 0; i < targetModules.length; i++) {
-            builder.addTargetId(targetModules[i].getName());
-            // Set compile all target to false if we know what exactly to compile from JUnit Configuration.
-            builder.setAllTargets(false);
-          }
-        }
-      }
+    Module[] affectedModules = baseScope.getAffectedModules();
+    for (int i = 0; i < affectedModules.length; i++) {
+      builder.addTargetId(affectedModules[i].getName());
+      builder.setAllTargets(false);
     }
     return Collections.singletonList(builder.build());
   }
