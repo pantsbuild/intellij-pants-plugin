@@ -40,8 +40,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.*;
-
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
@@ -114,7 +119,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (targetAddressesToCompile.size() == 1) {
       recompileMessage = String.format("Compiling %s...", targetAddressesToCompile.iterator().next());
     }
-    else{
+    else {
       recompileMessage = String.format("Compiling %s targets", targetAddressesToCompile.size());
     }
     context.processMessage(new ProgressMessage(recompileMessage));
@@ -180,8 +185,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
 
     if (runConfigurationModules.size() > 0) {
-      // Check whether all module names have corresponding target addresses.
-
       // Map from module name to target address
       HashMap<String, String> knownModuleNameToAddress = ContainerUtil.newHashMap();
       for (String address : allNonGenTargets) {
