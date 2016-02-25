@@ -313,7 +313,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
   private void writeSuccessfulBuild(@NotNull PantsBuildTarget target, Set<String> targetAddressesToCompile) {
     File lastPluginBuild = getLastBuildFile(target);
-    if (lastPluginBuild != null && lastPluginBuild.exists()) {
+    if (lastPluginBuild != null) {
       try {
         List<String> lines = Arrays.asList(Integer.toString(targetAddressesToCompile.hashCode()));
         Files.write(lastPluginBuild.toPath(), lines, Charset.defaultCharset());
