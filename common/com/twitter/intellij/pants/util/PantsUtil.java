@@ -645,6 +645,25 @@ public class PantsUtil {
     }
   }
 
+  /**
+   * Find pants workdir from `pants options`.
+   * @param pantsExecutable
+   * @return absolute path of pants workdir
+   */
+  @Nullable
+  public static String getPantsWorkdir(String pantsExecutable) {
+    String options = getPantsOptions(pantsExecutable);
+    String lines[] = options.split("\\r?\\n");
+    String workdir = null;
+    for (int i=0; i<lines.length;i++){
+      if (lines[i].contains("pants_workdir")){
+        workdir = lines[i].split(" ")[2];
+        break;
+      }
+    }
+    return workdir;
+  }
+
   class SimpleExportResult {
     public String version;
     public String getVersion() {return version; }

@@ -22,6 +22,7 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.builders.BuildOutputConsumer;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
 import org.jetbrains.jps.builders.FileProcessor;
@@ -37,19 +38,20 @@ import org.jetbrains.jps.model.JpsProject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Set;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.*;
 
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
+  public static final String PLUGIN_LAST_BUILD = "last_successful_plugin_run";
 
   public PantsTargetBuilder() {
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
   }
+
+  private String pantsWorkDir;
 
   @NotNull
   @Override
@@ -61,6 +63,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   public void buildStarted(CompileContext context) {
     super.buildStarted(context);
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
+
+
     if (PantsJpsUtil.containsPantsModules(jpsProject.getModules())) {
       // disable only for imported projects
       JavaBuilder.IS_ENABLED.set(context, Boolean.FALSE);
@@ -74,16 +78,24 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull BuildOutputConsumer outputConsumer,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
-    final ProcessOutput output = runCompile(target, holder, context, "export-classpath", "compile");
+    Set<String> targetAddressesToCompile = getTargetsToCompile(target, context);
+    boolean isLastBuildSuccessAndSameTargets = checkLastBuild(target, targetAddressesToCompile);
+    if (isLastBuildSuccessAndSameTargets && !hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
+      context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, "No changes to compile."));
+      return;
+    }
+    final ProcessOutput output = runCompile(target, targetAddressesToCompile, context, "export-classpath", "compile");
     boolean success = output.checkSuccess(LOG);
     if (!success) {
       throw new ProjectBuildException(output.getStderr());
     }
+
+    writeSuccessfulBuild(target, targetAddressesToCompile);
   }
 
   private ProcessOutput runCompile(
     @NotNull PantsBuildTarget target,
-    @NotNull DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder,
+    @NotNull Set<String> targetAddressesToCompile,
     @NotNull final CompileContext context,
     String... goals
   ) throws IOException, ProjectBuildException {
@@ -93,8 +105,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       commandLine.addParameters("clean-all");
     }
     commandLine.addParameters(goals);
-
-    Set<String> targetAddressesToCompile = getTargetsToCompile(target, context);
     for (String targetAddress : targetAddressesToCompile) {
       commandLine.addParameter(targetAddress);
     }
@@ -144,6 +154,15 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return processHandler.runProcess();
   }
 
+  /**
+   * Extract the target addesses associated with the modules affected. If any module does not have a corresponding target address,
+   * all target addresses are returned.
+   *
+   * @param target
+   * @param context
+   * @return
+   * @throws ProjectBuildException
+   */
   private Set<String> getTargetsToCompile(@NotNull PantsBuildTarget target, @NotNull CompileContext context)
     throws ProjectBuildException {
     Set<String> runConfigurationModules = target.getAffectedModules();
@@ -178,15 +197,17 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
        * {@link com.twitter.intellij.pants.service.project.modifier}.
        * Thus falling back to compile all targets.
        */
-      String warning_message = String.format("No matching target address found for module: %s. Possible reasons as listed:\n" +
-                                             "Module name compressed due to too long target address\n" +
-                                             "Modules sharing the same source root\n" +
-                                             "Empty target\n" +
-                                             "Cyclic dependencies\n" +
-                                             "Unsupported target types\n" +
-                                             "Thus falling back to compile all targets in project.\n", unrecognizedModuleNames.toString());
+      String warning_message = String.format(
+        "No matching target address found for module: %s. Possible reasons as listed:\n" +
+        "Module name compressed due to too long target address\n" +
+        "Modules sharing the same source root\n" +
+        "Empty target\n" +
+        "Cyclic dependencies\n" +
+        "Unsupported target types\n" +
+        "Thus falling back to compile all targets in project.\n", unrecognizedModuleNames.toString());
       context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.WARNING, warning_message));
     }
+
     final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
     final String recompileMessage = String.format("Compiling all %s targets", allNonGenTargets.size());
     context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
@@ -266,5 +287,56 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       message.getFilePath(),
       -1L, -1L, -1L, message.getLineNumber() + 1, -1L
     );
+  }
+
+  /**
+   * Check whether last successful build contains the exact same set of targets
+   *
+   * @param target
+   * @param targetAddressesToCompile
+   * @return true if last build was successful and contains the exact same set of targets, false otherwise.
+   */
+  private boolean checkLastBuild(@NotNull PantsBuildTarget target, Set<String> targetAddressesToCompile) {
+    File lastPluginBuild = getLastBuildFile(target);
+    if (lastPluginBuild != null && lastPluginBuild.exists()) {
+      try {
+        List<String> lastRun = Files.readAllLines(lastPluginBuild.toPath(), Charset.defaultCharset());
+        return lastRun.size() == 1 && lastRun.get(0).equals(Integer.toString(targetAddressesToCompile.hashCode()));
+      }
+      catch (IOException e) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  private void writeSuccessfulBuild(@NotNull PantsBuildTarget target, Set<String> targetAddressesToCompile) {
+    File lastPluginBuild = getLastBuildFile(target);
+    if (lastPluginBuild != null && lastPluginBuild.exists()) {
+      try {
+        List<String> lines = Arrays.asList(Integer.toString(targetAddressesToCompile.hashCode()));
+        Files.write(lastPluginBuild.toPath(), lines, Charset.defaultCharset());
+      }
+      catch (IOException e) {
+      }
+    }
+  }
+
+  @Nullable
+  private File getLastBuildFile(@NotNull PantsBuildTarget target) {
+    String pantsWorkdir = getPantsWorkdir(target);
+    if (pantsWorkdir == null) {
+      return null;
+    }
+    return new File(pantsWorkdir, PLUGIN_LAST_BUILD);
+  }
+
+  @Nullable
+  private String getPantsWorkdir(@NotNull PantsBuildTarget target) {
+    if (pantsWorkDir == null) {
+      final String pantsExecutable = target.getPantsExecutable();
+      pantsWorkDir = PantsUtil.getPantsWorkdir(pantsExecutable);
+    }
+    return pantsWorkDir;
   }
 }
