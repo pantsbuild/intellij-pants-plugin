@@ -23,16 +23,16 @@ public class OSSPantsIncrementalCompilationIntegrationTest extends OSSPantsInteg
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe"
     );
 
-    assertContain(makeProject(), "pants: Compiling all 5 targets");
-    assertContain(makeProject(), "pants: No changes to compile.");
+    assertContainsSubstring(makeProject(), "Compiling all 5 targets");
+    assertContainsSubstring(makeProject(), "No changes to compile.");
 
     modify("org.pantsbuild.example.hello.exe.Exe");
 
-    assertContain(makeProject(), "pants: Compiling all 5 targets");
+    assertContainsSubstring(makeProject(), "Compiling all 5 targets");
 
     modify("org.pantsbuild.example.hello.exe.Exe");
     modify("org.pantsbuild.example.hello.welcome.WelcomeEverybody");
 
-    assertContain(makeProject(), "pants: Compiling all 5 targets");
+    assertContainsSubstring(makeProject(), "Compiling all 5 targets");
   }
 }
