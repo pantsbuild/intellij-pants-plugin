@@ -21,7 +21,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
 
     List<String> output = makeModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
-    assertContainsSubstring(output, "compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects --no-colors");
+    assertContainsSubstring(output, "compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects --no");
     assertSuccessfulJUnitTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
     final OSProcessHandler processHandler = runJUnitTest(
@@ -41,7 +41,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
 
     List<String> output = makeModules("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
-    assertContainsSubstring(output, "compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher --no-colors");
+    assertContainsSubstring(output, "compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher --no");
     assertSuccessfulJUnitTest(
       "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest");
 
