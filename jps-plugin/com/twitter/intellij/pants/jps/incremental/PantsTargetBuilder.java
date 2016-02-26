@@ -183,11 +183,12 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     throws ProjectBuildException {
     final Set<String> runConfigurationModules = target.getAffectedModules();
     final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
+    final Set<String> allTargets = target.getTargetAddresses();
 
     if (runConfigurationModules.size() > 0) {
       // Map from module name to target address
       HashMap<String, String> knownModuleNameToAddress = ContainerUtil.newHashMap();
-      for (String address : allNonGenTargets) {
+      for (String address : allTargets) {
         knownModuleNameToAddress.put(PantsUtil.getCanonicalModuleName(address), address);
       }
 
@@ -195,7 +196,11 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       Set<String> unrecognizedModuleNames = ContainerUtil.newHashSet();
       for (String moduleName : runConfigurationModules) {
         if (knownModuleNameToAddress.containsKey(moduleName)) {
-          targetAddressToCompile.add(knownModuleNameToAddress.get(moduleName));
+          String targetAddress = knownModuleNameToAddress.get(moduleName);
+          // Add to the compile list only if it not a gen target
+          if (allNonGenTargets.contains(targetAddress)){
+            targetAddressToCompile.add(targetAddress);
+          }
         }
         else {
           unrecognizedModuleNames.add(moduleName);
