@@ -8,6 +8,10 @@ language: java
 jdk:
   - oraclejdk7
 
+cache:
+  directories:
+    - .cache/bootstrap
+
 notifications:
   email:
     - yic@twitter.com
