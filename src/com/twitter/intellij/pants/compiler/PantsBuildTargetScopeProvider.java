@@ -33,8 +33,6 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
         .setAllTargets(true)
         .setForceBuild(forceBuild);
 
-    boolean setFromJUnit = false;
-
     for (Map.Entry<Key, Object> entry : baseScope.exportUserData().entrySet()) {
       if (entry.getKey().toString().equals("RUN_CONFIGURATION")) {
         if (entry.getValue() instanceof JUnitConfiguration) {
@@ -42,21 +40,20 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
           Module[] targetModules = config.getModules();
           for (int i = 0; i < targetModules.length; i++) {
             builder.addTargetId(targetModules[i].getName());
-            // Set compile all target to false if we know what exactly to compile from JUnit Configuration.
-            builder.setAllTargets(false);
-            setFromJUnit = true;
           }
         }
       }
     }
 
-    if (!setFromJUnit) {
+    if (builder.getTargetIdCount() == 0) {
       Module[] affectedModules = baseScope.getAffectedModules();
       for (int i = 0; i < affectedModules.length; i++) {
         builder.addTargetId(affectedModules[i].getName());
-        builder.setAllTargets(false);
       }
     }
+
+    // Set compile all target to false if we know what exactly to compile from JUnit Configuration.
+    builder.setAllTargets(builder.getTargetIdCount() == 0);
     return Collections.singletonList(builder.build());
   }
 }

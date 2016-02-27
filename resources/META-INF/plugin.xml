@@ -146,13 +146,13 @@
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
   <depends optional="true" config-file="pants-scala.xml">org.intellij.scala</depends>
-  <depends>JUnit</depends>
+  <depends optional="false">JUnit</depends>
 
   <application-components>
-   <component>
-     <interface-class>com.twitter.intellij.pants.components.PantsInitComponent</interface-class>
-     <implementation-class>com.twitter.intellij.pants.components.impl.PantsInitComponentImpl</implementation-class>
-   </component>
+    <component>
+      <interface-class>com.twitter.intellij.pants.components.PantsInitComponent</interface-class>
+      <implementation-class>com.twitter.intellij.pants.components.impl.PantsInitComponentImpl</implementation-class>
+    </component>
   </application-components>
 
   <project-components>
@@ -173,7 +173,7 @@
 
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsUnsupportedTargetsModifier"
-                         id="unsupportedTargetsRemover" order="first" />
+                         id="unsupportedTargetsRemover" order="first"/>
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCyclicDependenciesModifier"
                          id="cyclicDeps" order="after unsupportedTargetsRemover"/>
 
@@ -182,9 +182,9 @@
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsEmptyTargetRemover"
                          id="emptyTargetsRemover" order="before commonSourceRoots"/>
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCommonSourceRootModifier"
-                         id="commonSourceRoots" order="before shortener" />
+                         id="commonSourceRoots" order="before shortener"/>
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsTargetNamesShortenerModifier"
-                         id="shortener" order="last" />
+                         id="shortener" order="last"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
