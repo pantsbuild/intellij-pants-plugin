@@ -19,16 +19,16 @@ notifications:
 
 install: ./scripts/setup-ci-environment.sh
 
-# General policy is to support pants for the past 10 releases and the current master
+# General policy is to support pants for the past 10 releases and the latest master.
 env:
   matrix:
     - IJ_ULTIMATE=false
     - IJ_ULTIMATE=true
     - PANTS_SHA="release_0.0.73" TEST_SET=integration
     - PANTS_SHA="release_0.0.72" TEST_SET=integration
-    - PANTS_SHA="release_0.0.70" TEST_SET=integration
     # 0.0.71 is not here because non-functioning options still show up in options goals until
     # https://github.com/pantsbuild/pants/commit/acd5dde406fe57a35d991207f9fa409de4df66df
+    - PANTS_SHA="release_0.0.70" TEST_SET=integration
     - PANTS_SHA="release_0.0.69" TEST_SET=integration
     - PANTS_SHA="release_0.0.68" TEST_SET=integration
     - PANTS_SHA="release_0.0.67" TEST_SET=integration
