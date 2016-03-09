@@ -43,20 +43,20 @@ public class PantsJpsModelSerializerExtension extends JpsModelSerializerExtensio
   @Override
   public void loadModuleOptions(@NotNull JpsModule module, @NotNull Element rootElement) {
     super.loadModuleOptions(module, rootElement);
-    //final Element facetManager = ContainerUtil.find(
-    //  rootElement.getChildren("component"),
-    //  new Condition<Element>() {
-    //    @Override
-    //    public boolean value(Element element) {
-    //      return StringUtil.equalsIgnoreCase(element.getAttributeValue("name"), "FacetManager");
-    //    }
-    //  }
-    //);
-    //final List<Element> facets = facetManager != null ? facetManager.getChildren() : Collections.<Element>emptyList();
-    //if (!facets.isEmpty()) {
-    //  // facet will handle compilation/transpilation or maybe it's Python module and we don't need to do anything
-    //  return;
-    //}
+    final Element facetManager = ContainerUtil.find(
+      rootElement.getChildren("component"),
+      new Condition<Element>() {
+        @Override
+        public boolean value(Element element) {
+          return StringUtil.equalsIgnoreCase(element.getAttributeValue("name"), "FacetManager");
+        }
+      }
+    );
+    final List<Element> facets = facetManager != null ? facetManager.getChildren() : Collections.<Element>emptyList();
+    if (!facets.isEmpty()) {
+      // facet will handle compilation/transpilation or maybe it's Python module and we don't need to do anything
+      return;
+    }
 
     final String externalSystemId = rootElement.getAttributeValue(EXTERNAL_SYSTEM_ID_KEY);
     final String linkedProjectPath = rootElement.getAttributeValue(LINKED_PROJECT_PATH_KEY);
