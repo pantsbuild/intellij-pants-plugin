@@ -34,7 +34,7 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testClass);
 
     // esc.getSettings().getScriptParameters() will return something like:
-    // "--no-test-junit-suppress-output --test-junit-test=org.pantsbuild.testproject.testjvms.TestSix --no-colors"
+    // "--no-colors test --test-junit-test=org.pantsbuild.testproject.testjvms.TestSix"
     Set<String> items = new HashSet<String>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
     assertTrue(items.contains("--test-junit-test=" + classReference));
   }

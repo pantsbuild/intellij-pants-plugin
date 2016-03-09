@@ -585,7 +585,7 @@ public class PantsUtil {
 
   public static String getPantsOptions(final String pantsExecutable) {
     final GeneralCommandLine exportCommandline = defaultCommandLine(pantsExecutable);
-    exportCommandline.addParameters("options", "--no-colors");
+    exportCommandline.addParameters("options", PantsConstants.PANTS_OPTION_NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
       final String stdOut = processOutput.getStdout();
@@ -638,7 +638,7 @@ public class PantsUtil {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
       distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
-      return PantsConstants.PANTS_JVM_DISTRIBUTIONS_PATHS_OPTION + "=" + new Gson().toJson(distributionFlag);
+      return PantsConstants.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }
     else {
       throw new Exception("No IDEA Project JDK Found");
@@ -652,7 +652,7 @@ public class PantsUtil {
 
   public static boolean hasTargetIdInExport(final String pantsExecutable) {
     final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", "--no-colors");
+    commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       final String stdOut = processOutput.getStdout();
