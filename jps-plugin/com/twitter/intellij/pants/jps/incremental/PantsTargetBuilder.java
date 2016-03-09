@@ -108,6 +108,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   ) throws IOException, ProjectBuildException {
     final String pantsExecutable = target.getPantsExecutable();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
+    commandLine.addParameter(PantsConstants.PANTS_OPTION_NO_COLORS);
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameters("clean-all");
     }
@@ -127,7 +128,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle =
-      PantsUtil.getPantsOptions(pantsExecutable).contains(PantsConstants.PANTS_EXPORT_CLASSPATH_NAMING_STYLE_OPTION);
+      PantsUtil.getPantsOptions(pantsExecutable).contains(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE);
     final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
 
     // "export-classpath-use-old-naming-style" is soon to be removed.
@@ -147,7 +148,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         throw new ProjectBuildException(e);
       }
     }
-    commandLine.addParameter("--no-colors");
 
     final Process process;
     try {
