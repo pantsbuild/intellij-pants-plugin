@@ -183,57 +183,16 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     throws ProjectBuildException {
     final Set<String> affectedTargetAddresses = target.getAffectedModules();
     final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
-    final Set<String> allTargets = target.getTargetAddresses();
 
     if (affectedTargetAddresses.size() > 0) {
       return filterGenTargets(affectedTargetAddresses);
-      //// Map from module name to target address
-      //HashMap<String, String> knownModuleNameToAddress = ContainerUtil.newHashMap();
-      //for (String address : allTargets) {
-      //  knownModuleNameToAddress.put(PantsUtil.getCanonicalModuleName(address), address);
-      //}
-      //
-      //Set<String> targetAddressToCompile = ContainerUtil.newHashSet();
-      //Set<String> unrecognizedModuleNames = ContainerUtil.newHashSet();
-      //for (String moduleName : affectedTargetAddresses) {
-      //  if (knownModuleNameToAddress.containsKey(moduleName)) {
-      //    String targetAddress = knownModuleNameToAddress.get(moduleName);
-      //    // Add to the compile list only if it not a gen target
-      //    if (allNonGenTargets.contains(targetAddress)){
-      //      targetAddressToCompile.add(targetAddress);
-      //    }
-      //  }
-      //  else {
-      //    unrecognizedModuleNames.add(moduleName);
-      //  }
-      //}
-      //if (unrecognizedModuleNames.isEmpty()) {
-      //  final String recompileMessage = String.format("Collecting %s", targetAddressToCompile.toString());
-      //  context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
-      //  context.processMessage(new ProgressMessage(recompileMessage));
-      //  return targetAddressToCompile;
-      //}
-      //
-      ///** At least one module has no corresponding target address because module name may be processed by any class under
-      // * {@link com.twitter.intellij.pants.service.project.modifier}.
-      // * Thus falling back to collecting all targets.
-      // */
-      //String warning_message = String.format(
-      //  "No matching target address found for module: %s. Possible reasons as listed:\n" +
-      //  "Module name compressed due to too long target address\n" +
-      //  "Modules sharing the same source root\n" +
-      //  "Empty target\n" +
-      //  "Cyclic dependencies\n" +
-      //  "Unsupported target types\n" +
-      //  "Thus falling back to collecting all targets in project.\n", unrecognizedModuleNames.toString());
-      //context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.WARNING, warning_message));
     }
-
-
-    final String recompileMessage = String.format("Collecting all %s targets", allNonGenTargets.size());
-    context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
-    context.processMessage(new ProgressMessage(recompileMessage));
-    return allNonGenTargets;
+    else {
+      final String recompileMessage = String.format("Collecting all %s targets", allNonGenTargets.size());
+      context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
+      context.processMessage(new ProgressMessage(recompileMessage));
+      return allNonGenTargets;
+    }
   }
 
   private boolean hasDirtyTargets(DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder) throws IOException {

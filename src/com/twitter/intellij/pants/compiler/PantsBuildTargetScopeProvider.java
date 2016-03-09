@@ -10,9 +10,9 @@ import com.intellij.openapi.compiler.CompilerFilter;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.api.CmdlineRemoteProto.Message.ControllerMessage.ParametersMessage.TargetTypeBuildScope;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
@@ -42,7 +42,7 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
           for (Module targetModule : targetModules) {
             String addresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
             if (addresses != null) {
-              final Set<String> targetAddresses = new HashSet<String>(StringUtil.split(addresses, ","));
+              final Set<String> targetAddresses = PantsUtil.hydrateCompactTargetAddresses(addresses);
               for (String address: targetAddresses) {
                 builder.addTargetId(address);
               }
@@ -54,11 +54,12 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
           ScalaTestRunConfiguration config = (ScalaTestRunConfiguration) entry.getValue();
           String addresses = config.getModule().getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
           if (addresses != null) {
-            final Set<String> targetAddresses = new HashSet<String>(StringUtil.split(addresses, ","));
+            final Set<String> targetAddresses = PantsUtil.hydrateCompactTargetAddresses(addresses);
             for (String address: targetAddresses) {
               builder.addTargetId(address);
             }
           }
+          break;
         }
       }
     }

@@ -59,6 +59,10 @@ public class PantsUtil {
 
   private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
 
+  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
+
+  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
+
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
     if (vFile == null) {
@@ -100,9 +104,6 @@ public class PantsUtil {
     }
     return isBUILDFileName(file.getName());
   }
-
-  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
-  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
   @Nullable
   public static String findPantsVersion(@Nullable VirtualFile workingDir) {
@@ -305,8 +306,11 @@ public class PantsUtil {
       return Collections.emptyList();
     }
     final String targets = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+    if (targets == null) {
+      return ContainerUtil.newArrayList();
+    }
     return ContainerUtil.mapNotNull(
-      StringUtil.split(StringUtil.notNullize(targets), ","),
+      PantsUtil.hydrateCompactTargetAddresses(targets),
       new Function<String, PantsTargetAddress>() {
         @Override
         public PantsTargetAddress fun(String targetAddress) {
@@ -662,6 +666,11 @@ public class PantsUtil {
       }
     }
     return workdir;
+  }
+
+  @NotNull
+  public static HashSet<String> hydrateCompactTargetAddresses(@NotNull String addresses) {
+    return new HashSet<String>(StringUtil.split(addresses, ","));
   }
 
   class SimpleExportResult {
