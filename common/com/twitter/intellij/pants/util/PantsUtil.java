@@ -208,6 +208,15 @@ public class PantsUtil {
   }
 
   @Nullable
+  public static VirtualFile findDistExportClasspathDirectory(@NotNull Module module) {
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    if (buildRoot == null) {
+      return null;
+    }
+    return VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.getPath() + "/dist/export-classpath");
+  }
+
+  @Nullable
   public static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
     if (file == null) return null;
     if (file.isDirectory()) {

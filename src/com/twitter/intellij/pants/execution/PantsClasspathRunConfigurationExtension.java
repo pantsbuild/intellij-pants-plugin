@@ -67,8 +67,12 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Runnable() {
         @Override
         public void run() {
-          // we need to refresh because IJ might not pick all newly created symlinks
-          VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
+          final VirtualFile classpathDir = PantsUtil.findDistExportClasspathDirectory(module);
+          if (classpathDir == null) {
+            return;
+          }
+          // Refresh dist/export-classpath because virtual file system may not have picked up the newly created symlinks.
+          classpathDir.refresh(false, true);
         }
       }
     );
@@ -135,8 +139,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   @NotNull
   private static List<String> findPublishedClasspathByTargetId(@NotNull Module module, @NotNull TargetAddressInfo targetAddressInfo) {
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
-    final VirtualFile classpath = buildRoot != null ? buildRoot.findFileByRelativePath("dist/export-classpath") : null;
+    final VirtualFile classpath = PantsUtil.findDistExportClasspathDirectory(module);
     if (classpath == null) {
       return Collections.emptyList();
     }
@@ -164,8 +167,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   @Deprecated
   @NotNull
   private static List<String> findPublishedClasspathByTargetAddress(@NotNull Module module, @NotNull String targetAddress) {
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
-    final VirtualFile classpath = buildRoot != null ? buildRoot.findFileByRelativePath("dist/export-classpath") : null;
+    final VirtualFile classpath = PantsUtil.findDistExportClasspathDirectory(module);
     if (classpath == null) {
       return Collections.emptyList();
     }
