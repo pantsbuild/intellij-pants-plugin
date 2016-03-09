@@ -655,9 +655,9 @@ public class PantsUtil {
     String options = getPantsOptions(pantsExecutable);
     String lines[] = options.split("\\r?\\n");
     String workdir = null;
-    for (int i=0; i<lines.length;i++){
-      if (lines[i].contains("pants_workdir")){
-        workdir = lines[i].split(" ")[2];
+    for (String line: lines) {
+      if (line.contains("pants_workdir")){
+        workdir = line.split(" ")[2];
         break;
       }
     }

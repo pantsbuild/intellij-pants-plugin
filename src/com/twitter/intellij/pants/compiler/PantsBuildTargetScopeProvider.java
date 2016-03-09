@@ -10,13 +10,14 @@ import com.intellij.openapi.compiler.CompilerFilter;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
+import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.api.CmdlineRemoteProto.Message.ControllerMessage.ParametersMessage.TargetTypeBuildScope;
+import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
   @NotNull
@@ -38,21 +39,31 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
         if (entry.getValue() instanceof JUnitConfiguration) {
           JUnitConfiguration config = (JUnitConfiguration)entry.getValue();
           Module[] targetModules = config.getModules();
-          for (int i = 0; i < targetModules.length; i++) {
-            builder.addTargetId(targetModules[i].getName());
+          for (Module targetModule : targetModules) {
+            String addresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+            if (addresses != null) {
+              final Set<String> targetAddresses = new HashSet<String>(StringUtil.split(addresses, ","));
+              for (String address: targetAddresses) {
+                builder.addTargetId(address);
+              }
+            }
+          }
+          break;
+        }
+        else if (entry.getValue() instanceof ScalaTestRunConfiguration) {
+          ScalaTestRunConfiguration config = (ScalaTestRunConfiguration) entry.getValue();
+          String addresses = config.getModule().getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+          if (addresses != null) {
+            final Set<String> targetAddresses = new HashSet<String>(StringUtil.split(addresses, ","));
+            for (String address: targetAddresses) {
+              builder.addTargetId(address);
+            }
           }
         }
       }
     }
 
-    if (builder.getTargetIdCount() == 0) {
-      Module[] affectedModules = baseScope.getAffectedModules();
-      for (int i = 0; i < affectedModules.length; i++) {
-        builder.addTargetId(affectedModules[i].getName());
-      }
-    }
-
-    // Set compile all target to false if we know what exactly to compile from JUnit Configuration.
+    // Set compile all target to false if we know exactly what to compile from JUnit Configuration.
     builder.setAllTargets(builder.getTargetIdCount() == 0);
     return Collections.singletonList(builder.build());
   }
