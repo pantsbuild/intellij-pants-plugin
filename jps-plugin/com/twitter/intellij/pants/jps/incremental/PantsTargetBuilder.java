@@ -171,10 +171,11 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
   private Set<String> getTargetsAddressesOfAffectedModules(@NotNull PantsBuildTarget target, @NotNull CompileContext context) {
     final Set<String> affectedTargetAddresses = target.getAffectedModules();
-    if (affectedTargetAddresses.size() > 0) {
+    if (!affectedTargetAddresses.isEmpty()) {
       return filterGenTargets(affectedTargetAddresses);
     }
     else {
+      // Obtain all target addresses if affected target addresses are not found.
       final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
       final String recompileMessage = String.format("Collecting all %s targets", allNonGenTargets.size());
       context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
