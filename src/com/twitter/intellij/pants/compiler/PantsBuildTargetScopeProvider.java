@@ -14,6 +14,7 @@ import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.api.CmdlineRemoteProto.Message.ControllerMessage.ParametersMessage.TargetTypeBuildScope;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
@@ -36,36 +37,40 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
 
     for (Map.Entry<Key, Object> entry : baseScope.exportUserData().entrySet()) {
       if (entry.getKey().toString().equals("RUN_CONFIGURATION")) {
+        /**
+         * JUnit Test
+         */
         if (entry.getValue() instanceof JUnitConfiguration) {
           JUnitConfiguration config = (JUnitConfiguration)entry.getValue();
           Module[] targetModules = config.getModules();
           for (Module targetModule : targetModules) {
             String addresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-            if (addresses != null) {
-              final Set<String> targetAddresses = PantsUtil.hydrateCompactTargetAddresses(addresses);
-              for (String address: targetAddresses) {
-                builder.addTargetId(address);
-              }
-            }
+            addTargetAddressesToBuilder(builder, addresses);
           }
-          break;
         }
+        /**
+         * Scala Test
+         */
         else if (entry.getValue() instanceof ScalaTestRunConfiguration) {
-          ScalaTestRunConfiguration config = (ScalaTestRunConfiguration) entry.getValue();
+          ScalaTestRunConfiguration config = (ScalaTestRunConfiguration)entry.getValue();
           String addresses = config.getModule().getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-          if (addresses != null) {
-            final Set<String> targetAddresses = PantsUtil.hydrateCompactTargetAddresses(addresses);
-            for (String address: targetAddresses) {
-              builder.addTargetId(address);
-            }
-          }
-          break;
+          addTargetAddressesToBuilder(builder, addresses);
         }
+        break;
       }
     }
 
     // Set compile all target to false if we know exactly what to compile from JUnit Configuration.
     builder.setAllTargets(builder.getTargetIdCount() == 0);
     return Collections.singletonList(builder.build());
+  }
+
+  private void addTargetAddressesToBuilder(TargetTypeBuildScope.Builder builder, @Nullable String addresses) {
+    if (addresses != null) {
+      final Set<String> targetAddresses = PantsUtil.hydrateCompactTargetAddresses(addresses);
+      for (String address : targetAddresses) {
+        builder.addTargetId(address);
+      }
+    }
   }
 }
