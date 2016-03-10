@@ -37,9 +37,9 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
     return ContainerUtil.createMaybeSingletonList(myPantsBuildTargetInstance);
   }
 
-  public void addTargetId(@Nullable String moduleName) {
-    if (myPantsBuildTargetInstance != null && moduleName != null) {
-      myPantsBuildTargetInstance.addJUnitRunModule(moduleName);
+  public void addTargetId(@Nullable String targetAddress) {
+    if (myPantsBuildTargetInstance != null && targetAddress != null) {
+      myPantsBuildTargetInstance.addJUnitRunModule(targetAddress);
     }
   }
 
@@ -66,8 +66,8 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
     return new BuildTargetLoader<PantsBuildTarget>() {
       @Nullable
       @Override
-      public PantsBuildTarget createTarget(@Nullable String moduleName) {
-        addTargetId(moduleName);
+      public PantsBuildTarget createTarget(@Nullable String targetAddress) {
+        addTargetId(targetAddress);
         return getTarget(model);
       }
     };

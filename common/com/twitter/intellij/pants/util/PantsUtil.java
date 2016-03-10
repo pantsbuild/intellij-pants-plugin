@@ -310,7 +310,7 @@ public class PantsUtil {
       return ContainerUtil.newArrayList();
     }
     return ContainerUtil.mapNotNull(
-      PantsUtil.hydrateCompactTargetAddresses(targets),
+      PantsUtil.hydrateTargetAddresses(targets),
       new Function<String, PantsTargetAddress>() {
         @Override
         public PantsTargetAddress fun(String targetAddress) {
@@ -669,8 +669,13 @@ public class PantsUtil {
   }
 
   @NotNull
-  public static HashSet<String> hydrateCompactTargetAddresses(@NotNull String addresses) {
+  public static Set<String> hydrateTargetAddresses(@NotNull String addresses) {
     return new HashSet<String>(StringUtil.split(addresses, ","));
+  }
+
+  @NotNull
+  public static String dehydrateTargetAddresses(@NotNull Set<String> addresses) {
+    return StringUtil.join(addresses, ",");
   }
 
   class SimpleExportResult {

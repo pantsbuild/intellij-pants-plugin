@@ -73,7 +73,7 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
 
   private void addTargetAddressesToBuilder(TargetTypeBuildScope.Builder builder, @Nullable String addresses) {
     if (addresses != null) {
-      final Set<String> targetAddresses = PantsUtil.hydrateCompactTargetAddresses(addresses);
+      final Set<String> targetAddresses = PantsUtil.hydrateTargetAddresses(addresses);
       for (String address : targetAddresses) {
         builder.addTargetId(address);
       }
