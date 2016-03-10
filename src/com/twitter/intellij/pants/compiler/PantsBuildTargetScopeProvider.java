@@ -59,7 +59,7 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
         addTargetAddressesToBuilder(builder, addresses);
       }
     }
-    else if (builder.getTargetIdCount() == 0) {
+    else {
       for (Module module : baseScope.getAffectedModules()) {
         String addresses = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
         addTargetAddressesToBuilder(builder, addresses);
