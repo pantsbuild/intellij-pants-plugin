@@ -342,7 +342,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       }
     );
 
-    final String noChanges = PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE;
+    final String noChanges = "pants_plugin: " + PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE;
     final String compiledSuccessfully = "pants: SUCCESS";
     assertTrue("Compilation wasn't successful!", rawMessages.contains(noChanges) || rawMessages.contains(compiledSuccessfully));
     return rawMessages;
