@@ -34,30 +34,32 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
         .setAllTargets(true)
         .setForceBuild(forceBuild);
 
-    Map userData = baseScope.exportUserData();
-    if (userData.containsKey("RUN_CONFIGURATION")) {
-      Object runConfig = userData.get("RUN_CONFIGURATION");
-      if (runConfig instanceof JUnitConfiguration) {
-        JUnitConfiguration config = (JUnitConfiguration)runConfig;
-        Module[] targetModules = config.getModules();
-        for (Module targetModule : targetModules) {
-          String addresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+    for (Map.Entry<Key, Object> entry : baseScope.exportUserData().entrySet()) {
+      if (entry.getKey().toString().equals("RUN_CONFIGURATION")) {
+        if (entry.getValue() instanceof JUnitConfiguration) {
+          JUnitConfiguration config = (JUnitConfiguration)entry.getValue();
+          Module[] targetModules = config.getModules();
+          for (Module targetModule : targetModules) {
+            String addresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+            if (addresses != null) {
+              final Set<String> targetAddresses = PantsUtil.hydrateCompactTargetAddresses(addresses);
+              for (String address: targetAddresses) {
+                builder.addTargetId(address);
+              }
+            }
+          }
+          break;
+        }
+        else if (entry.getValue() instanceof ScalaTestRunConfiguration) {
+          ScalaTestRunConfiguration config = (ScalaTestRunConfiguration) entry.getValue();
+          String addresses = config.getModule().getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
           if (addresses != null) {
             final Set<String> targetAddresses = PantsUtil.hydrateCompactTargetAddresses(addresses);
-            for (String address : targetAddresses) {
+            for (String address: targetAddresses) {
               builder.addTargetId(address);
             }
           }
-        }
-      }
-      else if (runConfig instanceof ScalaTestRunConfiguration) {
-        ScalaTestRunConfiguration config = (ScalaTestRunConfiguration)runConfig;
-        String addresses = config.getModule().getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-        if (addresses != null) {
-          final Set<String> targetAddresses = PantsUtil.hydrateCompactTargetAddresses(addresses);
-          for (String address : targetAddresses) {
-            builder.addTargetId(address);
-          }
+          break;
         }
       }
     }
