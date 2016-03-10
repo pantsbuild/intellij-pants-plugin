@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.service.project.modifier;
 
-import com.google.common.base.Joiner;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Factory;
 import com.intellij.openapi.util.Pair;
@@ -97,11 +96,6 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     @NotNull SourceRoot originalSourceRoot
   ) {
     final String commonTargetAddress = createTargetAddressForCommonSource(path, originalSourceRoot);
-    List<String> allTargetAddresses = ContainerUtil.newArrayList();
-    for (Pair<String, TargetInfo> entry: targetNameAndInfos) {
-      allTargetAddresses.add(entry.getFirst());
-    }
-    //final String commonTargetAddress = Joiner.on("_").join(allTargetAddresses);
     final TargetInfo commonInfo = createTargetForSourceRootUnioningDeps(targetNameAndInfos, originalSourceRoot);
     return Pair.create(commonTargetAddress, commonInfo);
   }
