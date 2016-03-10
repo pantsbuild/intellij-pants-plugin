@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class PantsConstants {
   public static final String PANTS = "pants";
-  public static final String PLUGIN = "plugin";
+  public static final String PLUGIN = "pants plugin";
   public static final String PLUGIN_ID = "com.intellij.plugins.pants";
 
   @NotNull

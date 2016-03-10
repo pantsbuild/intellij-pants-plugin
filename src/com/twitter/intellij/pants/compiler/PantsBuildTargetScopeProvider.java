@@ -61,6 +61,7 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
     }
 
     // Set compile all target to false if we know exactly what to compile from JUnit Configuration.
+    // If setAllTargets(true), targetIds in `builder` will be ignored thus not going into to the external builder.
     builder.setAllTargets(builder.getTargetIdCount() == 0);
     return Collections.singletonList(builder.build());
   }
