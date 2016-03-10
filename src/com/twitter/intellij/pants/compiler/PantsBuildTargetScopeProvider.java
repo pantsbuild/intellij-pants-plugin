@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.compiler;
 
 import com.intellij.compiler.impl.BuildTargetScopeProvider;
+import com.intellij.compiler.options.CompileStepBeforeRun;
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompilerFilter;
@@ -35,37 +36,36 @@ public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
         .setAllTargets(true)
         .setForceBuild(forceBuild);
 
-    for (Map.Entry<Key, Object> entry : baseScope.exportUserData().entrySet()) {
-      if (entry.getKey().toString().equals("RUN_CONFIGURATION")) {
-        /**
-         * JUnit Test
-         */
-        if (entry.getValue() instanceof JUnitConfiguration) {
-          JUnitConfiguration config = (JUnitConfiguration)entry.getValue();
-          Module[] targetModules = config.getModules();
-          for (Module targetModule : targetModules) {
-            String addresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-            addTargetAddressesToBuilder(builder, addresses);
-          }
-        }
-        /**
-         * Scala Test
-         */
-        else if (entry.getValue() instanceof ScalaTestRunConfiguration) {
-          ScalaTestRunConfiguration config = (ScalaTestRunConfiguration)entry.getValue();
-          String addresses = config.getModule().getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+    Map<Key, Object> userData = baseScope.exportUserData();
+    if (userData.containsKey(CompileStepBeforeRun.RUN_CONFIGURATION)) {
+      Object genericRunConfig = userData.get(CompileStepBeforeRun.RUN_CONFIGURATION);
+      /**
+       * JUnit Test
+       */
+      if (genericRunConfig instanceof JUnitConfiguration) {
+        JUnitConfiguration config = (JUnitConfiguration)genericRunConfig;
+        Module[] targetModules = config.getModules();
+        for (Module targetModule : targetModules) {
+          String addresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
           addTargetAddressesToBuilder(builder, addresses);
         }
-        break;
+      }
+      /**
+       * Scala Test
+       */
+      else if (genericRunConfig instanceof ScalaTestRunConfiguration) {
+        ScalaTestRunConfiguration config = (ScalaTestRunConfiguration)genericRunConfig;
+        String addresses = config.getModule().getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+        addTargetAddressesToBuilder(builder, addresses);
       }
     }
-    if (builder.getTargetIdCount() == 0) {
-      for (Module module: baseScope.getAffectedModules()){
+    else if (builder.getTargetIdCount() == 0) {
+      for (Module module : baseScope.getAffectedModules()) {
         String addresses = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
         addTargetAddressesToBuilder(builder, addresses);
       }
     }
-    // Set compile all target to false if we know exactly what to compile from JUnit Configuration.
+    // Set "compile all target" to false if we know exactly what to compile from JUnit Configuration.
     // If setAllTargets(true), targetIds in `builder` will be ignored thus not going into to the external builder.
     builder.setAllTargets(builder.getTargetIdCount() == 0);
     return Collections.singletonList(builder.build());
