@@ -37,8 +37,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
      * Import two targets.
      * Make sure only testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher is compiled, not the whole project.
      */
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/dummies");
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/");
 
     List<String> output = makeModules("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
     assertContainsSubstring(output, "compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher");
@@ -46,6 +45,8 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
       "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest");
 
     // Compile the 2 targets in _testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources only.
+    // testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target
+    // testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target
     List<String> output2 = makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
     assertContainsSubstring(output2, "Compiling 2 targets");
   }
