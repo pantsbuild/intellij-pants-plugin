@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.integration;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsConstants;
 
 import java.util.List;
 
@@ -47,7 +48,9 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     // Compile the 2 targets in _testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources only.
     // testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target
     // testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target
-    List<String> output2 = makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
-    assertContainsSubstring(output2, "Compiling 2 targets");
+    assertContainsSubstring(
+      makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), "Compiling 2 targets");
+    assertContainsSubstring(
+      makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE);
   }
 }

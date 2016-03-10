@@ -87,7 +87,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       // Checking last build is expensive, so only do so inside the if statement.
       boolean isLastBuildSuccessAndSameTargets = checkLastBuild(target, targetAddressesToCompile);
       if (isLastBuildSuccessAndSameTargets) {
-        context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, "No changes to compile."));
+        context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE));
         return;
       }
     }
@@ -169,24 +169,13 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return processHandler.runProcess();
   }
 
-  /**
-   * Extract the target addesses associated with the modules affected. If any module does not have a corresponding target address,
-   * all target addresses are returned.
-   *
-   * @param target
-   * @param context
-   * @return
-   * @throws ProjectBuildException
-   */
-  private Set<String> getTargetsAddressesOfAffectedModules(@NotNull PantsBuildTarget target, @NotNull CompileContext context)
-    throws ProjectBuildException {
+  private Set<String> getTargetsAddressesOfAffectedModules(@NotNull PantsBuildTarget target, @NotNull CompileContext context) {
     final Set<String> affectedTargetAddresses = target.getAffectedModules();
-    final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
-
     if (affectedTargetAddresses.size() > 0) {
       return filterGenTargets(affectedTargetAddresses);
     }
     else {
+      final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
       final String recompileMessage = String.format("Collecting all %s targets", allNonGenTargets.size());
       context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
       context.processMessage(new ProgressMessage(recompileMessage));
