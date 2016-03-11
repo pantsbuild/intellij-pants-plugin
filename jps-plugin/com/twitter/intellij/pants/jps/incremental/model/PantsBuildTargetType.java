@@ -24,7 +24,7 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
    * This is the `target` that will eventually be passed into
    * {@link com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder#build}
    */
-  private PantsBuildTarget myPantsBuildTargetInstance;
+  private PantsBuildTarget myPantsBuildTarget;
 
   protected PantsBuildTargetType() {
     super("pants-goal-compile");
@@ -33,13 +33,13 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   @NotNull
   @Override
   public List<PantsBuildTarget> computeAllTargets(@NotNull JpsModel model) {
-    myPantsBuildTargetInstance = getTarget(model);
-    return ContainerUtil.createMaybeSingletonList(myPantsBuildTargetInstance);
+    myPantsBuildTarget = getTarget(model);
+    return ContainerUtil.createMaybeSingletonList(myPantsBuildTarget);
   }
 
   public void addTargetId(@Nullable String targetAddress) {
-    if (myPantsBuildTargetInstance != null && targetAddress != null) {
-      myPantsBuildTargetInstance.addJUnitRunModule(targetAddress);
+    if (myPantsBuildTarget != null && targetAddress != null) {
+      myPantsBuildTarget.addJUnitRunModule(targetAddress);
     }
   }
 
