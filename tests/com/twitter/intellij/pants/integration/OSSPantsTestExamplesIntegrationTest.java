@@ -35,22 +35,28 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
 
   public void testScopedJUnitTests() throws Throwable {
     /**
-     * Import two targets.
-     * Make sure only testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher is compiled, not the whole project.
+     * Import 3 targets:
+     * testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target
+     * testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target
+     * testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher
      */
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/");
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/dummies");
 
     List<String> output = makeModules("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
+    // Make sure only matcher target is compiled
     assertContainsSubstring(output, "compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher");
     assertSuccessfulJUnitTest(
       "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest");
 
-    // Compile the 2 targets in _testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources only.
-    // testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target
-    // testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target
+    // Make sure the only 2 dummies targets are compiled.
     assertContainsSubstring(
       makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), "Compiling 2 targets");
     assertContainsSubstring(
       makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE);
+
+    // makeProject() will result all 3 targets to be compiled.
+    assertContainsSubstring(makeProject(), "Compiling 3 targets");
+    assertContainsSubstring(makeProject(), PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE);
   }
 }

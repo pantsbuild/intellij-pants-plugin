@@ -24,7 +24,7 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
    * This is the `target` that will eventually be passed into
    * {@link com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder#build}
    */
-  public static PantsBuildTarget myPantsBuildTargetInstance;
+  private PantsBuildTarget myPantsBuildTargetInstance;
 
   protected PantsBuildTargetType() {
     super("pants-goal-compile");
