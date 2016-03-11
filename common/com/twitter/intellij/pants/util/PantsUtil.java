@@ -307,7 +307,7 @@ public class PantsUtil {
     }
     final String targets = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
     if (targets == null) {
-      return ContainerUtil.newArrayList();
+      return Collections.emptyList();
     }
     return ContainerUtil.mapNotNull(
       PantsUtil.hydrateTargetAddresses(targets),

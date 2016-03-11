@@ -38,7 +38,7 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
   @NotNull
   private Set<TargetAddressInfo> myTargetAddressInfoSet;
   @NotNull
-  Set<String> myAffectedModules;
+  private Set<String> myAffectedModules;
 
   @NotNull
   public Set<String> getAffectedModules() {
