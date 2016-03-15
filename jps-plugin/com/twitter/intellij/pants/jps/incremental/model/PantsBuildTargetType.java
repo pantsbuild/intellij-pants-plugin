@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.builders.BuildTargetLoader;
 import org.jetbrains.jps.builders.BuildTargetType;
+import org.jetbrains.jps.builders.impl.BuildTargetRegistryImpl;
 import org.jetbrains.jps.model.JpsModel;
 import org.jetbrains.jps.model.JpsProject;
 
@@ -20,9 +21,13 @@ import java.util.Set;
 
 public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   public static PantsBuildTargetType INSTANCE = new PantsBuildTargetType();
+
   /**
-   * This is the `target` that will eventually be passed into
-   * {@link com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder#build}
+   * Life cycle of `myPantsBuildTarget`:
+   * 1. Created under {@link BuildTargetRegistryImpl#BuildTargetRegistryImpl, type.computeAllTargets(model)}.
+   * 2. {@link org.jetbrains.jps.cmdline.BuildRunner#createCompilationScope} calls {@link BuildTargetLoader#createTarget(java.lang.String)}
+   * for every target address previously added in PantsBuildTargetScopeProvider.
+   * 3. Finally myPantsBuildTarget gets passed as `target` in {@link com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder#build}
    */
   private PantsBuildTarget myPantsBuildTarget;
 
@@ -33,18 +38,12 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   @NotNull
   @Override
   public List<PantsBuildTarget> computeAllTargets(@NotNull JpsModel model) {
-    myPantsBuildTarget = getTarget(model);
+    myPantsBuildTarget = createTarget(model);
     return ContainerUtil.createMaybeSingletonList(myPantsBuildTarget);
   }
 
-  public void addTargetId(@Nullable String targetAddress) {
-    if (myPantsBuildTarget != null && targetAddress != null) {
-      myPantsBuildTarget.addJUnitRunModule(targetAddress);
-    }
-  }
-
   @Nullable
-  public PantsBuildTarget getTarget(JpsModel model) {
+  public PantsBuildTarget createTarget(JpsModel model) {
     final JpsProject jpsProject = model.getProject();
     final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
 
@@ -60,6 +59,12 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
              pantsProjectExtension.getPantsExecutablePath(), new HashSet<String>(allTargetAddresses), targetAddressInfoSet) : null;
   }
 
+  public void addTargetId(@Nullable String targetAddress) {
+    if (myPantsBuildTarget != null && targetAddress != null) {
+      myPantsBuildTarget.addJUnitRunModule(targetAddress);
+    }
+  }
+
   @NotNull
   @Override
   public BuildTargetLoader<PantsBuildTarget> createLoader(@NotNull final JpsModel model) {
@@ -68,7 +73,7 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
       @Override
       public PantsBuildTarget createTarget(@Nullable String targetAddress) {
         addTargetId(targetAddress);
-        return getTarget(model);
+        return myPantsBuildTarget;
       }
     };
   }

@@ -45,11 +45,11 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
     return myAffectedModules;
   }
 
-  public void addJUnitRunModule(@Nullable String moduleName) {
-    if (moduleName == null || moduleName.equals(PantsConstants.PANTS)) {
+  public void addJUnitRunModule(@Nullable String targetAdress) {
+    if (targetAdress == null || targetAdress.equals(PantsConstants.PANTS)) {
       return;
     }
-    myAffectedModules.add(moduleName);
+    myAffectedModules.add(targetAdress);
   }
 
   protected PantsBuildTarget(
