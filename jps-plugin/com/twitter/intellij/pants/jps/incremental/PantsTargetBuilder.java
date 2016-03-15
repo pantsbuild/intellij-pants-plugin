@@ -41,9 +41,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
+  private ScheduledFuture<?> compileCancellationCheckHandle;
 
   public PantsTargetBuilder() {
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
@@ -121,10 +124,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final JpsPantsProjectExtension pantsProjectExtension =
       PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
     if (pantsProjectExtension.isUseIdeaProjectJdk()) {
-      try{
+      try {
         commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromExternalBuilder(jpsProject)));
       }
-      catch(Exception e){
+      catch (Exception e) {
         throw new ProjectBuildException(e);
       }
     }
@@ -147,7 +150,27 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         }
       }
     );
+    checkCompileCancellationInBackground(context, process, processHandler);
     return processHandler.runProcess();
+  }
+
+  private void checkCompileCancellationInBackground(
+    @NotNull final CompileContext context,
+    final Process process,
+    final CapturingProcessHandler processHandler
+  ) {
+    compileCancellationCheckHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+      @Override
+      public void run() {
+        if (context.getCancelStatus().isCanceled()) {
+          UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM);
+          compileCancellationCheckHandle.cancel(false);
+        }
+        else if (processHandler.isProcessTerminated()) {
+          compileCancellationCheckHandle.cancel(false);
+        }
+      }
+    }, 0, 1, TimeUnit.SECONDS);
   }
 
   private boolean hasDirtyTargets(DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder) throws IOException {
