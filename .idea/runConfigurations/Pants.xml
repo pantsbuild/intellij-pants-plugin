@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Pants" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin" singleton="true">
     <module name="intellij-pants-plugin" />
-    <option name="VM_PARAMETERS" value="-Xmx1024m -Xms256m -XX:MaxPermSize=250m -ea -Didea.is.internal=true -Dpants.system.in.process=true -Dpants.dev.run=true" />
+    <option name="VM_PARAMETERS" value="-Xmx4096m -Xms256m -ea -Didea.is.internal=true -Dpants.system.in.process=true -Dpants.dev.run=true" />
     <option name="PROGRAM_PARAMETERS" value="" />
-    <log_file path="$USER_HOME$/Library/Caches/IdeaIC15/plugins-sandbox/system/log/idea.log" checked="true" skipped="true" show_all="false" alias="IDEA LOG" />
+    <log_file path="$USER_HOME$/Library/Caches/IdeaIC2016.1/plugins-sandbox/system/log/idea.log" checked="true" skipped="true" show_all="false" alias="IDEA LOG" />
     <RunnerSettings RunnerId="Debug">
       <option name="DEBUG_PORT" value="" />
       <option name="TRANSPORT" value="0" />

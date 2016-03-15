@@ -525,6 +525,15 @@ public class PantsUtil {
     return processHandler.runProcess();
   }
 
+  public static ProcessOutput getNewOutput(@NotNull GeneralCommandLine commandLine, @Nullable ProcessAdapter processAdapter)
+    throws ExecutionException {
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(commandLine);
+    if (processAdapter != null) {
+      processHandler.addProcessListener(processAdapter);
+    }
+    return processHandler.runProcess();
+  }
+
   public static boolean isPythonAvailable() {
     for (String pluginId : PYTHON_PLUGIN_IDS) {
       final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));

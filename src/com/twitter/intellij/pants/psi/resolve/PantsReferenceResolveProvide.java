@@ -20,7 +20,7 @@ import java.util.List;
 public class PantsReferenceResolveProvide implements PyReferenceResolveProvider {
   @NotNull
   @Override
-  public List<RatedResolveResult> resolveName(@NotNull PyQualifiedExpression element, @NotNull List<PsiElement> definers) {
+  public List<RatedResolveResult> resolveName(@NotNull PyQualifiedExpression element) {
     PsiFile containingFile = element.getContainingFile();
     return PantsUtil.isBUILDFileName(containingFile.getName()) ?
            resolvePantsName(element) :
