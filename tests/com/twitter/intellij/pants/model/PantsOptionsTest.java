@@ -23,4 +23,9 @@ public class PantsOptionsTest extends TestCase {
     PantsOptionsMock options = new PantsOptionsMock("pants_workdir = /Users/abc/work space/intellij-pants-plugin/.pants.d (from HARDCODED)");
     assertEquals(options.getWorkdir(), "/Users/abc/work space/intellij-pants-plugin/.pants.d");
   }
+
+  public void testInvalidWorkdir() {
+    PantsOptionsMock options = new PantsOptionsMock("/Users/abc/work space/intellij-pants-plugin/.pants.d (from HARDCODED)");
+    assertNull(options.getWorkdir());
+  }
 }

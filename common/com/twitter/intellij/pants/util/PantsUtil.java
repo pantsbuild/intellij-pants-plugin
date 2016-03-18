@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.util;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingProcessHandler;
@@ -62,6 +63,8 @@ public class PantsUtil {
   private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
 
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
+
+  private static final Gson gson = new Gson();
 
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
@@ -637,12 +640,12 @@ public class PantsUtil {
 
   @NotNull
   public static Set<String> hydrateTargetAddresses(@NotNull String addresses) {
-    return new HashSet<String>(StringUtil.split(addresses, ","));
+    return gson.fromJson(addresses, new TypeToken<Set<String>>() {}.getType());
   }
 
   @NotNull
   public static String dehydrateTargetAddresses(@NotNull Set<String> addresses) {
-    return StringUtil.join(addresses, ",");
+    return gson.toJson(addresses);
   }
 
   class SimpleExportResult {
