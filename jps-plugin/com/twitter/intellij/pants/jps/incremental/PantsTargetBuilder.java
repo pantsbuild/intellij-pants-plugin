@@ -18,6 +18,7 @@ import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
 import com.twitter.intellij.pants.jps.incremental.model.PantsSourceRootDescriptor;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
 import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -55,6 +56,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
   }
 
+  private PantsOptions myPantsOptions;
+
   private String pantsWorkDir;
 
   @NotNull
@@ -83,9 +86,10 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
     Set<String> targetAddressesToCompile = getTargetsAddressesOfAffectedModules(target, context);
+    myPantsOptions = new PantsOptions(target.getPantsExecutable());
     if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       // Checking last build is expensive, so only do so inside the if statement.
-      boolean isLastBuildSuccessAndSameTargets = checkLastBuild(target, targetAddressesToCompile);
+      boolean isLastBuildSuccessAndSameTargets = checkLastBuild(myPantsOptions, targetAddressesToCompile);
       if (isLastBuildSuccessAndSameTargets) {
         context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE));
         return;
@@ -96,7 +100,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (!success) {
       throw new ProjectBuildException(output.getStderr());
     }
-    writeSuccessfulBuild(target, targetAddressesToCompile);
+    writeSuccessfulBuild(myPantsOptions, targetAddressesToCompile);
   }
 
   private ProcessOutput runCompile(
@@ -126,8 +130,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
 
     // Find out whether "export-classpath-use-old-naming-style" exists
-    final boolean hasExportClassPathNamingStyle =
-      PantsUtil.getPantsOptions(pantsExecutable).contains(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE);
+    PantsOptions pantsOptions = new PantsOptions(pantsExecutable);
+    final boolean hasExportClassPathNamingStyle = pantsOptions.hasExportClassPathNamingStyle();
     final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
 
     // "export-classpath-use-old-naming-style" is soon to be removed.
@@ -261,12 +265,12 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   /**
    * Check whether last successful build contains the exact same set of targets
    *
-   * @param target
+   * @param pantsOptions
    * @param targetAddressesToCompile
    * @return true if last build was successful and contains the exact same set of targets, false otherwise.
    */
-  private boolean checkLastBuild(@NotNull PantsBuildTarget target, Set<String> targetAddressesToCompile) {
-    File lastPluginBuild = getLastBuildFile(target);
+  private boolean checkLastBuild(@NotNull PantsOptions pantsOptions, Set<String> targetAddressesToCompile) {
+    File lastPluginBuild = getLastBuildFile(pantsOptions);
     if (lastPluginBuild != null && lastPluginBuild.exists()) {
       try {
         List<String> lastRun = Files.readAllLines(lastPluginBuild.toPath(), Charset.defaultCharset());
@@ -279,7 +283,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return false;
   }
 
-  private void writeSuccessfulBuild(@NotNull PantsBuildTarget target, Set<String> targetAddressesToCompile) {
+  private void writeSuccessfulBuild(@NotNull PantsOptions target, Set<String> targetAddressesToCompile) {
     File lastPluginBuild = getLastBuildFile(target);
     if (lastPluginBuild != null) {
       try {
@@ -292,20 +296,11 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   }
 
   @Nullable
-  private File getLastBuildFile(@NotNull PantsBuildTarget target) {
-    String pantsWorkdir = getPantsWorkdir(target);
+  private File getLastBuildFile(@NotNull PantsOptions pantsOptions) {
+    String pantsWorkdir = pantsOptions.getWorkdir();
     if (pantsWorkdir == null) {
       return null;
     }
     return new File(pantsWorkdir, PLUGIN_LAST_BUILD);
-  }
-
-  @Nullable
-  private String getPantsWorkdir(@NotNull PantsBuildTarget target) {
-    if (pantsWorkDir == null) {
-      final String pantsExecutable = target.getPantsExecutable();
-      pantsWorkDir = PantsUtil.getPantsWorkdir(pantsExecutable);
-    }
-    return pantsWorkDir;
   }
 }

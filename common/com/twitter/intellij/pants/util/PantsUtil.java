@@ -587,20 +587,6 @@ public class PantsUtil {
     return getOutput(command.createProcess(), processAdapter);
   }
 
-  public static String getPantsOptions(final String pantsExecutable) {
-    final GeneralCommandLine exportCommandline = defaultCommandLine(pantsExecutable);
-    exportCommandline.addParameters("options", PantsConstants.PANTS_OPTION_NO_COLORS);
-    try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
-      final String stdOut = processOutput.getStdout();
-      return stdOut;
-    }
-    catch (ExecutionException e) {
-      throw new PantsException("Failed:" + exportCommandline.getCommandLineString());
-    }
-  }
-
-
   /**
    * @param project JpsProject
    * @return Path to IDEA Project JDK if exists, else null
@@ -647,25 +633,6 @@ public class PantsUtil {
     else {
       throw new Exception("No IDEA Project JDK Found");
     }
-  }
-
-  /**
-   * Find pants workdir from `pants options`.
-   * @param pantsExecutable
-   * @return absolute path of pants workdir
-   */
-  @Nullable
-  public static String getPantsWorkdir(String pantsExecutable) {
-    String options = getPantsOptions(pantsExecutable);
-    String lines[] = options.split("\\r?\\n");
-    String workdir = null;
-    for (String line: lines) {
-      if (line.contains("pants_workdir")){
-        workdir = line.split(" ")[2];
-        break;
-      }
-    }
-    return workdir;
   }
 
   @NotNull
