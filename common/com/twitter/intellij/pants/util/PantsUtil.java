@@ -53,6 +53,8 @@ import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
@@ -65,6 +67,8 @@ public class PantsUtil {
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
   private static final Gson gson = new Gson();
+
+  public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
 
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
@@ -209,6 +213,15 @@ public class PantsUtil {
   public static VirtualFile findBuildRoot(@Nullable VirtualFile file) {
     final VirtualFile pantsExecutable = findPantsExecutable(file);
     return pantsExecutable != null ? pantsExecutable.getParent() : null;
+  }
+
+  @Nullable
+  public static VirtualFile findDistExportClasspathDirectory(@NotNull Module module) {
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    if (buildRoot == null) {
+      return null;
+    }
+    return VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.getPath() + "/dist/export-classpath");
   }
 
   @Nullable

@@ -47,10 +47,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
   public static final String PLUGIN_LAST_BUILD = "last_successful_plugin_run";
+  private ScheduledFuture<?> compileCancellationCheckHandle;
 
   public PantsTargetBuilder() {
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
@@ -170,6 +173,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
         }
       }
     );
+    checkCompileCancellationInBackground(context, process, processHandler);
     return processHandler.runProcess();
   }
 
@@ -186,6 +190,25 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       context.processMessage(new ProgressMessage(recompileMessage));
       return allNonGenTargets;
     }
+  }
+
+  private void checkCompileCancellationInBackground(
+    @NotNull final CompileContext context,
+    final Process process,
+    final CapturingProcessHandler processHandler
+  ) {
+    compileCancellationCheckHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+      @Override
+      public void run() {
+        if (context.getCancelStatus().isCanceled()) {
+          UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM);
+          compileCancellationCheckHandle.cancel(false);
+        }
+        else if (processHandler.isProcessTerminated()) {
+          compileCancellationCheckHandle.cancel(false);
+        }
+      }
+    }, 0, 1, TimeUnit.SECONDS);
   }
 
   private boolean hasDirtyTargets(DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder) throws IOException {
