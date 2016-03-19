@@ -1,35 +1,35 @@
 java_library(
-    name = 'pants-intellij-plugin-java',
-    dependencies = [
-        '3rdparty/intellij:sdk',
+    name='pants-intellij-plugin-java',
+    dependencies=[
+        '3rdparty/intellij:junit-plugin',
         '3rdparty/intellij:python-plugin',
         '3rdparty/intellij:scala-plugin',
-        '3rdparty/intellij:junit-plugin',
+        '3rdparty/intellij:sdk',
         'common',
         'jps-plugin',
         ':pants-intellij-plugin-scala'
     ],
-    resources = [
+    resources=[
         'resources'
     ],
-    sources = rglobs('*.java')
+    sources=rglobs('*.java')
 )
 
 scala_library(
-    name = 'pants-intellij-plugin-scala',
-    dependencies = [
-        '3rdparty/intellij:sdk',
+    name='pants-intellij-plugin-scala',
+    dependencies=[
+        '3rdparty/intellij:junit-plugin',
         '3rdparty/intellij:python-plugin',
         '3rdparty/intellij:scala-plugin',
-        '3rdparty/intellij:junit-plugin',
+        '3rdparty/intellij:sdk',
         'common',
         'jps-plugin',
     ],
-    resources = [
+    resources=[
         'resources',
     ],
-    java_sources = [
+    java_sources=[
         ':pants-intellij-plugin-java'
     ],
-    sources = rglobs('*.scala')
+    sources=rglobs('*.scala')
 )

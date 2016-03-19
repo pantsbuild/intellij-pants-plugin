@@ -25,8 +25,8 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   /**
    * Life cycle of `myPantsBuildTarget`:
    * 1. Created under {@link BuildTargetRegistryImpl#BuildTargetRegistryImpl, type.computeAllTargets(model)}.
-   * 2. {@link org.jetbrains.jps.cmdline.BuildRunner#createCompilationScope} calls {@link BuildTargetLoader#createTarget(java.lang.String)}
-   * for every target address previously added in PantsBuildTargetScopeProvider.
+   * 2. {@link org.jetbrains.jps.cmdline.BuildRunner#createCompilationScope} calls {@link BuildTargetLoader#createTarget}
+   *    for every target address previously added in PantsBuildTargetScopeProvider.
    * 3. Finally myPantsBuildTarget gets passed as `target` in {@link com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder#build}
    */
   private PantsBuildTarget myPantsBuildTarget;
