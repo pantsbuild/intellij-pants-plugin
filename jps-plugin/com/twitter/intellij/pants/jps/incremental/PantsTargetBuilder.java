@@ -85,14 +85,14 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     PantsOptions pantsOptions = new PantsOptions(target.getPantsExecutable());
     if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       // TODO: Query pants for work necessity. https://github.com/pantsbuild/pants/issues/3043
-      // Checking last build is expensive, so only do so inside the if statement.
+      // Checking last build is expensive, so only do so inside this if statement.
       boolean isLastBuildSuccessAndSameTargets = checkLastBuild(pantsOptions, targetAddressesToCompile);
       if (isLastBuildSuccessAndSameTargets) {
         context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE));
         return;
       }
     }
-    final ProcessOutput output = runCompile(target, targetAddressesToCompile, context, "export-classpath", "compile");
+    final ProcessOutput output = runCompile(target, targetAddressesToCompile, context, pantsOptions,  "export-classpath", "compile");
     boolean success = output.checkSuccess(LOG);
     if (!success) {
       throw new ProjectBuildException(output.getStderr());
@@ -104,6 +104,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull PantsBuildTarget target,
     @NotNull Set<String> targetAddressesToCompile,
     @NotNull final CompileContext context,
+    @NotNull final PantsOptions pantsOptions,
     String... goals
   ) throws IOException, ProjectBuildException {
     final String pantsExecutable = target.getPantsExecutable();
@@ -127,7 +128,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
 
     // Find out whether "export-classpath-use-old-naming-style" exists
-    PantsOptions pantsOptions = new PantsOptions(pantsExecutable);
     final boolean hasExportClassPathNamingStyle = pantsOptions.hasExportClassPathNamingStyle();
     final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
 
