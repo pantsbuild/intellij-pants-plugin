@@ -19,7 +19,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.api.CmdlineRemoteProto.Message.ControllerMessage.ParametersMessage.TargetTypeBuildScope;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class PantsBuildTargetScopeProvider extends BuildTargetScopeProvider {
   @NotNull

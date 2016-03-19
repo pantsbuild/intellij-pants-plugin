@@ -38,12 +38,20 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiFile;
-import com.intellij.util.*;
+import com.intellij.util.ArrayUtil;
+import com.intellij.util.Function;
+import com.intellij.util.ObjectUtils;
+import com.intellij.util.PathUtil;
+import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.JpsProject;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
@@ -52,7 +60,16 @@ import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
@@ -66,7 +83,9 @@ public class PantsUtil {
 
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
-  private static final Gson gson = new Gson();
+  public static final Gson gson = new Gson();
+
+  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
 
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
 
@@ -653,7 +672,7 @@ public class PantsUtil {
 
   @NotNull
   public static Set<String> hydrateTargetAddresses(@NotNull String addresses) {
-    return gson.fromJson(addresses, new TypeToken<Set<String>>() {}.getType());
+    return gson.fromJson(addresses, TYPE_SET_STRING);
   }
 
   @NotNull

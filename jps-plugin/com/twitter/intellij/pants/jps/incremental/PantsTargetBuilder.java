@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -59,10 +58,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     super(Collections.singletonList(PantsBuildTargetType.INSTANCE));
   }
 
-  private PantsOptions myPantsOptions;
-
-  private String pantsWorkDir;
-
   @NotNull
   @Override
   public String getPresentableName() {
@@ -73,8 +68,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   public void buildStarted(CompileContext context) {
     super.buildStarted(context);
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
-
-
     if (PantsJpsUtil.containsPantsModules(jpsProject.getModules())) {
       // disable only for imported projects
       JavaBuilder.IS_ENABLED.set(context, Boolean.FALSE);
@@ -89,10 +82,11 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
     Set<String> targetAddressesToCompile = getTargetsAddressesOfAffectedModules(target, context);
-    myPantsOptions = new PantsOptions(target.getPantsExecutable());
+    PantsOptions pantsOptions = new PantsOptions(target.getPantsExecutable());
     if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
+      // TODO: Query pants for work necessity. https://github.com/pantsbuild/pants/issues/3043
       // Checking last build is expensive, so only do so inside the if statement.
-      boolean isLastBuildSuccessAndSameTargets = checkLastBuild(myPantsOptions, targetAddressesToCompile);
+      boolean isLastBuildSuccessAndSameTargets = checkLastBuild(pantsOptions, targetAddressesToCompile);
       if (isLastBuildSuccessAndSameTargets) {
         context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE));
         return;
@@ -103,7 +97,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (!success) {
       throw new ProjectBuildException(output.getStderr());
     }
-    writeSuccessfulBuild(myPantsOptions, targetAddressesToCompile);
+    writeSuccessfulBuild(pantsOptions, targetAddressesToCompile);
   }
 
   private ProcessOutput runCompile(
@@ -158,7 +152,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final Process process;
     try {
       process = commandLine.createProcess();
-      context.processMessage(new CompilerMessage("pants invocation", BuildMessage.Kind.INFO, commandLine.getCommandLineString()));
+      context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, commandLine.getCommandLineString()));
     }
     catch (ExecutionException e) {
       throw new ProjectBuildException(e);
@@ -297,7 +291,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (lastPluginBuild != null && lastPluginBuild.exists()) {
       try {
         List<String> lastRun = Files.readAllLines(lastPluginBuild.toPath(), Charset.defaultCharset());
-        return lastRun.size() == 1 && lastRun.get(0).equals(Integer.toString(targetAddressesToCompile.hashCode()));
+        Set<String> lastTargetAddressesToCompile = PantsUtil.gson.fromJson(StringUtil.join(lastRun,""), PantsUtil.TYPE_SET_STRING);
+          return lastTargetAddressesToCompile.equals(targetAddressesToCompile);
       }
       catch (IOException e) {
         return false;
@@ -310,8 +305,9 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     File lastPluginBuild = getLastBuildFile(target);
     if (lastPluginBuild != null) {
       try {
-        List<String> lines = Arrays.asList(Integer.toString(targetAddressesToCompile.hashCode()));
-        Files.write(lastPluginBuild.toPath(), lines, Charset.defaultCharset());
+        //List<String> lines = Arrays.asList(Integer.toString(targetAddressesToCompile.hashCode()));
+        //String x = PantsUtil.gson.toJson(targetAddressesToCompile);
+        Files.write(lastPluginBuild.toPath(), PantsUtil.gson.toJson(targetAddressesToCompile).getBytes(Charset.defaultCharset()));
       }
       catch (IOException e) {
       }

@@ -49,7 +49,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertSuccessfulJUnitTest(
       "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest");
 
-    // Make sure the only 2 dummies targets are compiled.
+    // Make sure only the 2 dummies targets are compiled.
     assertContainsSubstring(
       makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), "Compiling 2 targets");
     assertContainsSubstring(
