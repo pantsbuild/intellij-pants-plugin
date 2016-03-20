@@ -5,7 +5,13 @@ package com.twitter.intellij.pants.jps.incremental;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
+import com.intellij.execution.process.CapturingProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
@@ -97,7 +103,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (!success) {
       throw new ProjectBuildException(output.getStderr());
     }
-    writeSuccessfulBuild(pantsOptions, targetAddressesToCompile);
+    asyncWriteSuccessfulBuild(pantsOptions, targetAddressesToCompile);
   }
 
   private ProcessOutput runCompile(
@@ -282,8 +288,8 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   /**
    * Check whether last successful build contains the exact same set of targets
    *
-   * @param pantsOptions
-   * @param targetAddressesToCompile
+   * @param pantsOptions representing `pants options` output
+   * @param targetAddressesToCompile `current set of target addresses to compile`
    * @return true if last build was successful and contains the exact same set of targets, false otherwise.
    */
   private boolean checkLastBuild(@NotNull PantsOptions pantsOptions, Set<String> targetAddressesToCompile) {
@@ -301,17 +307,21 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return false;
   }
 
-  private void writeSuccessfulBuild(@NotNull PantsOptions target, Set<String> targetAddressesToCompile) {
-    File lastPluginBuild = getLastBuildFile(target);
-    if (lastPluginBuild != null) {
-      try {
-        //List<String> lines = Arrays.asList(Integer.toString(targetAddressesToCompile.hashCode()));
-        //String x = PantsUtil.gson.toJson(targetAddressesToCompile);
-        Files.write(lastPluginBuild.toPath(), PantsUtil.gson.toJson(targetAddressesToCompile).getBytes(Charset.defaultCharset()));
+  private void asyncWriteSuccessfulBuild(@NotNull final PantsOptions pantsOptions, final Set<String> targetAddressesToCompile) {
+    PantsUtil.scheduledThreadPool.submit(new Runnable() {
+      @Override
+      public void run() {
+        File lastPluginBuild = getLastBuildFile(pantsOptions);
+        if (lastPluginBuild != null) {
+          try {
+            Files.write(lastPluginBuild.toPath(), PantsUtil.gson.toJson(targetAddressesToCompile).getBytes(Charset.defaultCharset()));
+          }
+          catch (IOException e) {
+            LOG.error("Unable to save current compiled targets to workdir");
+          }
+        }
       }
-      catch (IOException e) {
-      }
-    }
+    });
   }
 
   @Nullable
