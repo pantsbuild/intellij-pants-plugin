@@ -290,6 +290,8 @@
     <projectImportBuilder
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportBuilder"/>
 
+    <stepsBeforeRunProvider implementation="com.twitter.intellij.pants.execution.PantsMakeBeforeRun" id="PantsMakeBeforeRun" order="last"/>
+
     <runConfigurationExtension implementation="com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension"/>
     <configurationProducer implementation="com.twitter.intellij.pants.execution.PantsRuntimeConfigurationProducer"/>
     <configurationType implementation="com.twitter.intellij.pants.execution.PantsExternalTaskConfigurationType"/>
@@ -309,5 +311,7 @@
                 conditionClass="com.twitter.intellij.pants.ui.PantsToolWindowFactoryCondition"/>
     <externalSystemNotificationExtension implementation="com.twitter.intellij.pants.notification.PantsNotificationCustomizer"/>
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.PantsMetadataService"/>
+
+    <junitPatcher implementation="com.twitter.intellij.pants.execution.PantsJUnitPatcher" />
   </extensions>
 </idea-plugin>
