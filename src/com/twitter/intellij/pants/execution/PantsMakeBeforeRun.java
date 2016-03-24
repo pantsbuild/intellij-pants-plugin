@@ -103,10 +103,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
       @Override
       public void run() {
-        myProject.save();
+        ApplicationManager.getApplication().saveAll();
+        ExternalSystemNotificationManager.getInstance(myProject).openMessageView(PantsConstants.SYSTEM_ID, NotificationSource.PROJECT_SYNC);
       }
     }, ModalityState.NON_MODAL);
-
+    ExternalSystemNotificationManager.getInstance(myProject)
+      .clearNotifications(NotificationSource.TASK_EXECUTION, PantsConstants.SYSTEM_ID);
     //final ExternalSystemTaskNotificationListener myListener
     //  = new ExternalSystemTaskNotificationListener();
     //ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -188,10 +190,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
       @Override
       public void run() {
-        ExternalSystemNotificationManager.getInstance(myProject)
-          .clearNotifications(NotificationSource.TASK_EXECUTION, PantsConstants.SYSTEM_ID);
-        ExternalSystemNotificationManager.getInstance(myProject)
-          .openMessageView(PantsConstants.SYSTEM_ID, NotificationSource.TASK_EXECUTION);
         NotificationData notification =
           new NotificationData(PantsConstants.PANTS, commandLine.getCommandLineString(), NotificationCategory.INFO,
                                NotificationSource.TASK_EXECUTION
@@ -295,7 +293,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       @Override
       public void run() {
         String message = success ? "Pants compile succeeded." : "Pants compile failed.";
-        Notification start = new Notification(ExitNotification.class.getName(), "Compile message", message, NotificationType.INFORMATION);
+        NotificationType type = success? NotificationType.INFORMATION : NotificationType.ERROR;
+        Notification start = new Notification(PantsConstants.PANTS, "Compile message", message, type);
         Notifications.Bus.notify(start);
       }
     });
