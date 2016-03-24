@@ -34,10 +34,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   protected boolean myUseIdeaProjectJdk = false;
-
-
-
-  protected boolean myUsePantsMakeBeforeRun= false;
+  protected boolean myUsePantsMakeBeforeRun = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
