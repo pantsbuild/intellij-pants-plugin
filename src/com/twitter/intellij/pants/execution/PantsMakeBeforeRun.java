@@ -13,9 +13,7 @@ import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.DataContext;
@@ -27,21 +25,18 @@ import com.intellij.openapi.externalSystem.service.notification.ExternalSystemNo
 import com.intellij.openapi.externalSystem.service.notification.NotificationCategory;
 import com.intellij.openapi.externalSystem.service.notification.NotificationData;
 import com.intellij.openapi.externalSystem.service.notification.NotificationSource;
-import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.model.PantsOptions;
-import com.twitter.intellij.pants.settings.PantsExecutionSettings;
+import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
-import org.codehaus.groovy.tools.shell.ExitNotification;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.scala.annotator.createFromUsage.Object;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
 import javax.swing.*;
@@ -80,9 +75,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   @Override
   public ExternalSystemBeforeRunTask createTask(RunConfiguration runConfiguration) {
     //if (PantsUtil.isPantsProject(myProject)) {
-      ExternalSystemBeforeRunTask pantsTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
-      //pantsTask.setEnabled(true);
-      return pantsTask;
+    ExternalSystemBeforeRunTask pantsTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
+    //pantsTask.setEnabled(true);
+    return pantsTask;
     //}
     //return null;
   }
@@ -107,20 +102,30 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     ExecutionEnvironment env,
     ExternalSystemBeforeRunTask beforeRunTask
   ) {
+    /**
+     * Clear message window.
+     */
+    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+      @Override
+      public void run() {
+        ExternalSystemNotificationManager.getInstance(myProject)
+          .clearNotifications(NotificationSource.TASK_EXECUTION, PantsConstants.SYSTEM_ID);
+      }
+    }, ModalityState.NON_MODAL);
 
-
-    // Force cached changes to disk
+    /**
+     * Force cached changes to disk.
+     */
     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
       @Override
       public void run() {
         ApplicationManager.getApplication().saveAll();
       }
     }, ModalityState.NON_MODAL);
+
     ExternalSystemNotificationManager.getInstance(myProject).openMessageView(PantsConstants.SYSTEM_ID, NotificationSource.PROJECT_SYNC);
 
-    PantsExecutionSettings settings = ExternalSystemApiUtil.getExecutionSettings(myProject,
-                                                                      myProject.getProjectFilePath(),
-                                                                      PantsConstants.SYSTEM_ID);
+    PantsSettings settings = PantsSettings.getInstance(myProject);
 
     Set<String> targetAddressesToCompile = getTargetAddressesToCompile(configuration);
 
@@ -156,6 +161,16 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
 
+    if (settings.isUseIdeaProjectJdk()) {
+      try {
+        commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
+      }
+      catch (Exception e) {
+        showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR);
+        return false;
+      }
+    }
+
     /**
      * Goals and targets section.
      */
@@ -164,20 +179,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       commandLine.addParameter(targetAddress);
     }
 
-
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-      @Override
-      public void run() {
-        ExternalSystemNotificationManager.getInstance(myProject)
-          .clearNotifications(NotificationSource.TASK_EXECUTION, PantsConstants.SYSTEM_ID);
-
-        NotificationData notification =
-          new NotificationData(PantsConstants.PANTS, commandLine.getCommandLineString(), NotificationCategory.INFO,
-                               NotificationSource.TASK_EXECUTION
-          );
-        ExternalSystemNotificationManager.getInstance(myProject).showNotification(PantsConstants.SYSTEM_ID, notification);
-      }
-    }, ModalityState.NON_MODAL);
+    showPantsMakeTaskMessage(commandLine.getCommandLineString(), NotificationCategory.INFO);
 
     final Process process;
     try {
@@ -192,7 +194,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     processHandler.runProcess();
 
     final boolean success = process.exitValue() == 0;
-
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
@@ -202,7 +203,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         Notifications.Bus.notify(start);
       }
     });
-
 
     return success;
   }
@@ -271,5 +271,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return null;
     }
     return PantsUtil.hydrateTargetAddresses(dehydratedAddresses);
+  }
+
+  private void showPantsMakeTaskMessage(String message, NotificationCategory type) {
+    NotificationData notification =
+      new NotificationData(PantsConstants.PANTS, message, type, NotificationSource.TASK_EXECUTION);
+    ExternalSystemNotificationManager.getInstance(myProject).showNotification(PantsConstants.SYSTEM_ID, notification);
   }
 }
