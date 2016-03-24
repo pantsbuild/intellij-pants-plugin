@@ -52,12 +52,16 @@ import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
   private static final Logger LOG = Logger.getInstance(PantsUtil.class);
 
   private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
+
+  public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
 
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {

@@ -8,6 +8,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsModuleExtension;
+import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsModelSerializerExtension;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
@@ -54,5 +55,9 @@ public class PantsJpsUtil {
         }
       }
     );
+  }
+
+  public static boolean isModuleInPantsProject(@NotNull JpsModule jpsModule) {
+    return jpsModule.getProject().getContainer().getChild(JpsPantsProjectExtension.ROLE) != null;
   }
 }

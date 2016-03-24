@@ -44,12 +44,17 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   protected static final Logger LOG = Logger.getInstance(PantsSystemProjectResolver.class);
 
   private final Map<ExternalSystemTaskId, PantsCompileOptionsExecutor> task2executor =
     new ConcurrentHashMap<ExternalSystemTaskId, PantsCompileOptionsExecutor>();
+
+  private ScheduledFuture<?> viewSwitchHandle;
+  private ScheduledFuture<?> directoryFocusHandle;
 
   @Nullable
   @Override
@@ -174,40 +179,50 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void queueSwitchToProjectFilesTreeView(final Project project, final String projectPath) {
-    ApplicationManager.getApplication().invokeLater(new Runnable() {
+    viewSwitchHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
       @Override
       public void run() {
-        if (ProjectView.getInstance(project).getPaneIds().contains(ProjectFilesViewPane.ID)) {
-          ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
-          queueSelectImportedDirectory(project, projectPath);
+        if (!ProjectView.getInstance(project).getPaneIds().contains(ProjectFilesViewPane.ID)) {
+          return;
         }
-        else {
-          // Reschedule checking whether ProjectFilesTreeView is ready
-          queueSwitchToProjectFilesTreeView(project, projectPath);
-        }
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
+            queueFocusOnImportDirectory(project, projectPath);
+            viewSwitchHandle.cancel(false);
+          }
+        });
       }
-    });
+    }, 0, 1, TimeUnit.SECONDS);
   }
 
-  private void queueSelectImportedDirectory(final Project project, final String projectPath) {
-    ApplicationManager.getApplication().invokeLater(new Runnable() {
+  private void queueFocusOnImportDirectory(final Project project, final String projectPath) {
+    directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
       @Override
       public void run() {
-        if (ModuleManager.getInstance(project).getModules().length > 0) {
-          final VirtualFile target = VirtualFileManager.getInstance().findFileByUrl("file://" + projectPath);
-          SelectInContext selectInContext = new FileSelectInContext(project, target);
-          for (SelectInTarget selectInTarget : ProjectView.getInstance(project).getSelectInTargets()) {
-            if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
-              selectInTarget.selectIn(selectInContext, false);
-              break;
+        if (ModuleManager.getInstance(project).getModules().length == 0 ||
+            !ProjectView.getInstance(project).getCurrentViewId().equals(ProjectFilesViewPane.ID)) {
+          return;
+        }
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+          @Override
+          public void run() {
+            final VirtualFile importDirectory = VirtualFileManager.getInstance().findFileByUrl("file://" + projectPath);
+            // Skip focusing if directory is not found.
+            if (importDirectory != null) {
+              SelectInContext selectInContext = new FileSelectInContext(project, importDirectory);
+              for (SelectInTarget selectInTarget : ProjectView.getInstance(project).getSelectInTargets()) {
+                if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
+                  selectInTarget.selectIn(selectInContext, false);
+                  break;
+                }
+              }
             }
+            directoryFocusHandle.cancel(false);
           }
-        }
-        else {
-          // Reschedule checking whether modules are loaded
-          queueSelectImportedDirectory(project, projectPath);
-        }
+        });
       }
-    });
+    }, 0, 1, TimeUnit.SECONDS);
   }
 }

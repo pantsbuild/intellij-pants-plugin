@@ -213,12 +213,21 @@ test sources, resources, test resources, generated sources, etc).
 * Run tests to verify your installation
 
 ### Release process:
-
-* Bump version number in plugin.xml, push the change, make sure travis ci is green
-* To build from sources a pants.zip distributive simply invoke Build -> Build Artifacts... -> pants -> Rebuild
-* Zip out/artifacts/pants folder into pants.zip
-* Validate the plugin manually in IntelliJ: Preferences -> Plugins -> Install from disk -> pick newly created pants.zip
-* Upload pants.zip to https://plugins.jetbrains.com/plugin/7412
+* Create a new release branch from the latest master. E.g. `git checkout -b 1.3.14`
+* In plugin.xml:
+  * Update `<version>`. E.g. `1.3.14`
+  * Make sure of since/until build number for target IDEA versions.
+  * Add the changes to `<change-notes>`.
+* Submit review with green Travis CI.
+* Once shipit, patch the change in master and push to upstream.
+* Create git tag with release number in master. E.g. `git tag release_1.3.14`
+* Push the tag. E.g. `git push upstream release_1.3.14`. Fill out the release notes on github.
+* Distribution:
+  * Create an account at https://account.jetbrains.com/login. Request access to the plugin repo via https://pantsbuild.github.io/howto_contribute.html#join-the-conversation.
+  * Build -> Build Artifacts -> pants -> rebuild. Artifacts will be in `out/artifacts/pants`.
+  * Zip `out/artifacts/pants` folder into `pants.zip`.
+  * Validate the plugin manually in IntelliJ: Preferences -> Plugins -> Install from disk -> pick newly created `pants.zip`.
+  * Upload `pants.zip` to https://plugins.jetbrains.com/plugin/7412.
 
 ### Debugging the Plugin from local pants development:
 
