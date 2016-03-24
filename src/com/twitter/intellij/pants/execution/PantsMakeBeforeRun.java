@@ -123,7 +123,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       }
     }, ModalityState.NON_MODAL);
 
-    ExternalSystemNotificationManager.getInstance(myProject).openMessageView(PantsConstants.SYSTEM_ID, NotificationSource.PROJECT_SYNC);
+    ExternalSystemNotificationManager.getInstance(myProject).openMessageView(PantsConstants.SYSTEM_ID, NotificationSource.TASK_EXECUTION);
 
     PantsSettings settings = PantsSettings.getInstance(myProject);
 
@@ -136,6 +136,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject.getProjectFile());
     if (pantsExe == null) {
+      showPantsMakeTaskMessage("Pants executable not found", NotificationCategory.ERROR);
       return false;
     }
     String pantsExecutable = pantsExe.getPath();
@@ -179,6 +180,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       commandLine.addParameter(targetAddress);
     }
 
+    /**
+     * Shell off.
+     */
     showPantsMakeTaskMessage(commandLine.getCommandLineString(), NotificationCategory.INFO);
 
     final Process process;
@@ -186,14 +190,17 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       process = commandLine.createProcess();
     }
     catch (ExecutionException e) {
+      showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR);
       return false;
     }
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
     addMessageHandler(processHandler);
     processHandler.runProcess();
-
     final boolean success = process.exitValue() == 0;
+    /**
+     * Show pop up notification about pants compile result.
+     */
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
@@ -203,7 +210,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         Notifications.Bus.notify(start);
       }
     });
-
     return success;
   }
 

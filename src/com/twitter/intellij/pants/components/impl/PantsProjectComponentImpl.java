@@ -81,7 +81,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               @Override
               public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
                 super.runConfigurationAdded(settings);
-                if (!PantsUtil.isPantsProject(myProject)) {
+                if (!PantsUtil.isPantsProject(myProject) || !PantsSettings.getInstance(myProject).isUsePantsMakeBeforeRun()) {
                   return;
                 }
                 RunManager runManager = RunManager.getInstance(myProject);

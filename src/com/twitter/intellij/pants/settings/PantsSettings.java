@@ -34,6 +34,10 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   protected boolean myUseIdeaProjectJdk = false;
+
+
+
+  protected boolean myUsePantsMakeBeforeRun= false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
@@ -46,6 +50,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
   public boolean isUseIdeaProjectJdk() {
     return myUseIdeaProjectJdk;
+  }
+
+  public boolean isUsePantsMakeBeforeRun() {
+    return myUsePantsMakeBeforeRun;
+  }
+
+  public void setUsePantsMakeBeforeRun(boolean usePantsMakeBeforeRun) {
+    myUsePantsMakeBeforeRun = usePantsMakeBeforeRun;
   }
 
   public int getResolverVersion() {
