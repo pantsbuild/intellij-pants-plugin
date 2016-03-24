@@ -9,6 +9,7 @@ import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.AbstractProjectComponent;
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTask;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.project.Project;
@@ -24,10 +25,15 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import static com.twitter.intellij.pants.execution.PantsMakeBeforeRun.needPantsMakeBeforeRun;
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
   protected PantsProjectComponentImpl(Project project) {
@@ -75,6 +81,9 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               @Override
               public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
                 super.runConfigurationAdded(settings);
+                if (!PantsUtil.isPantsProject(myProject)) {
+                  return;
+                }
                 RunManager runManager = RunManager.getInstance(myProject);
                 if (!(runManager instanceof RunManagerImpl)) {
                   return;
@@ -83,31 +92,31 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
                 RunConfiguration runConfiguration = settings.getConfiguration();
 
                 VirtualFile buildRoot = PantsUtil.findBuildRoot(myProject);
-                if (runConfiguration instanceof JUnitConfiguration) {
+
+                /**
+                 * Scala related run/test configuration inherit {@link org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration}
+                 */
+                if (runConfiguration instanceof AbstractTestRunConfiguration) {
                   if (buildRoot != null) {
-                    ((JUnitConfiguration)runConfiguration).setWorkingDirectory(buildRoot.getPath());
+                    ((AbstractTestRunConfiguration)runConfiguration).setWorkingDirectory(buildRoot.getPath());
                   }
                 }
-                else if (runConfiguration instanceof ScalaTestRunConfiguration) {
+                /**
+                 * JUnit, Application, etc configuration inherit {@link com.intellij.execution.CommonProgramRunConfigurationParameters}
+                 */
+                else if (runConfiguration instanceof CommonProgramRunConfigurationParameters) {
                   if (buildRoot != null) {
-                    ((ScalaTestRunConfiguration)runConfiguration).setWorkingDirectory(buildRoot.getPath());
+                    ((CommonProgramRunConfigurationParameters)runConfiguration).setWorkingDirectory(buildRoot.getPath());
                   }
                 }
-                else {
-                  return;
-                }
+
                 /**
                  * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.
                  * Therefore we want to remove it by preserving only {@link PantsMakeBeforeRun}.
                  */
-                List<BeforeRunTask> beforeRunTasks = runManagerImpl.getBeforeRunTasks(settings.getConfiguration());
-                List<BeforeRunTask> newTasks = new ArrayList<BeforeRunTask>();
-                for (BeforeRunTask task : beforeRunTasks) {
-                  if (task.getProviderId().equals(PantsMakeBeforeRun.ID)) {
-                    newTasks.add(task);
-                  }
-                }
-                runManagerImpl.setBeforeRunTasks(runConfiguration, newTasks, false);
+                BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(PantsMakeBeforeRun.ID, PantsConstants.SYSTEM_ID);
+                pantsMakeTask.setEnabled(true);
+                runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask), false);
               }
             }
           );
