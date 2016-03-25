@@ -150,9 +150,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
 
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
-    /**
-     * Global options section.
-     */
+
+    /* Global options section. */
+
     // Find out whether "export-classpath-use-old-naming-style" exists
     final boolean hasExportClassPathNamingStyle = pantsOptions.hasExportClassPathNamingStyle();
 
@@ -172,17 +172,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       }
     }
 
-    /**
-     * Goals and targets section.
-     */
+    /* Goals and targets section. */
     commandLine.addParameters(PantsConstants.PANTS_OPTION_NO_COLORS, "export-classpath", "compile");
     for (String targetAddress : targetAddressesToCompile) {
       commandLine.addParameter(targetAddress);
     }
-
-    /**
-     * Shell off.
-     */
+    /* Shell off. */
     showPantsMakeTaskMessage(commandLine.getCommandLineString(), NotificationCategory.INFO);
 
     final Process process;
@@ -198,9 +193,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     addMessageHandler(processHandler);
     processHandler.runProcess();
     final boolean success = process.exitValue() == 0;
-    /**
-     * Show pop up notification about pants compile result.
-     */
+
+    /* Show pop up notification about pants compile result. */
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
@@ -246,9 +240,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
 
     String dehydratedAddresses = null;
-    /**
-     * JUnit Test
-     */
+    /* JUnit Test */
     if (configuration instanceof JUnitConfiguration) {
       JUnitConfiguration config = (JUnitConfiguration)configuration;
       Module[] targetModules = config.getModules();
@@ -256,16 +248,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
       }
     }
-    /**
-     * Scala Test
-     */
+    /* Scala Test */
     else if (configuration instanceof ScalaTestRunConfiguration) {
       ScalaTestRunConfiguration config = (ScalaTestRunConfiguration)configuration;
       dehydratedAddresses = config.getModule().getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
     }
-    /**
-     * Application Runner
-     */
+    /* Application run */
     else if (configuration instanceof ApplicationConfiguration) {
       ApplicationConfiguration config = (ApplicationConfiguration)configuration;
       Module[] targetModules = config.getModules();
