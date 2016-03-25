@@ -14,6 +14,7 @@ import java.util.Set;
 
 public class PantsConstants {
   public static final String PANTS = "pants";
+  public static final String PLUGIN = "pants_plugin";
   public static final String PLUGIN_ID = "com.intellij.plugins.pants";
 
   @NotNull
@@ -24,6 +25,8 @@ public class PantsConstants {
   public static final String PANTS_INI = "pants.ini";
   public static final String PANTS_PEX = "pants.pex";
   public static final String PANTS_LIBRARY_NAME = PANTS_PEX;
+
+  public static final String COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE = "No changes to compile.";
 
   protected static final String BUILD = "BUILD";
   protected static final String THRIFT_EXT = "thrift";

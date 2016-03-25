@@ -36,4 +36,13 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     final File workingDir = PantsTestUtils.findTestPath("testData").getParentFile();
     return new File(workingDir.getParent(), "pants");
   }
+
+  protected void assertContainsSubstring(List<String> stringList, String expected) {
+    for (String line : stringList) {
+      if (line.contains(expected)) {
+        return;
+      }
+    }
+    fail(String.format("Compile output %s does not contain substring '%s'.", stringList.toString(), expected));
+  }
 }

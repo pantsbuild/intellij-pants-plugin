@@ -130,7 +130,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     // The old way to find classpath by target address
     else {
       final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
-      for (String targetAddress : StringUtil.split(addresses, ",")) {
+      for (String targetAddress : PantsUtil.hydrateTargetAddresses(addresses)) {
         result.addAll(findPublishedClasspathByTargetAddress(module, targetAddress));
       }
     }
@@ -204,7 +204,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
         public boolean process(Module module) {
           final String targets = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
           final String excludes = module.getOptionValue(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY);
-          for (String exclude : StringUtil.split(StringUtil.notNullize(excludes), ",")) {
+          for (String exclude : PantsUtil.hydrateTargetAddresses(excludes)) {
             result.put(exclude, StringUtil.notNullize(targets, module.getName()));
           }
           return true;
