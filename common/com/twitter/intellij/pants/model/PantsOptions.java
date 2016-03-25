@@ -14,13 +14,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class PantsOptions {
 
-  public String rawData;
+  protected String rawData;
 
   public PantsOptions(final String pantsExecutable) {
     rawData = getPantsOptions(pantsExecutable);
   }
 
-  public PantsOptions(){
+  protected PantsOptions(){
 
   }
 
