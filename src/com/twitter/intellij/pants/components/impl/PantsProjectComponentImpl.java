@@ -107,7 +107,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
                 /**
                  * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.
-                 * Therefore we want to remove it by preserving only {@link PantsMakeBeforeRun}.
+                 * Therefore we want to overwrite it with {@link PantsMakeBeforeRun}.
                  */
                 BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(PantsMakeBeforeRun.ID, PantsConstants.SYSTEM_ID);
                 pantsMakeTask.setEnabled(true);
