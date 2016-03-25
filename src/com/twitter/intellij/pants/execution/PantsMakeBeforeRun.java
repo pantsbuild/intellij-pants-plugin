@@ -100,7 +100,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     Set<String> targetAddressesToCompile = getTargetAddressesToCompile(configuration);
     if (targetAddressesToCompile.isEmpty()) {
-      showPantsMakeTaskMessage("No target found under configuration", NotificationCategory.INFO);
+      showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO);
       return true;
     }
 
@@ -111,13 +111,13 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
 
     /* Global options section. */
+    commandLine.addParameter(PantsConstants.PANTS_OPTION_NO_COLORS);
 
     // Add "export-classpath-use-old-naming-style"
     // only if target id is exported and this flag supported.
     if (pantsOptions.hasExportClassPathNamingStyle() && hasTargetIdInExport) {
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
-
     PantsSettings settings = PantsSettings.getInstance(myProject);
     if (settings.isUseIdeaProjectJdk()) {
       try {
@@ -130,7 +130,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
 
     /* Goals and targets section. */
-    commandLine.addParameters(PantsConstants.PANTS_OPTION_NO_COLORS, "export-classpath", "compile");
+    commandLine.addParameters("export-classpath", "compile");
     for (String targetAddress : targetAddressesToCompile) {
       commandLine.addParameter(targetAddress);
     }
@@ -150,9 +150,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
     addMessageHandler(processHandler);
     processHandler.runProcess();
-    final boolean success = process.exitValue() == 0;
 
-    /* Show pop up notification about pants compile result. */
+    final boolean success = process.exitValue() == 0;
+    notifyCompileResult(success);
+    return success;
+  }
+
+  private void notifyCompileResult(final boolean success) {
+  /* Show pop up notification about pants compile result. */
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
@@ -162,7 +167,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         Notifications.Bus.notify(start);
       }
     });
-    return success;
   }
 
   /**
