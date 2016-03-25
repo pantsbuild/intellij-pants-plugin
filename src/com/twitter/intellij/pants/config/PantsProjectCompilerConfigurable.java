@@ -72,6 +72,7 @@ public class PantsProjectCompilerConfigurable extends BaseConfigurable implement
   @Override
   public void reset() {
     myCompilerForm.setUseIdeaProjectJdk(PantsSettings.getInstance(myProject).isUseIdeaProjectJdk());
+    myCompilerForm.setUsePantsMakeBeforeRun(PantsSettings.getInstance(myProject).isUsePantsMakeBeforeRun());
   }
 
   @Override

@@ -4,10 +4,9 @@
 package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.application.ApplicationConfiguration;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.junit.JUnitConfiguration;
+import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
@@ -37,28 +36,28 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
 import javax.swing.*;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 
 public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
-  public Project myProject;
+
+  /**
+   * Memoized properties initialized under {@link PantsMakeBeforeRun#checkPantsProperties()}.
+   */
+  private Project myProject;
   private PantsOptions pantsOptions;
   private Boolean hasTargetIdInExport = null;
+  private String pantsExecutable;
 
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
     myProject = project;
-  }
-
-  public static boolean needPantsMakeBeforeRun(RunConfiguration runConfiguration) {
-    return runConfiguration instanceof JUnitConfiguration ||
-           runConfiguration instanceof ScalaTestRunConfiguration ||
-           runConfiguration instanceof ApplicationConfiguration;
   }
 
   @Override
@@ -74,12 +73,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   @Nullable
   @Override
   public ExternalSystemBeforeRunTask createTask(RunConfiguration runConfiguration) {
-    //if (PantsUtil.isPantsProject(myProject)) {
-    ExternalSystemBeforeRunTask pantsTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
-    //pantsTask.setEnabled(true);
-    return pantsTask;
-    //}
-    //return null;
+    return new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
   }
 
   @Nullable
@@ -102,66 +96,29 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     ExecutionEnvironment env,
     ExternalSystemBeforeRunTask beforeRunTask
   ) {
-    /**
-     * Clear message window.
-     */
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-      @Override
-      public void run() {
-        ExternalSystemNotificationManager.getInstance(myProject)
-          .clearNotifications(NotificationSource.TASK_EXECUTION, PantsConstants.SYSTEM_ID);
-      }
-    }, ModalityState.NON_MODAL);
-
-    /**
-     * Force cached changes to disk.
-     */
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-      @Override
-      public void run() {
-        ApplicationManager.getApplication().saveAll();
-      }
-    }, ModalityState.NON_MODAL);
-
-    ExternalSystemNotificationManager.getInstance(myProject).openMessageView(PantsConstants.SYSTEM_ID, NotificationSource.TASK_EXECUTION);
-
-    PantsSettings settings = PantsSettings.getInstance(myProject);
+    prepareCompile();
 
     Set<String> targetAddressesToCompile = getTargetAddressesToCompile(configuration);
-
-    if (targetAddressesToCompile == null) {
-      // no target address to compile
+    if (targetAddressesToCompile.isEmpty()) {
+      showPantsMakeTaskMessage("No target found under configuration", NotificationCategory.INFO);
       return true;
     }
 
-    VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject.getProjectFile());
-    if (pantsExe == null) {
-      showPantsMakeTaskMessage("Pants executable not found", NotificationCategory.ERROR);
+    if (!checkPantsProperties()) {
       return false;
-    }
-    String pantsExecutable = pantsExe.getPath();
-
-    if (pantsOptions == null) {
-      pantsOptions = new PantsOptions(pantsExecutable);
-    }
-
-    if (hasTargetIdInExport == null) {
-      hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
     }
 
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
 
     /* Global options section. */
 
-    // Find out whether "export-classpath-use-old-naming-style" exists
-    final boolean hasExportClassPathNamingStyle = pantsOptions.hasExportClassPathNamingStyle();
-
-    // "export-classpath-use-old-naming-style" is soon to be removed.
-    // so add this flag only if target id is exported and this flag supported.
-    if (hasExportClassPathNamingStyle && hasTargetIdInExport) {
+    // Add "export-classpath-use-old-naming-style"
+    // only if target id is exported and this flag supported.
+    if (pantsOptions.hasExportClassPathNamingStyle() && hasTargetIdInExport) {
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
 
+    PantsSettings settings = PantsSettings.getInstance(myProject);
     if (settings.isUseIdeaProjectJdk()) {
       try {
         commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
@@ -177,6 +134,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     for (String targetAddress : targetAddressesToCompile) {
       commandLine.addParameter(targetAddress);
     }
+
     /* Shell off. */
     showPantsMakeTaskMessage(commandLine.getCommandLineString(), NotificationCategory.INFO);
 
@@ -207,6 +165,48 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return success;
   }
 
+  /**
+   * Check for attributes related to Pants and update them if not yet initialized.
+   *
+   * @return true if success, otherwise false.
+   * Side effect: instance variables may be modified.
+   */
+  private boolean checkPantsProperties() {
+    if (pantsExecutable == null) {
+      VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject.getProjectFile());
+      if (pantsExe == null) {
+        showPantsMakeTaskMessage("Pants executable not found", NotificationCategory.ERROR);
+        return false;
+      }
+      pantsExecutable = pantsExe.getPath();
+    }
+    showPantsMakeTaskMessage("Checking Pants options...", NotificationCategory.INFO);
+    if (pantsOptions == null) {
+      pantsOptions = new PantsOptions(pantsExecutable);
+    }
+
+    showPantsMakeTaskMessage("Checking Pants export version...", NotificationCategory.INFO);
+    if (hasTargetIdInExport == null) {
+      hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
+    }
+    return true;
+  }
+
+  private void prepareCompile() {
+    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+      @Override
+      public void run() {
+        /* Clear message window. */
+        ExternalSystemNotificationManager.getInstance(myProject)
+          .clearNotifications(NotificationSource.TASK_EXECUTION, PantsConstants.SYSTEM_ID);
+        /* Force cached changes to disk. */
+        ApplicationManager.getApplication().saveAll();
+      }
+    }, ModalityState.NON_MODAL);
+
+    ExternalSystemNotificationManager.getInstance(myProject).openMessageView(PantsConstants.SYSTEM_ID, NotificationSource.TASK_EXECUTION);
+  }
+
   private void addMessageHandler(CapturingProcessHandler processHandler) {
     processHandler.addProcessListener(
       new ProcessAdapter() {
@@ -233,38 +233,25 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     );
   }
 
-  @Nullable
+  @NotNull
   private Set<String> getTargetAddressesToCompile(RunConfiguration configuration) {
-    if (!needPantsMakeBeforeRun(configuration)) {
-      return null;
-    }
-
-    String dehydratedAddresses = null;
-    /* JUnit Test */
-    if (configuration instanceof JUnitConfiguration) {
-      JUnitConfiguration config = (JUnitConfiguration)configuration;
+    Set<String> result = new HashSet<String>();
+    /* JUnit, Application, Scala runs */
+    if (configuration instanceof RunProfileWithCompileBeforeLaunchOption) {
+      RunProfileWithCompileBeforeLaunchOption config = (RunProfileWithCompileBeforeLaunchOption) configuration;
       Module[] targetModules = config.getModules();
+      if (targetModules.length == 0) {
+        return Collections.emptySet();
+      }
       for (Module targetModule : targetModules) {
-        dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+        String dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+        if (dehydratedAddresses == null) {
+          continue;
+        }
+        result.addAll(PantsUtil.hydrateTargetAddresses(dehydratedAddresses));
       }
     }
-    /* Scala Test */
-    else if (configuration instanceof ScalaTestRunConfiguration) {
-      ScalaTestRunConfiguration config = (ScalaTestRunConfiguration)configuration;
-      dehydratedAddresses = config.getModule().getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-    }
-    /* Application run */
-    else if (configuration instanceof ApplicationConfiguration) {
-      ApplicationConfiguration config = (ApplicationConfiguration)configuration;
-      Module[] targetModules = config.getModules();
-      for (Module targetModule : targetModules) {
-        dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-      }
-    }
-    if (dehydratedAddresses == null) {
-      return null;
-    }
-    return PantsUtil.hydrateTargetAddresses(dehydratedAddresses);
+    return result;
   }
 
   private void showPantsMakeTaskMessage(String message, NotificationCategory type) {

@@ -184,7 +184,6 @@
           <option name="ALIGN_MULTILINE_EXTENDS_LIST" value="true" />
           <option name="ALIGN_MULTILINE_PARENTHESIZED_EXPRESSION" value="true" />
           <option name="SPACE_WITHIN_BRACES" value="true" />
-          <option name="SPACE_AFTER_TYPE_CAST" value="false" />
           <option name="CALL_PARAMETERS_WRAP" value="1" />
           <option name="CALL_PARAMETERS_LPAREN_ON_NEXT_LINE" value="true" />
           <option name="CALL_PARAMETERS_RPAREN_ON_NEXT_LINE" value="true" />
@@ -327,4 +326,3 @@
     <option name="USE_PER_PROJECT_SETTINGS" value="true" />
   </component>
 </project>
-

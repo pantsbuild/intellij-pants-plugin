@@ -30,6 +30,6 @@ public class PantsProjectCompilerForm {
   }
 
   public void setUsePantsMakeBeforeRun(boolean usePantsMakeBeforeRun) {
-    myUseIdeaProjectJdkCheckBox.setSelected(usePantsMakeBeforeRun);
+    myUsePantsMakeBeforeRun.setSelected(usePantsMakeBeforeRun);
   }
 }
