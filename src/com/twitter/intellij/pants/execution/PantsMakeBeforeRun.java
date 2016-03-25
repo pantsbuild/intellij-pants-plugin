@@ -96,7 +96,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     ExecutionEnvironment env,
     ExternalSystemBeforeRunTask beforeRunTask
   ) {
-    prepareCompile();
+    prepareIDE();
 
     Set<String> targetAddressesToCompile = getTargetAddressesToCompile(configuration);
     if (targetAddressesToCompile.isEmpty()) {
@@ -192,7 +192,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return true;
   }
 
-  private void prepareCompile() {
+  private void prepareIDE() {
     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
       @Override
       public void run() {
