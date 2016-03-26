@@ -13,11 +13,9 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTarget;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTargetType;
@@ -47,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -177,14 +174,14 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return processHandler.runProcess();
   }
 
-  private Set<String> getTargetsAddressesOfAffectedModules(@NotNull PantsBuildTarget target, @NotNull CompileContext context) {
+  private static Set<String> getTargetsAddressesOfAffectedModules(@NotNull PantsBuildTarget target, @NotNull CompileContext context) {
     final Set<String> affectedTargetAddresses = target.getAffectedModules();
     if (!affectedTargetAddresses.isEmpty()) {
-      return filterGenTargets(affectedTargetAddresses);
+      return PantsUtil.filterGenTargets(affectedTargetAddresses);
     }
     else {
       // Obtain all target addresses if affected target addresses are not found.
-      final Set<String> allNonGenTargets = filterGenTargets(target.getTargetAddresses());
+      final Set<String> allNonGenTargets = PantsUtil.filterGenTargets(target.getTargetAddresses());
       final String recompileMessage = String.format("Collecting all %s targets", allNonGenTargets.size());
       context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
       context.processMessage(new ProgressMessage(recompileMessage));
@@ -226,20 +223,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       }
     );
     return hasDirtyTargets.get();
-  }
-
-  private Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
-    return new HashSet<String>(
-      ContainerUtil.filter(
-        addresses,
-        new Condition<String>() {
-          @Override
-          public boolean value(String targetAddress) {
-            return !PantsJpsUtil.isGenTarget(targetAddress);
-          }
-        }
-      )
-    );
   }
 
   @NotNull

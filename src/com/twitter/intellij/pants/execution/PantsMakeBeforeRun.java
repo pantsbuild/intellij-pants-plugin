@@ -98,7 +98,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   ) {
     prepareIDE();
 
-    Set<String> targetAddressesToCompile = getTargetAddressesToCompile(configuration);
+    Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO);
       return true;
