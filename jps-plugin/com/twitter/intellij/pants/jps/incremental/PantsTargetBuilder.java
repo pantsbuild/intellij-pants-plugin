@@ -103,7 +103,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     if (!success) {
       throw new ProjectBuildException(output.getStderr());
     }
-    asyncWriteSuccessfulBuild(pantsOptions, targetAddressesToCompile);
+    writeSuccessfulBuild(pantsOptions, targetAddressesToCompile);
   }
 
   private ProcessOutput runCompile(
@@ -307,21 +307,16 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     return false;
   }
 
-  private void asyncWriteSuccessfulBuild(@NotNull final PantsOptions pantsOptions, final Set<String> targetAddressesToCompile) {
-    PantsUtil.scheduledThreadPool.submit(new Runnable() {
-      @Override
-      public void run() {
-        File lastPluginBuild = getLastBuildFile(pantsOptions);
-        if (lastPluginBuild != null) {
-          try {
-            Files.write(lastPluginBuild.toPath(), PantsUtil.gson.toJson(targetAddressesToCompile).getBytes(Charset.defaultCharset()));
-          }
-          catch (IOException e) {
-            LOG.error("Unable to save current compiled targets to workdir");
-          }
-        }
+  private void writeSuccessfulBuild(@NotNull final PantsOptions pantsOptions, final Set<String> targetAddressesToCompile) {
+    File lastPluginBuild = getLastBuildFile(pantsOptions);
+    if (lastPluginBuild != null) {
+      try {
+        Files.write(lastPluginBuild.toPath(), PantsUtil.gson.toJson(targetAddressesToCompile).getBytes(Charset.defaultCharset()));
       }
-    });
+      catch (IOException e) {
+        LOG.error("Unable to save current compiled targets to workdir");
+      }
+    }
   }
 
   @Nullable
