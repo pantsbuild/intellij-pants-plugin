@@ -57,7 +57,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
+
 /**
  * If your integration test modifies any source files
  * please set {@link PantsIntegrationTestCase#readOnly} to false.
@@ -419,7 +421,31 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
   }
 
+  public void assertSuccessfulJUnitTest(JUnitConfiguration configuration) {
+    final OSProcessHandler handler = runJUnitWithConfiguration(configuration);
+    assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+  }
+
   public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) {
+    return runJUnitWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
+  }
+
+  @NotNull
+  private OSProcessHandler runJUnitWithConfiguration(JUnitConfiguration configuration) {
+    final PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
+      new PantsJUnitRunnerAndConfigurationSettings(configuration);
+    final ExecutionEnvironmentBuilder environmentBuilder =
+      ExecutionUtil.createEnvironment(DefaultRunExecutor.getRunExecutorInstance(), runnerAndConfigurationSettings);
+    final ExecutionEnvironment environment = environmentBuilder.build();
+
+    ProgramRunnerUtil.executeConfiguration(environment, false, false);
+    final OSProcessHandler handler = (OSProcessHandler) environment.getContentToReuse().getProcessHandler();
+    assertTrue(handler.waitFor());
+    return handler;
+  }
+
+  @NotNull
+  public JUnitConfiguration generateJUnitConfiguration(String moduleName, String className, @Nullable String vmParams) {
     final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
     final JUnitConfiguration runConfiguration = new JUnitConfiguration("Pants: " + className, myProject, factory);
     runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).getCanonicalPath());
@@ -429,16 +455,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       runConfiguration.setVMParameters(vmParams);
     }
     runConfiguration.setMainClass(findClassAndAssert(className));
-    final PantsJUnitRunnerAndConfigurationSettings
-      runnerAndConfigurationSettings = new PantsJUnitRunnerAndConfigurationSettings(runConfiguration);
-    final ExecutionEnvironmentBuilder environmentBuilder =
-      ExecutionUtil.createEnvironment(DefaultRunExecutor.getRunExecutorInstance(), runnerAndConfigurationSettings);
-    final ExecutionEnvironment environment = environmentBuilder.build();
-
-    ProgramRunnerUtil.executeConfiguration(environment, false, false);
-    final OSProcessHandler handler = (OSProcessHandler)environment.getContentToReuse().getProcessHandler();
-    assertTrue(handler.waitFor());
-    return handler;
+    return runConfiguration;
   }
 
   @Override

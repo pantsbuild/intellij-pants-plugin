@@ -24,7 +24,9 @@ import com.intellij.openapi.externalSystem.service.notification.ExternalSystemNo
 import com.intellij.openapi.externalSystem.service.notification.NotificationCategory;
 import com.intellij.openapi.externalSystem.service.notification.NotificationData;
 import com.intellij.openapi.externalSystem.service.notification.NotificationSource;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
@@ -178,6 +180,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   private boolean checkPantsProperties() {
     if (pantsExecutable == null) {
       VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject.getProjectFile());
+      // Sometimes project files are not ready, so find Pants executable via module location.
+      if (pantsExe == null && ModuleManager.getInstance(myProject).getModules().length > 0) {
+        pantsExe = PantsUtil.findPantsExecutable(ModuleManager.getInstance(myProject).getModules()[0].getModuleFilePath());
+      }
       if (pantsExe == null) {
         showPantsMakeTaskMessage("Pants executable not found", NotificationCategory.ERROR);
         return false;
@@ -204,7 +210,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         ExternalSystemNotificationManager.getInstance(myProject)
           .clearNotifications(NotificationSource.TASK_EXECUTION, PantsConstants.SYSTEM_ID);
         /* Force cached changes to disk. */
-        ApplicationManager.getApplication().saveAll();
+        FileDocumentManager.getInstance().saveAllDocuments();
+        myProject.save();
       }
     }, ModalityState.NON_MODAL);
 
