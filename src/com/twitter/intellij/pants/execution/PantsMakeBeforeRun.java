@@ -55,7 +55,7 @@ import java.util.Set;
  * PantsMakeBeforeRun creates a custom Make process `PantsCompile` to replace IntelliJ's default Make process whenever a new configuration
  * is added under a pants project via {@link PantsMakeBeforeRun#replaceDefaultMakeWithPantsMake}, so the time to launch pants is minimized.
  * <p/>
- * Background: By default, IntelliJ's Make process is invoked before any JUnit/Scala/Application run which has unnecessary (for Pants)
+ * Motivation: By default, IntelliJ's Make process is invoked before any JUnit/Scala/Application run which has unnecessary (for Pants)
  * long steps to scan the entire project to assist external builders' incremental compile.
  */
 public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
