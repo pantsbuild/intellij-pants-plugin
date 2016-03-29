@@ -3,10 +3,15 @@
 
 package com.twitter.intellij.pants.execution;
 
+import com.intellij.execution.BeforeRunTask;
+import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
+import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
@@ -38,6 +43,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 
 import javax.swing.*;
 import java.util.Collections;
@@ -45,6 +51,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 
+/**
+ * PantsMakeBeforeRun creates a custom Make process `PantsCompile` to replace IntelliJ's default Make process whenever a new configuration
+ * is added under a pants project via {@link PantsMakeBeforeRun#replaceDefaultMakeWithPantsMake}, so the time to launch pants is minimized.
+ * <p/>
+ * Background: By default, IntelliJ's Make process is invoked before any JUnit/Scala/Application run which has unnecessary (for Pants)
+ * long steps to scan the entire project to assist external builders' incremental compile.
+ */
 public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
@@ -60,6 +73,42 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
     myProject = project;
+  }
+
+  public static void replaceDefaultMakeWithPantsMake(@NotNull Project project, @NotNull RunnerAndConfigurationSettings settings) {
+    RunManager runManager = RunManager.getInstance(project);
+    if (!(runManager instanceof RunManagerImpl)) {
+      return;
+    }
+    RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
+    RunConfiguration runConfiguration = settings.getConfiguration();
+
+    VirtualFile buildRoot = PantsUtil.findBuildRoot(project);
+
+    /**
+     * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
+     */
+    if (runConfiguration instanceof AbstractTestRunConfiguration) {
+      if (buildRoot != null) {
+        ((AbstractTestRunConfiguration) runConfiguration).setWorkingDirectory(buildRoot.getPath());
+      }
+    }
+    /**
+     * JUnit, Application, etc configuration inherit {@link CommonProgramRunConfigurationParameters}
+     */
+    else if (runConfiguration instanceof CommonProgramRunConfigurationParameters) {
+      if (buildRoot != null) {
+        ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.getPath());
+      }
+    }
+
+    /**
+     * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.
+     * Therefore we want to overwrite it with {@link PantsMakeBeforeRun}.
+     */
+    BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
+    pantsMakeTask.setEnabled(true);
+    runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask), false);
   }
 
   @Override
