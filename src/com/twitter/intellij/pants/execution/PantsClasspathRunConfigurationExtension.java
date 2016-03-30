@@ -87,7 +87,8 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Processor<Module>() {
         @Override
         public boolean process(Module module) {
-          publishedClasspath.addAll(findPublishedClasspath(module, hasTargetIdInExport));
+          //publishedClasspath.addAll(findPublishedClasspath(module, hasTargetIdInExport));
+          publishedClasspath.add("/Users/yic/workspace/pants/dist/export-classpath/current.jar");
           return true;
         }
       }

@@ -163,6 +163,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     /* Global options section. */
     commandLine.addParameter(PantsConstants.PANTS_OPTION_NO_COLORS);
+    commandLine.addParameter("--export-classpath-synthetic-only");
 
     // Add "export-classpath-use-old-naming-style"
     // only if target id is exported and this flag supported.
