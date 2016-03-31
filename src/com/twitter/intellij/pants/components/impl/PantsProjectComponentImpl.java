@@ -3,6 +3,9 @@
 
 package com.twitter.intellij.pants.components.impl;
 
+import com.intellij.execution.RunManagerAdapter;
+import com.intellij.execution.RunManagerEx;
+import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
@@ -12,11 +15,13 @@ import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
+import org.jetbrains.annotations.NotNull;
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
   protected PantsProjectComponentImpl(Project project) {
@@ -39,9 +44,11 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            * IDEA's logic: {@link com.intellij.execution.configurations.CommandLineBuilder}
            */
           PropertiesComponent.getInstance(myProject).setValue("dynamic.classpath", true);
+
+          subscribeToRunConfigurationAddition();
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
-            pantsSettings instanceof PantsSettings && ((PantsSettings)pantsSettings).getResolverVersion() != PantsResolver.VERSION;
+            pantsSettings instanceof PantsSettings && ((PantsSettings) pantsSettings).getResolverVersion() != PantsResolver.VERSION;
           if (resolverVersionMismatch && /* additional check */PantsUtil.isPantsProject(myProject)) {
             final int answer = Messages.showYesNoDialog(
               myProject,
@@ -53,6 +60,24 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               PantsUtil.refreshAllProjects(myProject);
             }
           }
+        }
+
+        private void subscribeToRunConfigurationAddition() {
+          RunManagerEx.getInstanceEx(myProject).addRunManagerListener(
+            new RunManagerAdapter() {
+              @Override
+              public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
+                super.runConfigurationAdded(settings);
+                if (!PantsUtil.isPantsProject(myProject)) {
+                  return;
+                }
+                if (!PantsSettings.getInstance(myProject).isUsePantsMakeBeforeRun()) {
+                  return;
+                }
+                PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, settings);
+              }
+            }
+          );
         }
       }
     );

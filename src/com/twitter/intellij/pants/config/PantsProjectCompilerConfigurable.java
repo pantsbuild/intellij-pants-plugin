@@ -58,18 +58,21 @@ public class PantsProjectCompilerConfigurable extends BaseConfigurable implement
 
   @Override
   public boolean isModified() {
-    return PantsSettings.getInstance(myProject).isUseIdeaProjectJdk() != myCompilerForm.isUseIdeaProjectJdk();
+    return PantsSettings.getInstance(myProject).isUseIdeaProjectJdk() != myCompilerForm.isUseIdeaProjectJdk() ||
+           PantsSettings.getInstance(myProject).isUsePantsMakeBeforeRun() != myCompilerForm.isUsePantsMakeBeforeRun();
   }
 
   @Override
   public void apply() throws ConfigurationException {
     final PantsSettings pantsSettings = PantsSettings.getInstance(myProject);
     pantsSettings.setUseIdeaProjectJdk(myCompilerForm.isUseIdeaProjectJdk());
+    pantsSettings.setUsePantsMakeBeforeRun(myCompilerForm.isUsePantsMakeBeforeRun());
   }
 
   @Override
   public void reset() {
     myCompilerForm.setUseIdeaProjectJdk(PantsSettings.getInstance(myProject).isUseIdeaProjectJdk());
+    myCompilerForm.setUsePantsMakeBeforeRun(PantsSettings.getInstance(myProject).isUsePantsMakeBeforeRun());
   }
 
   @Override

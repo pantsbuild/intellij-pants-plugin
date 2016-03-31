@@ -65,6 +65,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -678,6 +679,30 @@ public class PantsUtil {
   @NotNull
   public static String dehydrateTargetAddresses(@NotNull Set<String> addresses) {
     return gson.toJson(addresses);
+  }
+
+  public static boolean isGenTarget(@NotNull String address) {
+    return StringUtil.startsWithIgnoreCase(address, ".pants.d") ||
+           StringUtil.startsWithIgnoreCase(address, PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX) ||
+           // Checking "_synthetic_resources" is a temporary fix. It also needs to match the postfix added from pants in
+           // src.python.pants.backend.python.targets.python_target.PythonTarget#_synthetic_resources_target
+           // TODO: The long term solution is collect non-synthetic targets at pre-compile stage
+           // https://github.com/pantsbuild/intellij-pants-plugin/issues/83
+           address.toLowerCase().endsWith("_synthetic_resources");
+  }
+
+  public static Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
+    return new HashSet<String>(
+      ContainerUtil.filter(
+        addresses,
+        new Condition<String>() {
+          @Override
+          public boolean value(String targetAddress) {
+            return !isGenTarget(targetAddress);
+          }
+        }
+      )
+    );
   }
 
   class SimpleExportResult {
