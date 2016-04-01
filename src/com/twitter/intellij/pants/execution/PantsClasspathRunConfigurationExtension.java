@@ -40,6 +40,9 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   protected static final Logger LOG = Logger.getInstance(PantsClasspathRunConfigurationExtension.class);
   private static final Gson gson = new Gson();
 
+  /**
+   * The goal of this function is to find classpath for JUnit runner.
+   */
   @Override
   public <T extends RunConfigurationBase> void updateJavaParameters(
     T configuration,
@@ -63,6 +66,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       LOG.info(address + " excluded " + excludedPath);
       classpath.remove(excludedPath);
     }
+
     VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
     if (pantsExecutable == null) {
       throw new ExecutionException("Cannot find Pants executable.");
@@ -70,14 +74,23 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
     PantsOptions pantsOptions = new PantsOptions(pantsExecutable.getPath());
     final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    if (buildRoot == null) {
+      throw new ExecutionException("Cannot find project build root.");
+    }
+
+    /* If Pants supports manifest.jar, pick it up and return. */
     if (pantsOptions.supportsManifestJar()) {
-      VirtualFile manifest =
-        VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.getPath() + "/dist/export-classpath/manifest.jar");
+      String manifestUrl = "file://" + buildRoot.getPath() + "/dist/export-classpath/manifest.jar";
+      VirtualFile manifest = VirtualFileManager.getInstance().refreshAndFindFileByUrl(manifestUrl);
       if (manifest != null) {
         classpath.add(manifest.getPath());
         return;
       }
+      else {
+        throw new ExecutionException(String.format("%s not found", manifestUrl));
+      }
     }
+
     ApplicationManager.getApplication().runWriteAction(
       new Runnable() {
         @Override
