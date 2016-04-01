@@ -162,11 +162,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
 
     /* Global options section. */
-    commandLine.addParameter(PantsOptions.PANTS_OPTION_NO_COLORS);
+    commandLine.addParameter(PantsOptions.NO_COLORS);
     if (pantsOptions.supportsManifestJar()){
       commandLine.addParameter("--export-classpath-manifest-jar-only");
     }
-    
     // Add "export-classpath-use-old-naming-style"
     // only if target id is exported and this flag supported.
     if (pantsOptions.hasExportClassPathNamingStyle() && hasTargetIdInExport) {

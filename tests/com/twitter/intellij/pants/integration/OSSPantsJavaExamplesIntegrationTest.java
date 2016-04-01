@@ -198,18 +198,18 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     PantsSettings settings = PantsSettings.getInstance(myProject);
     settings.setUseIdeaProjectJdk(true);
     List<String> output = makeProject();
-    assertTrue(StringUtil.join(output,"\n").contains(PantsOptions.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS));
+    assertTrue(StringUtil.join(output,"\n").contains(PantsOptions.JVM_DISTRIBUTIONS_PATHS));
 
     modify("org.pantsbuild.example.hello.greet.Greeting");
     settings.setUseIdeaProjectJdk(false);
     output = makeProject();
-    assertFalse(StringUtil.join(output,"\n").contains(PantsOptions.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS));
+    assertFalse(StringUtil.join(output,"\n").contains(PantsOptions.JVM_DISTRIBUTIONS_PATHS));
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
     VirtualFile pantsExe = PantsUtil.findPantsExecutable(getProjectPath());
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
-    commandLine.addParameters(PantsOptions.PANTS_OPTION_NO_COLORS);
+    commandLine.addParameters(PantsOptions.NO_COLORS);
     commandLine.addParameters("dependencies");
     commandLine.addParameters(targetName);
     final Process process;
