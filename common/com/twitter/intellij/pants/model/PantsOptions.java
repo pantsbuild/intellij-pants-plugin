@@ -7,12 +7,16 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessOutput;
 import com.twitter.intellij.pants.PantsException;
-import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nullable;
 
 
 public class PantsOptions {
+
+  public static final String PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE = "export-classpath.use_old_naming_style";
+  public static final String PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR = "export-classpath.manifest_jar_only";
+  public static final String PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";
+  public static final String PANTS_OPTION_NO_COLORS = "--no-colors";
 
   protected String rawData;
 
@@ -49,12 +53,16 @@ public class PantsOptions {
   }
 
   public boolean hasExportClassPathNamingStyle() {
-    return rawData.contains(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE);
+    return rawData.contains(PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE);
+  }
+
+  public boolean supportsManifestJar() {
+    return rawData.contains(PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
   }
 
   public static String getPantsOptions(final String pantsExecutable) {
     final GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
-    exportCommandline.addParameters("options", PantsConstants.PANTS_OPTION_NO_COLORS);
+    exportCommandline.addParameters("options", PANTS_OPTION_NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
       return processOutput.getStdout();

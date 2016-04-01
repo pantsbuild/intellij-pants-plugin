@@ -24,6 +24,7 @@ import com.intellij.util.Function;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -62,7 +63,21 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       LOG.info(address + " excluded " + excludedPath);
       classpath.remove(excludedPath);
     }
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
+    if (pantsExecutable == null) {
+      throw new ExecutionException("Cannot find Pants executable.");
+    }
 
+    PantsOptions pantsOptions = new PantsOptions(pantsExecutable.getPath());
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    if (pantsOptions.supportsManifestJar()) {
+      VirtualFile manifest =
+        VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.getPath() + "/dist/export-classpath/manifest.jar");
+      if (manifest != null) {
+        classpath.add(manifest.getPath());
+        return;
+      }
+    }
     ApplicationManager.getApplication().runWriteAction(
       new Runnable() {
         @Override
@@ -77,9 +92,8 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
     );
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
     final boolean hasTargetIdInExport =
-      pantsExecutable != null && PantsUtil.hasTargetIdInExport(pantsExecutable.getPath());
+      PantsUtil.hasTargetIdInExport(pantsExecutable.getPath());
 
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
@@ -87,8 +101,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Processor<Module>() {
         @Override
         public boolean process(Module module) {
-          //publishedClasspath.addAll(findPublishedClasspath(module, hasTargetIdInExport));
-          publishedClasspath.add("/Users/yic/workspace/pants/dist/export-classpath/current.jar");
+          publishedClasspath.addAll(findPublishedClasspath(module, hasTargetIdInExport));
           return true;
         }
       }
@@ -97,7 +110,6 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     // if current version of Pants supports export-classpath
     if (!publishedClasspath.isEmpty()) {
       // remove IJ compiler outputs to reduce amount of arguments.
-      final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
       final List<String> toRemove = ContainerUtil.findAll(
         classpath.getPathList(),
         new Condition<String>() {
@@ -246,7 +258,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     if (!(configuration instanceof ModuleBasedConfiguration)) {
       return null;
     }
-    final RunConfigurationModule runConfigurationModule = ((ModuleBasedConfiguration)configuration).getConfigurationModule();
+    final RunConfigurationModule runConfigurationModule = ((ModuleBasedConfiguration) configuration).getConfigurationModule();
     final Module module = runConfigurationModule.getModule();
     if (module == null || !PantsUtil.isPantsModule(module)) {
       return null;

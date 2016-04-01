@@ -45,6 +45,7 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import org.jetbrains.annotations.Contract;
@@ -664,7 +665,7 @@ public class PantsUtil {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
       distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
-      return PantsConstants.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
+      return PantsOptions.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }
     else {
       throw new Exception("No IDEA Project JDK Found");
@@ -712,7 +713,7 @@ public class PantsUtil {
 
   public static boolean hasTargetIdInExport(final String pantsExecutable) {
     final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
+    commandline.addParameters("export", PantsOptions.PANTS_OPTION_NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       final String stdOut = processOutput.getStdout();
