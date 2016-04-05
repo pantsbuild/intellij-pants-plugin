@@ -21,7 +21,7 @@ fi
 popd
 popd
 
-args="test tests:${TEST_SET:-all} $(append_intellij_jvm_options test-junit) $@"
+args="clean-all test tests:${TEST_SET:-all} $(append_intellij_jvm_options test-junit) $@"
 
 echo "Running ./pants $args"
 ./pants $args
