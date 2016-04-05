@@ -42,6 +42,11 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   /**
    * The goal of this function is to find classpath for JUnit runner.
+   *
+   * There are two ways to do so:
+   * 1. If Pants supports `--export-classpath-manifest-jar-only`, then only the manifest jar will be
+   * picked up which contains all the classpath links for a particular test.
+   * 2. If not, this method will collect classpath based on all known target ids from project modules.
    */
   @Override
   public <T extends RunConfigurationBase> void updateJavaParameters(
