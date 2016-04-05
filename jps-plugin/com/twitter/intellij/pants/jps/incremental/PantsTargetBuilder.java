@@ -14,7 +14,6 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import com.twitter.intellij.pants.jps.incremental.model.PantsBuildTarget;
@@ -27,10 +26,8 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.builders.BuildOutputConsumer;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
-import org.jetbrains.jps.builders.FileProcessor;
 import org.jetbrains.jps.builders.java.JavaBuilderUtil;
 import org.jetbrains.jps.incremental.CompileContext;
 import org.jetbrains.jps.incremental.ProjectBuildException;
@@ -41,20 +38,14 @@ import org.jetbrains.jps.incremental.messages.CompilerMessage;
 import org.jetbrains.jps.incremental.messages.ProgressMessage;
 import org.jetbrains.jps.model.JpsProject;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor, PantsBuildTarget> {
   private static final Logger LOG = Logger.getInstance(PantsTargetBuilder.class);
-  public static final String PLUGIN_LAST_BUILD = "last_successful_plugin_run";
   private ScheduledFuture<?> compileCancellationCheckHandle;
 
   public PantsTargetBuilder() {
@@ -84,23 +75,16 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull BuildOutputConsumer outputConsumer,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
+    // TODO: Query pants for work necessity. https://github.com/pantsbuild/pants/issues/3043
+    // Cannot trust `hasDirtyTargets(holder)` because changes in resources module will not show up.
+
     Set<String> targetAddressesToCompile = getTargetsAddressesOfAffectedModules(target, context);
     PantsOptions pantsOptions = new PantsOptions(target.getPantsExecutable());
-    if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
-      // TODO: Query pants for work necessity. https://github.com/pantsbuild/pants/issues/3043
-      // Checking last build is expensive, so only do so inside this if statement.
-      boolean isLastBuildSuccessAndSameTargets = checkLastBuild(pantsOptions, targetAddressesToCompile);
-      if (isLastBuildSuccessAndSameTargets) {
-        context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE));
-        return;
-      }
-    }
     final ProcessOutput output = runCompile(target, targetAddressesToCompile, context, pantsOptions,  "export-classpath", "compile");
     boolean success = output.checkSuccess(LOG);
     if (!success) {
       throw new ProjectBuildException(output.getStderr());
     }
-    writeSuccessfulBuild(pantsOptions, targetAddressesToCompile);
   }
 
   private ProcessOutput runCompile(
@@ -208,39 +192,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     }, 0, 1, TimeUnit.SECONDS);
   }
 
-  private boolean hasDirtyTargets(DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder) throws IOException {
-    final Ref<Boolean> hasDirtyTargets = Ref.create(false);
-    holder.processDirtyFiles(
-      new FileProcessor<PantsSourceRootDescriptor, PantsBuildTarget>() {
-        @Override
-        public boolean apply(PantsBuildTarget target, File file, PantsSourceRootDescriptor root) throws IOException {
-          if (!PantsJpsUtil.containsGenTarget(root.getTargetAddresses())) {
-            hasDirtyTargets.set(true);
-            return false;
-          }
-          return true;
-        }
-      }
-    );
-    return hasDirtyTargets.get();
-  }
-
-  @NotNull
-  private Set<String> findTargetAddresses(@NotNull DirtyFilesHolder<PantsSourceRootDescriptor, PantsBuildTarget> holder)
-    throws IOException {
-    final Set<String> addresses = new HashSet<String>();
-    holder.processDirtyFiles(
-      new FileProcessor<PantsSourceRootDescriptor, PantsBuildTarget>() {
-        @Override
-        public boolean apply(PantsBuildTarget target, File file, PantsSourceRootDescriptor root) throws IOException {
-          addresses.addAll(root.getTargetAddresses());
-          return true;
-        }
-      }
-    );
-    return addresses;
-  }
-
   @NotNull
   public CompilerMessage getCompilerMessage(ProcessEvent event, Key<?> outputType) {
     final PantsOutputMessage message = PantsOutputMessage.parseCompilerMessage(event.getText());
@@ -266,48 +217,5 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
       message.getFilePath(),
       -1L, -1L, -1L, message.getLineNumber() + 1, -1L
     );
-  }
-
-  /**
-   * Check whether last successful build contains the exact same set of targets
-   *
-   * @param pantsOptions representing `pants options` output
-   * @param targetAddressesToCompile `current set of target addresses to compile`
-   * @return true if last build was successful and contains the exact same set of targets, false otherwise.
-   */
-  private boolean checkLastBuild(@NotNull PantsOptions pantsOptions, Set<String> targetAddressesToCompile) {
-    File lastPluginBuild = getLastBuildFile(pantsOptions);
-    if (lastPluginBuild != null && lastPluginBuild.exists()) {
-      try {
-        List<String> lastRun = Files.readAllLines(lastPluginBuild.toPath(), Charset.defaultCharset());
-        Set<String> lastTargetAddressesToCompile = PantsUtil.gson.fromJson(StringUtil.join(lastRun,""), PantsUtil.TYPE_SET_STRING);
-          return lastTargetAddressesToCompile.equals(targetAddressesToCompile);
-      }
-      catch (IOException e) {
-        return false;
-      }
-    }
-    return false;
-  }
-
-  private void writeSuccessfulBuild(@NotNull final PantsOptions pantsOptions, final Set<String> targetAddressesToCompile) {
-    File lastPluginBuild = getLastBuildFile(pantsOptions);
-    if (lastPluginBuild != null) {
-      try {
-        Files.write(lastPluginBuild.toPath(), PantsUtil.gson.toJson(targetAddressesToCompile).getBytes(Charset.defaultCharset()));
-      }
-      catch (IOException e) {
-        LOG.error("Unable to save current compiled targets to workdir");
-      }
-    }
-  }
-
-  @Nullable
-  private File getLastBuildFile(@NotNull PantsOptions pantsOptions) {
-    String pantsWorkdir = pantsOptions.getWorkdir();
-    if (pantsWorkdir == null) {
-      return null;
-    }
-    return new File(pantsWorkdir, PLUGIN_LAST_BUILD);
   }
 }
