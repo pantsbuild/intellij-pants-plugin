@@ -87,8 +87,7 @@ public class PantsUtil {
 
   public static final Gson gson = new Gson();
 
-  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {
-  }.getType();
+  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
 
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
 
