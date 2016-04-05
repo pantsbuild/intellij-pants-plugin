@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 source scripts/prepare-ci-environment.sh
-rm -rf .cache
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
 if [ ! -d .cache/jdk-libs ]; then
