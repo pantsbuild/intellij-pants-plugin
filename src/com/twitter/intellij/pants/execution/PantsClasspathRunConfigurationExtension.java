@@ -42,7 +42,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   /**
    * The goal of this function is to find classpath for JUnit runner.
-   *
+   * <p/>
    * There are two ways to do so:
    * 1. If Pants supports `--export-classpath-manifest-jar-only`, then only the manifest jar will be
    * picked up which contains all the classpath links for a particular test.
@@ -72,28 +72,10 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       classpath.remove(excludedPath);
     }
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
-    if (pantsExecutable == null) {
-      throw new ExecutionException("Cannot find Pants executable.");
-    }
-
-    PantsOptions pantsOptions = new PantsOptions(pantsExecutable.getPath());
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
-    if (buildRoot == null) {
-      throw new ExecutionException("Cannot find project build root.");
-    }
-
-    /* If Pants supports manifest.jar, pick it up and return. */
-    if (pantsOptions.supportsManifestJar()) {
-      String manifestUrl = "file://" + buildRoot.getPath() + "/dist/export-classpath/manifest.jar";
-      VirtualFile manifest = VirtualFileManager.getInstance().refreshAndFindFileByUrl(manifestUrl);
-      if (manifest != null) {
-        classpath.add(manifest.getPath());
-        return;
-      }
-      else {
-        throw new ExecutionException(String.format("%s not found", manifestUrl));
-      }
+    VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject());
+    if (manifestJar != null) {
+      classpath.add(manifestJar.getPath());
+      return;
     }
 
     ApplicationManager.getApplication().runWriteAction(
@@ -109,6 +91,10 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
         }
       }
     );
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
+    if (pantsExecutable == null) {
+      throw new ExecutionException("Cannot find Pants executable.");
+    }
 
     final boolean hasTargetIdInExport =
       PantsUtil.hasTargetIdInExport(pantsExecutable.getPath());
