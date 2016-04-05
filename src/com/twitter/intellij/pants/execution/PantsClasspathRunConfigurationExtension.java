@@ -91,9 +91,14 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
         }
       }
     );
+
     VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
     if (pantsExecutable == null) {
       throw new ExecutionException("Cannot find Pants executable.");
+    }
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    if (buildRoot == null) {
+      throw new ExecutionException("Cannot find build root.");
     }
 
     final boolean hasTargetIdInExport =

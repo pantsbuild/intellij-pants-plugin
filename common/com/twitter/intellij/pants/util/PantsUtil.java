@@ -87,7 +87,8 @@ public class PantsUtil {
 
   public static final Gson gson = new Gson();
 
-  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
+  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {
+  }.getType();
 
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
 
@@ -95,7 +96,8 @@ public class PantsUtil {
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
     if (vFile == null) {
       return null;
-    } else if (vFile.isDirectory()) {
+    }
+    else if (vFile.isDirectory()) {
       return ContainerUtil.find(
         vFile.getChildren(),
         new Condition<VirtualFile>() {
@@ -161,7 +163,7 @@ public class PantsUtil {
   @Nullable
   public static VirtualFile findProjectManifestJar(Project myProject) {
     Module[] modules = ModuleManager.getInstance(myProject).getModules();
-    if (modules.length ==0) {
+    if (modules.length == 0) {
       return null;
     }
     Module moduleSample = modules[0];
@@ -183,10 +185,8 @@ public class PantsUtil {
       if (manifest != null) {
         return manifest;
       }
-      else {
-        return null;
-      }
     }
+    return null;
   }
 
   @Nullable
@@ -338,7 +338,7 @@ public class PantsUtil {
   }
 
   public static String removeWhitespace(@NotNull String text) {
-    return text.replaceAll("\\s","");
+    return text.replaceAll("\\s", "");
   }
 
   public static boolean isGeneratableFile(@NotNull String path) {
@@ -352,14 +352,16 @@ public class PantsUtil {
            FileUtilRt.extensionEquals(path, PantsConstants.PROTOBUF_EXT);
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public static String getCanonicalModuleName(@NotNull @NonNls String targetName) {
     // Do not use ':' because it is used as a separator in a classpath
     // while running the app. As well as path separators
     return replaceDelimitersInTargetName(targetName, '_');
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public static String getCanonicalTargetId(@NotNull @NonNls String targetName) {
     return replaceDelimitersInTargetName(targetName, '.');
   }
@@ -418,7 +420,7 @@ public class PantsUtil {
   }
 
   public static boolean isResource(PantsSourceType sourceType) {
-    return sourceType == PantsSourceType.RESOURCE  || sourceType == PantsSourceType.TEST_RESOURCE;
+    return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
   }
 
   @Nullable
@@ -444,7 +446,8 @@ public class PantsUtil {
   public static VirtualFile findBUILDFileForModule(@NotNull Module module) {
     final String linkedPantsBUILD = getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
     final String linkedPantsBUILDUrl = linkedPantsBUILD != null ? VfsUtil.pathToUrl(linkedPantsBUILD) : null;
-    final VirtualFile virtualFile = linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
+    final VirtualFile virtualFile =
+      linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
     if (virtualFile == null) {
       return null;
     }
@@ -625,10 +628,10 @@ public class PantsUtil {
     return name.substring(0, index);
   }
 
-  @Contract(pure=true)
+  @Contract(pure = true)
   public static <T> boolean forall(@NotNull Iterable<T> iterable, @NotNull Condition<T> condition) {
     for (T value : iterable) {
-      if(!condition.value(value)) {
+      if (!condition.value(value)) {
         return false;
       }
     }
@@ -636,7 +639,7 @@ public class PantsUtil {
   }
 
   @NotNull
-  public static  <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
+  public static <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
     return ContainerUtil.mapNotNull(
       ExternalSystemApiUtil.findAll(dataNode, key),
       new Function<DataNode<T>, T>() {
@@ -666,7 +669,7 @@ public class PantsUtil {
       String sdkName = sdkReference.getSdkName();
       JpsLibrary lib = project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName);
       if (lib != null && lib.getProperties() instanceof JpsSdkImpl) {
-        return ((JpsSdkImpl)lib.getProperties()).getHomePath();
+        return ((JpsSdkImpl) lib.getProperties()).getHomePath();
       }
     }
     return null;
@@ -739,7 +742,10 @@ public class PantsUtil {
 
   class SimpleExportResult {
     public String version;
-    public String getVersion() {return version; }
+
+    public String getVersion() {
+      return version;
+    }
   }
 
   public static boolean hasTargetIdInExport(final String pantsExecutable) {
