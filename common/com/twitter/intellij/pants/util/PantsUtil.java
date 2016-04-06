@@ -160,35 +160,6 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static VirtualFile findProjectManifestJar(Project myProject) {
-    Module[] modules = ModuleManager.getInstance(myProject).getModules();
-    if (modules.length == 0) {
-      return null;
-    }
-    Module moduleSample = modules[0];
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(moduleSample.getModuleFile());
-    if (pantsExecutable == null) {
-      return null;
-    }
-
-    PantsOptions pantsOptions = new PantsOptions(pantsExecutable.getPath());
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
-    if (buildRoot == null) {
-      return null;
-    }
-
-    /* If Pants supports manifest.jar, pick it up and return. */
-    if (pantsOptions.supportsManifestJar()) {
-      String manifestUrl = "file://" + buildRoot.getPath() + "/dist/export-classpath/manifest.jar";
-      VirtualFile manifest = VirtualFileManager.getInstance().refreshAndFindFileByUrl(manifestUrl);
-      if (manifest != null) {
-        return manifest;
-      }
-    }
-    return null;
-  }
-
-  @Nullable
   public static VirtualFile findFolderWithPex() {
     return findFolderWithPex(VfsUtil.getUserHomeDir());
   }
@@ -273,6 +244,39 @@ public class PantsUtil {
       return null;
     }
     return VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.getPath() + "/dist/export-classpath");
+  }
+
+  @Nullable
+  public static VirtualFile findProjectManifestJar(Project myProject) {
+    Module[] modules = ModuleManager.getInstance(myProject).getModules();
+    if (modules.length == 0) {
+      return null;
+    }
+    Module moduleSample = modules[0];
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(moduleSample.getModuleFile());
+    if (pantsExecutable == null) {
+      return null;
+    }
+
+    PantsOptions pantsOptions = new PantsOptions(pantsExecutable.getPath());
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
+    if (buildRoot == null) {
+      return null;
+    }
+
+    /* If Pants supports manifest.jar, pick it up and return. */
+    if (pantsOptions.supportsManifestJar()) {
+      VirtualFile classpathDir = findDistExportClasspathDirectory(moduleSample);
+      if (classpathDir == null) {
+        return null;
+      }
+      String manifestUrl = classpathDir.getUrl() + "/manifest.jar";
+      VirtualFile manifest = VirtualFileManager.getInstance().refreshAndFindFileByUrl(manifestUrl);
+      if (manifest != null) {
+        return manifest;
+      }
+    }
+    return null;
   }
 
   @Nullable
