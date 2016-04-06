@@ -72,11 +72,19 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       classpath.remove(excludedPath);
     }
 
-    VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject());
-    if (manifestJar != null) {
-      classpath.add(manifestJar.getPath());
-      return;
+    PantsOptions pantsOptions = PantsOptions.getProjectPantsOptions(configuration.getProject());
+    if (pantsOptions == null) {
+      throw new ExecutionException("Pants options not found.");
     }
+    if (pantsOptions.supportsManifestJar()) {
+      VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject());
+      if (manifestJar != null) {
+        classpath.add(manifestJar.getPath());
+        return;
+      }
+      throw new ExecutionException("Pants supports manifest jar, but it is not found.");
+    }
+
 
     ApplicationManager.getApplication().runWriteAction(
       new Runnable() {
