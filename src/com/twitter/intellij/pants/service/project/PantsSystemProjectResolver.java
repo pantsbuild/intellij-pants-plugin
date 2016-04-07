@@ -53,8 +53,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   private final Map<ExternalSystemTaskId, PantsCompileOptionsExecutor> task2executor =
     new ConcurrentHashMap<ExternalSystemTaskId, PantsCompileOptionsExecutor>();
 
-  private ScheduledFuture<?> viewSwitchHandle;
-  private ScheduledFuture<?> directoryFocusHandle;
+  private volatile ScheduledFuture<?> viewSwitchHandle;
+  private volatile ScheduledFuture<?> directoryFocusHandle;
 
   @Nullable
   @Override
@@ -179,6 +179,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void queueSwitchToProjectFilesTreeView(final Project project, final String projectPath) {
+    if (viewSwitchHandle != null && !viewSwitchHandle.isDone()) {
+      return;
+    }
     viewSwitchHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
       @Override
       public void run() {
@@ -198,6 +201,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void queueFocusOnImportDirectory(final Project project, final String projectPath) {
+    if (directoryFocusHandle != null && !directoryFocusHandle.isDone()) {
+      return;
+    }
     directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
       @Override
       public void run() {
