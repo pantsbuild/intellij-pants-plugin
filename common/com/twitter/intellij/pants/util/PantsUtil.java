@@ -15,6 +15,7 @@ import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
@@ -53,6 +54,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.incremental.scala.SettingsManager;
 import org.jetbrains.jps.model.JpsProject;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
@@ -486,9 +488,16 @@ public class PantsUtil {
   }
 
   public static void refreshAllProjects(@NotNull Project project) {
-    if (!PantsUtil.isPantsProject(project)) {
-      return;
-    }
+    //if (!PantsUtil.isPantsProject(project)) {
+    //  return;
+    //}
+    //
+    //ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(spec.getExternalSystemId());
+    //if (manager == null) {
+    //  return;
+    //}
+    //manager.getSettingsProvider().fun()
+
     final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
     ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
                                           ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;

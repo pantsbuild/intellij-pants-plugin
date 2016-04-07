@@ -8,20 +8,27 @@ import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.AbstractProjectComponent;
+import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
+import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.service.project.PantsResolver;
+import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collections;
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
   protected PantsProjectComponentImpl(Project project) {
@@ -34,6 +41,25 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
     if (myProject.isDefault()) {
       return;
     }
+    StartupManager.getInstance(myProject).registerPreStartupActivity(new Runnable() {
+      @Override
+      public void run() {
+        if (!PantsUtil.isPantsProject(myProject)) {
+
+          ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
+          AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
+
+          //PantsSettings settings = new PantsSettings(myProject);
+          ExternalProjectSettings pps = new PantsProjectSettings();
+          pps.setExternalProjectPath("/Users/yic/workspace/pants/examples/");
+          settings.setLinkedProjectsSettings(Collections.singleton(pps));
+          //PantsUtil.refreshAllProjects(myProject);
+
+          //PropertiesComponent.getInstance(myProject).setValue("123", "456");
+          System.out.println(PropertiesComponent.getInstance(myProject).getValue("123"));
+        }
+      }
+    });
     StartupManager.getInstance(myProject).registerPostStartupActivity(
       new Runnable() {
         @Override
@@ -60,6 +86,10 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               PantsUtil.refreshAllProjects(myProject);
             }
           }
+
+
+
+
         }
 
         private void subscribeToRunConfigurationAddition() {
