@@ -29,6 +29,7 @@ import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.List;
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
   protected PantsProjectComponentImpl(Project project) {
@@ -46,17 +47,26 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
       public void run() {
         if (!PantsUtil.isPantsProject(myProject)) {
 
+
+          String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
+          List<String> targetAddresses;
+          if (serializedTargets == null) {
+            return;
+          }
+          targetAddresses = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
+          System.out.println("targets:");
+          System.out.println(targetAddresses);
+
           ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
           AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
 
           //PantsSettings settings = new PantsSettings(myProject);
-          ExternalProjectSettings pps = new PantsProjectSettings();
-          pps.setExternalProjectPath("/Users/yic/workspace/pants/examples/");
-          settings.setLinkedProjectsSettings(Collections.singleton(pps));
-          //PantsUtil.refreshAllProjects(myProject);
-
-          //PropertiesComponent.getInstance(myProject).setValue("123", "456");
-          System.out.println(PropertiesComponent.getInstance(myProject).getValue("123"));
+          for (String targetAddress: targetAddresses) {
+            ExternalProjectSettings pps = new PantsProjectSettings();
+            pps.setExternalProjectPath(targetAddress);
+            settings.setLinkedProjectsSettings(Collections.singleton(pps));
+          }
+          PantsUtil.refreshAllProjects(myProject);
         }
       }
     });
@@ -86,10 +96,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               PantsUtil.refreshAllProjects(myProject);
             }
           }
-
-
-
-
         }
 
         private void subscribeToRunConfigurationAddition() {

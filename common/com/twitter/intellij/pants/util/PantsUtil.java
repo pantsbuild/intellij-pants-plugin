@@ -91,6 +91,8 @@ public class PantsUtil {
 
   public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
 
+  public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {}.getType();
+
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
 
   @Nullable
