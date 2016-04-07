@@ -112,9 +112,12 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   ) throws IOException, ProjectBuildException {
     final String pantsExecutable = target.getPantsExecutable();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
-    commandLine.addParameter(PantsConstants.PANTS_OPTION_NO_COLORS);
+    commandLine.addParameter(PantsOptions.NO_COLORS);
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameters("clean-all");
+    }
+    if (pantsOptions.supportsManifestJar()){
+      commandLine.addParameter("--export-classpath-manifest-jar-only");
     }
     commandLine.addParameters(goals);
     for (String targetAddress : targetAddressesToCompile) {

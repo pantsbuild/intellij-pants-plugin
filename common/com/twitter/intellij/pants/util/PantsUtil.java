@@ -45,6 +45,7 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import org.jetbrains.annotations.Contract;
@@ -94,7 +95,8 @@ public class PantsUtil {
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
     if (vFile == null) {
       return null;
-    } else if (vFile.isDirectory()) {
+    }
+    else if (vFile.isDirectory()) {
       return ContainerUtil.find(
         vFile.getChildren(),
         new Condition<VirtualFile>() {
@@ -245,6 +247,26 @@ public class PantsUtil {
   }
 
   @Nullable
+  public static VirtualFile findProjectManifestJar(@NotNull Project myProject) {
+    Module[] modules = ModuleManager.getInstance(myProject).getModules();
+    if (modules.length == 0) {
+      return null;
+    }
+    Module moduleSample = modules[0];
+
+    VirtualFile classpathDir = findDistExportClasspathDirectory(moduleSample);
+    if (classpathDir == null) {
+      return null;
+    }
+    String manifestUrl = classpathDir.getUrl() + "/manifest.jar";
+    VirtualFile manifest = VirtualFileManager.getInstance().refreshAndFindFileByUrl(manifestUrl);
+    if (manifest != null) {
+      return manifest;
+    }
+    return null;
+  }
+
+  @Nullable
   public static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
     if (file == null) return null;
     if (file.isDirectory()) {
@@ -306,7 +328,7 @@ public class PantsUtil {
   }
 
   public static String removeWhitespace(@NotNull String text) {
-    return text.replaceAll("\\s","");
+    return text.replaceAll("\\s", "");
   }
 
   public static boolean isGeneratableFile(@NotNull String path) {
@@ -320,14 +342,16 @@ public class PantsUtil {
            FileUtilRt.extensionEquals(path, PantsConstants.PROTOBUF_EXT);
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public static String getCanonicalModuleName(@NotNull @NonNls String targetName) {
     // Do not use ':' because it is used as a separator in a classpath
     // while running the app. As well as path separators
     return replaceDelimitersInTargetName(targetName, '_');
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public static String getCanonicalTargetId(@NotNull @NonNls String targetName) {
     return replaceDelimitersInTargetName(targetName, '.');
   }
@@ -386,7 +410,7 @@ public class PantsUtil {
   }
 
   public static boolean isResource(PantsSourceType sourceType) {
-    return sourceType == PantsSourceType.RESOURCE  || sourceType == PantsSourceType.TEST_RESOURCE;
+    return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
   }
 
   @Nullable
@@ -412,7 +436,8 @@ public class PantsUtil {
   public static VirtualFile findBUILDFileForModule(@NotNull Module module) {
     final String linkedPantsBUILD = getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
     final String linkedPantsBUILDUrl = linkedPantsBUILD != null ? VfsUtil.pathToUrl(linkedPantsBUILD) : null;
-    final VirtualFile virtualFile = linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
+    final VirtualFile virtualFile =
+      linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
     if (virtualFile == null) {
       return null;
     }
@@ -593,10 +618,10 @@ public class PantsUtil {
     return name.substring(0, index);
   }
 
-  @Contract(pure=true)
+  @Contract(pure = true)
   public static <T> boolean forall(@NotNull Iterable<T> iterable, @NotNull Condition<T> condition) {
     for (T value : iterable) {
-      if(!condition.value(value)) {
+      if (!condition.value(value)) {
         return false;
       }
     }
@@ -604,7 +629,7 @@ public class PantsUtil {
   }
 
   @NotNull
-  public static  <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
+  public static <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
     return ContainerUtil.mapNotNull(
       ExternalSystemApiUtil.findAll(dataNode, key),
       new Function<DataNode<T>, T>() {
@@ -634,7 +659,7 @@ public class PantsUtil {
       String sdkName = sdkReference.getSdkName();
       JpsLibrary lib = project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName);
       if (lib != null && lib.getProperties() instanceof JpsSdkImpl) {
-        return ((JpsSdkImpl)lib.getProperties()).getHomePath();
+        return ((JpsSdkImpl) lib.getProperties()).getHomePath();
       }
     }
     return null;
@@ -664,7 +689,7 @@ public class PantsUtil {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
       distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
-      return PantsConstants.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
+      return PantsOptions.JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }
     else {
       throw new Exception("No IDEA Project JDK Found");
@@ -707,12 +732,15 @@ public class PantsUtil {
 
   class SimpleExportResult {
     public String version;
-    public String getVersion() {return version; }
+
+    public String getVersion() {
+      return version;
+    }
   }
 
   public static boolean hasTargetIdInExport(final String pantsExecutable) {
     final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
+    commandline.addParameters("export", PantsOptions.NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       final String stdOut = processOutput.getStdout();

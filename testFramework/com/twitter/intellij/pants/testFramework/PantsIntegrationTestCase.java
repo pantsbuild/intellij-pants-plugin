@@ -46,6 +46,7 @@ import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -194,6 +195,18 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Nullable
   private VirtualFile findClassFile(String className, String moduleName) throws Exception {
+    PantsOptions pantsOptions = PantsOptions.getProjectPantsOptions(myProject);
+    if (pantsOptions == null) {
+      return null;
+    }
+    if (pantsOptions.supportsManifestJar()) {
+      VirtualFile manifestJar = PantsUtil.findProjectManifestJar(myProject);
+      if (manifestJar != null) {
+        return manifestJar;
+      }
+      return null;
+    }
+
     ApplicationManager.getApplication().runWriteAction(
       new Runnable() {
         @Override
