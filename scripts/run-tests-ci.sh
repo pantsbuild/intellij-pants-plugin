@@ -18,6 +18,8 @@ else
   echo "Using $PANTS_SHA..."
   git reset --hard $PANTS_SHA
 fi
+git clean -fdx
+./pants goals
 popd
 popd
 
