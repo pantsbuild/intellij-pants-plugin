@@ -42,34 +42,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
     if (myProject.isDefault()) {
       return;
     }
-    StartupManager.getInstance(myProject).registerPreStartupActivity(new Runnable() {
-      @Override
-      public void run() {
-        if (!PantsUtil.isPantsProject(myProject)) {
 
-
-          String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
-          List<String> targetAddresses;
-          if (serializedTargets == null) {
-            return;
-          }
-          targetAddresses = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
-          System.out.println("targets:");
-          System.out.println(targetAddresses);
-
-          ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
-          AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
-
-          //PantsSettings settings = new PantsSettings(myProject);
-          for (String targetAddress: targetAddresses) {
-            ExternalProjectSettings pps = new PantsProjectSettings();
-            pps.setExternalProjectPath(targetAddress);
-            settings.setLinkedProjectsSettings(Collections.singleton(pps));
-          }
-          PantsUtil.refreshAllProjects(myProject);
-        }
-      }
-    });
     StartupManager.getInstance(myProject).registerPostStartupActivity(
       new Runnable() {
         @Override
@@ -80,6 +53,32 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            * IDEA's logic: {@link com.intellij.execution.configurations.CommandLineBuilder}
            */
           PropertiesComponent.getInstance(myProject).setValue("dynamic.classpath", true);
+
+
+          if (!PantsUtil.isPantsProject(myProject)) {
+
+
+            String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
+            List<String> targetAddresses;
+            if (serializedTargets == null) {
+              return;
+            }
+            targetAddresses = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
+            System.out.println("targets:");
+            System.out.println(targetAddresses);
+
+            ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
+            AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
+
+            //PantsSettings settings = new PantsSettings(myProject);
+            for (String targetAddress: targetAddresses) {
+              ExternalProjectSettings pps = new PantsProjectSettings();
+              pps.setExternalProjectPath(targetAddress);
+              settings.setLinkedProjectsSettings(Collections.singleton(pps));
+            }
+            PantsUtil.refreshAllProjects(myProject);
+          }
+
 
           subscribeToRunConfigurationAddition();
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
