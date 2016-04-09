@@ -55,9 +55,11 @@ public class PantsCompileOptionsExecutor {
       final String buildFilePath = externalProjectPath.substring(0, targetNameDelimiterIndex);
       final String targetName = externalProjectPath.substring(targetNameDelimiterIndex + 1);
       options = new MyPantsCompileOptions(buildFilePath, new MyPantsExecutionOptions(Collections.singletonList(targetName)));
-    } else if (executionOptions == null) {
+    }
+    else if (executionOptions == null) {
       throw new ExternalSystemException("No execution options for " + externalProjectPath);
-    } else {
+    }
+    else {
       options = new MyPantsCompileOptions(externalProjectPath, executionOptions);
     }
     final File buildRoot = PantsUtil.findBuildRoot(new File(options.getExternalProjectPath()));
@@ -116,7 +118,8 @@ public class PantsCompileOptionsExecutor {
     return projectDir != null ? projectDir.getAbsolutePath() : projectFile.getAbsolutePath();
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public String getProjectName() {
     if (PantsUtil.isExecutable(myOptions.getExternalProjectPath())) {
       //noinspection ConstantConditions
@@ -126,7 +129,8 @@ public class PantsCompileOptionsExecutor {
     return getProjectRelativePath() + "/:" + targetsSuffix;
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public String getRootModuleName() {
     if (PantsUtil.isExecutable(myOptions.getExternalProjectPath())) {
       //noinspection ConstantConditions
@@ -147,7 +151,8 @@ public class PantsCompileOptionsExecutor {
   ) throws IOException, ExecutionException {
     if (PantsUtil.isExecutable(getProjectPath())) {
       return loadProjectStructureFromScript(getProjectPath(), statusConsumer, processAdapter);
-    } else {
+    }
+    else {
       return loadProjectStructureFromTargets(statusConsumer, processAdapter);
     }
   }
@@ -216,7 +221,7 @@ public class PantsCompileOptionsExecutor {
     }
 
     commandLine.addParameter("export");
-    if (myResolveSourcesAndDocsForJars){
+    if (myResolveSourcesAndDocsForJars) {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");
     }
@@ -224,11 +229,12 @@ public class PantsCompileOptionsExecutor {
     commandLine.addParameters(getAllTargetAddresses());
 
     if (getOptions().isWithDependees()) {
-      statusConsumer.consume( "Looking for dependents...");
+      statusConsumer.consume("Looking for dependents...");
       commandLine.addParameters(loadDependees(getAllTargetAddresses()));
     }
 
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
+    LOG.debug(commandLine.toString());
     return commandLine;
   }
 
@@ -251,7 +257,10 @@ public class PantsCompileOptionsExecutor {
 
   @NotNull
   private List<String> getAllTargetAddresses() {
-    if (!getOptions().getTargetNames().isEmpty()) {
+    if (!getOptions().getTargetSpecs().isEmpty()) {
+      return getOptions().getTargetSpecs();
+    }
+    else if (!getOptions().getTargetNames().isEmpty()) {
       return ContainerUtil.map(
         getOptions().getTargetNames(),
         new Function<String, String>() {
@@ -261,7 +270,8 @@ public class PantsCompileOptionsExecutor {
           }
         }
       );
-    } else {
+    }
+    else {
       return Collections.singletonList(getProjectRelativePath() + File.separator + "::");
     }
   }
@@ -300,6 +310,14 @@ public class PantsCompileOptionsExecutor {
     }
 
     @NotNull
+    public List<String> getTargetSpecs() {
+      if (myExecutionOptions instanceof PantsExecutionSettings) {
+        return ((PantsExecutionSettings) myExecutionOptions).getTargetSpecs();
+      }
+      return Collections.emptyList();
+    }
+
+    @NotNull
     @Override
     public List<String> getTargetNames() {
       return myExecutionOptions.getTargetNames();
@@ -323,6 +341,12 @@ public class PantsCompileOptionsExecutor {
     @Override
     public List<String> getTargetNames() {
       return myTargetNames;
+    }
+
+    @NotNull
+    @Override
+    public List<String> getTargetSpecs() {
+      return Collections.emptyList();
     }
 
     @Override

@@ -6,21 +6,37 @@ package com.twitter.intellij.pants.components.impl;
 import com.intellij.execution.RunManagerAdapter;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.ide.FileSelectInContext;
+import com.intellij.ide.SelectInContext;
+import com.intellij.ide.SelectInTarget;
+import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
+import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManager;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
+import com.intellij.openapi.externalSystem.view.ExternalProjectsViewImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowEx;
+import com.sun.corba.se.impl.presentation.rmi.PresentationManagerImpl;
+import com.sun.corba.se.spi.presentation.rmi.PresentationManager;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
+import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.service.project.PantsResolver;
+import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -56,29 +72,33 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
 
           if (!PantsUtil.isPantsProject(myProject)) {
-
-
+            /**
+             * If a non-Pants project contains the following properties, we know it is launched from CLI
+             * and will convert it to a Pants project.
+             */
             String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
-            List<String> targetAddresses;
-            if (serializedTargets == null) {
+            String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
+            if (serializedTargets == null || projectPath == null) {
               return;
             }
-            targetAddresses = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
-            System.out.println("targets:");
-            System.out.println(targetAddresses);
 
+            List<String> targetAddresses = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
             ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
             AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
 
-            //PantsSettings settings = new PantsSettings(myProject);
-            for (String targetAddress: targetAddresses) {
-              ExternalProjectSettings pps = new PantsProjectSettings();
-              pps.setExternalProjectPath(targetAddress);
-              settings.setLinkedProjectsSettings(Collections.singleton(pps));
-            }
-            PantsUtil.refreshAllProjects(myProject);
-          }
+            PantsProjectSettings pps = new PantsProjectSettings();
+            pps.setTargetSpecs(targetAddresses);
+            pps.setExternalProjectPath(projectPath);
+            settings.setLinkedProjectsSettings(Collections.singleton(pps));
 
+            PantsUtil.refreshAllProjects(myProject);
+            // Open the project view explicitly.
+            ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(new Runnable() {
+              @Override
+              public void run() {
+              }
+            });
+          }
 
           subscribeToRunConfigurationAddition();
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);

@@ -490,16 +490,6 @@ public class PantsUtil {
   }
 
   public static void refreshAllProjects(@NotNull Project project) {
-    //if (!PantsUtil.isPantsProject(project)) {
-    //  return;
-    //}
-    //
-    //ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(spec.getExternalSystemId());
-    //if (manager == null) {
-    //  return;
-    //}
-    //manager.getSettingsProvider().fun()
-
     final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
     ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
                                           ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;

@@ -13,20 +13,26 @@ import java.util.List;
 public class PantsExecutionSettings extends ExternalSystemExecutionSettings implements PantsExecutionOptions {
   private final boolean myWithDependees;
   private final boolean myLibsWithSourcesAndDocs;
-
-
   private final boolean myUseIdeaProjectJdk;
   private List<String> myTargetNames;
 
+  private List<String> myTargetSpecs;
+
   public PantsExecutionSettings() {
-    this(Collections.<String>emptyList(), false, true, false);
+    this(Collections.<String>emptyList(), Collections.<String>emptyList(), false, true, false);
   }
 
-  public PantsExecutionSettings(List<String> targetNames, boolean withDependees, boolean libsWithSourcesAndDocs, boolean useIdeaProjectJdk) {
+  public PantsExecutionSettings(List<String> targetSpecs, List<String> targetNames, boolean withDependees, boolean libsWithSourcesAndDocs, boolean useIdeaProjectJdk) {
+    myTargetSpecs = targetSpecs;
     myTargetNames = targetNames;
     myWithDependees = withDependees;
     myLibsWithSourcesAndDocs = libsWithSourcesAndDocs;
     myUseIdeaProjectJdk = useIdeaProjectJdk;
+  }
+
+  @NotNull
+  public List<String> getTargetSpecs() {
+    return myTargetSpecs;
   }
 
   @NotNull

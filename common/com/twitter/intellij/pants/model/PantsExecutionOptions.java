@@ -11,5 +11,8 @@ public interface PantsExecutionOptions {
   @NotNull
   List<String> getTargetNames();
 
+  @NotNull
+  List<String> getTargetSpecs();
+
   boolean isWithDependees();
 }

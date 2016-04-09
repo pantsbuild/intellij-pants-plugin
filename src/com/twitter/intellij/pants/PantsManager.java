@@ -129,20 +129,24 @@ public class PantsManager implements
 
         if (absoluteTargetAddress != null) {
           return new PantsExecutionSettings(
-            Collections.singletonList(absoluteTargetAddress.getTargetName()), false, true, isUseIdeaProjectJdk
+            Collections.<String>emptyList(), Collections.singletonList(absoluteTargetAddress.getTargetName()), false, true, isUseIdeaProjectJdk
           );
         }
 
         final AbstractExternalSystemSettings systemSettings = ExternalSystemApiUtil.getSettings(ideProject, PantsConstants.SYSTEM_ID);
         final ExternalProjectSettings projectSettings = systemSettings.getLinkedProjectSettings(projectPath);
 
-        final List<String> targets = projectSettings instanceof PantsProjectSettings ?
-                                     ((PantsProjectSettings)projectSettings).getTargetNames() : Collections.<String>emptyList();
-        final boolean withDependees = projectSettings instanceof PantsProjectSettings &&
-                                      ((PantsProjectSettings)projectSettings).isWithDependees();
-        final boolean libsWithSources = projectSettings instanceof PantsProjectSettings &&
-                                        ((PantsProjectSettings)projectSettings).isLibsWithSources();
-        return new PantsExecutionSettings(targets, withDependees, libsWithSources, isUseIdeaProjectJdk);
+        if (projectSettings instanceof PantsProjectSettings) {
+          PantsProjectSettings pantsProjectSettings = (PantsProjectSettings) projectSettings;
+          final List<String> targets = pantsProjectSettings.getTargetNames();
+          final boolean withDependees = pantsProjectSettings.isWithDependees();
+          final boolean libsWithSources = pantsProjectSettings.isLibsWithSources();
+          final List<String> targetSpecs = pantsProjectSettings.getTargetSpecs();
+          return new PantsExecutionSettings(targetSpecs, targets, withDependees, libsWithSources, isUseIdeaProjectJdk);
+        }
+        else {
+          return new PantsExecutionSettings();
+        }
       }
     };
   }
