@@ -52,7 +52,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            */
           PropertiesComponent.getInstance(myProject).setValue("dynamic.classpath", true);
 
-
           if (!PantsUtil.isPantsProject(myProject)) {
             /**
              * If a non-Pants project contains the following properties, we know it is launched from CLI

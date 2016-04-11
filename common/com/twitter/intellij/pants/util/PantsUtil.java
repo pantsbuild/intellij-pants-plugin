@@ -12,6 +12,7 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
@@ -396,6 +397,10 @@ public class PantsUtil {
     );
   }
 
+  public static boolean isPotentialPantsProject(@NotNull Project project) {
+    return PropertiesComponent.getInstance(project).getValue("targets") != null;
+  }
+
   public static boolean isPantsModule(@NotNull Module module) {
     final String systemId = module.getOptionValue(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY);
     return StringUtil.equals(systemId, PantsConstants.SYSTEM_ID.getId());
@@ -490,6 +495,10 @@ public class PantsUtil {
   }
 
   public static void refreshAllProjects(@NotNull Project project) {
+    if (!PantsUtil.isPantsProject(project) && !PantsUtil.isPotentialPantsProject(project)) {
+      return;
+    }
+
     final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
     ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
                                           ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
