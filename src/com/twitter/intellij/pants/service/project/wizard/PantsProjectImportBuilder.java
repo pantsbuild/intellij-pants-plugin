@@ -10,6 +10,8 @@ import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataMan
 import com.intellij.openapi.externalSystem.service.project.wizard.AbstractExternalProjectImportBuilder;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.JavaSdk;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.service.settings.ImportFromPantsControl;
@@ -19,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.List;
 
 public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuilder<ImportFromPantsControl> {
 
@@ -63,8 +66,20 @@ public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuil
 
     final DataNode<Sdk> sdkNode = ExternalSystemApiUtil.find(node, PantsConstants.SDK_KEY);
     if (sdkNode != null) {
-      Sdk sdk = sdkNode.getData();
-      context.setProjectJdk(sdk);
+      Sdk pantsSdk = sdkNode.getData();
+      context.setProjectJdk(addIfNotExists(pantsSdk));
     }
+  }
+
+  private Sdk addIfNotExists(Sdk pantsSdk) {
+    final JavaSdk javaSdk = JavaSdk.getInstance();
+    List<Sdk> sdks = ProjectJdkTable.getInstance().getSdksOfType(javaSdk);
+    for (Sdk sdk : sdks) {
+      if (javaSdk.getVersion(sdk) == javaSdk.getVersion(pantsSdk)) {
+        return sdk;
+      }
+    }
+    ProjectJdkTable.getInstance().addJdk(pantsSdk);
+    return pantsSdk;
   }
 }
