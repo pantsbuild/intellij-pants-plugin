@@ -26,6 +26,7 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -730,11 +731,32 @@ public class PantsUtil {
     );
   }
 
-  class SimpleExportResult {
-    public String version;
+
+  static class SimpleExportResult {
+    private String version;
+
+    private Map<String, Map<String, String>> jvmDistributionsByPlatform;
+
+    private DefaultPlatform jvmPlatforms;
+
+    public Map<String, Map<String, String>> getJvmDistributionsByPlatform() {
+      return jvmDistributionsByPlatform;
+    }
+
+    public DefaultPlatform getJvmPlatforms() {
+      return jvmPlatforms;
+    }
 
     public String getVersion() {
       return version;
+    }
+  }
+
+  static class DefaultPlatform {
+    private String defaultPlatform;
+
+    public String getDefaultPlatform() {
+      return defaultPlatform;
     }
   }
 
@@ -752,6 +774,30 @@ public class PantsUtil {
     }
   }
 
+  @Nullable
+  public static Sdk getDefaultJavaSdk(final String pantsExecutable) {
+    final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
+    commandline.addParameters("export", PantsOptions.NO_COLORS);
+    try {
+      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
+      final String stdOut = processOutput.getStdout();
+      SimpleExportResult exportResult = gson.fromJson(stdOut, SimpleExportResult.class);
+      if (versionCompare(exportResult.getVersion(), "1.0.7") >= 0) {
+        String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
+        boolean strict = Boolean.parseBoolean(PantsOptions.getPantsOptions(pantsExecutable)
+                                                .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
+        String jdkName = String.format("JDK from pants %s", defaultPlatform);
+        String jdkHome = exportResult.getJvmDistributionsByPlatform().get(defaultPlatform)
+          .get(strict ? "strict" : "non_strict");
+        return JavaSdk.getInstance().createJdk(jdkName, jdkHome);
+      }
+    }
+    catch (ExecutionException e) {
+      throw new PantsException("Failed:" + commandline.getCommandLineString());
+    }
+
+    return null;
+  }
   /**
    * Copied from: http://stackoverflow.com/questions/6701948/efficient-way-to-compare-version-strings-in-java
    * Compares two version strings.

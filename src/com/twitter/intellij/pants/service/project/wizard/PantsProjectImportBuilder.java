@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.service.project.wizard;
 
 import com.intellij.ide.util.projectWizard.WizardContext;
-import com.intellij.openapi.components.StorageScheme;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataManager;
