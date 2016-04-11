@@ -11,30 +11,34 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class PantsOptions {
-
-  public static final String EXPORT_CLASSPATH_NAMING_STYLE = "export-classpath.use_old_naming_style";
-  public static final String EXPORT_CLASSPATH_MANIFEST_JAR = "export-classpath.manifest_jar_only";
-  public static final String JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";
   public static final String NO_COLORS = "--no-colors";
 
-  protected String rawData;
+  private Map<String, String> options;
 
-  public PantsOptions(@NotNull final String pantsExecutable) {
-    rawData = getPantsOptions(pantsExecutable);
+  public PantsOptions(final String rawOutput) {
+    options = parseOptions(rawOutput);
   }
 
-  protected PantsOptions(){
-
+  public boolean has(String optionName) {
+    return options.containsKey(optionName);
   }
 
   @Nullable
-  public static PantsOptions getProjectPantsOptions(final Project myProject) {
+  public String get(String optionName) {
+    return options.get(optionName);
+  }
+
+  @Nullable
+  public static PantsOptions getPantsOptions(final Project myProject) {
     Module[] modules = ModuleManager.getInstance(myProject).getModules();
     if (modules.length == 0) {
       return null;
@@ -47,47 +51,34 @@ public class PantsOptions {
     return new PantsOptions(pantsExecutable.getPath());
   }
 
-  @Nullable
-  public String getWorkdir() {
-    String lines[] = rawData.split("\\r?\\n");
-    String workdir = null;
-    for (String line : lines) {
-      /**
-       * line looks like:
-       * pants_workdir = /Users/abc/workspace/intellij-pants-plugin/.pants.d (from HARDCODED)
-       */
-      String start = "pants_workdir = ";
-      String ending = " (from";
-      if (line.contains(start)) {
-        int beginIdx = line.indexOf(start) + start.length();
-        int endIdx = line.indexOf(ending);
-        if (beginIdx >= endIdx) {
-          return null;
-        }
-        workdir = line.substring(beginIdx, endIdx);
-        break;
-      }
-    }
-    return workdir;
-  }
-
-  public boolean hasExportClassPathNamingStyle() {
-    return rawData.contains(EXPORT_CLASSPATH_NAMING_STYLE);
-  }
-
-  public boolean supportsManifestJar() {
-    return rawData.contains(EXPORT_CLASSPATH_MANIFEST_JAR);
-  }
-
-  public static String getPantsOptions(final String pantsExecutable) {
+  public static PantsOptions getPantsOptions(final String pantsExecutable) {
     final GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
-    exportCommandline.addParameters("options", NO_COLORS);
+    exportCommandline.addParameters("options", PantsConstants.PANTS_OPTION_NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
-      return processOutput.getStdout();
+      return new PantsOptions(processOutput.getStdout());
     }
     catch (ExecutionException e) {
       throw new PantsException("Failed:" + exportCommandline.getCommandLineString());
     }
+  }
+
+  // TODO https://github.com/pantsbuild/pants/issues/3161 to output options in json,
+  // parsing will be simplfied.
+  private static Map<String, String> parseOptions(final String rawData) {
+    String lines[] = rawData.split("\\r?\\n");
+
+    Map<String, String> options = new HashMap<String, String>();
+    for (String line : lines) {
+      String fields[] = line.split(" = ", 2);
+      if (fields.length != 2) {
+        continue;
+      }
+
+      String optionValue = fields[1].replaceAll("\\s*\\(from (NONE|HARDCODED|CONFIG|ENVIRONMENT|FLAG).*", "");
+      options.put(fields[0], optionValue);
+    }
+
+    return options;
   }
 }

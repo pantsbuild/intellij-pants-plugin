@@ -689,7 +689,7 @@ public class PantsUtil {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
       distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
-      return PantsOptions.JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
+      return PantsConstants.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }
     else {
       throw new Exception("No IDEA Project JDK Found");
