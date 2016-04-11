@@ -110,6 +110,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
 
     Sdk sdk = getPantsDefaultJavaSdk(executor.getWorkingDir());
+    if (sdk != null) {
+      projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
+    }
 
     if (!isPreviewMode) {
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);

@@ -3,10 +3,11 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import junit.framework.TestCase;
 
-import com.twitter.intellij.pants.util.PantsUtil;
 import com.twitter.intellij.pants.util.PantsUtil.SimpleExportResult;
 
 public class PantsUtilTest extends TestCase {
@@ -50,10 +51,13 @@ public class PantsUtilTest extends TestCase {
       "        },\n" +
       "        \"default_platform\": \"java6\"\n" +
       "    }\n" +
-      "}\n" +
-      "\n";
+      "}";
+    Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
-    SimpleExportResult exportResult = new Gson().fromJson(exportOutput, SimpleExportResult.class);
-    System.out.println(exportResult);
+    SimpleExportResult exportResult = gson.fromJson(exportOutput, SimpleExportResult.class);
+    assertEquals("java6", exportResult.getJvmPlatforms().getDefaultPlatform());
+    assertEquals("/Library/Java/JavaVirtualMachines/jdk1.7.0_72.jdk/Contents/Home",
+                 exportResult.getJvmDistributionsByPlatform()
+                   .get(exportResult.getJvmPlatforms().getDefaultPlatform()).get("non_strict"));
   }
 }

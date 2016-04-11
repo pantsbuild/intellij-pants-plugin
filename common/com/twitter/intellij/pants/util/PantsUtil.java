@@ -3,7 +3,9 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -766,7 +768,8 @@ public class PantsUtil {
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       final String stdOut = processOutput.getStdout();
-      SimpleExportResult simpleExportResult = new Gson().fromJson(stdOut, SimpleExportResult.class);
+      Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+      SimpleExportResult simpleExportResult = gson.fromJson(stdOut, SimpleExportResult.class);
       return versionCompare(simpleExportResult.getVersion(), "1.0.5") >= 0;
     }
     catch (ExecutionException e) {
@@ -781,6 +784,7 @@ public class PantsUtil {
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       final String stdOut = processOutput.getStdout();
+      Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
       SimpleExportResult exportResult = gson.fromJson(stdOut, SimpleExportResult.class);
       if (versionCompare(exportResult.getVersion(), "1.0.7") >= 0) {
         String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();

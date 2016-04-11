@@ -8,7 +8,9 @@ import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataManager;
 import com.intellij.openapi.externalSystem.service.project.wizard.AbstractExternalProjectImportBuilder;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.service.settings.ImportFromPantsControl;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -54,6 +56,15 @@ public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuil
 
   @Override
   protected void applyExtraSettings(@NotNull WizardContext context) {
+    final DataNode<ProjectData> node = getExternalProjectNode();
+    if (node == null) {
+      return;
+    }
 
+    final DataNode<Sdk> sdkNode = ExternalSystemApiUtil.find(node, PantsConstants.SDK_KEY);
+    if (sdkNode != null) {
+      Sdk sdk = sdkNode.getData();
+      context.setProjectJdk(sdk);
+    }
   }
 }
