@@ -7,6 +7,7 @@ import com.intellij.execution.RunManagerAdapter;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
@@ -52,6 +53,25 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            */
           PropertiesComponent.getInstance(myProject).setValue("dynamic.classpath", true);
 
+          convertPotentialPantsProject();
+          subscribeToRunConfigurationAddition();
+          final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
+          final boolean resolverVersionMismatch =
+            pantsSettings instanceof PantsSettings && ((PantsSettings) pantsSettings).getResolverVersion() != PantsResolver.VERSION;
+          if (resolverVersionMismatch && /* additional check */PantsUtil.isPantsProject(myProject)) {
+            final int answer = Messages.showYesNoDialog(
+              myProject,
+              PantsBundle.message("pants.project.generated.with.old.version", myProject.getName()),
+              PantsBundle.message("pants.name"),
+              PantsIcons.Icon
+            );
+            if (answer == Messages.YES) {
+              PantsUtil.refreshAllProjects(myProject);
+            }
+          }
+        }
+
+        private void convertPotentialPantsProject() {
           if (!PantsUtil.isPantsProject(myProject)) {
             /**
              * If a non-Pants project contains the following properties, we know it is launched from CLI
@@ -81,21 +101,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             });
           }
 
-          subscribeToRunConfigurationAddition();
-          final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
-          final boolean resolverVersionMismatch =
-            pantsSettings instanceof PantsSettings && ((PantsSettings) pantsSettings).getResolverVersion() != PantsResolver.VERSION;
-          if (resolverVersionMismatch && /* additional check */PantsUtil.isPantsProject(myProject)) {
-            final int answer = Messages.showYesNoDialog(
-              myProject,
-              PantsBundle.message("pants.project.generated.with.old.version", myProject.getName()),
-              PantsBundle.message("pants.name"),
-              PantsIcons.Icon
-            );
-            if (answer == Messages.YES) {
-              PantsUtil.refreshAllProjects(myProject);
-            }
-          }
         }
 
         private void subscribeToRunConfigurationAddition() {
