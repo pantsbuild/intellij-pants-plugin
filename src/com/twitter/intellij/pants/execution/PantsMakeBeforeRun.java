@@ -263,11 +263,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       @Override
       public void run() {
         ExternalSystemUtil.ensureToolWindowInitialized(myProject,PantsConstants.SYSTEM_ID);
-
         /* Clear message window. */
         ExternalSystemNotificationManager.getInstance(myProject)
           .clearNotifications(NotificationSource.TASK_EXECUTION, PantsConstants.SYSTEM_ID);
-
         /* Force cached changes to disk. */
         FileDocumentManager.getInstance().saveAllDocuments();
         myProject.save();
