@@ -20,8 +20,6 @@ import java.util.Map;
 
 
 public class PantsOptions {
-  public static final String NO_COLORS = "--no-colors";
-
   private Map<String, String> options;
 
   public PantsOptions(final String rawOutput) {
