@@ -233,7 +233,7 @@ test sources, resources, test resources, generated sources, etc).
 
 * To debug tests execute:
 
-        ./scripts/run-tests-ci.sh --test-junit-debug
+        ./scripts/run-tests-ci.sh --jvm-test-debug
         
   It will listen for a debugger on 5005 port by default. 
   
