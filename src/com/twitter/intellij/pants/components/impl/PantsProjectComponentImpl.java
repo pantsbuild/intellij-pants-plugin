@@ -94,13 +94,14 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
             PantsUtil.refreshAllProjects(myProject);
             // Open the project view explicitly.
-            ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(new Runnable() {
-              @Override
-              public void run() {
-              }
-            });
+            if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
+              ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(new Runnable() {
+                @Override
+                public void run() {
+                }
+              });
+            }
           }
-
         }
 
         private void subscribeToRunConfigurationAddition() {
@@ -109,7 +110,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               @Override
               public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
                 super.runConfigurationAdded(settings);
-                if (!PantsUtil.isPantsProject(myProject)) {
+                if (!PantsUtil.isPantsProject(myProject) && !PantsUtil.isPotentialPantsProject(myProject)) {
                   return;
                 }
                 if (!PantsSettings.getInstance(myProject).isUsePantsMakeBeforeRun()) {
