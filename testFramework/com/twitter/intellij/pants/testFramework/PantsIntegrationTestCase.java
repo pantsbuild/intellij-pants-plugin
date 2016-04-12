@@ -195,11 +195,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Nullable
   private VirtualFile findClassFile(String className, String moduleName) throws Exception {
-    PantsOptions pantsOptions = PantsOptions.getProjectPantsOptions(myProject);
+    PantsOptions pantsOptions = PantsOptions.getPantsOptions(myProject);
     if (pantsOptions == null) {
       return null;
     }
-    if (pantsOptions.supportsManifestJar()) {
+    if (pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
       VirtualFile manifestJar = PantsUtil.findProjectManifestJar(myProject);
       if (manifestJar != null) {
         return manifestJar;
