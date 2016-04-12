@@ -780,7 +780,7 @@ public class PantsUtil {
   @Nullable
   public static Sdk getDefaultJavaSdk(final String pantsExecutable) {
     final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsOptions.NO_COLORS);
+    commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       final String stdOut = processOutput.getStdout();
