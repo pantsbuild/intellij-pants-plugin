@@ -17,7 +17,7 @@ public class PantsUtilTest extends TestCase {
       "    \"libraries\": {},\n" +
       "    \"version\": \"1.0.7\",\n" +
       "    \"targets\": {},\n" +
-      "    \"jvm_distributions_by_platform\": {\n" +
+      "    \"preferred_jvm_distributions\": {\n" +
       "        \"java7\": {\n" +
       "            \"strict\": \"/Library/Java/JavaVirtualMachines/jdk1.7.0_72.jdk/Contents/Home\",\n" +
       "            \"non_strict\": \"/Library/Java/JavaVirtualMachines/jdk1.7.0_72.jdk/Contents/Home\"\n" +
@@ -57,7 +57,7 @@ public class PantsUtilTest extends TestCase {
     SimpleExportResult exportResult = gson.fromJson(exportOutput, SimpleExportResult.class);
     assertEquals("java6", exportResult.getJvmPlatforms().getDefaultPlatform());
     assertEquals("/Library/Java/JavaVirtualMachines/jdk1.7.0_72.jdk/Contents/Home",
-                 exportResult.getJvmDistributionsByPlatform()
+                 exportResult.getPreferredJvmDistributions()
                    .get(exportResult.getJvmPlatforms().getDefaultPlatform()).get("non_strict"));
   }
 }

@@ -737,12 +737,12 @@ public class PantsUtil {
   static class SimpleExportResult {
     private String version;
 
-    private Map<String, Map<String, String>> jvmDistributionsByPlatform;
+    private Map<String, Map<String, String>> preferredJvmDistributions;
 
     private DefaultPlatform jvmPlatforms;
 
-    public Map<String, Map<String, String>> getJvmDistributionsByPlatform() {
-      return jvmDistributionsByPlatform;
+    public Map<String, Map<String, String>> getPreferredJvmDistributions() {
+      return preferredJvmDistributions;
     }
 
     public DefaultPlatform getJvmPlatforms() {
@@ -791,7 +791,7 @@ public class PantsUtil {
         boolean strict = Boolean.parseBoolean(PantsOptions.getPantsOptions(pantsExecutable)
                                                 .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
         String jdkName = String.format("JDK from pants %s", defaultPlatform);
-        String jdkHome = exportResult.getJvmDistributionsByPlatform().get(defaultPlatform)
+        String jdkHome = exportResult.getPreferredJvmDistributions().get(defaultPlatform)
           .get(strict ? "strict" : "non_strict");
         return JavaSdk.getInstance().createJdk(jdkName, jdkHome);
       }
