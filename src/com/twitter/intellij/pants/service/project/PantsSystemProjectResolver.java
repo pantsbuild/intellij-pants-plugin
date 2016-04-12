@@ -232,8 +232,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     }, 0, 1, TimeUnit.SECONDS);
   }
 
+  @Nullable
   private Sdk getPantsDefaultJavaSdk(File workingDir) {
-    Sdk sdk = PantsUtil.getDefaultJavaSdk(PantsUtil.findPantsExecutable(workingDir).getPath());
-    return sdk;
+    return PantsUtil.getDefaultJavaSdk(PantsUtil.findPantsExecutable(workingDir).getPath());
   }
 }

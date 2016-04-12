@@ -71,6 +71,10 @@ public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuil
     }
   }
 
+  /**
+   * Find if pants sdk is already configured, return the existing sdk if it exists,
+   * otherwise add to the config and return.
+   */
   private Sdk addIfNotExists(Sdk pantsSdk) {
     final JavaSdk javaSdk = JavaSdk.getInstance();
     List<Sdk> sdks = ProjectJdkTable.getInstance().getSdksOfType(javaSdk);
