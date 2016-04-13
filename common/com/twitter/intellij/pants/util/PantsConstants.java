@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.util;
 
 import com.intellij.openapi.externalSystem.model.Key;
+import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.util.text.CaseInsensitiveStringHashingStrategy;
@@ -48,7 +49,8 @@ public class PantsConstants {
   public static final String PANTS_OPTION_NO_COLORS = "--no-colors";
   public static final String PANTS_OPTION_EXPORT_OUTPUT_FILE = "--export-output-file";
 
-  public static final Key<Sdk> SDK_KEY = Key.create(Sdk.class, 50);
+  // Used to initialize project sdk therefore use project processing weight, i.e, the highest.
+  public static final Key<Sdk> SDK_KEY = Key.create(Sdk.class, ProjectKeys.PROJECT.getProcessingWeight());
 
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(

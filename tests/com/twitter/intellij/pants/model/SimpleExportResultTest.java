@@ -53,5 +53,8 @@ public class SimpleExportResultTest extends TestCase {
     assertEquals("/Library/Java/JavaVirtualMachines/jdk1.7.0_72.jdk/Contents/Home",
                  exportResult.getPreferredJvmDistributions()
                    .get(exportResult.getJvmPlatforms().getDefaultPlatform()).get("non_strict"));
+    assertEquals("/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home",
+                 exportResult.getPreferredJvmDistributions()
+                   .get(exportResult.getJvmPlatforms().getDefaultPlatform()).get("strict"));
   }
 }

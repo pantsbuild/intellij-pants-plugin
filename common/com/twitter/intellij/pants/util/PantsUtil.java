@@ -739,6 +739,10 @@ public class PantsUtil {
     return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.5") >= 0;
   }
 
+  public static boolean supportExportDefaultJavaSdk(final String pantsExecutable) {
+    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.7") >= 0;
+  }
+
   @Nullable
   public static Sdk getDefaultJavaSdk(final String pantsExecutable) {
     SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);

@@ -3,8 +3,12 @@
 
 package com.twitter.intellij.pants.service.project.wizard;
 
+import com.intellij.ide.util.projectWizard.ModuleWizardStep;
+import com.intellij.ide.util.projectWizard.ProjectJdkStep;
+import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.externalSystem.service.project.wizard.AbstractExternalProjectImportProvider;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nullable;
@@ -23,5 +27,17 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
   @Override
   public String getFileSample() {
     return "<b>Pants</b> build file (BUILD.*) or a script";
+  }
+
+  @Override
+  public ModuleWizardStep[] createSteps(WizardContext context) {
+    /**
+     * Since newer export version project sdk can be automatically discovered and configured.
+     */
+    if (PantsUtil.supportExportDefaultJavaSdk(
+      PantsUtil.findPantsExecutable(context.getProjectFileDirectory()).getPath())) {
+      return super.createSteps(context);
+    }
+    return ArrayUtil.append(super.createSteps(context), new ProjectJdkStep(context));
   }
 }
