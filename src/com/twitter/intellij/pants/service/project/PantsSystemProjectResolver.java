@@ -45,7 +45,9 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   protected static final Logger LOG = Logger.getInstance(PantsSystemProjectResolver.class);
@@ -55,6 +57,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
   private volatile ScheduledFuture<?> viewSwitchHandle;
   private volatile ScheduledFuture<?> directoryFocusHandle;
+  private static final Semaphore mySemaphore = new Semaphore(1);
 
   @Nullable
   @Override
@@ -179,7 +182,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void queueSwitchToProjectFilesTreeView(final Project project, final String projectPath) {
-    if (viewSwitchHandle != null && !viewSwitchHandle.isDone()) {
+    try{
+      mySemaphore.acquire();
+    }
+    catch (InterruptedException e) {
       return;
     }
     viewSwitchHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
@@ -194,6 +200,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
             ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
             queueFocusOnImportDirectory(project, projectPath);
             viewSwitchHandle.cancel(false);
+            mySemaphore.release();
           }
         });
       }
@@ -201,9 +208,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void queueFocusOnImportDirectory(final Project project, final String projectPath) {
-    if (directoryFocusHandle != null && !directoryFocusHandle.isDone()) {
-      return;
-    }
     directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
       @Override
       public void run() {
