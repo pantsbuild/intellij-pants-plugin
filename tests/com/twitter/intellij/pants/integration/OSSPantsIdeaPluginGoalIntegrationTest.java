@@ -26,8 +26,15 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
   public void testPantsIdeaPluginGoal() throws Throwable {
     assertEmpty(ModuleManager.getInstance(myProject).getModules());
     PantsUtil.findPantsExecutable(getProjectFolder().getPath());
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectFolder().getPath());
+    final GeneralCommandLine commandLinePantsGoals = PantsUtil.defaultCommandLine(getProjectFolder().getPath());
+    commandLinePantsGoals.addParameter("goals");
+    final ProcessOutput cmdOutputGoals = PantsUtil.getCmdOutput(commandLinePantsGoals.withWorkDirectory(getProjectFolder()), null);
+    assertEquals(commandLinePantsGoals.toString() + " failed", 0, cmdOutputGoals.getExitCode());
+    if (!cmdOutputGoals.getStdout().contains("idea-plugin")) {
+      return;
+    }
 
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectFolder().getPath());
     final File outputFile = FileUtil.createTempFile("project_dir_location", ".out");
     commandLine.addParameters(
       "idea-plugin",

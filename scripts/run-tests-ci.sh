@@ -13,10 +13,10 @@ pushd .cache
 pushd pants
 if [ -z ${PANTS_SHA+x} ]; then
   echo "Pulling the latest master..."
-  git pull
+#  git pull
 else
   echo "Using $PANTS_SHA..."
-  git reset --hard $PANTS_SHA
+#  git reset --hard $PANTS_SHA
 fi
 popd
 popd
