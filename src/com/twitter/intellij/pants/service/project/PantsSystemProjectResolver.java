@@ -56,7 +56,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
   private ScheduledFuture<?> viewSwitchHandle;
   private ScheduledFuture<?> directoryFocusHandle;
-  private static final Semaphore mySemaphore = new Semaphore(1);
+  private static final Semaphore viewSwitchHandleSemaphore = new Semaphore(1);
+  private static final Semaphore directoryFocusHandleSemaphore = new Semaphore(1);
 
   @Nullable
   @Override
@@ -181,8 +182,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void queueSwitchToProjectFilesTreeView(final Project project, final String projectPath) {
-    try{
-      mySemaphore.acquire();
+    try {
+      viewSwitchHandleSemaphore.acquire();
     }
     catch (InterruptedException e) {
       return;
@@ -199,7 +200,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
             ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
             queueFocusOnImportDirectory(project, projectPath);
             viewSwitchHandle.cancel(false);
-            mySemaphore.release();
+            viewSwitchHandleSemaphore.release();
           }
         });
       }
@@ -207,6 +208,12 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void queueFocusOnImportDirectory(final Project project, final String projectPath) {
+    try {
+      directoryFocusHandleSemaphore.acquire();
+    }
+    catch (InterruptedException e) {
+      return;
+    }
     directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
       @Override
       public void run() {
@@ -229,6 +236,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
               }
             }
             directoryFocusHandle.cancel(false);
+            directoryFocusHandleSemaphore.release();
           }
         });
       }
