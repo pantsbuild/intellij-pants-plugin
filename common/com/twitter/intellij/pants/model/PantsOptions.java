@@ -22,8 +22,12 @@ import java.util.Map;
 public class PantsOptions {
   private Map<String, String> options;
 
+  public PantsOptions(Map<String, String> options) {
+    this.options = options;
+  }
+
   public PantsOptions(final String rawOutput) {
-    options = parseOptions(rawOutput);
+    this(parseOptions(rawOutput));
   }
 
   public boolean has(String optionName) {
@@ -61,8 +65,6 @@ public class PantsOptions {
     }
   }
 
-  // TODO https://github.com/pantsbuild/pants/issues/3161 to output options in json,
-  // parsing will be simplfied.
   private static Map<String, String> parseOptions(final String rawData) {
     String lines[] = rawData.split("\\r?\\n");
 
