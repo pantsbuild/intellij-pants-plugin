@@ -1,16 +1,11 @@
 // Copyright 2016 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.util;
+package com.twitter.intellij.pants.model;
 
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import junit.framework.TestCase;
 
-import com.twitter.intellij.pants.util.PantsUtil.SimpleExportResult;
-
-public class PantsUtilTest extends TestCase {
+public class SimpleExportResultTest extends TestCase {
   public void testParseExport() throws Exception {
     final String exportOutput =
       "{\n" +
@@ -52,9 +47,8 @@ public class PantsUtilTest extends TestCase {
       "        \"default_platform\": \"java6\"\n" +
       "    }\n" +
       "}";
-    Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
-    SimpleExportResult exportResult = gson.fromJson(exportOutput, SimpleExportResult.class);
+    SimpleExportResult exportResult = SimpleExportResult.parse(exportOutput);
     assertEquals("java6", exportResult.getJvmPlatforms().getDefaultPlatform());
     assertEquals("/Library/Java/JavaVirtualMachines/jdk1.7.0_72.jdk/Contents/Home",
                  exportResult.getPreferredJvmDistributions()

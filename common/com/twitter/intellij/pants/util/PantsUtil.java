@@ -51,6 +51,7 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
+import com.twitter.intellij.pants.model.SimpleExportResult;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
@@ -734,74 +735,26 @@ public class PantsUtil {
   }
 
 
-  static class SimpleExportResult {
-    private String version;
-
-    private Map<String, Map<String, String>> preferredJvmDistributions;
-
-    private DefaultPlatform jvmPlatforms;
-
-    public Map<String, Map<String, String>> getPreferredJvmDistributions() {
-      return preferredJvmDistributions;
-    }
-
-    public DefaultPlatform getJvmPlatforms() {
-      return jvmPlatforms;
-    }
-
-    public String getVersion() {
-      return version;
-    }
-  }
-
-  static class DefaultPlatform {
-    private String defaultPlatform;
-
-    public String getDefaultPlatform() {
-      return defaultPlatform;
-    }
-  }
-
   public static boolean hasTargetIdInExport(final String pantsExecutable) {
-    final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
-    try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
-      final String stdOut = processOutput.getStdout();
-      Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
-      SimpleExportResult simpleExportResult = gson.fromJson(stdOut, SimpleExportResult.class);
-      return versionCompare(simpleExportResult.getVersion(), "1.0.5") >= 0;
-    }
-    catch (ExecutionException e) {
-      throw new PantsException("Failed:" + commandline.getCommandLineString());
-    }
+    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.5") >= 0;
   }
 
   @Nullable
   public static Sdk getDefaultJavaSdk(final String pantsExecutable) {
-    final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
-    try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
-      final String stdOut = processOutput.getStdout();
-      Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
-      SimpleExportResult exportResult = gson.fromJson(stdOut, SimpleExportResult.class);
-      if (versionCompare(exportResult.getVersion(), "1.0.7") >= 0) {
-        String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
-        boolean strict = Boolean.parseBoolean(PantsOptions.getPantsOptions(pantsExecutable)
-                                                .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
-        String jdkName = String.format("JDK from pants %s", defaultPlatform);
-        String jdkHome = exportResult.getPreferredJvmDistributions().get(defaultPlatform)
-          .get(strict ? "strict" : "non_strict");
-        return JavaSdk.getInstance().createJdk(jdkName, jdkHome);
-      }
-    }
-    catch (ExecutionException e) {
-      throw new PantsException("Failed:" + commandline.getCommandLineString());
+    SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
+    if (versionCompare(exportResult.getVersion(), "1.0.7") >= 0) {
+      String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
+      boolean strict = Boolean.parseBoolean(PantsOptions.getPantsOptions(pantsExecutable)
+                                            .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
+      String jdkName = String.format("JDK from pants %s", defaultPlatform);
+      String jdkHome = exportResult.getPreferredJvmDistributions().get(defaultPlatform)
+        .get(strict ? "strict" : "non_strict");
+      return JavaSdk.getInstance().createJdk(jdkName, jdkHome);
     }
 
     return null;
   }
+
   /**
    * Copied from: http://stackoverflow.com/questions/6701948/efficient-way-to-compare-version-strings-in-java
    * Compares two version strings.
