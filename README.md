@@ -26,7 +26,7 @@ Find "Pants Support" plugin. Install and Restart IntelliJ.
 
 #### Importing targets from a script
   * Use Main menu: File -> Import Project(in IJ 14.1+: File -> New -> Project From Existing Sources)
-  * Select an executable that will use export goal to produce a desirable project structure. 
+  * Select an executable that will use export goal to produce a desirable project structure.
     See [an integration test](testData/testprojects/intellij-integration/export1.sh) as an example.
 
 #### Importing several BUILD files/directories(works in IntelliJ 14.1+)
@@ -36,7 +36,7 @@ Find "Pants Support" plugin. Install and Restart IntelliJ.
 Once you import the project using above steps, you will see the "Project View" with multiple modules configured.
 
 ### Invoking Pants within IntelliJ
-The plugin can invoke any Pants commands via Pants Tasks. 
+The plugin can invoke any Pants commands via Pants Tasks.
   * To configure a Pants Task simply create a new Pants Run Configuration
     ![Creating of a new Pants Run Configuration](images/tasks/add_pants_run_config.png)
   * Choose a target to run a task for
@@ -49,16 +49,16 @@ The plugin can invoke any Pants commands via Pants Tasks.
   * To debug a task simply press Debug button next to Run button.
   * Note: you can create a task for any goal
     ![Bundle Task](images/tasks/bundle_task.png)
-    
+
 #### Predefined Pants Tasks for test targets
-The plugin can preconfigure test Tasks from a context. 
+The plugin can preconfigure test Tasks from a context.
 
 For example if a test class is opened then with a right click it's easy to create a task to run and debug
-    ![Run Configuration Producer](images/tasks/create_task_from_context_single.png) 
+    ![Run Configuration Producer](images/tasks/create_task_from_context_single.png)
     ![Preconfigured Run Configuration](images/tasks/preconfigured_task_single_test.png)
-    
+
 With a right click in Project View it's easy to create a test task to run all tests for a target
-    ![Run Configuration Producer](images/tasks/create_task_from_context_all.png) 
+    ![Run Configuration Producer](images/tasks/create_task_from_context_all.png)
 
 ### Compilation
 The plugin provides two ways to compile your project:
@@ -93,7 +93,7 @@ Compilation options can be configured in Preferences -> Build, Execution, Deploy
 * Running tests within IntelliJ
   You can right click on tests and run tests.
 * Open dependents of targets
-  To perform a refactoring of a common target you need to change all targets that depend on the given target. 
+  To perform a refactoring of a common target you need to change all targets that depend on the given target.
   To load such dependents using the plugin simply open Preferences -> Build Tools -> Pants and check Load Dependents Transitively.
   ![Load Dependents](images/load_dependents.png)
 
@@ -234,11 +234,11 @@ test sources, resources, test resources, generated sources, etc).
 * To debug tests execute:
 
         ./scripts/run-tests-ci.sh --jvm-test-debug
-        
-  It will listen for a debugger on 5005 port by default. 
-  
+
+  It will listen for a debugger on 5005 port by default.
+
   Create a Remote Run Configuration in IntelliJ. By default it uses 5005 port as well.
-  
+
   Hit debug button to connect to Pants.
 
 * If you want to debug plugin using your local development pants, you can do so by using the property `pants.executable.path`.
@@ -249,7 +249,7 @@ test sources, resources, test resources, generated sources, etc).
 
 * To debug JPS compiler use:
 
-        -Dcompiler.process.debug.port=PORT        
+        -Dcompiler.process.debug.port=PORT
 
 * Remember to bootstrap pants in the project repository inside which you want to test the plugin.
 
@@ -260,11 +260,11 @@ test sources, resources, test resources, generated sources, etc).
 
 # Running plugin tests with Pants
 
-* Use `./scripts/setup-ci-environment.sh` with targeted `IJ_VERSION` and `IJ_BUILD_NUMBER` 
+* Use `./scripts/setup-ci-environment.sh` with targeted `IJ_VERSION` and `IJ_BUILD_NUMBER`
   environment variables from `.travis.yml` file to load everything for running tests. For example:
-  
+
         IJ_VERSION="15.0" IJ_BUILD_NUMBER="143.381" ./scripts/setup-ci-environment.sh
-        
+
 * Execute `./scripts/run-tests-ci.sh` from command-line.
 * Running individual test. For example:
 
