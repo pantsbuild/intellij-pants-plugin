@@ -9,17 +9,16 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.testFramework.PlatformTestCase;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.File;
+import java.util.ArrayList;
 
 
 public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTest {
@@ -30,19 +29,17 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectFolder().getPath());
 
     final File outputFile = FileUtil.createTempFile("project_dir_location", ".out");
-
     commandLine.addParameters(
       "idea-plugin",
       "--no-open",
       "--output-file=" + outputFile.getPath(),
       "testprojects/tests/java/org/pantsbuild/testproject/::"
     );
-
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertEquals(commandLine.toString() + " failed", 0, cmdOutput.getExitCode());
-
     String projectDir = FileUtil.loadFile(outputFile);
-    myProject = ProjectUtil.openProject(projectDir + "/project.ipr", null, false);
+
+    myProject = ProjectUtil.openProject(projectDir, myProject, false);
 
     /**
      * Under unit test mode, {@link com.intellij.ide.impl.ProjectUtil#openProject} will force open a project in a new window,
@@ -70,14 +67,11 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
    */
   @Override
   public void tearDown() throws Exception {
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        for (Project project : ProjectManager.getInstance().getOpenProjects()) {
-          Disposer.dispose(project);
-        }
-      }
-    });
+    /**
+     * Test framework cannot dispose the new project opened properly.
+     * This is a hack to manually trigger disposal and ignore all disposal errors.
+     */
+    PlatformTestCase.closeAndDisposeProjectAndCheckThatNoOpenProjects(myProject, new ArrayList<Throwable>());
     cleanProjectRoot();
   }
 }
