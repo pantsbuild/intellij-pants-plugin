@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.model;
 import junit.framework.TestCase;
 
 public class SimpleExportResultTest extends TestCase {
-  public void testParseExport() throws Exception {
+  public void testParseExport_1_0_7() throws Exception {
     final String exportOutput =
       "{\n" +
       "    \"libraries\": {},\n" +
@@ -49,6 +49,7 @@ public class SimpleExportResultTest extends TestCase {
       "}";
 
     SimpleExportResult exportResult = SimpleExportResult.parse(exportOutput);
+    assertEquals("1.0.7", exportResult.getVersion());
     assertEquals("java6", exportResult.getJvmPlatforms().getDefaultPlatform());
     assertEquals("/Library/Java/JavaVirtualMachines/jdk1.7.0_72.jdk/Contents/Home",
                  exportResult.getPreferredJvmDistributions()
@@ -57,4 +58,38 @@ public class SimpleExportResultTest extends TestCase {
                  exportResult.getPreferredJvmDistributions()
                    .get(exportResult.getJvmPlatforms().getDefaultPlatform()).get("strict"));
   }
+
+  public void testParseExport_1_0_6() throws Exception {
+    final String exportOutput =
+      "{\n" +
+      "    \"libraries\": {},\n" +
+      "    \"version\": \"1.0.6\",\n" +
+      "    \"targets\": {},\n" +
+      "    \"jvm_platforms\": {\n" +
+      "        \"platforms\": {\n" +
+      "            \"java7\": {\n" +
+      "                \"source_level\": \"1.7\",\n" +
+      "                \"args\": [],\n" +
+      "                \"target_level\": \"1.7\"\n" +
+      "            },\n" +
+      "            \"java6\": {\n" +
+      "                \"source_level\": \"1.6\",\n" +
+      "                \"args\": [],\n" +
+      "                \"target_level\": \"1.6\"\n" +
+      "            },\n" +
+      "            \"java8\": {\n" +
+      "                \"source_level\": \"1.8\",\n" +
+      "                \"args\": [],\n" +
+      "                \"target_level\": \"1.8\"\n" +
+      "            }\n" +
+      "        },\n" +
+      "        \"default_platform\": \"java6\"\n" +
+      "    }\n" +
+      "}";
+    SimpleExportResult exportResult = SimpleExportResult.parse(exportOutput);
+    assertEquals("1.0.6", exportResult.getVersion());
+    assertEquals("java6", exportResult.getJvmPlatforms().getDefaultPlatform());
+    assertNull(exportResult.getPreferredJvmDistributions());
+  }
+
 }
