@@ -25,6 +25,10 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
 
   public void testPantsIdeaPluginGoal() throws Throwable {
     assertEmpty(ModuleManager.getInstance(myProject).getModules());
+
+    /**
+     * Check whether Pants supports `idea-plugin` goal.
+     */
     PantsUtil.findPantsExecutable(getProjectFolder().getPath());
     final GeneralCommandLine commandLinePantsGoals = PantsUtil.defaultCommandLine(getProjectFolder().getPath());
     commandLinePantsGoals.addParameter("goals");
@@ -34,6 +38,9 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
       return;
     }
 
+    /**
+     * Generate idea project via `idea-plugin` goal.
+     */
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectFolder().getPath());
     final File outputFile = FileUtil.createTempFile("project_dir_location", ".out");
     commandLine.addParameters(
@@ -68,16 +75,11 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
   }
 
   /**
-   * Since the project is not in a temporary dir, it needs to disposed explicitly.
-   *
-   * @throws Exception
+   * Test framework cannot dispose the new project opened properly.
+   * This is a hack to manually trigger disposal and ignore all disposal errors.
    */
   @Override
   public void tearDown() throws Exception {
-    /**
-     * Test framework cannot dispose the new project opened properly.
-     * This is a hack to manually trigger disposal and ignore all disposal errors.
-     */
     PlatformTestCase.closeAndDisposeProjectAndCheckThatNoOpenProjects(myProject, new ArrayList<Throwable>());
     cleanProjectRoot();
   }
