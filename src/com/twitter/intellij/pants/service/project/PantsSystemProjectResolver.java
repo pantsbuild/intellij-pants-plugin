@@ -47,7 +47,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   protected static final Logger LOG = Logger.getInstance(PantsSystemProjectResolver.class);
@@ -55,8 +54,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   private final Map<ExternalSystemTaskId, PantsCompileOptionsExecutor> task2executor =
     new ConcurrentHashMap<ExternalSystemTaskId, PantsCompileOptionsExecutor>();
 
-  private volatile ScheduledFuture<?> viewSwitchHandle;
-  private volatile ScheduledFuture<?> directoryFocusHandle;
+  private ScheduledFuture<?> viewSwitchHandle;
+  private ScheduledFuture<?> directoryFocusHandle;
   private static final Semaphore mySemaphore = new Semaphore(1);
 
   @Nullable
