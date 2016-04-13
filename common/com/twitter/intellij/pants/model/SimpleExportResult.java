@@ -15,17 +15,18 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import com.twitter.intellij.pants.util.Tempfile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
 /**
- * This represents information from pants export not tied with targets, which is
- * obtained by running pants export command with no target arguments.
+ * This represents information from pants export that is not tied with targets,
+ * obtained by running pants export command with no target arguments. Class
+ * is in POJO form to facilitate json parsing.
  *
- * {@link com.twitter.intellij.pants.service.project.model.ProjectInfo} contains
- * Target level information.
+ * See {@link com.twitter.intellij.pants.service.project.model.ProjectInfo} for
+ * target level information from pants export.
  */
 public class SimpleExportResult {
   private static final Logger LOG = Logger.getInstance(SimpleExportResult.class);
@@ -62,13 +63,13 @@ public class SimpleExportResult {
   public static SimpleExportResult getExportResult(String pantsExecutable) {
     final GeneralCommandLine commandline = PantsUtil.defaultCommandLine(pantsExecutable);
     commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
-    try {
-      File outputFile = File.createTempFile("pants_export_run", ".out");
+    try (Tempfile tempfile = new Tempfile("pants_export_run", ".out")) {
       commandline.addParameter(
-        String.format("%s=%s", PantsConstants.PANTS_OPTION_EXPORT_OUTPUT_FILE, outputFile.getPath()));
+        String.format("%s=%s", PantsConstants.PANTS_OPTION_EXPORT_OUTPUT_FILE,
+                      tempfile.getFile().getPath()));
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       if (processOutput.checkSuccess(LOG)) {
-        return parse(FileUtil.loadFile(outputFile));
+        return parse(FileUtil.loadFile(tempfile.getFile()));
       }
     }
     catch (IOException | ExecutionException e) {
