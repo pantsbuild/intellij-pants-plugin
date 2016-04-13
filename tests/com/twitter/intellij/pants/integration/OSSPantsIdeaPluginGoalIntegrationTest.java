@@ -15,8 +15,11 @@ import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.io.FileUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
+
+import java.io.File;
 
 
 public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTest {
@@ -25,16 +28,24 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     assertEmpty(ModuleManager.getInstance(myProject).getModules());
     PantsUtil.findPantsExecutable(getProjectFolder().getPath());
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectFolder().getPath());
-    commandLine.addParameters("idea-plugin", "--no-open", "testprojects/tests/java/org/pantsbuild/testproject/::");
+
+    final File outputFile = FileUtil.createTempFile("project_dir_location", ".out");
+
+    commandLine.addParameters(
+      "idea-plugin",
+      "--no-open",
+      "--output-file=" + outputFile.getPath(),
+      "testprojects/tests/java/org/pantsbuild/testproject/::"
+    );
 
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertEquals(commandLine.toString() + " failed", 0, cmdOutput.getExitCode());
 
-    myProject = ProjectUtil
-      .openProject(getProjectFolder() + "/.pants.d/idea-plugin/idea-plugin/PluginGen_idea_plugin/project/project.ipr", null, false);
+    String projectDir = FileUtil.loadFile(outputFile);
+    myProject = ProjectUtil.openProject(projectDir + "/project.ipr", null, false);
 
     /**
-     * Under UnitTestMode {@link com.intellij.ide.impl.ProjectUtil#openProject} will force open a project in a new window,
+     * Under unit test mode, {@link com.intellij.ide.impl.ProjectUtil#openProject} will force open a project in a new window,
      * so Project SDK has to be reset. In practice, this is not needed.
      */
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
@@ -62,7 +73,7 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
       @Override
       public void run() {
-        for (Project project: ProjectManager.getInstance().getOpenProjects()) {
+        for (Project project : ProjectManager.getInstance().getOpenProjects()) {
           Disposer.dispose(project);
         }
       }
