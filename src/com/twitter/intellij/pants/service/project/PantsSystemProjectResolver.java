@@ -45,7 +45,6 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
@@ -53,11 +52,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
   private final Map<ExternalSystemTaskId, PantsCompileOptionsExecutor> task2executor =
     new ConcurrentHashMap<ExternalSystemTaskId, PantsCompileOptionsExecutor>();
-
-  private ScheduledFuture<?> viewSwitchHandle;
-  private ScheduledFuture<?> directoryFocusHandle;
-  private static final Semaphore viewSwitchHandleSemaphore = new Semaphore(1);
-  private static final Semaphore directoryFocusHandleSemaphore = new Semaphore(1);
 
   @Nullable
   @Override
@@ -90,7 +84,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     task2executor.remove(id);
     Project ideProject = id.findProject();
     if (ideProject != null && !ApplicationManager.getApplication().isUnitTestMode()) {
-      queueSwitchToProjectFilesTreeView(ideProject, projectPath);
+      ViewSwitchProcessor vsp  = new ViewSwitchProcessor(ideProject, projectPath);
+      vsp.asyncViewSwitch();
     }
     return projectDataNode;
   }
@@ -181,65 +176,67 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     return executor != null && executor.cancelAllProcesses();
   }
 
-  private void queueSwitchToProjectFilesTreeView(final Project project, final String projectPath) {
-    try {
-      viewSwitchHandleSemaphore.acquire();
-    }
-    catch (InterruptedException e) {
-      return;
-    }
-    viewSwitchHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
-      @Override
-      public void run() {
-        if (!ProjectView.getInstance(project).getPaneIds().contains(ProjectFilesViewPane.ID)) {
-          return;
-        }
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-          @Override
-          public void run() {
-            ProjectView.getInstance(project).changeView(ProjectFilesViewPane.ID);
-            queueFocusOnImportDirectory(project, projectPath);
-            viewSwitchHandle.cancel(false);
-            viewSwitchHandleSemaphore.release();
-          }
-        });
-      }
-    }, 0, 1, TimeUnit.SECONDS);
-  }
+  private class ViewSwitchProcessor {
+    private final Project myProject;
+    private final String myProjectPath;
+    private ScheduledFuture<?> viewSwitchHandle;
+    private ScheduledFuture<?> directoryFocusHandle;
 
-  private void queueFocusOnImportDirectory(final Project project, final String projectPath) {
-    try {
-      directoryFocusHandleSemaphore.acquire();
+    public ViewSwitchProcessor(final Project project, final String projectPath) {
+      myProject = project;
+      myProjectPath = projectPath;
     }
-    catch (InterruptedException e) {
-      return;
+
+    public void asyncViewSwitch() {
+      queueSwitchToProjectFilesTreeView();
     }
-    directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
-      @Override
-      public void run() {
-        if (ModuleManager.getInstance(project).getModules().length == 0 ||
-            !ProjectView.getInstance(project).getCurrentViewId().equals(ProjectFilesViewPane.ID)) {
-          return;
+
+    private void queueSwitchToProjectFilesTreeView() {
+      viewSwitchHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+        @Override
+        public void run() {
+          if (!ProjectView.getInstance(myProject).getPaneIds().contains(ProjectFilesViewPane.ID)) {
+            return;
+          }
+          ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+              ProjectView.getInstance(myProject).changeView(ProjectFilesViewPane.ID);
+              queueFocusOnImportDirectory();
+              viewSwitchHandle.cancel(false);
+            }
+          });
         }
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-          @Override
-          public void run() {
-            final VirtualFile importDirectory = VirtualFileManager.getInstance().findFileByUrl("file://" + projectPath);
-            // Skip focusing if directory is not found.
-            if (importDirectory != null) {
-              SelectInContext selectInContext = new FileSelectInContext(project, importDirectory);
-              for (SelectInTarget selectInTarget : ProjectView.getInstance(project).getSelectInTargets()) {
-                if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
-                  selectInTarget.selectIn(selectInContext, false);
-                  break;
+      }, 0, 1, TimeUnit.SECONDS);
+    }
+
+    private void queueFocusOnImportDirectory() {
+      directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+        @Override
+        public void run() {
+          if (ModuleManager.getInstance(myProject).getModules().length == 0 ||
+              !ProjectView.getInstance(myProject).getCurrentViewId().equals(ProjectFilesViewPane.ID)) {
+            return;
+          }
+          ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+              final VirtualFile importDirectory = VirtualFileManager.getInstance().findFileByUrl("file://" + myProjectPath);
+              // Skip focusing if directory is not found.
+              if (importDirectory != null) {
+                SelectInContext selectInContext = new FileSelectInContext(myProject, importDirectory);
+                for (SelectInTarget selectInTarget : ProjectView.getInstance(myProject).getSelectInTargets()) {
+                  if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
+                    selectInTarget.selectIn(selectInContext, false);
+                    break;
+                  }
                 }
               }
+              directoryFocusHandle.cancel(false);
             }
-            directoryFocusHandle.cancel(false);
-            directoryFocusHandleSemaphore.release();
-          }
-        });
-      }
-    }, 0, 1, TimeUnit.SECONDS);
+          });
+        }
+      }, 0, 1, TimeUnit.SECONDS);
+    }
   }
 }
