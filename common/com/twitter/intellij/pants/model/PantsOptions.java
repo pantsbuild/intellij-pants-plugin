@@ -46,7 +46,7 @@ public class PantsOptions {
     if (pantsExecutable == null) {
       return null;
     }
-    return new PantsOptions(pantsExecutable.getPath());
+    return getPantsOptions(pantsExecutable.getPath());
   }
 
   public static PantsOptions getPantsOptions(final String pantsExecutable) {
