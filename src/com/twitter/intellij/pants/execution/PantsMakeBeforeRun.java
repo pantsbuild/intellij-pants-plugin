@@ -167,13 +167,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
 
     /* Global options section. */
-    commandLine.addParameter(PantsOptions.NO_COLORS);
-    if (pantsOptions.supportsManifestJar()) {
+    commandLine.addParameter(PantsConstants.PANTS_OPTION_NO_COLORS);
+    if (pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
       commandLine.addParameter("--export-classpath-manifest-jar-only");
     }
     // Add "export-classpath-use-old-naming-style"
     // only if target id is exported and this flag supported.
-    if (pantsOptions.hasExportClassPathNamingStyle() && hasTargetIdInExport) {
+    if (pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE)
+        && hasTargetIdInExport) {
       commandLine.addParameters("--no-export-classpath-use-old-naming-style");
     }
     PantsSettings settings = PantsSettings.getInstance(myProject);
@@ -248,7 +249,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
     showPantsMakeTaskMessage("Checking Pants options...", NotificationCategory.INFO);
     if (pantsOptions == null) {
-      pantsOptions = new PantsOptions(pantsExecutable);
+      pantsOptions = PantsOptions.getPantsOptions(pantsExecutable);
     }
 
     showPantsMakeTaskMessage("Checking Pants export version...", NotificationCategory.INFO);

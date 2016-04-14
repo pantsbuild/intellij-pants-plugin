@@ -3,29 +3,32 @@
 
 package com.twitter.intellij.pants.model;
 
+import com.intellij.openapi.projectRoots.JavaSdkVersion;
+import com.twitter.intellij.pants.util.PantsConstants;
 import junit.framework.TestCase;
+
 
 public class PantsOptionsTest extends TestCase {
 
-  class PantsOptionsMock extends PantsOptions {
-    PantsOptionsMock(String fixedRawContent) {
-      super();
-      rawData = fixedRawContent;
-    }
-  }
-
   public void testWorkdir() {
-    PantsOptionsMock options = new PantsOptionsMock("pants_workdir = /Users/abc/workspace/intellij-pants-plugin/.pants.d (from HARDCODED)");
-    assertEquals(options.getWorkdir(), "/Users/abc/workspace/intellij-pants-plugin/.pants.d");
+    PantsOptions options = new PantsOptions("pants_workdir = /Users/abc/workspace/intellij-pants-plugin/.pants.d (from HARDCODED)");
+    assertEquals("/Users/abc/workspace/intellij-pants-plugin/.pants.d",
+                 options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR));
   }
 
   public void testWorkdirWithSpace() {
-    PantsOptionsMock options = new PantsOptionsMock("pants_workdir = /Users/abc/work space/intellij-pants-plugin/.pants.d (from HARDCODED)");
-    assertEquals(options.getWorkdir(), "/Users/abc/work space/intellij-pants-plugin/.pants.d");
+    PantsOptions options = new PantsOptions("pants_workdir = /Users/abc/workspace/intellij-pants-plugin/.pants.d (from HARDCODED)");
+    assertEquals("/Users/abc/workspace/intellij-pants-plugin/.pants.d",
+                 options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR));
   }
 
   public void testInvalidWorkdir() {
-    PantsOptionsMock options = new PantsOptionsMock("/Users/abc/work space/intellij-pants-plugin/.pants.d (from HARDCODED)");
-    assertNull(options.getWorkdir());
+    PantsOptions options = new PantsOptions("/Users/abc/workspace/intellij-pants-plugin/.pants.d (from HARDCODED)");
+    assertNull(options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR));
+  }
+
+  public void testStrictJvmVersion() {
+    PantsOptions options = new PantsOptions("test.junit.strict_jvm_version = False (from HARDCODED)");
+    assertEquals("False", options.get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
   }
 }

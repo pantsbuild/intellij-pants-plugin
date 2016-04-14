@@ -85,7 +85,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     @NotNull final CompileContext context
   ) throws ProjectBuildException, IOException {
     Set<String> targetAddressesToCompile = getTargetsAddressesOfAffectedModules(target, context);
-    PantsOptions pantsOptions = new PantsOptions(target.getPantsExecutable());
+    PantsOptions pantsOptions = PantsOptions.getPantsOptions(target.getPantsExecutable());
     if (!hasDirtyTargets(holder) && !JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       // TODO: Query pants for work necessity. https://github.com/pantsbuild/pants/issues/3043
       // Checking last build is expensive, so only do so inside this if statement.
@@ -112,11 +112,11 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
   ) throws IOException, ProjectBuildException {
     final String pantsExecutable = target.getPantsExecutable();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
-    commandLine.addParameter(PantsOptions.NO_COLORS);
+    commandLine.addParameter(PantsConstants.PANTS_OPTION_NO_COLORS);
     if (JavaBuilderUtil.isForcedRecompilationAllJavaModules(context)) {
       commandLine.addParameters("clean-all");
     }
-    if (pantsOptions.supportsManifestJar()){
+    if (pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)){
       commandLine.addParameter("--export-classpath-manifest-jar-only");
     }
     commandLine.addParameters(goals);
@@ -134,7 +134,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
 
     // Find out whether "export-classpath-use-old-naming-style" exists
-    final boolean hasExportClassPathNamingStyle = pantsOptions.hasExportClassPathNamingStyle();
+    final boolean hasExportClassPathNamingStyle = pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE);
     final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
 
     // "export-classpath-use-old-naming-style" is soon to be removed.
@@ -307,7 +307,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
 
   @Nullable
   private File getLastBuildFile(@NotNull PantsOptions pantsOptions) {
-    String pantsWorkdir = pantsOptions.getWorkdir();
+    String pantsWorkdir = pantsOptions.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR);
     if (pantsWorkdir == null) {
       return null;
     }
