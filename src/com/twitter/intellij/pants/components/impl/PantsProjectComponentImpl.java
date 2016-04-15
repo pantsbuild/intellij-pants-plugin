@@ -7,7 +7,6 @@ import com.intellij.execution.RunManagerAdapter;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
@@ -71,25 +70,29 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           }
         }
 
+        /**
+         * A seed Pants project will contain the following like
+         * <a href="http://google.com">this sample workspace file</a>.
+         * If a non-Pants project contains these properties, we know it is launched from CLI
+         * and will convert it to a Pants project. ++ potential ++ xml details ++ versioning
+         */
         private void convertPotentialPantsProject() {
           if (!PantsUtil.isPantsProject(myProject)) {
-            /**
-             * If a non-Pants project contains the following properties, we know it is launched from CLI
-             * and will convert it to a Pants project.
-             */
+            String pantsIdeaPluginVersion = PropertiesComponent.getInstance(myProject).getValue("pants_plugin_idea_version");
             String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
             String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
-            if (serializedTargets == null || projectPath == null) {
+            if (pantsIdeaPluginVersion == null || serializedTargets == null || projectPath == null) {
               return;
             }
 
             List<String> targetAddresses = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
-            ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
-            AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
-
             PantsProjectSettings pps = new PantsProjectSettings();
             pps.setTargetSpecs(targetAddresses);
             pps.setExternalProjectPath(projectPath);
+
+            // ++ doc
+            ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
+            AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
             settings.setLinkedProjectsSettings(Collections.singleton(pps));
 
             PantsUtil.refreshAllProjects(myProject);
@@ -110,7 +113,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               @Override
               public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
                 super.runConfigurationAdded(settings);
-                if (!PantsUtil.isPantsProject(myProject) && !PantsUtil.isPotentialPantsProject(myProject)) {
+                if (!PantsUtil.isPantsProject(myProject) && !PantsUtil.isSeedPantsProject(myProject)) {
                   return;
                 }
                 if (!PantsSettings.getInstance(myProject).isUsePantsMakeBeforeRun()) {
