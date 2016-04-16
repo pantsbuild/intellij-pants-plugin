@@ -86,36 +86,35 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
          * 3. Explicitly invoke `refreshAllProjects`.
          */
         private void convertToPantsProject() {
-            String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
-            String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
-            if (serializedTargets == null || projectPath == null) {
-              return;
-            }
+          String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
+          String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
+          if (serializedTargets == null || projectPath == null) {
+            return;
+          }
 
-            List<String> targetAddresses = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
-            PantsProjectSettings pps = new PantsProjectSettings();
-            pps.setTargetSpecs(targetAddresses);
-            pps.setExternalProjectPath(projectPath);
+          List<String> targetAddresses = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
+          PantsProjectSettings pps = new PantsProjectSettings();
+          pps.setTargetSpecs(targetAddresses);
+          pps.setExternalProjectPath(projectPath);
 
-            // ++ doc
-            ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
-            AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
-            settings.setLinkedProjectsSettings(Collections.singleton(pps));
+          // ++ doc
+          ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
+          AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
+          settings.setLinkedProjectsSettings(Collections.singleton(pps));
 
-            PantsUtil.refreshAllProjects(myProject);
-            // Open the project view and tool pane explicitly because an to-be-converted Pants project
-            // does not have these open by default.
-            if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
-              ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(new Runnable() {
-                @Override
-                public void run() {
-                  ExternalSystemUtil.ensureToolWindowInitialized(myProject, PantsConstants.SYSTEM_ID);
-                }
-              });
-            }
+          PantsUtil.refreshAllProjects(myProject);
+          // Open the project view and tool pane explicitly because an to-be-converted Pants project
+          // does not have these open by default.
+          if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
+            ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(new Runnable() {
+              @Override
+              public void run() {
+                ExternalSystemUtil.ensureToolWindowInitialized(myProject, PantsConstants.SYSTEM_ID);
+              }
+            });
           }
         }
-
+        
         private void subscribeToRunConfigurationAddition() {
           RunManagerEx.getInstanceEx(myProject).addRunManagerListener(
             new RunManagerAdapter() {
