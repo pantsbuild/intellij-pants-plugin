@@ -12,10 +12,34 @@ import java.util.Collections;
 import java.util.List;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
-  private List<String> myTargets = ContainerUtilRt.newArrayList();
+  private List<String> myTargetNames = ContainerUtilRt.newArrayList();
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
   private boolean myWithDependees;
   private boolean myLibsWithSources;
+
+  /**
+   *  @param targetSpecs targets explicted listed from `pants idea-plugin` goal.
+   * @param targetNames target names selected via import GUI. Ignored if `targetSpecs` is non empty.
+   * @param externalProjectPath path to the Pants project.
+   * @param withDependees whether depeedees need to be imported. (Untested and probably not working).
+   * @param libsWithSources whether to import sources and docs when resolving for jars.
+   */
+  public PantsProjectSettings(
+    List<String> targetSpecs,
+    List<String> targetNames,
+    String externalProjectPath,
+    boolean withDependees,
+    boolean libsWithSources
+  ) {
+    myTargetSpecs = targetSpecs;
+    myTargetNames = targetNames;
+    myWithDependees = withDependees;
+    myLibsWithSources = libsWithSources;
+    setExternalProjectPath(externalProjectPath);
+  }
+
+  public PantsProjectSettings() {
+  }
 
   @NotNull
   @Override
@@ -32,6 +56,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
       ((PantsProjectSettings)receiver).setWithDependees(isWithDependees());
       ((PantsProjectSettings)receiver).setTargetNames(getTargetNames());
       ((PantsProjectSettings)receiver).setLibsWithSources(isLibsWithSources());
+      ((PantsProjectSettings)receiver).setTargetSpecs(getTargetSpecs());
     }
   }
 
@@ -50,11 +75,11 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   @NotNull
   @Override
   public List<String> getTargetNames() {
-    return Collections.unmodifiableList(myTargets);
+    return Collections.unmodifiableList(myTargetNames);
   }
 
   public void setTargetNames(List<String> targets) {
-    myTargets = targets;
+    myTargetNames = targets;
   }
 
   public void setWithDependees(boolean withDependees) {
