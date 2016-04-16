@@ -394,8 +394,12 @@ public class PantsUtil {
     );
   }
 
+  /**
+   * Determine whether a project is trigger by Pants `idea-plugin` goal by
+   * looking at the "pants_idea_plugin_version" property.
+   */
   public static boolean isSeedPantsProject(@NotNull Project project) {
-    return PropertiesComponent.getInstance(project).getValue("targets") != null;
+    return PropertiesComponent.getInstance(project).getValue("pants_idea_plugin_version") != null;
   }
 
   public static boolean isPantsModule(@NotNull Module module) {

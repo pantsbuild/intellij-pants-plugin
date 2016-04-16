@@ -8,6 +8,7 @@ import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
@@ -34,9 +35,12 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     }
   }
 
+  /**
+   * Get the target specs used to launched `pants idea-plugin`.
+   */
   @NotNull
   public List<String> getTargetSpecs() {
-    return myTargetSpecs;
+    return Collections.unmodifiableList(myTargetSpecs);
   }
 
   public void setTargetSpecs(List<String> targetSpecs) {
@@ -46,7 +50,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   @NotNull
   @Override
   public List<String> getTargetNames() {
-    return myTargets;
+    return Collections.unmodifiableList(myTargets);
   }
 
   public void setTargetNames(List<String> targets) {

@@ -11,6 +11,7 @@ import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
+import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
@@ -57,7 +58,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
             pantsSettings instanceof PantsSettings && ((PantsSettings) pantsSettings).getResolverVersion() != PantsResolver.VERSION;
-          if (resolverVersionMismatch && /* additional check */PantsUtil.isPantsProject(myProject)) {
+          if (resolverVersionMismatch && PantsUtil.isPantsProject(myProject)) {
             final int answer = Messages.showYesNoDialog(
               myProject,
               PantsBundle.message("pants.project.generated.with.old.version", myProject.getName()),
@@ -71,17 +72,18 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         }
 
         /**
-         * A seed Pants project will contain the following like
-         * <a href="http://google.com">this sample workspace file</a>.
-         * If a non-Pants project contains these properties, we know it is launched from CLI
-         * and will convert it to a Pants project. ++ potential ++ xml details ++ versioning
+         * If the project contains the properties described in pants.backend.project_info.tasks.plugin_gen.PluginGen
+         * we know it is a seed Pants project launched from CLI and will convert it to a Pants project.
          */
         private void convertPotentialPantsProject() {
           if (!PantsUtil.isPantsProject(myProject)) {
-            String pantsIdeaPluginVersion = PropertiesComponent.getInstance(myProject).getValue("pants_plugin_idea_version");
+            boolean isSeedPantsProject = PantsUtil.isSeedPantsProject(myProject);
+            if (!isSeedPantsProject) {
+              return;
+            }
             String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
             String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
-            if (pantsIdeaPluginVersion == null || serializedTargets == null || projectPath == null) {
+            if (serializedTargets == null || projectPath == null) {
               return;
             }
 
@@ -96,11 +98,13 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             settings.setLinkedProjectsSettings(Collections.singleton(pps));
 
             PantsUtil.refreshAllProjects(myProject);
-            // Open the project view explicitly.
+            // Open the project view and tool pane explicitly because an to-be-converted Pants project
+            // does not have these open by default.
             if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
               ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(new Runnable() {
                 @Override
                 public void run() {
+                  ExternalSystemUtil.ensureToolWindowInitialized(myProject, PantsConstants.SYSTEM_ID);
                 }
               });
             }
