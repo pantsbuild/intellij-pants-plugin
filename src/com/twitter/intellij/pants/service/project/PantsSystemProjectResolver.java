@@ -81,7 +81,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
         ));
       }
     }
-    final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings, !isPreviewMode);
+    final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
     task2executor.remove(id);
