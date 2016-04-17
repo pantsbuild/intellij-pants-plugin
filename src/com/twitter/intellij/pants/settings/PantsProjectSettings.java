@@ -18,7 +18,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   private boolean myLibsWithSources;
 
   /**
-   *  @param targetSpecs targets explicted listed from `pants idea-plugin` goal.
+   * @param targetSpecs targets explicted listed from `pants idea-plugin` goal.
    * @param targetNames target names selected via import GUI. Ignored if `targetSpecs` is non empty.
    * @param externalProjectPath path to the Pants project.
    * @param withDependees whether depeedees need to be imported. (Untested and probably not working).

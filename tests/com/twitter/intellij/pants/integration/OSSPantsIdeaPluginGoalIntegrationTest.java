@@ -53,7 +53,7 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     assertEquals(commandLine.toString() + " failed", 0, cmdOutput.getExitCode());
     String projectDir = FileUtil.loadFile(outputFile);
 
-    myProject = ProjectUtil.openProject(projectDir, myProject, false);
+    myProject = ProjectUtil.openProject(projectDir + "/project.ipr", myProject, false);
 
     /**
      * Under unit test mode, {@link com.intellij.ide.impl.ProjectUtil#openProject} will force open a project in a new window,

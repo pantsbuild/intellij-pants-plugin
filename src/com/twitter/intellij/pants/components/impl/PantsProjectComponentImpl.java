@@ -119,10 +119,12 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            * 1. Make sure the project view opened so the view switch will follow.
            * 2. Pants tool window is initialized; otherwise no message is shown when invoking `PantsCompile`.
            */
-          if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
-            ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(null);
+          if (!ApplicationManager.getApplication().isUnitTestMode()) {
+            if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
+              ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(null);
+            }
+            ExternalSystemUtil.ensureToolWindowInitialized(myProject, PantsConstants.SYSTEM_ID);
           }
-          ExternalSystemUtil.ensureToolWindowInitialized(myProject, PantsConstants.SYSTEM_ID);
         }
 
         private void subscribeToRunConfigurationAddition() {
