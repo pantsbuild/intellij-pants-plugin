@@ -39,7 +39,10 @@ public class PantsConstants {
   public static final String PANTS_TARGET_ADDRESS_INFOS_KEY = "pants.target.address.infos";
 
   public static final String PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE = "export-classpath.use_old_naming_style";
+  public static final String PANTS_OPTION_PANTS_WORKDIR = "pants_workdir";
   public static final String PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";
+  public static final String PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION = "test.junit.strict_jvm_version";
+  public static final String PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR = "export-classpath.manifest_jar_only";
   public static final String PANTS_OPTION_NO_COLORS = "--no-colors";
 
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
