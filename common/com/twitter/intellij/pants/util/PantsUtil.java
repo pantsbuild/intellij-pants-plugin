@@ -496,7 +496,7 @@ public class PantsUtil {
   }
 
   public static void refreshAllProjects(@NotNull Project project) {
-    if (!PantsUtil.isPantsProject(project) && !PantsUtil.isSeedPantsProject(project)) {
+    if (!isPantsProject(project) && !isSeedPantsProject(project)) {
       return;
     }
 

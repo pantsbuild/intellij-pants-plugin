@@ -9,8 +9,10 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
+import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
+import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.project.Project;
@@ -101,30 +103,26 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             new PantsProjectSettings(targetSpecs, Collections.<String>emptyList(), projectPath, false, true);
 
           /**
-           * Ensure Pants tool window is initialized; otherwise `linkExternalProject` cannot register the project properly.
+           * Following the examples in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
+           * Make sure the setting is injected into the project for refresh.
            */
-          ExternalSystemUtil.ensureToolWindowInitialized(myProject, PantsConstants.SYSTEM_ID);
+          ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
+          if (manager == null) {
+            return;
+          }
+          AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
+          settings.setLinkedProjectsSettings(Collections.singleton(pantsProjectSettings));
+          PantsUtil.refreshAllProjects(myProject);
 
           /**
-           * Link current project as a Pants project. Project refresh will follow.
-           */
-          ProgressExecutionMode mode = ApplicationManager.getApplication().isUnitTestMode() ?
-                                       ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
-          ExternalSystemUtil.linkExternalProject(
-            PantsConstants.SYSTEM_ID,
-            pantsProjectSettings,
-            myProject,
-            null,
-            false,
-            mode
-          );
-
-          /**
-           * Make sure the project view opened so the view switch will follow.
+           * Ensure GUI is set correctly because the seed(empty) project does not set it:
+           * 1. Make sure the project view opened so the view switch will follow.
+           * 2. Pants tool window is initialized; otherwise no message is shown when invoking `PantsCompile`.
            */
           if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
             ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(null);
           }
+          ExternalSystemUtil.ensureToolWindowInitialized(myProject, PantsConstants.SYSTEM_ID);
         }
 
         private void subscribeToRunConfigurationAddition() {
