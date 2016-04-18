@@ -17,7 +17,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -57,7 +56,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     /**
      * Global options section.
      */
-    commandLine.addParameter(PantsConstants.PANTS_OPTION_NO_COLORS);
+    commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     if (debuggerSetup != null) {
       if (taskNames.size() > 1) {
         throw new ExternalSystemException(PantsBundle.message("pants.error.multiple.tasks.for.debugging"));
