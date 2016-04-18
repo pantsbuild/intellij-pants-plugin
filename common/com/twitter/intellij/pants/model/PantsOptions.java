@@ -22,7 +22,7 @@ import java.util.Map;
 public class PantsOptions {
   private Map<String, String> options;
 
-  protected PantsOptions(final String rawOutput) {
+  public PantsOptions(final String rawOutput) {
     options = parseOptions(rawOutput);
   }
 

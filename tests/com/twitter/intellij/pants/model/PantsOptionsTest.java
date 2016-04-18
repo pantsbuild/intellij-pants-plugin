@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.model;
 
-import com.intellij.openapi.projectRoots.JavaSdkVersion;
 import com.twitter.intellij.pants.util.PantsConstants;
 import junit.framework.TestCase;
 
