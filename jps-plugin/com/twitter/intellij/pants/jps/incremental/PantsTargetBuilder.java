@@ -79,7 +79,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     // Cannot trust `hasDirtyTargets(holder)` because changes in resources module will not show up.
 
     Set<String> targetAddressesToCompile = getTargetsAddressesOfAffectedModules(target, context);
-    PantsOptions pantsOptions = new PantsOptions(target.getPantsExecutable());
+    PantsOptions pantsOptions = PantsOptions.getPantsOptions(target.getPantsExecutable());
     final ProcessOutput output = runCompile(target, targetAddressesToCompile, context, pantsOptions,  "export-classpath", "compile");
     boolean success = output.checkSuccess(LOG);
     if (!success) {
