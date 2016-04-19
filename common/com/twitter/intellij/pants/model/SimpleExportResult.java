@@ -61,7 +61,8 @@ public class SimpleExportResult {
   private static final Gson GSON_PARSER = new GsonBuilder()
     .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
-  public static @NotNull SimpleExportResult getExportResult(@NotNull String pantsExecutable) {
+  @NotNull
+  public static SimpleExportResult getExportResult(@NotNull String pantsExecutable) {
     final GeneralCommandLine commandline = PantsUtil.defaultCommandLine(pantsExecutable);
     commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
     try (Tempfile tempfile = Tempfile.create("pants_export_run", ".out")) {
@@ -80,7 +81,8 @@ public class SimpleExportResult {
   }
 
   @VisibleForTesting
-  public static @NotNull SimpleExportResult parse(@NotNull String output) {
+  @NotNull
+  public static SimpleExportResult parse(@NotNull String output) {
     return GSON_PARSER.fromJson(output, SimpleExportResult.class);
   }
 }
