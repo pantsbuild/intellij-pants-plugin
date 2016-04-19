@@ -3,9 +3,7 @@
 
 package com.twitter.intellij.pants.util;
 
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -693,7 +691,7 @@ public class PantsUtil {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
       distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
-      return PantsConstants.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
+      return PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }
     else {
       throw new Exception("No IDEA Project JDK Found");
@@ -749,13 +747,12 @@ public class PantsUtil {
     if (versionCompare(exportResult.getVersion(), "1.0.7") >= 0) {
       String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
       boolean strict = Boolean.parseBoolean(PantsOptions.getPantsOptions(pantsExecutable)
-                                            .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
+                                              .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
       String jdkName = String.format("JDK from pants %s", defaultPlatform);
       String jdkHome = exportResult.getPreferredJvmDistributions().get(defaultPlatform)
         .get(strict ? "strict" : "non_strict");
       return JavaSdk.getInstance().createJdk(jdkName, jdkHome);
     }
-
     return null;
   }
 
