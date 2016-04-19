@@ -26,6 +26,7 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -45,8 +46,10 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
+import com.twitter.intellij.pants.model.SimpleExportResult;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
@@ -729,26 +732,28 @@ public class PantsUtil {
     );
   }
 
-  class SimpleExportResult {
-    public String version;
 
-    public String getVersion() {
-      return version;
-    }
+  public static boolean hasTargetIdInExport(@NotNull final String pantsExecutable) {
+    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.5") >= 0;
   }
 
-  public static boolean hasTargetIdInExport(final String pantsExecutable) {
-    final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
-    try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
-      final String stdOut = processOutput.getStdout();
-      SimpleExportResult simpleExportResult = new Gson().fromJson(stdOut, SimpleExportResult.class);
-      return versionCompare(simpleExportResult.getVersion(), "1.0.5") >= 0;
+  public static boolean supportExportDefaultJavaSdk(@NotNull final String pantsExecutable) {
+    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.7") >= 0;
+  }
+
+  @Nullable
+  public static Sdk getDefaultJavaSdk(@NotNull final String pantsExecutable) {
+    SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
+    if (versionCompare(exportResult.getVersion(), "1.0.7") >= 0) {
+      String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
+      boolean strict = Boolean.parseBoolean(PantsOptions.getPantsOptions(pantsExecutable)
+                                              .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
+      String jdkName = String.format("JDK from pants %s", defaultPlatform);
+      String jdkHome = exportResult.getPreferredJvmDistributions().get(defaultPlatform)
+        .get(strict ? "strict" : "non_strict");
+      return JavaSdk.getInstance().createJdk(jdkName, jdkHome);
     }
-    catch (ExecutionException e) {
-      throw new PantsException("Failed:" + commandline.getCommandLineString());
-    }
+    return null;
   }
 
   /**
