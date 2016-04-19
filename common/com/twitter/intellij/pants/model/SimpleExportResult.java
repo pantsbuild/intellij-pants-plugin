@@ -64,10 +64,10 @@ public class SimpleExportResult {
   @NotNull
   public static SimpleExportResult getExportResult(@NotNull String pantsExecutable) {
     final GeneralCommandLine commandline = PantsUtil.defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
+    commandline.addParameters("export", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     try (Tempfile tempfile = Tempfile.create("pants_export_run", ".out")) {
       commandline.addParameter(
-        String.format("%s=%s", PantsConstants.PANTS_OPTION_EXPORT_OUTPUT_FILE,
+        String.format("%s=%s", PantsConstants.PANTS_CLI_OPTION_EXPORT_OUTPUT_FILE,
                       tempfile.getFile().getPath()));
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       if (processOutput.checkSuccess(LOG)) {
