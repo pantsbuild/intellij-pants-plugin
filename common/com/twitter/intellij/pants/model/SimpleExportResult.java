@@ -16,6 +16,7 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import com.twitter.intellij.pants.util.Tempfile;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Map;
@@ -60,10 +61,10 @@ public class SimpleExportResult {
   private static final Gson GSON_PARSER = new GsonBuilder()
     .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
-  public static SimpleExportResult getExportResult(String pantsExecutable) {
+  public static @NotNull SimpleExportResult getExportResult(@NotNull String pantsExecutable) {
     final GeneralCommandLine commandline = PantsUtil.defaultCommandLine(pantsExecutable);
     commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
-    try (Tempfile tempfile = new Tempfile("pants_export_run", ".out")) {
+    try (Tempfile tempfile = Tempfile.create("pants_export_run", ".out")) {
       commandline.addParameter(
         String.format("%s=%s", PantsConstants.PANTS_OPTION_EXPORT_OUTPUT_FILE,
                       tempfile.getFile().getPath()));
@@ -79,7 +80,7 @@ public class SimpleExportResult {
   }
 
   @VisibleForTesting
-  public static SimpleExportResult parse(String output) {
+  public static @NotNull SimpleExportResult parse(@NotNull String output) {
     return GSON_PARSER.fromJson(output, SimpleExportResult.class);
   }
 }

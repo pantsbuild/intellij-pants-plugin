@@ -13,8 +13,8 @@ import java.nio.file.Files;
 public class Tempfile implements AutoCloseable {
   private final File file;
 
-  public Tempfile(String prefix, String suffix) throws IOException {
-    file = File.createTempFile(prefix, suffix);
+  private Tempfile(File file) {
+    this.file = file;
   }
 
   public File getFile() {
@@ -24,5 +24,9 @@ public class Tempfile implements AutoCloseable {
   @Override
   public void close() throws IOException {
     Files.deleteIfExists(file.toPath());
+  }
+
+  public static final Tempfile create(String prefix, String suffix) throws IOException {
+    return new Tempfile(File.createTempFile(prefix, suffix));
   }
 }

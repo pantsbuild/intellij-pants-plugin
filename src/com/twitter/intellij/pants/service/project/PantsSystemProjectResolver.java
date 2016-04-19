@@ -109,9 +109,12 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
 
-    Sdk sdk = getPantsDefaultJavaSdk(executor.getWorkingDir());
-    if (sdk != null) {
-      projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(executor.getProjectPath());
+    if (pantsExecutable != null) {
+      Sdk sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.getPath());
+      if (sdk != null) {
+        projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
+      }
     }
 
     if (!isPreviewMode) {
@@ -230,10 +233,5 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
         });
       }
     }, 0, 1, TimeUnit.SECONDS);
-  }
-
-  @Nullable
-  private Sdk getPantsDefaultJavaSdk(File workingDir) {
-    return PantsUtil.getDefaultJavaSdk(PantsUtil.findPantsExecutable(workingDir).getPath());
   }
 }
