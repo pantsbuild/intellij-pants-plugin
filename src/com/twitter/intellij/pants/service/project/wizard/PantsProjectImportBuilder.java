@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.service.project.wizard;
 
 import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataManager;
@@ -75,7 +76,7 @@ public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuil
    * Find if pants sdk is already configured, return the existing sdk if it exists,
    * otherwise add to the config and return.
    */
-  private Sdk addIfNotExists(Sdk pantsSdk) {
+  private Sdk addIfNotExists(final Sdk pantsSdk) {
     final JavaSdk javaSdk = JavaSdk.getInstance();
     List<Sdk> sdks = ProjectJdkTable.getInstance().getSdksOfType(javaSdk);
     for (Sdk sdk : sdks) {
@@ -83,7 +84,12 @@ public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuil
         return sdk;
       }
     }
-    ProjectJdkTable.getInstance().addJdk(pantsSdk);
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        ProjectJdkTable.getInstance().addJdk(pantsSdk);
+      }
+    });
     return pantsSdk;
   }
 }
