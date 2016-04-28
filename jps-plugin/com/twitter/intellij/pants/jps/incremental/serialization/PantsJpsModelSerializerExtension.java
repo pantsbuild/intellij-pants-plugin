@@ -11,6 +11,7 @@ import com.twitter.intellij.pants.jps.incremental.model.JpsPantsModuleExtension;
 import com.twitter.intellij.pants.jps.incremental.model.impl.JpsPantsModuleExtensionImpl;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -64,7 +65,7 @@ public class PantsJpsModelSerializerExtension extends JpsModelSerializerExtensio
     final String addressInfosJson = StringUtil.nullize(rootElement.getAttributeValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY));
     Set<TargetAddressInfo> targetInfoSet = gson.fromJson(addressInfosJson, HashSet.class);
     if (PantsConstants.PANTS.equals(externalSystemId) && targetAddressesValue != null && linkedProjectPath != null) {
-      final Set<String> targetAddresses = new HashSet<String>(StringUtil.split(targetAddressesValue, ","));
+      final Set<String> targetAddresses = PantsUtil.hydrateTargetAddresses(targetAddressesValue);
       final JpsPantsModuleExtensionImpl moduleExtensionElement =
         new JpsPantsModuleExtensionImpl(linkedProjectPath, targetAddresses, targetInfoSet);
       module.getContainer().setChild(JpsPantsModuleExtension.ROLE, moduleExtensionElement);

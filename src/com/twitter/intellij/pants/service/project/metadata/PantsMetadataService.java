@@ -15,6 +15,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.google.gson.Gson;
@@ -45,8 +46,8 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
       final TargetMetadata metadata = node.getData();
       final Module module = modelsProvider.findIdeModule(metadata.getModuleName());
       if (module != null) {
-        module.setOption(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY, StringUtil.join(metadata.getLibraryExcludes(), ","));
-        module.setOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY, StringUtil.join(metadata.getTargetAddresses(), ","));
+        module.setOption(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY, PantsUtil.dehydrateTargetAddresses(metadata.getLibraryExcludes()));
+        module.setOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY, PantsUtil.dehydrateTargetAddresses(metadata.getTargetAddresses()));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY, gson.toJson(metadata.getTargetAddressInfoSet()));
       }
     }

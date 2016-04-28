@@ -24,6 +24,7 @@ import com.intellij.util.Function;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -39,6 +40,14 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   protected static final Logger LOG = Logger.getInstance(PantsClasspathRunConfigurationExtension.class);
   private static final Gson gson = new Gson();
 
+  /**
+   * The goal of this function is to find classpath for JUnit runner.
+   * <p/>
+   * There are two ways to do so:
+   * 1. If Pants supports `--export-classpath-manifest-jar-only`, then only the manifest jar will be
+   * picked up which contains all the classpath links for a particular test.
+   * 2. If not, this method will collect classpath based on all known target ids from project modules.
+   */
   @Override
   public <T extends RunConfigurationBase> void updateJavaParameters(
     T configuration,
@@ -63,6 +72,20 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       classpath.remove(excludedPath);
     }
 
+    PantsOptions pantsOptions = PantsOptions.getPantsOptions(configuration.getProject());
+    if (pantsOptions == null) {
+      throw new ExecutionException("Pants options not found.");
+    }
+    if (pantsOptions.supportsManifestJar()) {
+      VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject());
+      if (manifestJar != null) {
+        classpath.add(manifestJar.getPath());
+        return;
+      }
+      throw new ExecutionException("Pants supports manifest jar, but it is not found.");
+    }
+
+
     ApplicationManager.getApplication().runWriteAction(
       new Runnable() {
         @Override
@@ -78,8 +101,16 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     );
 
     VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
+    if (pantsExecutable == null) {
+      throw new ExecutionException("Cannot find Pants executable.");
+    }
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    if (buildRoot == null) {
+      throw new ExecutionException("Cannot find build root.");
+    }
+
     final boolean hasTargetIdInExport =
-      pantsExecutable != null && PantsUtil.hasTargetIdInExport(pantsExecutable.getPath());
+      PantsUtil.hasTargetIdInExport(pantsExecutable.getPath());
 
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
@@ -96,7 +127,6 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     // if current version of Pants supports export-classpath
     if (!publishedClasspath.isEmpty()) {
       // remove IJ compiler outputs to reduce amount of arguments.
-      final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
       final List<String> toRemove = ContainerUtil.findAll(
         classpath.getPathList(),
         new Condition<String>() {
@@ -130,7 +160,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     // The old way to find classpath by target address
     else {
       final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
-      for (String targetAddress : StringUtil.split(addresses, ",")) {
+      for (String targetAddress : PantsUtil.hydrateTargetAddresses(addresses)) {
         result.addAll(findPublishedClasspathByTargetAddress(module, targetAddress));
       }
     }
@@ -204,7 +234,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
         public boolean process(Module module) {
           final String targets = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
           final String excludes = module.getOptionValue(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY);
-          for (String exclude : StringUtil.split(StringUtil.notNullize(excludes), ",")) {
+          for (String exclude : PantsUtil.hydrateTargetAddresses(excludes)) {
             result.put(exclude, StringUtil.notNullize(targets, module.getName()));
           }
           return true;
@@ -245,7 +275,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     if (!(configuration instanceof ModuleBasedConfiguration)) {
       return null;
     }
-    final RunConfigurationModule runConfigurationModule = ((ModuleBasedConfiguration)configuration).getConfigurationModule();
+    final RunConfigurationModule runConfigurationModule = ((ModuleBasedConfiguration) configuration).getConfigurationModule();
     final Module module = runConfigurationModule.getModule();
     if (module == null || !PantsUtil.isPantsModule(module)) {
       return null;

@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.util;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingProcessHandler;
@@ -25,6 +26,7 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -37,12 +39,22 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiFile;
-import com.intellij.util.*;
+import com.intellij.util.ArrayUtil;
+import com.intellij.util.Function;
+import com.intellij.util.ObjectUtils;
+import com.intellij.util.PathUtil;
+import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
-import org.jetbrains.annotations.*;
+import com.twitter.intellij.pants.model.SimpleExportResult;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.JpsProject;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
@@ -51,8 +63,17 @@ import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.*;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
@@ -62,13 +83,22 @@ public class PantsUtil {
 
   private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
 
+  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
+
+  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
+
+  public static final Gson gson = new Gson();
+
+  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
+
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
 
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
     if (vFile == null) {
       return null;
-    } else if (vFile.isDirectory()) {
+    }
+    else if (vFile.isDirectory()) {
       return ContainerUtil.find(
         vFile.getChildren(),
         new Condition<VirtualFile>() {
@@ -105,9 +135,6 @@ public class PantsUtil {
     }
     return isBUILDFileName(file.getName());
   }
-
-  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
-  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
   @Nullable
   public static String findPantsVersion(@Nullable VirtualFile workingDir) {
@@ -222,6 +249,26 @@ public class PantsUtil {
   }
 
   @Nullable
+  public static VirtualFile findProjectManifestJar(@NotNull Project myProject) {
+    Module[] modules = ModuleManager.getInstance(myProject).getModules();
+    if (modules.length == 0) {
+      return null;
+    }
+    Module moduleSample = modules[0];
+
+    VirtualFile classpathDir = findDistExportClasspathDirectory(moduleSample);
+    if (classpathDir == null) {
+      return null;
+    }
+    String manifestUrl = classpathDir.getUrl() + "/manifest.jar";
+    VirtualFile manifest = VirtualFileManager.getInstance().refreshAndFindFileByUrl(manifestUrl);
+    if (manifest != null) {
+      return manifest;
+    }
+    return null;
+  }
+
+  @Nullable
   public static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
     if (file == null) return null;
     if (file.isDirectory()) {
@@ -283,7 +330,7 @@ public class PantsUtil {
   }
 
   public static String removeWhitespace(@NotNull String text) {
-    return text.replaceAll("\\s","");
+    return text.replaceAll("\\s", "");
   }
 
   public static boolean isGeneratableFile(@NotNull String path) {
@@ -297,14 +344,16 @@ public class PantsUtil {
            FileUtilRt.extensionEquals(path, PantsConstants.PROTOBUF_EXT);
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public static String getCanonicalModuleName(@NotNull @NonNls String targetName) {
     // Do not use ':' because it is used as a separator in a classpath
     // while running the app. As well as path separators
     return replaceDelimitersInTargetName(targetName, '_');
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public static String getCanonicalTargetId(@NotNull @NonNls String targetName) {
     return replaceDelimitersInTargetName(targetName, '.');
   }
@@ -319,8 +368,11 @@ public class PantsUtil {
       return Collections.emptyList();
     }
     final String targets = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+    if (targets == null) {
+      return Collections.emptyList();
+    }
     return ContainerUtil.mapNotNull(
-      StringUtil.split(StringUtil.notNullize(targets), ","),
+      PantsUtil.hydrateTargetAddresses(targets),
       new Function<String, PantsTargetAddress>() {
         @Override
         public PantsTargetAddress fun(String targetAddress) {
@@ -360,7 +412,7 @@ public class PantsUtil {
   }
 
   public static boolean isResource(PantsSourceType sourceType) {
-    return sourceType == PantsSourceType.RESOURCE  || sourceType == PantsSourceType.TEST_RESOURCE;
+    return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
   }
 
   @Nullable
@@ -386,7 +438,8 @@ public class PantsUtil {
   public static VirtualFile findBUILDFileForModule(@NotNull Module module) {
     final String linkedPantsBUILD = getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
     final String linkedPantsBUILDUrl = linkedPantsBUILD != null ? VfsUtil.pathToUrl(linkedPantsBUILD) : null;
-    final VirtualFile virtualFile = linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
+    final VirtualFile virtualFile =
+      linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
     if (virtualFile == null) {
       return null;
     }
@@ -523,16 +576,7 @@ public class PantsUtil {
   }
 
   public static ProcessOutput getOutput(@NotNull Process process, @Nullable ProcessAdapter processAdapter) {
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), "123");
-    if (processAdapter != null) {
-      processHandler.addProcessListener(processAdapter);
-    }
-    return processHandler.runProcess();
-  }
-
-  public static ProcessOutput getNewOutput(@NotNull GeneralCommandLine commandLine, @Nullable ProcessAdapter processAdapter)
-    throws ExecutionException {
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(commandLine);
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
     if (processAdapter != null) {
       processHandler.addProcessListener(processAdapter);
     }
@@ -576,10 +620,10 @@ public class PantsUtil {
     return name.substring(0, index);
   }
 
-  @Contract(pure=true)
+  @Contract(pure = true)
   public static <T> boolean forall(@NotNull Iterable<T> iterable, @NotNull Condition<T> condition) {
     for (T value : iterable) {
-      if(!condition.value(value)) {
+      if (!condition.value(value)) {
         return false;
       }
     }
@@ -587,7 +631,7 @@ public class PantsUtil {
   }
 
   @NotNull
-  public static  <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
+  public static <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
     return ContainerUtil.mapNotNull(
       ExternalSystemApiUtil.findAll(dataNode, key),
       new Function<DataNode<T>, T>() {
@@ -606,20 +650,6 @@ public class PantsUtil {
     return getOutput(command.createProcess(), processAdapter);
   }
 
-  public static String getPantsOptions(final String pantsExecutable) {
-    final GeneralCommandLine exportCommandline = defaultCommandLine(pantsExecutable);
-    exportCommandline.addParameters("options", PantsConstants.PANTS_OPTION_NO_COLORS);
-    try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
-      final String stdOut = processOutput.getStdout();
-      return stdOut;
-    }
-    catch (ExecutionException e) {
-      throw new PantsException("Failed:" + exportCommandline.getCommandLineString());
-    }
-  }
-
-
   /**
    * @param project JpsProject
    * @return Path to IDEA Project JDK if exists, else null
@@ -631,7 +661,7 @@ public class PantsUtil {
       String sdkName = sdkReference.getSdkName();
       JpsLibrary lib = project.getModel().getGlobal().getLibraryCollection().findLibrary(sdkName);
       if (lib != null && lib.getProperties() instanceof JpsSdkImpl) {
-        return ((JpsSdkImpl)lib.getProperties()).getHomePath();
+        return ((JpsSdkImpl) lib.getProperties()).getHomePath();
       }
     }
     return null;
@@ -661,30 +691,69 @@ public class PantsUtil {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
       distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
-      return PantsConstants.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
+      return PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }
     else {
       throw new Exception("No IDEA Project JDK Found");
     }
   }
 
-  class SimpleExportResult {
-    public String version;
-    public String getVersion() {return version; }
+  @NotNull
+  public static Set<String> hydrateTargetAddresses(@NotNull String addresses) {
+    return gson.fromJson(addresses, TYPE_SET_STRING);
   }
 
-  public static boolean hasTargetIdInExport(final String pantsExecutable) {
-    final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
-    try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
-      final String stdOut = processOutput.getStdout();
-      SimpleExportResult simpleExportResult = new Gson().fromJson(stdOut, SimpleExportResult.class);
-      return versionCompare(simpleExportResult.getVersion(), "1.0.5") >= 0;
+  @NotNull
+  public static String dehydrateTargetAddresses(@NotNull Set<String> addresses) {
+    return gson.toJson(addresses);
+  }
+
+  public static boolean isGenTarget(@NotNull String address) {
+    return StringUtil.startsWithIgnoreCase(address, ".pants.d") ||
+           StringUtil.startsWithIgnoreCase(address, PantsConstants.PANTS_PROJECT_MODULE_ID_PREFIX) ||
+           // Checking "_synthetic_resources" is a temporary fix. It also needs to match the postfix added from pants in
+           // src.python.pants.backend.python.targets.python_target.PythonTarget#_synthetic_resources_target
+           // TODO: The long term solution is collect non-synthetic targets at pre-compile stage
+           // https://github.com/pantsbuild/intellij-pants-plugin/issues/83
+           address.toLowerCase().endsWith("_synthetic_resources");
+  }
+
+  public static Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
+    return new HashSet<String>(
+      ContainerUtil.filter(
+        addresses,
+        new Condition<String>() {
+          @Override
+          public boolean value(String targetAddress) {
+            return !isGenTarget(targetAddress);
+          }
+        }
+      )
+    );
+  }
+
+
+  public static boolean hasTargetIdInExport(@NotNull final String pantsExecutable) {
+    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.5") >= 0;
+  }
+
+  public static boolean supportExportDefaultJavaSdk(@NotNull final String pantsExecutable) {
+    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.7") >= 0;
+  }
+
+  @Nullable
+  public static Sdk getDefaultJavaSdk(@NotNull final String pantsExecutable) {
+    SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
+    if (versionCompare(exportResult.getVersion(), "1.0.7") >= 0) {
+      String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
+      boolean strict = Boolean.parseBoolean(PantsOptions.getPantsOptions(pantsExecutable)
+                                              .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
+      String jdkName = String.format("JDK from pants %s", defaultPlatform);
+      String jdkHome = exportResult.getPreferredJvmDistributions().get(defaultPlatform)
+        .get(strict ? "strict" : "non_strict");
+      return JavaSdk.getInstance().createJdk(jdkName, jdkHome);
     }
-    catch (ExecutionException e) {
-      throw new PantsException("Failed:" + commandline.getCommandLineString());
-    }
+    return null;
   }
 
   /**

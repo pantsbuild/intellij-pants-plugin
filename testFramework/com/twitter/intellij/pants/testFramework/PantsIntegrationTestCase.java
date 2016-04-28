@@ -46,6 +46,7 @@ import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -57,7 +58,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
+
 /**
  * If your integration test modifies any source files
  * please set {@link PantsIntegrationTestCase#readOnly} to false.
@@ -192,6 +195,18 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Nullable
   private VirtualFile findClassFile(String className, String moduleName) throws Exception {
+    PantsOptions pantsOptions = PantsOptions.getPantsOptions(myProject);
+    if (pantsOptions == null) {
+      return null;
+    }
+    if (pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
+      VirtualFile manifestJar = PantsUtil.findProjectManifestJar(myProject);
+      if (manifestJar != null) {
+        return manifestJar;
+      }
+      return null;
+    }
+
     ApplicationManager.getApplication().runWriteAction(
       new Runnable() {
         @Override
@@ -342,7 +357,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       }
     );
 
-    final String noChanges = "pants: No changes to compile.";
+    final String noChanges = "pants_plugin: " + PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE;
     final String compiledSuccessfully = "pants: SUCCESS";
     assertTrue("Compilation wasn't successful!", rawMessages.contains(noChanges) || rawMessages.contains(compiledSuccessfully));
     return rawMessages;
@@ -419,7 +434,31 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
   }
 
+  public void assertSuccessfulJUnitTest(JUnitConfiguration configuration) {
+    final OSProcessHandler handler = runJUnitWithConfiguration(configuration);
+    assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+  }
+
   public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) {
+    return runJUnitWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
+  }
+
+  @NotNull
+  private OSProcessHandler runJUnitWithConfiguration(JUnitConfiguration configuration) {
+    final PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
+      new PantsJUnitRunnerAndConfigurationSettings(configuration);
+    final ExecutionEnvironmentBuilder environmentBuilder =
+      ExecutionUtil.createEnvironment(DefaultRunExecutor.getRunExecutorInstance(), runnerAndConfigurationSettings);
+    final ExecutionEnvironment environment = environmentBuilder.build();
+
+    ProgramRunnerUtil.executeConfiguration(environment, false, false);
+    final OSProcessHandler handler = (OSProcessHandler) environment.getContentToReuse().getProcessHandler();
+    assertTrue(handler.waitFor());
+    return handler;
+  }
+
+  @NotNull
+  public JUnitConfiguration generateJUnitConfiguration(String moduleName, String className, @Nullable String vmParams) {
     final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
     final JUnitConfiguration runConfiguration = new JUnitConfiguration("Pants: " + className, myProject, factory);
     runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).getCanonicalPath());
@@ -429,16 +468,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       runConfiguration.setVMParameters(vmParams);
     }
     runConfiguration.setMainClass(findClassAndAssert(className));
-    final PantsJUnitRunnerAndConfigurationSettings
-      runnerAndConfigurationSettings = new PantsJUnitRunnerAndConfigurationSettings(runConfiguration);
-    final ExecutionEnvironmentBuilder environmentBuilder =
-      ExecutionUtil.createEnvironment(DefaultRunExecutor.getRunExecutorInstance(), runnerAndConfigurationSettings);
-    final ExecutionEnvironment environment = environmentBuilder.build();
-
-    ProgramRunnerUtil.executeConfiguration(environment, false, false);
-    final OSProcessHandler handler = (OSProcessHandler)environment.getContentToReuse().getProcessHandler();
-    assertTrue(handler.waitFor());
-    return handler;
+    return runConfiguration;
   }
 
   @Override
