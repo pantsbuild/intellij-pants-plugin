@@ -51,6 +51,7 @@ import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -522,7 +523,7 @@ public class PantsUtil {
   }
 
   public static ProcessOutput getOutput(@NotNull Process process, @Nullable ProcessAdapter processAdapter) {
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), "123");
     if (processAdapter != null) {
       processHandler.addProcessListener(processAdapter);
     }
