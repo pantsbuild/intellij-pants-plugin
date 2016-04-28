@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.compiler;
 
 import com.intellij.compiler.server.BuildProcessParametersProvider;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
@@ -20,13 +21,21 @@ public class PantsBuildProcessParametersProvider extends BuildProcessParametersP
   public List<String> getClassPath() {
     // Hack to provide additional classpath to compilation process
     // in BuildManager. See scripts/prepare-ci-environment.sh
+
+    final List<String> classpath = ContainerUtil.newArrayList();
+    classpath.add(ClasspathBootstrap.getResourcePath(ExternalSystemException.class));
+
     if (ApplicationManager.getApplication().isUnitTestMode()) {
-      final List<String> classpath = ContainerUtil.newArrayList();
+      classpath.add(ClasspathBootstrap.getResourcePath(ExternalSystemException.class));
       classpath.add(ClasspathBootstrap.getResourcePath(PantsJpsProjectExtensionSerializer.class));
       classpath.add(ClasspathBootstrap.getResourcePath(PantsUtil.class));
       classpath.addAll(StringUtil.split(StringUtil.notNullize(System.getProperty("pants.jps.plugin.classpath")), ":"));
       return classpath;
     }
-    return super.getClassPath();
+    else {
+      // IDEA 2016 moved `ExternalSystemException` out of `openapi.jar` and is not on the default classpaths anymore
+      // despite staying in the same package, so we have to explicitly add it to the external builder.
+      return classpath;
+    }
   }
 }

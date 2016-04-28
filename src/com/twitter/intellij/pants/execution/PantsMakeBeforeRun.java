@@ -190,9 +190,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       commandLine.addParameter(targetAddress);
     }
 
-    /* Shell off. */
-    showPantsMakeTaskMessage(commandLine.getCommandLineString(), NotificationCategory.INFO);
-
     final Process process;
     try {
       process = commandLine.createProcess();
@@ -202,7 +199,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return false;
     }
 
-    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
+    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
     addMessageHandler(processHandler);
     processHandler.runProcess();
 

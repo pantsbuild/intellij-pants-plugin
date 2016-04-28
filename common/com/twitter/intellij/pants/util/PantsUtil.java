@@ -64,6 +64,7 @@ import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -576,7 +577,7 @@ public class PantsUtil {
   }
 
   public static ProcessOutput getOutput(@NotNull Process process, @Nullable ProcessAdapter processAdapter) {
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), "");
     if (processAdapter != null) {
       processHandler.addProcessListener(processAdapter);
     }
