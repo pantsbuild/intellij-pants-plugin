@@ -229,11 +229,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    */
   private boolean checkPantsProperties() {
     if (pantsExecutable == null) {
-      VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject.getProjectFile());
-      // Sometimes project files are not ready, so find Pants executable via module location.
-      if (pantsExe == null && ModuleManager.getInstance(myProject).getModules().length > 0) {
-        pantsExe = PantsUtil.findPantsExecutable(ModuleManager.getInstance(myProject).getModules()[0].getModuleFilePath());
-      }
+      VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject);
       if (pantsExe == null) {
         showPantsMakeTaskMessage("Pants executable not found", NotificationCategory.ERROR);
         return false;
