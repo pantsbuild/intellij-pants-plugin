@@ -100,7 +100,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
     );
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getProject());
     if (pantsExecutable == null) {
       throw new ExecutionException("Cannot find Pants executable.");
     }
