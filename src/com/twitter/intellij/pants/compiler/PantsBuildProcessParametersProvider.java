@@ -22,6 +22,8 @@ public class PantsBuildProcessParametersProvider extends BuildProcessParametersP
     // Hack to provide additional classpath to compilation process
     // in BuildManager. See scripts/prepare-ci-environment.sh
 
+    // IDEA 2016 moved `ExternalSystemException` out of `openapi.jar` and is not on the default classpaths anymore
+    // despite staying in the same package, so we have to explicitly add it to the external builder.
     final List<String> classpath = ContainerUtil.newArrayList();
     classpath.add(ClasspathBootstrap.getResourcePath(ExternalSystemException.class));
 
@@ -30,12 +32,8 @@ public class PantsBuildProcessParametersProvider extends BuildProcessParametersP
       classpath.add(ClasspathBootstrap.getResourcePath(PantsJpsProjectExtensionSerializer.class));
       classpath.add(ClasspathBootstrap.getResourcePath(PantsUtil.class));
       classpath.addAll(StringUtil.split(StringUtil.notNullize(System.getProperty("pants.jps.plugin.classpath")), ":"));
-      return classpath;
     }
-    else {
-      // IDEA 2016 moved `ExternalSystemException` out of `openapi.jar` and is not on the default classpaths anymore
-      // despite staying in the same package, so we have to explicitly add it to the external builder.
-      return classpath;
-    }
+
+    return classpath;
   }
 }

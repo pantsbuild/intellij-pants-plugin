@@ -175,10 +175,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @NotNull
   public CompilerTester getCompilerTester() throws Exception {
-    if (myCompilerTester == null) {
-      final List<Module> allModules = Arrays.asList(ModuleManager.getInstance(myProject).getModules());
-      myCompilerTester = new CompilerTester(myProject, allModules);
-    }
+    final List<Module> allModules = Arrays.asList(ModuleManager.getInstance(myProject).getModules());
+    myCompilerTester = new CompilerTester(myProject, allModules);
     return myCompilerTester;
   }
 
