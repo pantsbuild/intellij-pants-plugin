@@ -177,7 +177,9 @@ public class PantsCompileOptionsExecutor {
       throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
     }
     if (processOutput.checkSuccess(LOG)) {
-      return FileUtil.loadFile(outputFile);
+      String output = FileUtil.loadFile(outputFile);
+      FileUtil.asyncDelete(outputFile);
+      return output;
     }
     else {
       throw new PantsExecutionException("Failed to update the project!", command.getCommandLineString("pants"), processOutput);
@@ -229,8 +231,9 @@ public class PantsCompileOptionsExecutor {
     if (!output.checkSuccess(LOG)) {
       throw new ExternalSystemException("Failed to find dependents!\n" + output.getStderr());
     }
-
-    return FileUtil.loadLines(outputFile);
+    List<String> lines = FileUtil.loadLines(outputFile);
+    FileUtil.asyncDelete(outputFile);
+    return lines;
   }
 
   @NotNull
