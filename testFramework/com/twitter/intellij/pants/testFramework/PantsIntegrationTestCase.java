@@ -475,12 +475,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   public void tearDown() throws Exception {
     try {
-      super.tearDown();
-    }
-    catch (Exception e) {
-
-    }
-    try {
       cleanProjectRoot();
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();
@@ -488,6 +482,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       Messages.setTestDialog(TestDialog.DEFAULT);
     }
     finally {
+      try {
+        super.tearDown();
+      }
+      catch (Exception e) {
+
+      }
       // double check.
       if (myProject != null && !myProject.isDisposed()) {
         Disposer.dispose(myProject);
