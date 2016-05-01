@@ -480,7 +480,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         myCompilerTester.tearDown();
       }
       Messages.setTestDialog(TestDialog.DEFAULT);
-      super.tearDown();
+      //super.tearDown();
     }
     finally {
       // double check.
