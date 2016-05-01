@@ -34,21 +34,21 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
   }
 
   public void testScopedJUnitTests() throws Throwable {
-    /**
-     * Import 3 targets:
-     * testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target
-     * testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target
-     * testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher
-     */
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/dummies");
-
-    List<String> output = makeModules("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
-    // Make sure only matcher target is compiled
-    assertContainsSubstring(output, "compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher");
-    assertSuccessfulJUnitTest(
-      "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest");
-
+    ///**
+    // * Import 3 targets:
+    // * testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target
+    // * testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target
+    // * testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher
+    // */
+    //doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
+    //doImport("testprojects/tests/java/org/pantsbuild/testproject/dummies");
+    //
+    //List<String> output = makeModules("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
+    //// Make sure only matcher target is compiled
+    //assertContainsSubstring(output, "compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher");
+    //assertSuccessfulJUnitTest(
+    //  "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest");
+    //
     //// Make sure only the 2 dummies targets are compiled.
     //assertContainsSubstring(
     //  makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), "Compiling 2 targets");
