@@ -3,6 +3,7 @@
 # "machines". This is also required in order to use the
 # cache configured below.
 sudo: false
+dist: trusty
 
 language: java
 jdk:
@@ -27,7 +28,7 @@ env:
     - PANTS_SHA="release_0.0.82" TEST_SET=integration
     - PANTS_SHA="release_0.0.81" TEST_SET=integration
     - PANTS_SHA="release_0.0.80" TEST_SET=integration
-    - PANTS_SHA="release_0.0.79" TEST_SET=integration
+    #- PANTS_SHA="release_0.0.79" TEST_SET=integration
     #- PANTS_SHA="release_0.0.68" TEST_SET=integration
     #- PANTS_SHA="release_0.0.67" TEST_SET=integration
     #- PANTS_SHA="release_0.0.66" TEST_SET=integration
