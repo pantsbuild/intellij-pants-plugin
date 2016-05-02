@@ -28,7 +28,6 @@ public class PantsBuildProcessParametersProvider extends BuildProcessParametersP
     classpath.add(ClasspathBootstrap.getResourcePath(ExternalSystemException.class));
 
     if (ApplicationManager.getApplication().isUnitTestMode()) {
-      classpath.add(ClasspathBootstrap.getResourcePath(ExternalSystemException.class));
       classpath.add(ClasspathBootstrap.getResourcePath(PantsJpsProjectExtensionSerializer.class));
       classpath.add(ClasspathBootstrap.getResourcePath(PantsUtil.class));
       classpath.addAll(StringUtil.split(StringUtil.notNullize(System.getProperty("pants.jps.plugin.classpath")), ":"));
