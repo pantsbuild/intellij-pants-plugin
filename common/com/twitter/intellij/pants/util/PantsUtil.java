@@ -592,7 +592,7 @@ public class PantsUtil {
   }
 
   public static ProcessOutput getOutput(@NotNull Process process, @Nullable ProcessAdapter processAdapter) {
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), "");
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), "PantsUtil command");
     if (processAdapter != null) {
       processHandler.addProcessListener(processAdapter);
     }

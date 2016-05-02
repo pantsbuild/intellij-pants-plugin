@@ -62,7 +62,7 @@ append_intellij_jvm_options() {
   done
   while read jvm_option; do
     cmd="$cmd --jvm-$scope-options=$jvm_option"
-  done < "${2:-"$INTELLIJ_HOME/bin/idea64.vmoptions"}"
+  done < "${2:-"$CWD/resources/idea64.vmoptions"}"
 
   echo $cmd
 }
