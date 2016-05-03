@@ -69,7 +69,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     // Checking whether the pants executable of the targets to import is the same as the existing project's pants executable.
     final Project existingIdeProject = id.findProject();
     final VirtualFile existingPantsExe =
-      existingIdeProject == null ? null : PantsUtil.findPantsExecutable(existingIdeProject.getProjectFile());
+      existingIdeProject == null ? null : PantsUtil.findPantsExecutable(existingIdeProject.getProjectFile().getCanonicalPath());
     if (existingPantsExe != null) {
       final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
       if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
