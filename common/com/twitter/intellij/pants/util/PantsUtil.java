@@ -179,31 +179,6 @@ public class PantsUtil {
     );
   }
 
-  /**
-   * Reliable way to find pants executable by a project once it is imported.
-   * Use project's module in project to find the `buildRoot`,
-   * then use `buildRoot` to find pantsExecutable.
-   */
-  public static VirtualFile findPantsExecutable(@NotNull Project project) {
-    Module[] modules = ModuleManager.getInstance(project).getModules();
-    if (modules.length == 0) {
-      throw new PantsException("No module found in project.");
-    }
-    Module moduleSample = modules[0];
-    VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
-    return findPantsExecutable(buildRoot);
-  }
-
-  @Nullable
-  public static VirtualFile findPantsExecutable(@NotNull String projectPath) {
-    // guard against VirtualFileManager throwing an NPE in tests that don't stand up an IDEA instance
-    if (ApplicationManager.getApplication() == null) {
-      return null;
-    }
-    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
-    return findPantsExecutable(buildFile);
-  }
-
   @Nullable
   public static File findBuildRoot(@NotNull File file) {
     final File pantsExecutable = findPantsExecutable(file);
@@ -276,30 +251,6 @@ public class PantsUtil {
       return manifest;
     }
     return null;
-  }
-
-  @Nullable
-  private static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
-    if (file == null) return null;
-    if (file.isDirectory()) {
-      final VirtualFile pantsFile = file.findChild(PantsConstants.PANTS);
-      if (pantsFile != null && !pantsFile.isDirectory()) {
-        return pantsFile;
-      }
-    }
-    return findPantsExecutable(file.getParent());
-  }
-
-  @Nullable
-  public static File findPantsExecutable(@Nullable File file) {
-    if (file == null) return null;
-    if (file.isDirectory()) {
-      final File pantsFile = new File(file, PantsConstants.PANTS);
-      if (pantsFile.exists() && !pantsFile.isDirectory()) {
-        return pantsFile;
-      }
-    }
-    return findPantsExecutable(file.getParentFile());
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
@@ -778,6 +729,55 @@ public class PantsUtil {
     else {
       return Integer.signum(vals1.length - vals2.length);
     }
+  }
+
+  /**
+   * Reliable way to find pants executable by a project once it is imported.
+   * Use project's module in project to find the `buildRoot`,
+   * then use `buildRoot` to find pantsExecutable.
+   */
+  public static VirtualFile findPantsExecutable(@NotNull Project project) {
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    if (modules.length == 0) {
+      throw new PantsException("No module found in project.");
+    }
+    Module moduleSample = modules[0];
+    VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
+    return findPantsExecutable(buildRoot);
+  }
+
+  @Nullable
+  public static VirtualFile findPantsExecutable(@NotNull String projectPath) {
+    // guard against VirtualFileManager throwing an NPE in tests that don't stand up an IDEA instance
+    if (ApplicationManager.getApplication() == null) {
+      return null;
+    }
+    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
+    return findPantsExecutable(buildFile);
+  }
+
+  @Nullable
+  public static File findPantsExecutable(@Nullable File file) {
+    if (file == null) return null;
+    if (file.isDirectory()) {
+      final File pantsFile = new File(file, PantsConstants.PANTS);
+      if (pantsFile.exists() && !pantsFile.isDirectory()) {
+        return pantsFile;
+      }
+    }
+    return findPantsExecutable(file.getParentFile());
+  }
+
+  @Nullable
+  private static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
+    if (file == null) return null;
+    if (file.isDirectory()) {
+      final VirtualFile pantsFile = file.findChild(PantsConstants.PANTS);
+      if (pantsFile != null && !pantsFile.isDirectory()) {
+        return pantsFile;
+      }
+    }
+    return findPantsExecutable(file.getParent());
   }
 }
 

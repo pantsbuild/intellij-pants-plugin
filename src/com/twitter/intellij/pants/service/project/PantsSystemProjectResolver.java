@@ -71,13 +71,17 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
+    doViewSwitch(id, projectPath);
+    return projectDataNode;
+  }
+
+  private void doViewSwitch(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
     task2executor.remove(id);
     Project ideProject = id.findProject();
     if (ideProject != null && !ApplicationManager.getApplication().isUnitTestMode()) {
       ViewSwitchProcessor vsp  = new ViewSwitchProcessor(ideProject, projectPath);
       vsp.asyncViewSwitch();
     }
-    return projectDataNode;
   }
 
   private void checkForDifferentPantsExecutables(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
