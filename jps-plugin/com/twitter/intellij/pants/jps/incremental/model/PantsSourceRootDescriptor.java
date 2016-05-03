@@ -55,6 +55,7 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
     return myRoot;
   }
 
+  @NotNull
   @Override
   public PantsBuildTarget getTarget() {
     return myTarget;

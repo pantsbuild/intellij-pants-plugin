@@ -62,11 +62,6 @@ public class PantsProjectPaneSelectInTarget extends ProjectViewSelectInTarget {
     return false;
   }
 
-  @Override
-  public void select(PsiElement element, boolean requestFocus) {
-    super.select(element, requestFocus);
-  }
-
   public String toString() {
     return SelectInManager.PROJECT;
   }

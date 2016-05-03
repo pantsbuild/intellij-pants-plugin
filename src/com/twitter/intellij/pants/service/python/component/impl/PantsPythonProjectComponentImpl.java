@@ -17,6 +17,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.python.run.AbstractPythonRunConfiguration;
 import com.twitter.intellij.pants.service.python.component.PantsPythonProjectComponent;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
 
 
 public class PantsPythonProjectComponentImpl extends AbstractProjectComponent implements PantsPythonProjectComponent {
@@ -34,7 +35,7 @@ public class PantsPythonProjectComponentImpl extends AbstractProjectComponent im
     RunManagerEx.getInstanceEx(myProject).addRunManagerListener(
       new RunManagerAdapter() {
         @Override
-        public void runConfigurationAdded(RunnerAndConfigurationSettings settings) {
+        public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
           super.runConfigurationAdded(settings);
           final RunConfiguration runConfiguration = settings.getConfiguration();
           if (!(runConfiguration instanceof AbstractPythonRunConfiguration)) {

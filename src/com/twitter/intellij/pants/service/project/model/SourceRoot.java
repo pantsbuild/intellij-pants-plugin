@@ -72,7 +72,7 @@ public class SourceRoot implements Comparable<SourceRoot> {
   }
 
   @Override
-  public int compareTo(SourceRoot o) {
+  public int compareTo(@NotNull SourceRoot o) {
     return StringUtil.naturalCompare(getRawSourceRoot(), o.getRawSourceRoot());
   }
 }

@@ -24,7 +24,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
   public static final String COMMON_SOURCES_TARGET_NAME = "common_sources";
 
   @Override
-  public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, Logger log) {
+  public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
     // IntelliJ doesn't support when several modules have the same source root
     // so, for source roots that point at multiple targets, we need to convert those so that
     // they have only one target that owns them.
