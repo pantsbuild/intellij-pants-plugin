@@ -167,12 +167,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     if (pantsOptions.supportsManifestJar()) {
       commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
     }
-    // Add "export-classpath-use-old-naming-style"
-    // only if target id is exported and this flag supported.
-    if (pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE)
-        && hasTargetIdInExport) {
-      commandLine.addParameters("--no-export-classpath-use-old-naming-style");
-    }
+
     PantsSettings settings = PantsSettings.getInstance(myProject);
     if (settings.isUseIdeaProjectJdk()) {
       try {
@@ -241,10 +236,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       pantsOptions = PantsOptions.getPantsOptions(pantsExecutable);
     }
 
-    showPantsMakeTaskMessage("Checking Pants export version...", NotificationCategory.INFO);
-    if (hasTargetIdInExport == null) {
-      hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
-    }
     return true;
   }
 

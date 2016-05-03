@@ -109,16 +109,13 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       throw new ExecutionException("Cannot find build root.");
     }
 
-    final boolean hasTargetIdInExport =
-      PantsUtil.hasTargetIdInExport(pantsExecutable.getPath());
-
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
       module,
       new Processor<Module>() {
         @Override
         public boolean process(Module module) {
-          publishedClasspath.addAll(findPublishedClasspath(module, hasTargetIdInExport));
+          publishedClasspath.addAll(findPublishedClasspath(module));
           return true;
         }
       }
@@ -145,24 +142,14 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   }
 
   @NotNull
-  public static List<String> findPublishedClasspath(@NotNull Module module, boolean hasTargetIdInExport) {
+  public static List<String> findPublishedClasspath(@NotNull Module module) {
     final List<String> result = ContainerUtil.newArrayList();
     // This is type for Gson to figure the data type to deserialize
-    final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {
-    }.getType();
+    final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {}.getType();
     Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), type);
     // The new way to find classpath by target id
-    if (hasTargetIdInExport && targetInfoSet != null && targetInfoSet.size() > 0 && targetInfoSet.iterator().next().getId() != null) {
-      for (TargetAddressInfo ta : targetInfoSet) {
-        result.addAll(findPublishedClasspathByTargetId(module, ta));
-      }
-    }
-    // The old way to find classpath by target address
-    else {
-      final String addresses = StringUtil.notNullize(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY));
-      for (String targetAddress : PantsUtil.hydrateTargetAddresses(addresses)) {
-        result.addAll(findPublishedClasspathByTargetAddress(module, targetAddress));
-      }
+    for (TargetAddressInfo ta : targetInfoSet) {
+      result.addAll(findPublishedClasspathByTargetId(module, ta));
     }
     return result;
   }
@@ -192,36 +179,6 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
     }
     return paths;
-  }
-
-  @Deprecated
-  @NotNull
-  private static List<String> findPublishedClasspathByTargetAddress(@NotNull Module module, @NotNull String targetAddress) {
-    final VirtualFile classpath = PantsUtil.findDistExportClasspathDirectory(module);
-    if (classpath == null) {
-      return Collections.emptyList();
-    }
-    // Handle old naming style classpath
-    VirtualFile classpathLinks = classpath.findFileByRelativePath(targetAddress.replace(':', '/'));
-    if (classpathLinks == null) {
-      return Collections.emptyList();
-    }
-    return ContainerUtil.mapNotNull(
-      classpathLinks.getChildren(),
-      new Function<VirtualFile, String>() {
-        @Override
-        public String fun(VirtualFile classpathEntry) {
-          if (classpathEntry.isDirectory()) {
-            // Optimization to not include empty folders.
-            return classpathEntry.getChildren().length > 0 ? classpathEntry.getPath() : null;
-          }
-          if (StringUtil.equalsIgnoreCase(classpathEntry.getExtension(), "jar")) {
-            return classpathEntry.getPath();
-          }
-          return null;
-        }
-      }
-    );
   }
 
   @NotNull

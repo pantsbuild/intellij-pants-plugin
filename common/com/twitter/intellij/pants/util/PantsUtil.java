@@ -749,10 +749,6 @@ public class PantsUtil {
   }
 
 
-  public static boolean hasTargetIdInExport(@NotNull final String pantsExecutable) {
-    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.5") >= 0;
-  }
-
   public static boolean supportExportDefaultJavaSdk(@NotNull final String pantsExecutable) {
     return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.7") >= 0;
   }

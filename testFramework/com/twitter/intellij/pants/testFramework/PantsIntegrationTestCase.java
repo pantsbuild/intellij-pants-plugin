@@ -225,9 +225,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
     List<String> compilerOutputPaths = ContainerUtil.newArrayList();
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(PantsUtil.findBuildRoot(module).getPath());
-    compilerOutputPaths.addAll(
-      PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, PantsUtil.hasTargetIdInExport(pantsExecutable.getPath())));
+    compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module));
 
     for (String compilerOutputPath : compilerOutputPaths) {
       VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));
