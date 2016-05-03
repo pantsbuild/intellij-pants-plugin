@@ -11,7 +11,6 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
-import com.jetbrains.python.PythonFileType;
 import com.twitter.intellij.pants.PantsBundle;
 import org.jetbrains.annotations.NotNull;
 

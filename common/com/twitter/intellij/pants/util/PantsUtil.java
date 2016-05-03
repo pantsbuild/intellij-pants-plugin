@@ -706,7 +706,7 @@ public class PantsUtil {
   public static String getJvmDistributionPathParameter(@Nullable final String jdkPath) throws Exception {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
-      distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
+      distributionFlag.put(System.getProperty("os.name").toLowerCase(), Collections.singletonList(jdkPath));
       return PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }
     else {

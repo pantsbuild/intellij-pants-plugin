@@ -80,7 +80,7 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
     if (myGeneratedSources != that.myGeneratedSources) return false;
     if (!FileUtil.filesEqual(myRoot, that.myRoot)) return false;
     if (!myExcludes.equals(that.myExcludes)) return false;
-    if (myTargetAddress != null ? !myTargetAddress.equals(that.myTargetAddress) : that.myTargetAddress != null) return false;
+    if (!myTargetAddress.equals(that.myTargetAddress)) return false;
     return myTarget.equals(that.myTarget);
   }
 
@@ -89,7 +89,7 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
     int result = myRoot.hashCode();
     result = 31 * result + (myGeneratedSources ? 1 : 0);
     result = 31 * result + myExcludes.hashCode();
-    result = 31 * result + (myTargetAddress != null ? myTargetAddress.hashCode() : 0);
+    result = 31 * result + myTargetAddress.hashCode();
     result = 31 * result + myTarget.hashCode();
     return result;
   }
