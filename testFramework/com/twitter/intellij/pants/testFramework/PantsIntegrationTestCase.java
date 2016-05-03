@@ -175,10 +175,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @NotNull
   public CompilerTester getCompilerTester() throws Exception {
-    if (myCompilerTester == null) {
-      final List<Module> allModules = Arrays.asList(ModuleManager.getInstance(myProject).getModules());
-      myCompilerTester = new CompilerTester(myProject, allModules);
+    // CompilerTester needs to be updated every time because project modules may change.
+    if (myCompilerTester != null) {
+      myCompilerTester.tearDown();
     }
+    final List<Module> allModules = Arrays.asList(ModuleManager.getInstance(myProject).getModules());
+    myCompilerTester = new CompilerTester(myProject, allModules);
     return myCompilerTester;
   }
 
@@ -474,10 +476,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   public void tearDown() throws Exception {
     try {
-      cleanProjectRoot();
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();
       }
+      cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
     }
     finally {

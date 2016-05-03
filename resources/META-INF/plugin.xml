@@ -229,7 +229,7 @@
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
-  <idea-version since-build="143.1" until-build="143.*"/>
+  <idea-version since-build="145.1" until-build="145.*"/>
 
   <!--Scala plugin related extensions-->
   <depends>org.intellij.scala</depends>

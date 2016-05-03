@@ -37,12 +37,7 @@ public class PantsOptions {
 
   @Nullable
   public static PantsOptions getPantsOptions(final Project myProject) {
-    Module[] modules = ModuleManager.getInstance(myProject).getModules();
-    if (modules.length == 0) {
-      return null;
-    }
-    Module moduleSample = modules[0];
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(moduleSample.getModuleFile());
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(myProject);
     if (pantsExecutable == null) {
       return null;
     }

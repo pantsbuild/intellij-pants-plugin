@@ -64,6 +64,7 @@ import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -182,6 +183,21 @@ public class PantsUtil {
         }
       }
     );
+  }
+
+  /**
+   * Reliable way to find pants executable by a project once it is imported.
+   * Use project's module in project to find the `buildRoot`,
+   * then use `buildRoot` to find pantsExecutable.
+   */
+  public static VirtualFile findPantsExecutable(@NotNull Project project) {
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    if (modules.length == 0) {
+      throw new PantsException("No module found in project.");
+    }
+    Module moduleSample = modules[0];
+    VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
+    return findPantsExecutable(buildRoot);
   }
 
   @Nullable
@@ -576,7 +592,7 @@ public class PantsUtil {
   }
 
   public static ProcessOutput getOutput(@NotNull Process process, @Nullable ProcessAdapter processAdapter) {
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), "PantsUtil command");
     if (processAdapter != null) {
       processHandler.addProcessListener(processAdapter);
     }

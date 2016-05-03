@@ -190,9 +190,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       commandLine.addParameter(targetAddress);
     }
 
-    /* Shell off. */
-    showPantsMakeTaskMessage(commandLine.getCommandLineString(), NotificationCategory.INFO);
-
     final Process process;
     try {
       process = commandLine.createProcess();
@@ -202,7 +199,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return false;
     }
 
-    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
+    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
     addMessageHandler(processHandler);
     processHandler.runProcess();
 
@@ -232,11 +229,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    */
   private boolean checkPantsProperties() {
     if (pantsExecutable == null) {
-      VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject.getProjectFile());
-      // Sometimes project files are not ready, so find Pants executable via module location.
-      if (pantsExe == null && ModuleManager.getInstance(myProject).getModules().length > 0) {
-        pantsExe = PantsUtil.findPantsExecutable(ModuleManager.getInstance(myProject).getModules()[0].getModuleFilePath());
-      }
+      VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject);
       if (pantsExe == null) {
         showPantsMakeTaskMessage("Pants executable not found", NotificationCategory.ERROR);
         return false;

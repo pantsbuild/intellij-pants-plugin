@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.integration;
 
-import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegrationTest {

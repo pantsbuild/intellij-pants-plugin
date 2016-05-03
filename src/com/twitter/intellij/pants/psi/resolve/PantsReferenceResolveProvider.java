@@ -17,10 +17,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 
-public class PantsReferenceResolveProvide implements PyReferenceResolveProvider {
+public class PantsReferenceResolveProvider implements PyReferenceResolveProvider {
   @NotNull
   @Override
-  public List<RatedResolveResult> resolveName(@NotNull PyQualifiedExpression element, @NotNull List<PsiElement> definers) {
+  public List<RatedResolveResult> resolveName(@NotNull PyQualifiedExpression element) {
     PsiFile containingFile = element.getContainingFile();
     return PantsUtil.isBUILDFileName(containingFile.getName()) ?
            resolvePantsName(element) :
