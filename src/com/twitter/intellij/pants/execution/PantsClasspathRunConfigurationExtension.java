@@ -20,7 +20,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.util.Function;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
@@ -130,7 +129,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
           @Override
           public boolean value(String classpathEntry) {
             final VirtualFile entry = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(classpathEntry));
-            return buildRoot != null && entry != null && VfsUtil.isAncestor(buildRoot, entry, false);
+            return entry != null && VfsUtil.isAncestor(buildRoot, entry, false);
           }
         }
       );

@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.testFramework;
 
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Collections;
