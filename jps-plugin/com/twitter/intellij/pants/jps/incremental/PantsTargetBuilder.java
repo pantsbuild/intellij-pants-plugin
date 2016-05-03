@@ -117,16 +117,6 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     context.processMessage(new ProgressMessage(recompileMessage));
     context.processMessage(new CompilerMessage(PantsConstants.PLUGIN, BuildMessage.Kind.INFO, recompileMessage));
 
-    // Find out whether "export-classpath-use-old-naming-style" exists
-    final boolean hasExportClassPathNamingStyle = pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE);
-    final boolean hasTargetIdInExport = PantsUtil.hasTargetIdInExport(pantsExecutable);
-
-    // "export-classpath-use-old-naming-style" is soon to be removed.
-    // so add this flag only if target id is exported and this flag supported.
-    if (hasExportClassPathNamingStyle && hasTargetIdInExport) {
-      commandLine.addParameters("--no-export-classpath-use-old-naming-style");
-    }
-
     final JpsProject jpsProject = context.getProjectDescriptor().getProject();
     final JpsPantsProjectExtension pantsProjectExtension =
       PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
