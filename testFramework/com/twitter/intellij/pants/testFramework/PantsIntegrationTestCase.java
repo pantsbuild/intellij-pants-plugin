@@ -175,7 +175,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @NotNull
   public CompilerTester getCompilerTester() throws Exception {
-    // CompilerTest needs to be updated every time because project modules may change.
+    // CompilerTester needs to be updated every time because project modules may change.
     if (myCompilerTester != null) {
       myCompilerTester.tearDown();
     }
