@@ -80,19 +80,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
-  private static final Logger LOG = Logger.getInstance(PantsUtil.class);
-
-  private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
-
-  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
-
-  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
-
   public static final Gson gson = new Gson();
-
   public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
-
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
+  private static final Logger LOG = Logger.getInstance(PantsUtil.class);
+  private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
+  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
+  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
@@ -285,7 +279,7 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
+  private static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
     if (file == null) return null;
     if (file.isDirectory()) {
       final VirtualFile pantsFile = file.findChild(PantsConstants.PANTS);
@@ -429,25 +423,6 @@ public class PantsUtil {
 
   public static boolean isResource(PantsSourceType sourceType) {
     return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
-  }
-
-  @Nullable
-  public static Module findModuleForBUILDFile(@NotNull Project project, @Nullable final VirtualFile file) {
-    if (file == null || !isBUILDFileName(file.getName())) return null;
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(project.getProjectFile());
-    if (buildRoot == null) {
-      return null;
-    }
-    return ContainerUtil.find(
-      ModuleManager.getInstance(project).getModules(),
-      new Condition<Module>() {
-        @Override
-        public boolean value(Module module) {
-          final VirtualFile moduleBUILDFile = findBUILDFileForModule(module);
-          return file.equals(moduleBUILDFile);
-        }
-      }
-    );
   }
 
   @Nullable
@@ -706,7 +681,7 @@ public class PantsUtil {
   public static String getJvmDistributionPathParameter(@Nullable final String jdkPath) throws Exception {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
-      distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
+      distributionFlag.put(System.getProperty("os.name").toLowerCase(), Collections.singletonList(jdkPath));
       return PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }
     else {
@@ -747,7 +722,6 @@ public class PantsUtil {
       )
     );
   }
-
 
   public static boolean hasTargetIdInExport(@NotNull final String pantsExecutable) {
     return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.5") >= 0;
