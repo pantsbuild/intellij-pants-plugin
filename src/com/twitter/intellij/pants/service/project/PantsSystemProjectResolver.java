@@ -88,8 +88,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     vsp.asyncViewSwitch();
   }
 
+  /**
+   * Check whether the pants executable of the new project to import is the same as the existing project's pants executable.
+   */
   private void checkForDifferentPantsExecutables(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
-    // Checking whether the pants executable of the targets to import is the same as the existing project's pants executable.
     final Project existingIdeProject = id.findProject();
     if (existingIdeProject == null) {
       return;
@@ -99,14 +101,15 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       return;
     }
     final VirtualFile existingPantsExe = PantsUtil.findPantsExecutable(projectFilePath);
-    if (existingPantsExe != null) {
-      final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
-      if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
-        throw new ExternalSystemException(String.format(
-          "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
-          existingPantsExe, newPantExe
-        ));
-      }
+    if (existingPantsExe == null) {
+      return;
+    }
+    final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
+    if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
+      throw new ExternalSystemException(String.format(
+        "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
+        existingPantsExe, newPantExe
+      ));
     }
   }
 
