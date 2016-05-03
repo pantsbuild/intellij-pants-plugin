@@ -66,19 +66,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (projectPath.startsWith(".pants.d")) {
       return null;
     }
-    // Checking whether the pants executable of the targets to import is the same as the existing project's pants executable.
-    final Project existingIdeProject = id.findProject();
-    final VirtualFile existingPantsExe =
-      existingIdeProject == null ? null : PantsUtil.findPantsExecutable(existingIdeProject.getProjectFile().getCanonicalPath());
-    if (existingPantsExe != null) {
-      final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
-      if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
-        throw new ExternalSystemException(String.format(
-          "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
-          existingPantsExe, newPantExe
-        ));
-      }
-    }
+    checkForDifferentPantsExecutables(id, projectPath);
+
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
@@ -89,6 +78,28 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       vsp.asyncViewSwitch();
     }
     return projectDataNode;
+  }
+
+  private void checkForDifferentPantsExecutables(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
+    // Checking whether the pants executable of the targets to import is the same as the existing project's pants executable.
+    final Project existingIdeProject = id.findProject();
+    if (existingIdeProject == null) {
+      return;
+    }
+    String projectFilePath = existingIdeProject.getProjectFilePath();
+    if (projectFilePath == null) {
+      return;
+    }
+    final VirtualFile existingPantsExe = PantsUtil.findPantsExecutable(projectFilePath);
+    if (existingPantsExe != null) {
+      final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
+      if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
+        throw new ExternalSystemException(String.format(
+          "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
+          existingPantsExe, newPantExe
+        ));
+      }
+    }
   }
 
   @NotNull
