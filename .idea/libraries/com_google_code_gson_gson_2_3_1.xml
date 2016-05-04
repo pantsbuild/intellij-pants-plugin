@@ -1,5 +1,6 @@
 <component name="libraryTable">
-  <library name="com.google.code.gson:gson:2.3.1">
+  <library name="com.google.code.gson:gson:2.3.1" type="repository">
+    <properties maven-id="com.google.code.gson:gson:2.3.1" />
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/jps-plugin/lib/gson-2.3.1.jar!/" />
     </CLASSES>
