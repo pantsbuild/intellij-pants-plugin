@@ -179,21 +179,6 @@ public class PantsUtil {
     );
   }
 
-  /**
-   * Reliable way to find pants executable by a project once it is imported.
-   * Use project's module in project to find the `buildRoot`,
-   * then use `buildRoot` to find pantsExecutable.
-   */
-  public static VirtualFile findPantsExecutable(@NotNull Project project) {
-    Module[] modules = ModuleManager.getInstance(project).getModules();
-    if (modules.length == 0) {
-      throw new PantsException("No module found in project.");
-    }
-    Module moduleSample = modules[0];
-    VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
-    return findPantsExecutable(buildRoot);
-  }
-
   @Nullable
   public static File findBuildRoot(@NotNull File file) {
     final File pantsExecutable = findPantsExecutable(file);
