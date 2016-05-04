@@ -77,6 +77,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
@@ -92,7 +93,13 @@ public class PantsUtil {
 
   public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
 
-  public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
+  public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
+    new ThreadFactory() {
+      @Override
+      public Thread newThread(Runnable r) {
+        return new Thread(r, "Pants-Plugin-Pool");
+      }
+    });
 
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {

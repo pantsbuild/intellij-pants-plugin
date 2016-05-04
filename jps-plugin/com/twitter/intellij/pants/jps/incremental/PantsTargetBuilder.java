@@ -181,7 +181,7 @@ public class PantsTargetBuilder extends TargetBuilder<PantsSourceRootDescriptor,
     final Process process,
     final CapturingProcessHandler processHandler
   ) {
-    compileCancellationCheckHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+    compileCancellationCheckHandle = PantsUtil.scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
         if (context.getCancelStatus().isCanceled()) {

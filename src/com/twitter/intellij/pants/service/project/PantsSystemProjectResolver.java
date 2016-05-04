@@ -201,7 +201,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     }
 
     private void queueSwitchToProjectFilesTreeView() {
-      viewSwitchHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+      viewSwitchHandle = PantsUtil.scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
         @Override
         public void run() {
           if (!ProjectView.getInstance(myProject).getPaneIds().contains(ProjectFilesViewPane.ID)) {
@@ -220,7 +220,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     }
 
     private void queueFocusOnImportDirectory() {
-      directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+      directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
         @Override
         public void run() {
           if (ModuleManager.getInstance(myProject).getModules().length == 0 ||
