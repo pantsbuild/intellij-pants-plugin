@@ -37,7 +37,7 @@ env:
     - PANTS_SHA="release_0.0.72" TEST_SET=integration
 
 script:
-  - ./scripts/run-tests-ci.sh
+    - ./scripts/run-tests-ci.sh -ldebug --print-exception-stacktrace
   # todo: custom integration tests cause Travis-CI builds to hang after enabling caching.
   # - ./scripts/run-custom-integration.sh
   #     -r ./.cache/pants
