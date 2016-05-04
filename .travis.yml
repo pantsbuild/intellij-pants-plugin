@@ -10,7 +10,7 @@ jdk:
 
 cache:
   directories:
-    - .cache/bootstrap # See pants.ini [cache.bootstrap]
+    - .cache # See pants.ini [cache]
 
 notifications:
   email:

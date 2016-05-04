@@ -2,6 +2,7 @@
 -Xmx4096m
 -XX:ReservedCodeCacheSize=240m
 -XX:+UseConcMarkSweepGC
+-XX:ParallelGCThreads=4
 -XX:SoftRefLRUPolicyMSPerMB=50
 -ea
 -Dsun.io.useCanonCaches=false
