@@ -66,29 +66,51 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (projectPath.startsWith(".pants.d")) {
       return null;
     }
-    // Checking whether the pants executable of the targets to import is the same as the existing project's pants executable.
-    final Project existingIdeProject = id.findProject();
-    final VirtualFile existingPantsExe =
-      existingIdeProject == null ? null : PantsUtil.findPantsExecutable(existingIdeProject.getProjectFile());
-    if (existingPantsExe != null) {
-      final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
-      if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
-        throw new ExternalSystemException(String.format(
-          "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
-          existingPantsExe, newPantExe
-        ));
-      }
-    }
+    checkForDifferentPantsExecutables(id, projectPath);
+
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
+    doViewSwitch(id, projectPath);
     task2executor.remove(id);
-    Project ideProject = id.findProject();
-    if (ideProject != null && !ApplicationManager.getApplication().isUnitTestMode()) {
-      ViewSwitchProcessor vsp  = new ViewSwitchProcessor(ideProject, projectPath);
-      vsp.asyncViewSwitch();
-    }
     return projectDataNode;
+  }
+
+  private void doViewSwitch(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
+    if (ApplicationManager.getApplication().isUnitTestMode()) {
+      return;
+    }
+    Project ideProject = id.findProject();
+    if (ideProject == null) {
+      return;
+    }
+    ViewSwitchProcessor vsp  = new ViewSwitchProcessor(ideProject, projectPath);
+    vsp.asyncViewSwitch();
+  }
+
+  /**
+   * Check whether the pants executable of the new project to import is the same as the existing project's pants executable.
+   */
+  private void checkForDifferentPantsExecutables(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
+    final Project existingIdeProject = id.findProject();
+    if (existingIdeProject == null) {
+      return;
+    }
+    String projectFilePath = existingIdeProject.getProjectFilePath();
+    if (projectFilePath == null) {
+      return;
+    }
+    final VirtualFile existingPantsExe = PantsUtil.findPantsExecutable(projectFilePath);
+    if (existingPantsExe == null) {
+      return;
+    }
+    final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
+    if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
+      throw new ExternalSystemException(String.format(
+        "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
+        existingPantsExe, newPantExe
+      ));
+    }
   }
 
   @NotNull
@@ -107,13 +129,13 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(executor.getProjectPath());
-    if (pantsExecutable != null) {
-      Sdk sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.getPath());
-      if (sdk != null) {
-        projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
-      }
-    }
+    //VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(executor.getProjectPath());
+    //if (pantsExecutable != null) {
+    //  Sdk sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.getPath());
+    //  if (sdk != null) {
+    //    projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
+    //  }
+    //}
 
     if (!isPreviewMode) {
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);
