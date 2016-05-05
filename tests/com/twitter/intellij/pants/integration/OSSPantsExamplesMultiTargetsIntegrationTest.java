@@ -7,10 +7,12 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegrationTest {
   public void testEmpty() {
-    // must provide an test.
+    // Unfortunately this is in junit 3 we need at least one method starts with 'test'.
+    // Remove once https://github.com/pantsbuild/intellij-pants-plugin/issues/133 is addressed.
   }
 
-  public void IGNORE_FAILURE_testHello() throws Throwable {
+  // TODO (peiyu) https://github.com/pantsbuild/intellij-pants-plugin/issues/133
+  public void IGNORE_testHello() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
 
     assertModules(
