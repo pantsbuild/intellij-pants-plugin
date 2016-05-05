@@ -154,7 +154,7 @@ test sources, resources, test resources, generated sources, etc).
 
   This will bootstrap pants and resolve all the dependencies or else you will get an `ExecutionException` exception for exceeding 30s timeout.
 
-# Running plugin tests with Pants
+# Running plugin CI tests with Pants
 
 1. `./scripts/prepare-environment.sh`
 2. `./scripts/setup-ci-environment.sh`
