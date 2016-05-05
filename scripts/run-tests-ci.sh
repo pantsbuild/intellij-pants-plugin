@@ -23,5 +23,7 @@ popd
 
 args="test tests:${TEST_SET:-all} $(append_intellij_jvm_options test-junit) ${ADDITIONAL_ARGS:-$@}"
 
+scripts/jstack.sh &
+
 echo "Running ./pants $args"
 ./pants $args
