@@ -8,3 +8,5 @@ Johan Oskarsson <johan@twitter.com>
 Jonathan Conveney <jcoveney@gmail.com>
 Nick Howard <nhoward@twitter.com>
 Tejal Desai <tdesai@twitter.com>
+Yi Cheng <wisechengyi@gmail.com>
+Peiyu Wang <wangpeiyu@gmail.com>
