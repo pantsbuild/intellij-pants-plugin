@@ -125,6 +125,18 @@ test sources, resources, test resources, generated sources, etc).
   * Validate the plugin manually in IntelliJ: Preferences -> Plugins -> Install from disk -> pick newly created `pants.zip`.
   * Upload `pants.zip` to https://plugins.jetbrains.com/plugin/7412.
 
+# Running plugin CI tests with Pants
+
+1. `./scripts/prepare-environment.sh`
+2. `./scripts/setup-ci-environment.sh`
+3. `./scripts/run-tests-ci.sh`
+
+#### Explanation:
+* `./scripts/prepare-environment.sh` defines the test suite parameters such as `IJ_VERSION` and `IJ_BUILD_NUMBER`, which then will be used by `./scripts/setup-ci-environment.sh` for setup.
+
+* Indiviual test or target set can be run as the following, and the parameters are also used by .travis.yml:
+  * `TEST_SET=integration ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest#testJaxb`
+
 ### Debugging the Plugin from local pants development:
 
 * To debug tests execute:
@@ -153,15 +165,3 @@ test sources, resources, test resources, generated sources, etc).
         /path/to/pants_dev/pants goals
 
   This will bootstrap pants and resolve all the dependencies or else you will get an `ExecutionException` exception for exceeding 30s timeout.
-
-# Running plugin CI tests with Pants
-
-1. `./scripts/prepare-environment.sh`
-2. `./scripts/setup-ci-environment.sh`
-3. `./scripts/run-tests-ci.sh`
-
-#### Explanation:
-* `./scripts/prepare-environment.sh` defines the test suite parameters such as `IJ_VERSION` and `IJ_BUILD_NUMBER`, which then will be used by `./scripts/setup-ci-environment.sh` for setup.
-
-* Indiviual test or target set can be run as the following, and the parameters are also used by .travis.yml:
-  * `TEST_SET=integration ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest#testJaxb`
