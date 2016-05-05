@@ -134,7 +134,7 @@ test sources, resources, test resources, generated sources, etc).
 #### Explanation:
 * `./scripts/prepare-environment.sh` defines the test suite parameters such as `IJ_VERSION` and `IJ_BUILD_NUMBER`, which then will be used by `./scripts/setup-ci-environment.sh` for setup.
 
-* Indiviual test or target set can be run as the following, and the parameters are also used by .travis.yml:
+* Individual test or target set can be run as the following, and the parameters are also used by .travis.yml:
   * `TEST_SET=integration ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest#testJaxb`
 
 ### Debugging the Plugin from local pants development:

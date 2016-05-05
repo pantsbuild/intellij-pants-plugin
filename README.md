@@ -85,5 +85,4 @@ Compilation options can be configured in Preferences -> Build, Execution, Deploy
   You can right click on tests and run tests.
 
 ### Report Bugs
-If you see any bugs please file a github issue on the project page.
-Attach the error stacktrace or `idea.log` ([location instructions](https://intellij-support.jetbrains.com/entries/23352446-Locating-IDE-log-files))
++If you encounter any bug, please check for existing issues or file a new one on [the project page](https://github.com/pantsbuild/intellij-pants-plugin/issues).

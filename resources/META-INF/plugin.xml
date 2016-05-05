@@ -10,8 +10,8 @@
 
       <p>1.4.1</p>
       <ul>
-        <li>IntelliJ IDEA 2016 Compatbility.</li>
-        <li>Classpaths loading efficiency and hygiene improvement.</li>
+        <li>IntelliJ IDEA 2016 Compatibility.</li>
+        <li>Classpath loading efficiency and hygiene improvement.</li>
         <li>Pants options parsing optimization.</li>
       </ul>
 
