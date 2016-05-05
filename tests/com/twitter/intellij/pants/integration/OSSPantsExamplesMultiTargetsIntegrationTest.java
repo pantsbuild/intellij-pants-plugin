@@ -6,6 +6,10 @@ package com.twitter.intellij.pants.integration;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegrationTest {
+  public void testEmpty() {
+    // must provide an test.
+  }
+
   public void IGNORE_FAILURE_testHello() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
 
