@@ -56,7 +56,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     );
   }
 
-  public void IGNORE_SLOW_TEST_testExcludes1() throws Throwable {
+  public void testExcludes1() throws Throwable {
     doImport("intellij-integration/src/scala/org/pantsbuild/testproject/excludes1");
 
     assertModules(

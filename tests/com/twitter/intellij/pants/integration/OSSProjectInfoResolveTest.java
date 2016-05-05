@@ -47,7 +47,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     assertFalse(greetTarget.isScalaTarget());
   }
 
-  public void IGNORE_SLOW_TEST_testTargetJars() {
+  public void testTargetJars() {
     final ProjectInfo info = resolveProjectInfo("intellij-integration/3rdparty/hadoop/");
 
     final TargetInfo welcomeTarget = info.getTarget("intellij-integration/3rdparty/hadoop:hadoop-stuff");
