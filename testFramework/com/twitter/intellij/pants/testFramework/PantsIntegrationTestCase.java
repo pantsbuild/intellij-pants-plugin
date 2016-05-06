@@ -161,6 +161,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
   }
 
+  protected void killNailgun() throws ExecutionException {
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(myProjectRoot.getPath());
+    commandLine.addParameter("ng-killall");
+    commandLine.createProcess();
+  }
+
   @NotNull
   abstract protected File getProjectFolder();
 
@@ -494,6 +500,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();
       }
+
+      // Kill nailgun after usage as memory on travis is limited, at a cost of slower later builds.
+      killNailgun();
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
     }
