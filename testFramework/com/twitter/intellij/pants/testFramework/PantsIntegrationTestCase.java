@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.testFramework;
 
+import com.google.common.base.Joiner;
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ProgramRunnerUtil;
@@ -336,11 +337,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   private List<String> assertCompilerMessages(List<CompilerMessage> messages) {
-    StringBuffer fullMessages = new StringBuffer();
-    for (CompilerMessage msg : messages) {
-      fullMessages.append(msg).append("\n");
-    }
-
     for (CompilerMessage message : messages) {
       final VirtualFile virtualFile = message.getVirtualFile();
       final String prettyMessage =
@@ -352,7 +348,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       switch (message.getCategory()) {
         case ERROR:
           // Always show full error messages.
-          fail("Compilation failed with error: " + fullMessages.toString());
+
+          fail("Compilation failed with error: " + Joiner.on('\n').join(messages));
           break;
         case WARNING:
           System.out.println("Compilation warning: " + prettyMessage);
