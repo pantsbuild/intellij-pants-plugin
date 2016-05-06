@@ -17,7 +17,7 @@ public class OSSPantsPythonIntegrationTest extends OSSPantsIntegrationTest {
   public void setUp() throws Exception {
     super.setUp();
     // todo: Remove if possible. Now the test fails with VfsRootAccess to python interpreter in /opt
-    VfsRootAccess.allowRootAccessTemporarily(myProject, "/");
+    VfsRootAccess.allowRootAccess("/");
   }
 
   public void testIntelliJIntegration() throws Throwable {

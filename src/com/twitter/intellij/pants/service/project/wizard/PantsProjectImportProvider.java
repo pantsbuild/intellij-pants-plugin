@@ -31,6 +31,13 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
 
   @Override
   public ModuleWizardStep[] createSteps(WizardContext context) {
+    ///**
+    // * Newer export version project sdk can be automatically discovered and configured.
+    // */
+    //if (PantsUtil.supportExportDefaultJavaSdk(
+    //  PantsUtil.findPantsExecutable(context.getProjectFileDirectory()).getPath())) {
+    //  return super.createSteps(context);
+    //}
     return ArrayUtil.append(super.createSteps(context), new ProjectJdkStep(context));
   }
 }

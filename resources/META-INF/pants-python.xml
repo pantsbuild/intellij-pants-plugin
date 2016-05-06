@@ -35,6 +35,6 @@
         implementation="com.twitter.intellij.pants.quickfix.PantsUnresolvedJavaReferenceQuickFixProvider"/>
   </extensions>
   <extensions defaultExtensionNs="Pythonid">
-    <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.psi.resolve.PantsReferenceResolveProvide"/>
+    <pyReferenceResolveProvider implementation="com.twitter.intellij.pants.psi.resolve.PantsReferenceResolveProvider"/>
   </extensions>
 </idea-plugin>

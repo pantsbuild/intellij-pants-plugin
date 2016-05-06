@@ -76,7 +76,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     if (pantsOptions == null) {
       throw new ExecutionException("Pants options not found.");
     }
-    if (pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
+    if (pantsOptions.supportsManifestJar()) {
       VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject());
       if (manifestJar != null) {
         classpath.add(manifestJar.getPath());
@@ -100,7 +100,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       }
     );
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getModuleFile());
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getProject());
     if (pantsExecutable == null) {
       throw new ExecutionException("Cannot find Pants executable.");
     }

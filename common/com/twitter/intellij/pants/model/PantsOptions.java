@@ -37,21 +37,20 @@ public class PantsOptions {
 
   @Nullable
   public static PantsOptions getPantsOptions(final Project myProject) {
-    Module[] modules = ModuleManager.getInstance(myProject).getModules();
-    if (modules.length == 0) {
-      return null;
-    }
-    Module moduleSample = modules[0];
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(moduleSample.getModuleFile());
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(myProject);
     if (pantsExecutable == null) {
       return null;
     }
     return getPantsOptions(pantsExecutable.getPath());
   }
 
+  public boolean supportsManifestJar() {
+    return has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
+  }
+
   public static PantsOptions getPantsOptions(final String pantsExecutable) {
     final GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
-    exportCommandline.addParameters("options", PantsConstants.PANTS_OPTION_NO_COLORS);
+    exportCommandline.addParameters("options", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
       return new PantsOptions(processOutput.getStdout());
@@ -62,7 +61,7 @@ public class PantsOptions {
   }
 
   // TODO https://github.com/pantsbuild/pants/issues/3161 to output options in json,
-  // parsing will be simplfied.
+  // parsing will be simplified.
   private static Map<String, String> parseOptions(final String rawData) {
     String lines[] = rawData.split("\\r?\\n");
 

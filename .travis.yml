@@ -6,7 +6,7 @@ sudo: false
 
 language: java
 jdk:
-  - oraclejdk7
+  - oraclejdk8
 
 cache:
   directories:
@@ -24,18 +24,17 @@ env:
   matrix:
     - IJ_ULTIMATE=false
     - IJ_ULTIMATE=true
+    - PANTS_SHA="release_0.0.82" TEST_SET=integration
+    - PANTS_SHA="release_0.0.81" TEST_SET=integration
+    - PANTS_SHA="release_0.0.80" TEST_SET=integration
+    - PANTS_SHA="release_0.0.79" TEST_SET=integration
+    # 0.0.78 was aborted.
+    - PANTS_SHA="release_0.0.77" TEST_SET=integration
+    - PANTS_SHA="release_0.0.76" TEST_SET=integration
+    - PANTS_SHA="release_0.0.75" TEST_SET=integration
+    - PANTS_SHA="release_0.0.74" TEST_SET=integration
     - PANTS_SHA="release_0.0.73" TEST_SET=integration
     - PANTS_SHA="release_0.0.72" TEST_SET=integration
-    # 0.0.71 is not here because non-functioning options still show up in options goals until
-    # https://github.com/pantsbuild/pants/commit/acd5dde406fe57a35d991207f9fa409de4df66df
-    - PANTS_SHA="release_0.0.70" TEST_SET=integration
-    - PANTS_SHA="release_0.0.69" TEST_SET=integration
-    - PANTS_SHA="release_0.0.68" TEST_SET=integration
-    - PANTS_SHA="release_0.0.67" TEST_SET=integration
-    - PANTS_SHA="release_0.0.66" TEST_SET=integration
-    - PANTS_SHA="release_0.0.65" TEST_SET=integration
-    - PANTS_SHA="release_0.0.64" TEST_SET=integration
-    - PANTS_SHA="release_0.0.63" TEST_SET=integration
 
 script:
   - ./scripts/run-tests-ci.sh

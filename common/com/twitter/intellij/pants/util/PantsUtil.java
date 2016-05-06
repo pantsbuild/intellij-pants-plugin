@@ -27,6 +27,7 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -46,8 +47,10 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
+import com.twitter.intellij.pants.model.SimpleExportResult;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
@@ -62,6 +65,7 @@ import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -74,24 +78,25 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
 
 public class PantsUtil {
-  private static final Logger LOG = Logger.getInstance(PantsUtil.class);
-
-  private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
-
-  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
-
-  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
-
   public static final Gson gson = new Gson();
-
-  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
-
   public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {}.getType();
+  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
+  public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
+    new ThreadFactory() {
+      @Override
+      public Thread newThread(Runnable r) {
+        return new Thread(r, "Pants-Plugin-Pool");
+      }
+    });
 
-  public static final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
+  private static final Logger LOG = Logger.getInstance(PantsUtil.class);
+  private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
+  private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
+  private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
@@ -185,16 +190,6 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static VirtualFile findPantsExecutable(@NotNull String projectPath) {
-    // guard against VirtualFileManager throwing an NPE in tests that don't stand up an IDEA instance
-    if (ApplicationManager.getApplication() == null) {
-      return null;
-    }
-    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
-    return findPantsExecutable(buildFile);
-  }
-
-  @Nullable
   public static File findBuildRoot(@NotNull File file) {
     final File pantsExecutable = findPantsExecutable(file);
     return pantsExecutable != null ? pantsExecutable.getParentFile() : null;
@@ -266,30 +261,6 @@ public class PantsUtil {
       return manifest;
     }
     return null;
-  }
-
-  @Nullable
-  public static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
-    if (file == null) return null;
-    if (file.isDirectory()) {
-      final VirtualFile pantsFile = file.findChild(PantsConstants.PANTS);
-      if (pantsFile != null && !pantsFile.isDirectory()) {
-        return pantsFile;
-      }
-    }
-    return findPantsExecutable(file.getParent());
-  }
-
-  @Nullable
-  public static File findPantsExecutable(@Nullable File file) {
-    if (file == null) return null;
-    if (file.isDirectory()) {
-      final File pantsFile = new File(file, PantsConstants.PANTS);
-      if (pantsFile.exists() && !pantsFile.isDirectory()) {
-        return pantsFile;
-      }
-    }
-    return findPantsExecutable(file.getParentFile());
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
@@ -424,25 +395,6 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static Module findModuleForBUILDFile(@NotNull Project project, @Nullable final VirtualFile file) {
-    if (file == null || !isBUILDFileName(file.getName())) return null;
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(project.getProjectFile());
-    if (buildRoot == null) {
-      return null;
-    }
-    return ContainerUtil.find(
-      ModuleManager.getInstance(project).getModules(),
-      new Condition<Module>() {
-        @Override
-        public boolean value(Module module) {
-          final VirtualFile moduleBUILDFile = findBUILDFileForModule(module);
-          return file.equals(moduleBUILDFile);
-        }
-      }
-    );
-  }
-
-  @Nullable
   public static VirtualFile findBUILDFileForModule(@NotNull Module module) {
     final String linkedPantsBUILD = getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
     final String linkedPantsBUILDUrl = linkedPantsBUILD != null ? VfsUtil.pathToUrl(linkedPantsBUILD) : null;
@@ -499,7 +451,6 @@ public class PantsUtil {
     if (!isPantsProject(project) && !isSeedPantsProject(project)) {
       return;
     }
-
     final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
     ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
                                           ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
@@ -585,7 +536,7 @@ public class PantsUtil {
   }
 
   public static ProcessOutput getOutput(@NotNull Process process, @Nullable ProcessAdapter processAdapter) {
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process);
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), "PantsUtil command");
     if (processAdapter != null) {
       processHandler.addProcessListener(processAdapter);
     }
@@ -699,8 +650,8 @@ public class PantsUtil {
   public static String getJvmDistributionPathParameter(@Nullable final String jdkPath) throws Exception {
     if (jdkPath != null) {
       HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
-      distributionFlag.put(System.getProperty("os.name").toLowerCase(), Arrays.asList(jdkPath));
-      return PantsConstants.PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
+      distributionFlag.put(System.getProperty("os.name").toLowerCase(), Collections.singletonList(jdkPath));
+      return PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }
     else {
       throw new Exception("No IDEA Project JDK Found");
@@ -741,26 +692,27 @@ public class PantsUtil {
     );
   }
 
-  class SimpleExportResult {
-    public String version;
-
-    public String getVersion() {
-      return version;
-    }
+  public static boolean hasTargetIdInExport(@NotNull final String pantsExecutable) {
+    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.5") >= 0;
   }
 
-  public static boolean hasTargetIdInExport(final String pantsExecutable) {
-    final GeneralCommandLine commandline = defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsConstants.PANTS_OPTION_NO_COLORS);
-    try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
-      final String stdOut = processOutput.getStdout();
-      SimpleExportResult simpleExportResult = new Gson().fromJson(stdOut, SimpleExportResult.class);
-      return versionCompare(simpleExportResult.getVersion(), "1.0.5") >= 0;
+  public static boolean supportExportDefaultJavaSdk(@NotNull final String pantsExecutable) {
+    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.7") >= 0;
+  }
+
+  @Nullable
+  public static Sdk getDefaultJavaSdk(@NotNull final String pantsExecutable) {
+    SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
+    if (versionCompare(exportResult.getVersion(), "1.0.7") >= 0) {
+      String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
+      boolean strict = Boolean.parseBoolean(PantsOptions.getPantsOptions(pantsExecutable)
+                                              .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
+      String jdkName = String.format("JDK from pants %s", defaultPlatform);
+      String jdkHome = exportResult.getPreferredJvmDistributions().get(defaultPlatform)
+        .get(strict ? "strict" : "non_strict");
+      return JavaSdk.getInstance().createJdk(jdkName, jdkHome);
     }
-    catch (ExecutionException e) {
-      throw new PantsException("Failed:" + commandline.getCommandLineString());
-    }
+    return null;
   }
 
   /**
@@ -795,6 +747,55 @@ public class PantsUtil {
     else {
       return Integer.signum(vals1.length - vals2.length);
     }
+  }
+
+  /**
+   * Reliable way to find pants executable by a project once it is imported.
+   * Use project's module in project to find the `buildRoot`,
+   * then use `buildRoot` to find pantsExecutable.
+   */
+  public static VirtualFile findPantsExecutable(@NotNull Project project) {
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    if (modules.length == 0) {
+      throw new PantsException("No module found in project.");
+    }
+    Module moduleSample = modules[0];
+    VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
+    return findPantsExecutable(buildRoot);
+  }
+
+  @Nullable
+  public static VirtualFile findPantsExecutable(@NotNull String projectPath) {
+    // guard against VirtualFileManager throwing an NPE in tests that don't stand up an IDEA instance
+    if (ApplicationManager.getApplication() == null) {
+      return null;
+    }
+    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
+    return findPantsExecutable(buildFile);
+  }
+
+  @Nullable
+  public static File findPantsExecutable(@Nullable File file) {
+    if (file == null) return null;
+    if (file.isDirectory()) {
+      final File pantsFile = new File(file, PantsConstants.PANTS);
+      if (pantsFile.exists() && !pantsFile.isDirectory()) {
+        return pantsFile;
+      }
+    }
+    return findPantsExecutable(file.getParentFile());
+  }
+
+  @Nullable
+  private static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
+    if (file == null) return null;
+    if (file.isDirectory()) {
+      final VirtualFile pantsFile = file.findChild(PantsConstants.PANTS);
+      if (pantsFile != null && !pantsFile.isDirectory()) {
+        return pantsFile;
+      }
+    }
+    return findPantsExecutable(file.getParent());
   }
 }
 

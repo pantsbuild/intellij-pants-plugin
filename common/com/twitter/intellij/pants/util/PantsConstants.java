@@ -3,7 +3,10 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.intellij.openapi.externalSystem.model.Key;
+import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.util.text.CaseInsensitiveStringHashingStrategy;
 import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
@@ -40,10 +43,16 @@ public class PantsConstants {
 
   public static final String PANTS_OPTION_EXPORT_CLASSPATH_NAMING_STYLE = "export-classpath.use_old_naming_style";
   public static final String PANTS_OPTION_PANTS_WORKDIR = "pants_workdir";
-  public static final String PANTS_OPTION_JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";
   public static final String PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION = "test.junit.strict_jvm_version";
   public static final String PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR = "export-classpath.manifest_jar_only";
-  public static final String PANTS_OPTION_NO_COLORS = "--no-colors";
+
+  // Used to initialize project sdk therefore use project processing weight, i.e, the highest.
+  public static final Key<Sdk> SDK_KEY = Key.create(Sdk.class, ProjectKeys.PROJECT.getProcessingWeight());
+
+  public static final String PANTS_CLI_OPTION_EXPORT_OUTPUT_FILE = "--export-output-file";
+  public static final String PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR = "--export-classpath-manifest-jar-only";
+  public static final String PANTS_CLI_OPTION_NO_COLORS = "--no-colors";
+  public static final String PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";
 
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(
