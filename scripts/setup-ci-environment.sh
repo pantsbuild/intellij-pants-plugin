@@ -64,6 +64,7 @@ if [ ! -d .cache/pants ]; then
   pushd pants
   git checkout -b peiyu/better-ivy-error-message origin/peiyu/better-ivy-error-message
   git branch
+  git rev-parse HEAD
   ./pants goals
   popd
   popd
