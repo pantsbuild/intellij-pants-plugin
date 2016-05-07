@@ -57,6 +57,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
 fi
 
 rm -rf .cache/pants
+find . -name ivy_utils.py
 if [ ! -d .cache/pants ]; then
   echo "Getting latest Pants..."
   pushd .cache
