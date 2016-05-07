@@ -63,6 +63,7 @@ if [ ! -d .cache/pants ]; then
   echo "Bootstrapping Pants and Ivy..."
   pushd pants
   git checkout -b peiyu/better-ivy-error-message origin/peiyu/better-ivy-error-message
+  git branch
   ./pants goals
   popd
   popd
