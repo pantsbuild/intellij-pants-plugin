@@ -163,7 +163,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void killNailgun() throws ExecutionException {
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(myProjectRoot.getPath());
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(myProject);
     commandLine.addParameter("ng-killall");
     // Wait for command to finish.
     PantsUtil.getCmdOutput(commandLine, null);

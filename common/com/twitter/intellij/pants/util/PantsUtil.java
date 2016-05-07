@@ -261,6 +261,11 @@ public class PantsUtil {
     return null;
   }
 
+  public static GeneralCommandLine defaultCommandLine(@NotNull Project project) throws PantsException {
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(project);
+    return defaultCommandLine(pantsExecutable.getPath());
+  }
+
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
     final File pantsExecutable = PantsUtil.findPantsExecutable(new File(projectPath));
     if (pantsExecutable == null) {
