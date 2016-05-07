@@ -69,6 +69,7 @@ if [ ! -d .cache/pants ]; then
   git rev-parse HEAD
   git clean -fdx
   ./pants goals
+  ./pants --version
   popd
   popd
 fi
