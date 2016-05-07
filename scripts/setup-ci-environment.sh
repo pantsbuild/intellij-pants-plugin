@@ -59,9 +59,10 @@ fi
 if [ ! -d .cache/pants ]; then
   echo "Getting latest Pants..."
   pushd .cache
-  git clone https://github.com/pantsbuild/pants
+  git clone https://github.com/peiyuwang/pants
   echo "Bootstrapping Pants and Ivy..."
   pushd pants
+  git co -b peiyu/better-ivy-error-message origin/peiyu/better-ivy-error-message
   ./pants goals
   popd
   popd
