@@ -62,7 +62,7 @@ if [ ! -d .cache/pants ]; then
   git clone https://github.com/peiyuwang/pants
   echo "Bootstrapping Pants and Ivy..."
   pushd pants
-  git co -b peiyu/better-ivy-error-message origin/peiyu/better-ivy-error-message
+  git checkout -b peiyu/better-ivy-error-message origin/peiyu/better-ivy-error-message
   ./pants goals
   popd
   popd
