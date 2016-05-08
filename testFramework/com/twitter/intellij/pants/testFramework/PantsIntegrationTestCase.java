@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.testFramework;
 
+import com.google.common.base.Joiner;
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ProgramRunnerUtil;
@@ -159,6 +160,15 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     final GeneralCommandLine commandLine = new GeneralCommandLine(args);
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
+  }
+
+  protected void killNailgun() throws ExecutionException {
+    // NB: the ideal interface here is defaultCommandLine(myProject). However,
+    // not all tests call doImport therefore myProject may not always contain modules.
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+    commandLine.addParameter("ng-killall");
+    // Wait for command to finish.
+    PantsUtil.getCmdOutput(commandLine, null);
   }
 
   @NotNull
@@ -339,7 +349,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         );
       switch (message.getCategory()) {
         case ERROR:
-          fail("Compilation failed with error: " + prettyMessage);
+          // Always show full error messages.
+
+          fail("Compilation failed with error: " + Joiner.on('\n').join(messages));
           break;
         case WARNING:
           System.out.println("Compilation warning: " + prettyMessage);
@@ -488,6 +500,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();
       }
+
+      // Kill nailgun after usage as memory on travis is limited, at a cost of slower later builds.
+      killNailgun();
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
     }
