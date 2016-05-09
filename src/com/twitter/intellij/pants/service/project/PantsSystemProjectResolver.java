@@ -251,9 +251,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-              final VirtualFile importDirectory = VirtualFileManager.getInstance().findFileByUrl("file://" + myProjectPath);
+              final VirtualFile pathImported = VirtualFileManager.getInstance().findFileByUrl("file://" + myProjectPath);
               // Skip focusing if directory is not found.
-              if (importDirectory != null) {
+              if (pathImported != null) {
+                VirtualFile importDirectory = pathImported.isDirectory()? pathImported: pathImported.getParent();
                 SelectInContext selectInContext = new FileSelectInContext(myProject, importDirectory);
                 for (SelectInTarget selectInTarget : ProjectView.getInstance(myProject).getSelectInTargets()) {
                   if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
