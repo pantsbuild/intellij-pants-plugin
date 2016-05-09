@@ -23,8 +23,5 @@ popd
 
 args="test tests:${TEST_SET:-all} $(append_intellij_jvm_options test-junit) ${ADDITIONAL_ARGS:-$@}"
 
-PANTS=./.cache/pants/pants
-$PANTS goals
-$PANTS --version
 echo "Running ./pants $args"
-$PANTS $args
+./pants $args

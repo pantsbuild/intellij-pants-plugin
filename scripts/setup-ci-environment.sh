@@ -56,20 +56,13 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   mv plugins ".cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 fi
 
-rm -rf .cache/pants
-find . -name ivy_utils.py
 if [ ! -d .cache/pants ]; then
   echo "Getting latest Pants..."
   pushd .cache
-  git clone https://github.com/peiyuwang/pants
+  git clone https://github.com/pantsbuild/pants
   echo "Bootstrapping Pants and Ivy..."
   pushd pants
-  git checkout -b peiyu/better-ivy-error-message origin/peiyu/better-ivy-error-message
-  git branch
-  git rev-parse HEAD
-  git clean -fdx
   ./pants goals
-  ./pants --version
   popd
   popd
 fi
