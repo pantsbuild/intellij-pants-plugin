@@ -24,6 +24,7 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotifica
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
+import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
@@ -32,6 +33,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
@@ -219,7 +221,28 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     }
 
     public void asyncViewSwitch() {
-      queueSwitchToProjectFilesTreeView();
+      //queueSwitchToProjectFilesTreeView();
+      /**
+       * Ensure GUI is set correctly because the seed(empty) project does not set it:
+       * 1. Make sure the project view opened so the view switch will follow.
+       * 2. Pants tool window is initialized; otherwise no message is shown when invoking `PantsCompile`.
+       */
+      if (!ApplicationManager.getApplication().isUnitTestMode()) {
+        if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
+          ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+              ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(new Runnable() {
+                @Override
+                public void run() {
+                  ProjectView.getInstance(myProject).changeView(ProjectFilesViewPane.ID);
+                  queueFocusOnImportDirectory();
+                }
+              });
+            }
+          });
+        }
+      }
     }
 
     private void queueSwitchToProjectFilesTreeView() {
