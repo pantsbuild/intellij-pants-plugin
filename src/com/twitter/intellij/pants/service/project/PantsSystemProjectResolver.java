@@ -212,7 +212,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   private class ViewSwitchProcessor {
     private final Project myProject;
     private final String myProjectPath;
-    private ScheduledFuture<?> viewSwitchHandle;
     private ScheduledFuture<?> directoryFocusHandle;
 
     public ViewSwitchProcessor(final Project project, final String projectPath) {
@@ -221,7 +220,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     }
 
     public void asyncViewSwitch() {
-      //queueSwitchToProjectFilesTreeView();
       /**
        * Ensure GUI is set correctly because the seed(empty) project does not set it:
        * 1. Make sure the project view opened so the view switch will follow.
@@ -232,6 +230,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
+              // Show Project Pane, and switch to ProjectFilesViewPane right after.
               ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(new Runnable() {
                 @Override
                 public void run() {
@@ -243,25 +242,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           });
         }
       }
-    }
-
-    private void queueSwitchToProjectFilesTreeView() {
-      viewSwitchHandle = PantsUtil.scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
-        @Override
-        public void run() {
-          if (!ProjectView.getInstance(myProject).getPaneIds().contains(ProjectFilesViewPane.ID)) {
-            return;
-          }
-          ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-              ProjectView.getInstance(myProject).changeView(ProjectFilesViewPane.ID);
-              queueFocusOnImportDirectory();
-              viewSwitchHandle.cancel(false);
-            }
-          });
-        }
-      }, 0, 1, TimeUnit.SECONDS);
     }
 
     private void queueFocusOnImportDirectory() {
