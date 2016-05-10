@@ -77,7 +77,7 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
   }
 
   /**
-   * Test framework cannot dispose the new project opened properly.
+   * Test framework cannot properly dispose newly opened project.
    * This is a hack to manually trigger disposal and ignore all disposal errors.
    */
   @Override
