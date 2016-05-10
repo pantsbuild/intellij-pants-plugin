@@ -19,12 +19,7 @@ public class PantsProjectImportNotificationListener extends ExternalSystemTaskNo
       public void run() {
         // Explicitly synchronize the project after resolve because generated file can be changed.
         // Equivalent to File -> Synchronize.
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-          @Override
-          public void run() {
-            new SynchronizeAction().actionPerformed(null);
-          }
-        });
+        new SynchronizeAction().actionPerformed(null);
       }
     });
   }
