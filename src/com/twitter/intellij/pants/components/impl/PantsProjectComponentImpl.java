@@ -103,7 +103,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             new PantsProjectSettings(targetSpecs, Collections.<String>emptyList(), projectPath, false, true);
 
           /**
-           * Following the examples in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
+           * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
            * Make sure the setting is injected into the project for refresh.
            */
           ExternalSystemManager<?, ?, ?, ?, ?> manager = ExternalSystemApiUtil.getManager(PantsConstants.SYSTEM_ID);
@@ -114,11 +114,16 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           settings.setLinkedProjectsSettings(Collections.singleton(pantsProjectSettings));
           PantsUtil.refreshAllProjects(myProject);
 
-          /**
-           * Ensure GUI is set correctly because the seed(empty) project does not set it:
-           * 1. Make sure the project view opened so the view switch will follow.
-           * 2. Pants tool window is initialized; otherwise no message is shown when invoking `PantsCompile`.
-           */
+          prepareGuiComponents();
+        }
+
+        /**
+         * Ensure GUI is set correctly because empty IntelliJ project (seed project in this case)
+         * does not have these set by default.
+         * 1. Make sure the project view is opened so view switch will follow.
+         * 2. Pants tool window is initialized; otherwise no message can be shown when invoking `PantsCompile`.
+         */
+        private void prepareGuiComponents() {
           if (!ApplicationManager.getApplication().isUnitTestMode()) {
             if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
               ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(null);
