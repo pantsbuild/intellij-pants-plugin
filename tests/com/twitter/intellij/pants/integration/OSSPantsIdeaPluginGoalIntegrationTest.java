@@ -14,6 +14,7 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.testFramework.PlatformTestCase;
+import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 
@@ -54,7 +55,8 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     String projectDir = FileUtil.loadFile(outputFile);
 
     myProject = ProjectUtil.openProject(projectDir + "/project.ipr", myProject, false);
-
+    // Invoke post startup activities.
+    UIUtil.dispatchAllInvocationEvents();
     /**
      * Under unit test mode, {@link com.intellij.ide.impl.ProjectUtil#openProject} will force open a project in a new window,
      * so Project SDK has to be reset. In practice, this is not needed.

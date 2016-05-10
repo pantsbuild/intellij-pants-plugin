@@ -44,7 +44,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
     if (myProject.isDefault()) {
       return;
     }
-
     StartupManager.getInstance(myProject).registerPostStartupActivity(
       new Runnable() {
         @Override
