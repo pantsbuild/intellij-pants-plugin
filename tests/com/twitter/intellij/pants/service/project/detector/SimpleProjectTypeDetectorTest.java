@@ -3,82 +3,81 @@
 
 package com.twitter.intellij.pants.service.project.detector;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import junit.framework.TestCase;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class SimpleProjectTypeDetectorTest extends TestCase {
+  private PathGenerator generatorBuild;
+  private PathGenerator generatorPy;
+  private PathGenerator generatorJava;
+  private PathGenerator generatorScala;
+  private PathGenerator generatorJs;
+
+  public void setUp() {
+    generatorBuild = new PathGenerator().add("a/BUILD");
+    generatorPy = new PathGenerator().add("a/b/project_", "py", 10);
+    generatorJava = new PathGenerator().add("a/c/Project", "java", 10);
+    generatorScala = new PathGenerator().add("a/d/Project", "scala", 10);
+    generatorJs = new PathGenerator().add("a/e/project_", "js", 10);
+  }
+
+  // Only python source files.
   public void testOnlyPythonFiles() {
-    assertDetection(ProjectType.Python,
-        new PathGenerator()
-            .add("a/BUILD")
-            .add("a/b/project", "py", 10));
+    assertDetection(ProjectType.Python, generatorBuild, generatorPy);
   }
 
+  // Only Java source files.
   public void testOnlyJavaFiles() {
-    assertDetection(ProjectType.Jvm,
-        new PathGenerator()
-            .add("a/BUILD")
-            .add("a/b/Project", "java", 10));
+    assertDetection(ProjectType.Jvm, generatorBuild, generatorJava);
   }
 
+  // Only Scala source files.
   public void testOnlyScalaFiles() {
-    assertDetection(ProjectType.Jvm,
-        new PathGenerator()
-            .add("a/BUILD")
-            .add("a/b/Project", "scala", 10));
+    assertDetection(ProjectType.Jvm, generatorBuild, generatorScala);
   }
 
+  // Mixed Java and Python source files.
   public void testMixedPythonJavaScalaFiles() {
-    PathGenerator generator1 = new PathGenerator()
-      .add("a/BUILD")
-      .add("a/b/project", "py", 1)
-      .add("a/c/Project", "scala", 1);
-    PathGenerator generator2 = new PathGenerator()
-      .add("a/d/project", "java", 10);
-    assertDetection(ProjectType.Unsupported, generator1);
-    assertDetection(ProjectType.Jvm, generator1, generator2);
+    assertDetection(ProjectType.Unsupported, generatorBuild, generatorPy, generatorJava);
+    PathGenerator generatorMoreJava = new PathGenerator()
+      .add("a/c/Project", "java", 100);
+    assertDetection(ProjectType.Jvm,
+                    generatorBuild, generatorPy, generatorJava, generatorMoreJava);
   }
 
+  // Other files are not taken into account.
   public void testMixedJavaOtherFiles() {
-    PathGenerator generator = new PathGenerator()
-      .add("a/BUILD")
-      .add("a/b/project", "py", 1)
-      .add("a/c/Project", "js", 10);
-    assertDetection(ProjectType.Python, generator);
+    assertDetection(ProjectType.Python, generatorBuild, generatorPy, generatorJs);
   }
 
   private void assertDetection(ProjectType expected, PathGenerator... generators) {
-    Stream<String> filePaths = Stream.of(generators).map(PathGenerator::build)
-      .flatMap(paths -> paths.stream());
+    Stream<String> filePaths = Stream.of(generators).flatMap(PathGenerator::build);
     ProjectTypeDetector detector = new SimpleProjectTypeDetector(filePaths);
     assertEquals(expected, detector.detect());
   }
 
-  static class PathGenerator {
-    private final Collection<String> fileNames;
+  private static class PathGenerator {
+    private List<String> fileNames = Lists.newLinkedList();
 
-    public PathGenerator() {
-      fileNames = Lists.newArrayList();
-    }
-
-    public PathGenerator add(String prefix) {
-      fileNames.add(prefix);
+    PathGenerator add(String path) {
+      fileNames.add(path);
       return this;
     }
 
-    public PathGenerator add(String prefix, String suffix, int numFiles) {
-      for (int i=0; i<numFiles; i++) {
-        fileNames.add(String.format("%s%d.%s", prefix, i, suffix));
-      }
+    PathGenerator add(String prefix, String suffix, int numFiles) {
+      fileNames.addAll(IntStream.range(0, numFiles)
+                         .mapToObj(i -> String.format("%s%d.%s", prefix, i, suffix))
+                         .collect(Collectors.toList()));
       return this;
     }
 
-    public Collection<String> build() {
-      return new ImmutableList.Builder<String>().addAll(fileNames).build();
+    public Stream<String> build() {
+      return fileNames.stream();
     }
   }
 }

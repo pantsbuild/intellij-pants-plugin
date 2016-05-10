@@ -32,7 +32,7 @@ public class SimpleProjectTypeDetector implements ProjectTypeDetector {
   @Override
   public ProjectType detect() {
     long numJavaScalaFiles = extensionCounts.getOrDefault(SUFFIX_JAVA, 0L) +
-                            extensionCounts.getOrDefault(SUFFIX_SCALA, 0L);
+                             extensionCounts.getOrDefault(SUFFIX_SCALA, 0L);
     long numPythonFiles = extensionCounts.getOrDefault(SUFFIX_PYTHON, 0L);
 
     if (numJavaScalaFiles > 0 && numPythonFiles == 0) {
