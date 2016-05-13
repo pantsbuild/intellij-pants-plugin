@@ -104,11 +104,11 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (existingPantsExe == null) {
       return;
     }
-    final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
-    if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
+    final VirtualFile newPantsExe = PantsUtil.findPantsExecutable(projectPath);
+    if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantsExe.getCanonicalFile().getPath())) {
       throw new ExternalSystemException(String.format(
         "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
-        existingPantsExe, newPantExe
+        existingPantsExe, newPantsExe
       ));
     }
   }
