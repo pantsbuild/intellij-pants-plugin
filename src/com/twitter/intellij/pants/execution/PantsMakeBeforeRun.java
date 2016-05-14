@@ -194,6 +194,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     final boolean success = process.exitValue() == 0;
     notifyCompileResult(success);
+    PantsUtil.synchronizeFiles();
     return success;
   }
 

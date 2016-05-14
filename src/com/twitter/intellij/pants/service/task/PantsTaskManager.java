@@ -132,6 +132,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     }
     finally {
       myCancellationMap.remove(id);
+      PantsUtil.synchronizeFiles();
     }
   }
 
