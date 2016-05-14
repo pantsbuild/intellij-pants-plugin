@@ -31,6 +31,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
@@ -77,15 +78,11 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void doViewSwitch(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
-    if (ApplicationManager.getApplication().isUnitTestMode()) {
-      return;
-    }
     Project ideProject = id.findProject();
     if (ideProject == null) {
       return;
     }
-    ViewSwitchProcessor vsp  = new ViewSwitchProcessor(ideProject, projectPath);
-    vsp.asyncViewSwitch();
+    new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
   }
 
   /**
@@ -219,25 +216,28 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
     public void asyncViewSwitch() {
       /**
-       * 1. Make sure the project view opened so the view switch will follow.
+       * Make sure the project view opened so the view switch will follow.
        */
-      if (!ApplicationManager.getApplication().isUnitTestMode()) {
-        if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
-          ApplicationManager.getApplication().invokeLater(new Runnable() {
+      if (ApplicationManager.getApplication().isUnitTestMode()) {
+        return;
+      }
+      final ToolWindow projectWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Project");
+      if (projectWindow == null) {
+        return;
+      }
+      ApplicationManager.getApplication().invokeLater(new Runnable() {
+        @Override
+        public void run() {
+          // Show Project Pane, and switch to ProjectFilesViewPane right after.
+          projectWindow.show(new Runnable() {
             @Override
             public void run() {
-              // Show Project Pane, and switch to ProjectFilesViewPane right after.
-              ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(new Runnable() {
-                @Override
-                public void run() {
-                  ProjectView.getInstance(myProject).changeView(ProjectFilesViewPane.ID);
-                  queueFocusOnImportDirectory();
-                }
-              });
+              ProjectView.getInstance(myProject).changeView(ProjectFilesViewPane.ID);
+              queueFocusOnImportDirectory();
             }
           });
         }
-      }
+      });
     }
 
     private void queueFocusOnImportDirectory() {
@@ -254,7 +254,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
               final VirtualFile pathImported = VirtualFileManager.getInstance().findFileByUrl("file://" + myProjectPath);
               // Skip focusing if directory is not found.
               if (pathImported != null) {
-                VirtualFile importDirectory = pathImported.isDirectory()? pathImported: pathImported.getParent();
+                VirtualFile importDirectory = pathImported.isDirectory() ? pathImported : pathImported.getParent();
                 SelectInContext selectInContext = new FileSelectInContext(myProject, importDirectory);
                 for (SelectInTarget selectInTarget : ProjectView.getInstance(myProject).getSelectInTargets()) {
                   if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
