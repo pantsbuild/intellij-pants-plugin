@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.ide.actions.SynchronizeAction;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationManager;
@@ -788,6 +789,17 @@ public class PantsUtil {
       }
     }
     return findPantsExecutable(file.getParent());
+  }
+
+  public static void synchronizeFiles() {
+    ApplicationManager.getApplication().invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        // Explicitly synchronize the project after resolve because generated file can be changed.
+        // Equivalent to File -> Synchronize.
+        new SynchronizeAction().actionPerformed(null);
+      }
+    });
   }
 }
 
