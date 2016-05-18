@@ -218,9 +218,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       /**
        * Make sure the project view opened so the view switch will follow.
        */
-      if (ApplicationManager.getApplication().isUnitTestMode()) {
-        return;
-      }
       final ToolWindow projectWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Project");
       if (projectWindow == null) {
         return;
