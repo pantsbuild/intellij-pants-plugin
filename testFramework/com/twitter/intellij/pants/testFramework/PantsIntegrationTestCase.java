@@ -47,6 +47,7 @@ import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.components.impl.PantsMetrics;
 import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
@@ -294,6 +295,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     myRelativeProjectPath = projectFolderPathToImport;
     myProjectSettings.setTargetNames(Arrays.asList(targetNames));
     importProject();
+    PantsMetrics.markIndexFinished();
   }
 
   protected void assertGotoFileContains(String filename) {
