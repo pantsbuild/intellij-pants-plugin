@@ -4,19 +4,12 @@
 package com.twitter.intellij.pants.components.impl;
 
 import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.CsvReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.Time;
-import com.sun.javafx.font.Metrics;
 
-import java.io.File;
-import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -26,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PantsMetrics {
   //private static PantsMetrics myMetrics = new PantsMetrics();
-  private static final MetricRegistry metricsRegistry = new MetricRegistry();
+  private static MetricRegistry metricsRegistry;
 
 
   private static ScheduledFuture handle;
@@ -47,7 +40,6 @@ public class PantsMetrics {
       @Override
       public void run() {
         Timer myTimer = metricsRegistry.timer("indexing");
-
         if (ApplicationManager.getApplication().isUnitTestMode()) {
           indexing_context = myTimer.time();
           handle.cancel(false);
@@ -84,6 +76,10 @@ public class PantsMetrics {
     resolveContext = resolveTimer.time();
   }
 
+  public static void initialize() {
+    metricsRegistry = new MetricRegistry();
+  }
+
   public static void markResolveEnd() {
     resolveContext.stop();
   }
@@ -94,6 +90,7 @@ public class PantsMetrics {
 
   public static void projectClosed() {
     handle.cancel(true);
+    indexThreadPool.shutdown();
     report();
   }
 
