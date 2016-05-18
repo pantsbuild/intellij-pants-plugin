@@ -29,19 +29,18 @@ public class PantsProjectImportNotificationListener extends ExternalSystemTaskNo
 
   @Override
   public void onEnd(@NotNull ExternalSystemTaskId id) {
-    if (id.findProject() == null) {
-      return;
-    }
-    PantsMetrics.markResolveEnd();
-    super.onEnd(id);
-    // Sync files as generated sources may have changed after `pants export` called
-    // due to import and refresh.
     Project project = id.findProject();
     if (project == null) {
       return;
     }
-    PantsUtil.synchronizeFiles();
+
+    PantsMetrics.markResolveEnd();
     PantsMetrics.timeNextIndexing(project);
+
+    super.onEnd(id);
+    // Sync files as generated sources may have changed after `pants export` called
+    // due to import and refresh.
+    PantsUtil.synchronizeFiles();
   }
 }
 

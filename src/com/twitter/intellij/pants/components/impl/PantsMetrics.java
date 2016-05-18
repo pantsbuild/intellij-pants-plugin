@@ -4,11 +4,19 @@
 package com.twitter.intellij.pants.components.impl;
 
 import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.CsvReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.Time;
+import com.sun.javafx.font.Metrics;
 
+import java.io.File;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -18,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PantsMetrics {
   //private static PantsMetrics myMetrics = new PantsMetrics();
-  private static final MetricRegistry metrics = new MetricRegistry();
+  private static final MetricRegistry metricsRegistry = new MetricRegistry();
 
 
   private static ScheduledFuture handle;
@@ -32,31 +40,36 @@ public class PantsMetrics {
     });
 
   private static int counter = 0;
+  private static Timer.Context indexing_context;
+
   public static void timeNextIndexing(Project myProject) {
     handle = indexThreadPool.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        // Still in smart mode, meaning indexing hasn't started yet.
-        counter++;
-        if (counter > 10) {
-          handle.cancel(true);
-          counter = 0;
+        Timer myTimer = metricsRegistry.timer("indexing");
+
+        if (ApplicationManager.getApplication().isUnitTestMode()) {
+          indexing_context = myTimer.time();
+          handle.cancel(false);
+          return;
         }
+
+        // Start counting now in unit test mode, because dumb mode is never set.
         if (!DumbServiceImpl.getInstance(myProject).isDumb()) {
           return;
         }
-        Timer myTimer = metrics.timer("Indexing");
-        final Timer.Context context = myTimer.time();
+
+        // Still in smart mode, meaning indexing hasn't started yet.
+        counter++;
+        if (counter > 10) {
+          handle.cancel(false);
+          counter = 0;
+        }
+        indexing_context = myTimer.time();
         DumbServiceImpl.getInstance(myProject).runWhenSmart(new Runnable() {
           @Override
           public void run() {
-            context.stop();
-            ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
-              .convertRatesTo(TimeUnit.SECONDS)
-              .convertDurationsTo(TimeUnit.MILLISECONDS)
-              .build();
-            reporter.report();
-            //context.close();
+            markIndexFinished();
           }
         });
         handle.cancel(false);
@@ -64,19 +77,43 @@ public class PantsMetrics {
     }, 0, 1, TimeUnit.SECONDS);
   }
 
-  private static Timer resolveTimer = metrics.timer("resolve");
+  private static Timer resolveTimer = metricsRegistry.timer("resolve");
   private static Timer.Context resolveContext;
+
   public static void markResolveStart() {
     resolveContext = resolveTimer.time();
   }
 
   public static void markResolveEnd() {
     resolveContext.stop();
-    ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
+  }
+
+  public static void markIndexFinished() {
+    indexing_context.stop();
+  }
+
+  public static void projectClosed() {
+    handle.cancel(true);
+    indexThreadPool.shutdown();
+    report();
+  }
+
+  public static void report() {
+    //final CsvReporter csvReporter = CsvReporter.forRegistry(metricsRegistry)
+    //  .formatFor(Locale.US)
+    //  .convertRatesTo(TimeUnit.SECONDS)
+    //  .convertDurationsTo(TimeUnit.SECONDS)
+    //  .build(new File("/Users/yic/report/"));
+    ////csvReporter.start(1, TimeUnit.SECONDS);    //resolveContext.close();
+    ////csvReporter.start(0, TimeUnit.SECONDS);
+    //csvReporter.report();
+    //csvReporter.close();
+
+    ConsoleReporter reporter = ConsoleReporter.forRegistry(metricsRegistry)
       .convertRatesTo(TimeUnit.SECONDS)
-      .convertDurationsTo(TimeUnit.MILLISECONDS)
+      .convertDurationsTo(TimeUnit.SECONDS)
       .build();
     reporter.report();
-    //resolveContext.close();
+    reporter.close();
   }
 }

@@ -28,7 +28,8 @@ junit_tests(
         '3rdparty/intellij:scala-plugin',
         'jps-plugin',
         'src:pants-intellij-plugin-scala',
-        'testFramework:test-lib'
+        'testFramework:test-lib',
+        '3rdparty/jvm:metrics',
     ],
     sources = globs('com/twitter/intellij/pants/integration/*.java')
 )
@@ -41,7 +42,8 @@ junit_tests(
         '3rdparty/intellij:scala-plugin',
         'jps-plugin',
         'src:pants-intellij-plugin-scala',
-        'testFramework:test-lib'
+        'testFramework:test-lib',
+        '3rdparty/jvm:metrics',
     ],
     sources = globs('com/twitter/intellij/pants/integration/python/*.java')
 )
