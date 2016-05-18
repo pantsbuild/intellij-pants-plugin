@@ -19,18 +19,12 @@ import java.util.concurrent.TimeUnit;
 
 public class PantsMetrics {
   //private static PantsMetrics myMetrics = new PantsMetrics();
-  private static MetricRegistry metricsRegistry;
+  private static MetricRegistry metricsRegistry = new MetricRegistry();
 
 
   private static ScheduledFuture handle;
 
-  private static final ScheduledExecutorService indexThreadPool = Executors.newSingleThreadScheduledExecutor(
-    new ThreadFactory() {
-      @Override
-      public Thread newThread(Runnable r) {
-        return new Thread(r, "Pants-Plugin-Index-Pool");
-      }
-    });
+  private static ScheduledExecutorService indexThreadPool;
 
   private static int counter = 0;
   private static Timer.Context indexing_context;
@@ -77,7 +71,16 @@ public class PantsMetrics {
   }
 
   public static void initialize() {
-    metricsRegistry = new MetricRegistry();
+    if (indexThreadPool != null) {
+      indexThreadPool.shutdown();
+    }
+    indexThreadPool = Executors.newSingleThreadScheduledExecutor(
+      new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+          return new Thread(r, "Pants-Plugin-Index-Pool");
+        }
+      });
   }
 
   public static void markResolveEnd() {
