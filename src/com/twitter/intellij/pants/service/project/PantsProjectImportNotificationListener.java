@@ -23,6 +23,7 @@ public class PantsProjectImportNotificationListener extends ExternalSystemTaskNo
     if (id.findProject() == null) {
       return;
     }
+    PantsMetrics.initialize();
     PantsMetrics.markResolveStart();
     super.onQueued(id, workingDir);
   }
