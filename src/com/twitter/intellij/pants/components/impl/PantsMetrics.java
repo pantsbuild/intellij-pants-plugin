@@ -94,7 +94,6 @@ public class PantsMetrics {
 
   public static void projectClosed() {
     handle.cancel(true);
-    indexThreadPool.shutdown();
     report();
   }
 
