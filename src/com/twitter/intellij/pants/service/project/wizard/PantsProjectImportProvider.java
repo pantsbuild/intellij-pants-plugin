@@ -28,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PantsProjectImportProvider extends AbstractExternalProjectImportProvider {
-  private boolean CANNOT_BE_CANCELLED = false;
+  private static final boolean CAN_BE_CANCELLED = true;
   public PantsProjectImportProvider(PantsProjectImportBuilder builder) {
     super(builder, PantsConstants.SYSTEM_ID);
   }
@@ -49,14 +49,19 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
     /**
      * Newer export version project sdk can be automatically discovered and configured.
      */
-    final AtomicBoolean isSdkConfigured = new AtomicBoolean(false);
+    AtomicBoolean isSdkConfigured = new AtomicBoolean(false);
     String message = PantsBundle.message("pants.default.sdk.config.progress");
-    ProgressManager.getInstance().run(new Task.Modal(context.getProject(), message, CANNOT_BE_CANCELLED) {
+    ProgressManager.getInstance().run(new Task.Modal(context.getProject(), message, !CAN_BE_CANCELLED) {
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
-        isSdkConfigured.set(PantsUtil.supportExportDefaultJavaSdk(
-          PantsUtil.findPantsExecutable(context.getProjectFileDirectory()).getPath()) &&
-                            isJvmProject(context.getProjectFileDirectory()));
+        VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(context.getProjectFileDirectory());
+        if (pantsExecutable != null) {
+          isSdkConfigured.set(PantsUtil.supportExportDefaultJavaSdk(pantsExecutable.getPath()));
+        }
+
+        if (isSdkConfigured.get()) {
+          isSdkConfigured.set(isJvmProject(context.getProjectFileDirectory()));
+        }
       }
     });
     if (isSdkConfigured.get()) {
