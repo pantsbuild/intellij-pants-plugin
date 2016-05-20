@@ -292,6 +292,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {
+    System.out.println("Import: " + projectFolderPathToImport);
     myRelativeProjectPath = projectFolderPathToImport;
     myProjectSettings.setTargetNames(Arrays.asList(targetNames));
     importProject();
