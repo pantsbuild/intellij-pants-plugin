@@ -18,7 +18,7 @@ public class SimpleProjectTypeDetector implements ProjectTypeDetector {
   private static final String SUFFIX_PYTHON = "py";
   private static final String SUFFIX_JAVA = "java";
 
-  private static final double JAVA_SCALA_PROJECT_THRESHHOLD = 0.90;
+  private static final double JVM_PYTHON_NUM_FILES_RATIO_THRESHHOLD = 8;
 
   private final Map<String, Long> extensionCounts;
 
@@ -43,10 +43,8 @@ public class SimpleProjectTypeDetector implements ProjectTypeDetector {
       return ProjectType.Python;
     }
 
-    long numSupportedFiles = numPythonFiles + numJvmFiles;
     // If there are many more java/scala files than py files, consider as Java/scala project too.
-    if (numSupportedFiles > 0 &&
-        numJvmFiles * 1.0 / numSupportedFiles > JAVA_SCALA_PROJECT_THRESHHOLD) {
+    if (Math.floorDiv(numJvmFiles, numPythonFiles + 1) > JVM_PYTHON_NUM_FILES_RATIO_THRESHHOLD) {
       return ProjectType.Jvm;
     }
 
