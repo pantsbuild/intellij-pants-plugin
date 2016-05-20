@@ -31,22 +31,22 @@ public class SimpleProjectTypeDetector implements ProjectTypeDetector {
 
   @Override
   public ProjectType detect() {
-    long numJavaScalaFiles = extensionCounts.getOrDefault(SUFFIX_JAVA, 0L) +
-                             extensionCounts.getOrDefault(SUFFIX_SCALA, 0L);
+    long numJvmFiles = extensionCounts.getOrDefault(SUFFIX_JAVA, 0L) +
+                       extensionCounts.getOrDefault(SUFFIX_SCALA, 0L);
     long numPythonFiles = extensionCounts.getOrDefault(SUFFIX_PYTHON, 0L);
 
-    if (numJavaScalaFiles > 0 && numPythonFiles == 0) {
+    if (numJvmFiles > 0 && numPythonFiles == 0) {
       return ProjectType.Jvm;
     }
 
-    if (numPythonFiles > 0 && numJavaScalaFiles == 0) {
+    if (numPythonFiles > 0 && numJvmFiles == 0) {
       return ProjectType.Python;
     }
 
-    long numSupportedFiles = numPythonFiles + numJavaScalaFiles;
+    long numSupportedFiles = numPythonFiles + numJvmFiles;
     // If there are many more java/scala files than py files, consider as Java/scala project too.
     if (numSupportedFiles > 0 &&
-        numJavaScalaFiles * 1.0 / numSupportedFiles > JAVA_SCALA_PROJECT_THRESHHOLD) {
+        numJvmFiles * 1.0 / numSupportedFiles > JAVA_SCALA_PROJECT_THRESHHOLD) {
       return ProjectType.Jvm;
     }
 

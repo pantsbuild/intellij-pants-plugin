@@ -42,7 +42,7 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
      */
     if (PantsUtil.supportExportDefaultJavaSdk(
       PantsUtil.findPantsExecutable(context.getProjectFileDirectory()).getPath()) &&
-      isJavaScalaProject(context.getProjectFileDirectory())) {
+        isJvmProject(context.getProjectFileDirectory())) {
       return super.createSteps(context);
     }
     return ArrayUtil.append(super.createSteps(context), new ProjectJdkStep(context));
@@ -50,7 +50,7 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
 
   // TODO check for Python project to python interpreter automatically.
   // https://github.com/pantsbuild/intellij-pants-plugin/issues/128
-  private boolean isJavaScalaProject(String rootPath) {
+  private boolean isJvmProject(String rootPath) {
     if (PantsUtil.isExecutable(rootPath)) {
       return false;
     }
