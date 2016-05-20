@@ -12,8 +12,10 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
+import com.intellij.util.ObjectUtils;
 import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,12 +61,14 @@ public class PantsVirtualFileReference extends PantsPsiReferenceBase {
   @Nullable
   @Override
   public PsiElement resolve() {
-    final VirtualFile virtualFile = findFile();
+    VirtualFile virtualFile = findFile();
     if (virtualFile == null) {
       return null;
     }
+    VirtualFile buildFileOrDirectory = ObjectUtils.notNull(PantsUtil.findBUILDFile(virtualFile), virtualFile);
+
     final PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
-    final PsiFile file = psiManager.findFile(virtualFile);
-    return file != null ? file : psiManager.findDirectory(virtualFile);
+    final PsiFile buildFile = psiManager.findFile(buildFileOrDirectory);
+    return buildFile != null ? buildFile : psiManager.findDirectory(buildFileOrDirectory);
   }
 }
