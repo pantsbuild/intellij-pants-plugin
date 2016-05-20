@@ -4,12 +4,16 @@
 package com.twitter.intellij.pants.components.impl;
 
 import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.CsvReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
+import org.junit.Assert;
 
+import java.io.File;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -18,9 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class PantsMetrics {
-  //private static PantsMetrics myMetrics = new PantsMetrics();
   private static MetricRegistry metricsRegistry = new MetricRegistry();
-
 
   private static ScheduledFuture handle;
 
@@ -44,7 +46,6 @@ public class PantsMetrics {
         if (!DumbServiceImpl.getInstance(myProject).isDumb()) {
           return;
         }
-
         // Still in smart mode, meaning indexing hasn't started yet.
         counter++;
         if (counter > 10) {
@@ -56,6 +57,7 @@ public class PantsMetrics {
           @Override
           public void run() {
             markIndexFinished();
+            report();
           }
         });
         handle.cancel(false);
@@ -63,15 +65,8 @@ public class PantsMetrics {
     }, 0, 1, TimeUnit.SECONDS);
   }
 
-  private static Timer resolveTimer = metricsRegistry.timer("resolve");
-  private static Timer.Context resolveContext;
-
-  public static void markResolveStart() {
-    resolveContext = resolveTimer.time();
-  }
-
   public static void initialize() {
-    if (indexThreadPool != null) {
+    if (indexThreadPool != null && !indexThreadPool.isShutdown()) {
       indexThreadPool.shutdown();
     }
     indexThreadPool = Executors.newSingleThreadScheduledExecutor(
@@ -83,8 +78,19 @@ public class PantsMetrics {
       });
   }
 
+  private static Timer.Context resolveContext;
+
+  public static void markResolveStart() {
+    if (resolveContext != null) {
+      resolveContext.close();
+    }
+    Timer resolveTimer = metricsRegistry.timer("resolve");
+    resolveContext = resolveTimer.time();
+  }
+
   public static void markResolveEnd() {
     resolveContext.stop();
+    resolveContext.close();
   }
 
   public static void markIndexFinished() {
@@ -92,21 +98,27 @@ public class PantsMetrics {
   }
 
   public static void projectClosed() {
-    handle.cancel(true);
-    indexThreadPool.shutdown();
+    if (handle != null) {
+      handle.cancel(true);
+    }
+    if (indexThreadPool != null) {
+      indexThreadPool.shutdown();
+    }
     report();
   }
 
   public static void report() {
-    //final CsvReporter csvReporter = CsvReporter.forRegistry(metricsRegistry)
-    //  .formatFor(Locale.US)
-    //  .convertRatesTo(TimeUnit.SECONDS)
-    //  .convertDurationsTo(TimeUnit.SECONDS)
-    //  .build(new File("/Users/yic/report/"));
-    ////csvReporter.start(1, TimeUnit.SECONDS);    //resolveContext.close();
-    ////csvReporter.start(0, TimeUnit.SECONDS);
-    //csvReporter.report();
-    //csvReporter.close();
+    String metricsDir = System.getProperty("metricsReportDir");
+    Assert.assertNotNull("-DmetricsReportDir not specified", metricsDir);
+    final CsvReporter csvReporter = CsvReporter.forRegistry(metricsRegistry)
+      .formatFor(Locale.US)
+      .convertRatesTo(TimeUnit.SECONDS)
+      .convertDurationsTo(TimeUnit.SECONDS)
+      .build(new File(metricsDir));
+    //csvReporter.start(1, TimeUnit.SECONDS);    //resolveContext.close();
+    //csvReporter.start(0, TimeUnit.SECONDS);
+    csvReporter.report();
+    csvReporter.close();
 
     ConsoleReporter reporter = ConsoleReporter.forRegistry(metricsRegistry)
       .convertRatesTo(TimeUnit.SECONDS)
