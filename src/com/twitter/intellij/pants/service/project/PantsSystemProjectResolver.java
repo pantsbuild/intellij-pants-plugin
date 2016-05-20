@@ -27,6 +27,7 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -126,13 +127,13 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
 
-    //VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(executor.getProjectPath());
-    //if (pantsExecutable != null) {
-    //  Sdk sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.getPath());
-    //  if (sdk != null) {
-    //    projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
-    //  }
-    //}
+    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(executor.getProjectPath());
+    if (pantsExecutable != null) {
+      Sdk sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.getPath());
+      if (sdk != null) {
+        projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
+      }
+    }
 
     if (!isPreviewMode) {
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);

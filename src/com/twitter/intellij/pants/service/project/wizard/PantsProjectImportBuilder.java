@@ -60,16 +60,16 @@ public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuil
 
   @Override
   protected void applyExtraSettings(@NotNull WizardContext context) {
-    //final DataNode<ProjectData> node = getExternalProjectNode();
-    //if (node == null) {
-    //  return;
-    //}
-    //
-    //final DataNode<Sdk> sdkNode = ExternalSystemApiUtil.find(node, PantsConstants.SDK_KEY);
-    //if (sdkNode != null) {
-    //  Sdk pantsSdk = sdkNode.getData();
-    //  context.setProjectJdk(addIfNotExists(pantsSdk));
-    //}
+    final DataNode<ProjectData> node = getExternalProjectNode();
+    if (node == null) {
+      return;
+    }
+
+    final DataNode<Sdk> sdkNode = ExternalSystemApiUtil.find(node, PantsConstants.SDK_KEY);
+    if (sdkNode != null) {
+      Sdk pantsSdk = sdkNode.getData();
+      context.setProjectJdk(addIfNotExists(pantsSdk));
+    }
   }
 
   /**
