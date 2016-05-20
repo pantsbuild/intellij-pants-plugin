@@ -2,7 +2,12 @@
 source scripts/prepare-ci-environment.sh
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
-if [ ! -d .cache/jdk-libs ]; then
+if [ -z $JAVA_HOME ]; then
+  echo "Please set JAVA_HOME"
+  exit 1
+fi
+
+if [ ! -f .cache/jdk-libs/sa-jdi.jar ] || [ ! -f .cache/jdk-libs/tools.jar ] ; then
   echo "Copying JDK libs..."
   mkdir -p .cache/jdk-libs
   cp "$JAVA_HOME/lib/sa-jdi.jar" "$JAVA_HOME/lib/tools.jar" .cache/jdk-libs
