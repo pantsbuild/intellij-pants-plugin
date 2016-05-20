@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.resolve;
 
 import com.intellij.codeInsight.TargetElementUtilBase;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
@@ -11,7 +12,7 @@ import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 
 import java.util.Collection;
 
-public class PantResolveTest extends PantsCodeInsightFixtureTestCase {
+public class PantsResolveTest extends PantsCodeInsightFixtureTestCase {
   @Override
   protected String getBasePath() {
     return "/resolve";
@@ -45,15 +46,18 @@ public class PantResolveTest extends PantsCodeInsightFixtureTestCase {
 
   public void testDependencies1() {
     setUpPantsExecutable();
-    myFixture.addFileToProject("foo/bar/BUILD", "");
+    PsiFile expectedTarget = myFixture.addFileToProject("foo/bar/BUILD", "");
     myFixture.configureByText("BUILD", "scala_library(dependencies=['foo/ba<caret>r']");
-    doTest(1);
+    PsiElement target = doTest(1).iterator().next();
+    assertEquals(expectedTarget, target);
   }
 
   public void testDependencies2() {
     setUpPantsExecutable();
     myFixture.addFileToProject("foo/bar/BUILD", "");
     myFixture.configureByText("BUILD", "scala_library(dependencies=['fo<caret>o/bar']");
-    doTest(1);
+    PsiElement element = doTest(1).iterator().next();
+    assertTrue("Expected a directory!", element instanceof PsiDirectory);
+    assertEquals("Wrong directory name", "foo", ((PsiDirectory)element).getName());
   }
 }

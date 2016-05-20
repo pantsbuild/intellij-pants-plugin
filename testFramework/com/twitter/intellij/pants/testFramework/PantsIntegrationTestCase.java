@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.testFramework;
 
+import com.google.common.base.Joiner;
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ProgramRunnerUtil;
@@ -42,6 +43,7 @@ import com.intellij.openapi.vfs.*;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
+import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
@@ -158,6 +160,15 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     final GeneralCommandLine commandLine = new GeneralCommandLine(args);
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
+  }
+
+  protected void killNailgun() throws ExecutionException {
+    // NB: the ideal interface here is defaultCommandLine(myProject). However,
+    // not all tests call doImport therefore myProject may not always contain modules.
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+    commandLine.addParameter("ng-killall");
+    // Wait for command to finish.
+    PantsUtil.getCmdOutput(commandLine, null);
   }
 
   @NotNull
@@ -336,7 +347,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         );
       switch (message.getCategory()) {
         case ERROR:
-          fail("Compilation failed with error: " + prettyMessage);
+          // Always show full error messages.
+
+          fail("Compilation failed with error: " + Joiner.on('\n').join(messages));
           break;
         case WARNING:
           System.out.println("Compilation warning: " + prettyMessage);
@@ -473,10 +486,21 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Override
   public void tearDown() throws Exception {
+    // TODO thread leak either a IJ bug https://youtrack.jetbrains.com/issue/IDEA-155496
+    // or a pants plugin bug https://github.com/pantsbuild/intellij-pants-plugin/issues/130
+    // Temporarily ignore the following 'leaking' threads to pass CI.
+    ThreadTracker.longRunningThreadCreated(
+      ApplicationManager.getApplication(),
+      "BaseDataReader",
+      "ProcessWaitFor",
+      "Timer");
     try {
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();
       }
+
+      // Kill nailgun after usage as memory on travis is limited, at a cost of slower later builds.
+      killNailgun();
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
     }

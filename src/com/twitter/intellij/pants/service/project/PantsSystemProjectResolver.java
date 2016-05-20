@@ -27,11 +27,12 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
@@ -71,17 +72,23 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
+    doViewSwitch(id, projectPath);
     task2executor.remove(id);
-    Project ideProject = id.findProject();
-    if (ideProject != null && !ApplicationManager.getApplication().isUnitTestMode()) {
-      ViewSwitchProcessor vsp  = new ViewSwitchProcessor(ideProject, projectPath);
-      vsp.asyncViewSwitch();
-    }
     return projectDataNode;
   }
 
+  private void doViewSwitch(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
+    Project ideProject = id.findProject();
+    if (ideProject == null) {
+      return;
+    }
+    new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
+  }
+
+  /**
+   * Check whether the pants executable of the new project to import is the same as the existing project's pants executable.
+   */
   private void checkForDifferentPantsExecutables(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
-    // Checking whether the pants executable of the targets to import is the same as the existing project's pants executable.
     final Project existingIdeProject = id.findProject();
     if (existingIdeProject == null) {
       return;
@@ -91,14 +98,15 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       return;
     }
     final VirtualFile existingPantsExe = PantsUtil.findPantsExecutable(projectFilePath);
-    if (existingPantsExe != null) {
-      final VirtualFile newPantExe = PantsUtil.findPantsExecutable(projectPath);
-      if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantExe.getCanonicalFile().getPath())) {
-        throw new ExternalSystemException(String.format(
-          "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
-          existingPantsExe, newPantExe
-        ));
-      }
+    if (existingPantsExe == null) {
+      return;
+    }
+    final VirtualFile newPantsExe = PantsUtil.findPantsExecutable(projectPath);
+    if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantsExe.getCanonicalFile().getPath())) {
+      throw new ExternalSystemException(String.format(
+        "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
+        existingPantsExe, newPantsExe
+      ));
     }
   }
 
@@ -118,13 +126,13 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(executor.getProjectPath());
-    if (pantsExecutable != null) {
-      Sdk sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.getPath());
-      if (sdk != null) {
-        projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
-      }
-    }
+    //VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(executor.getProjectPath());
+    //if (pantsExecutable != null) {
+    //  Sdk sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.getPath());
+    //  if (sdk != null) {
+    //    projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
+    //  }
+    //}
 
     if (!isPreviewMode) {
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);
@@ -199,7 +207,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   private class ViewSwitchProcessor {
     private final Project myProject;
     private final String myProjectPath;
-    private ScheduledFuture<?> viewSwitchHandle;
     private ScheduledFuture<?> directoryFocusHandle;
 
     public ViewSwitchProcessor(final Project project, final String projectPath) {
@@ -208,30 +215,33 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     }
 
     public void asyncViewSwitch() {
-      queueSwitchToProjectFilesTreeView();
-    }
-
-    private void queueSwitchToProjectFilesTreeView() {
-      viewSwitchHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+      /**
+       * Make sure the project view opened so the view switch will follow.
+       */
+      if (ApplicationManager.getApplication().isUnitTestMode()) {
+        return;
+      }
+      final ToolWindow projectWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Project");
+      if (projectWindow == null) {
+        return;
+      }
+      ApplicationManager.getApplication().invokeLater(new Runnable() {
         @Override
         public void run() {
-          if (!ProjectView.getInstance(myProject).getPaneIds().contains(ProjectFilesViewPane.ID)) {
-            return;
-          }
-          ApplicationManager.getApplication().invokeLater(new Runnable() {
+          // Show Project Pane, and switch to ProjectFilesViewPane right after.
+          projectWindow.show(new Runnable() {
             @Override
             public void run() {
               ProjectView.getInstance(myProject).changeView(ProjectFilesViewPane.ID);
               queueFocusOnImportDirectory();
-              viewSwitchHandle.cancel(false);
             }
           });
         }
-      }, 0, 1, TimeUnit.SECONDS);
+      });
     }
 
     private void queueFocusOnImportDirectory() {
-      directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+      directoryFocusHandle = PantsUtil.scheduledThreadPool.scheduleWithFixedDelay(new Runnable() {
         @Override
         public void run() {
           if (ModuleManager.getInstance(myProject).getModules().length == 0 ||
@@ -241,9 +251,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-              final VirtualFile importDirectory = VirtualFileManager.getInstance().findFileByUrl("file://" + myProjectPath);
+              final VirtualFile pathImported = VirtualFileManager.getInstance().findFileByUrl("file://" + myProjectPath);
               // Skip focusing if directory is not found.
-              if (importDirectory != null) {
+              if (pathImported != null) {
+                VirtualFile importDirectory = pathImported.isDirectory() ? pathImported : pathImported.getParent();
                 SelectInContext selectInContext = new FileSelectInContext(myProject, importDirectory);
                 for (SelectInTarget selectInTarget : ProjectView.getInstance(myProject).getSelectInTargets()) {
                   if (selectInTarget instanceof PantsProjectPaneSelectInTarget) {
