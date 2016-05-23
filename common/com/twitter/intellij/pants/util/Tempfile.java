@@ -26,7 +26,7 @@ public class Tempfile implements AutoCloseable {
     Files.deleteIfExists(file.toPath());
   }
 
-  public static final Tempfile create(String prefix, String suffix) throws IOException {
+  public static Tempfile create(String prefix, String suffix) throws IOException {
     return new Tempfile(File.createTempFile(prefix, suffix));
   }
 }

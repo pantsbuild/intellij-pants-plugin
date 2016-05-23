@@ -67,8 +67,6 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
     @NotNull TargetInfo targetInfo,
     @NotNull PantsCompileOptionsExecutor executor
   ) {
-    final Collection<SourceRoot> roots = targetInfo.getRoots();
-    final PantsSourceType rootType = targetInfo.getSourcesType();
     final String moduleName = PantsUtil.getCanonicalModuleName(targetName);
 
     final ModuleData moduleData = new ModuleData(

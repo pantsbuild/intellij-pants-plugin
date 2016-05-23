@@ -3,8 +3,6 @@
 
 package com.twitter.intellij.pants.execution;
 
-import com.intellij.execution.filters.Filter;
-import com.intellij.openapi.command.impl.DummyProject;
 import com.intellij.openapi.util.io.FileUtil;
 import com.twitter.intellij.pants.util.PantsOutputMessage;
 import com.intellij.testFramework.UsefulTestCase;

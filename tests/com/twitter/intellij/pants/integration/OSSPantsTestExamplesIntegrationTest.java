@@ -6,7 +6,6 @@ package com.twitter.intellij.pants.integration;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
-import com.twitter.intellij.pants.util.PantsConstants;
 
 import java.util.List;
 

@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.builders.BuildRootDescriptor;
 
 import java.io.File;
+import java.util.Objects;
 import java.util.Set;
 
 public class PantsSourceRootDescriptor extends BuildRootDescriptor {
@@ -55,6 +56,7 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
     return myRoot;
   }
 
+  @NotNull
   @Override
   public PantsBuildTarget getTarget() {
     return myTarget;
@@ -74,23 +76,22 @@ public class PantsSourceRootDescriptor extends BuildRootDescriptor {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
-    PantsSourceRootDescriptor that = (PantsSourceRootDescriptor)o;
-
-    if (myGeneratedSources != that.myGeneratedSources) return false;
-    if (!FileUtil.filesEqual(myRoot, that.myRoot)) return false;
-    if (!myExcludes.equals(that.myExcludes)) return false;
-    if (myTargetAddress != null ? !myTargetAddress.equals(that.myTargetAddress) : that.myTargetAddress != null) return false;
-    return myTarget.equals(that.myTarget);
+    PantsSourceRootDescriptor that = (PantsSourceRootDescriptor) o;
+    return Objects.equals(myGeneratedSources, that.myGeneratedSources) &&
+           Objects.equals(myRoot, that.myRoot) &&
+           Objects.equals(myExcludes, that.myExcludes) &&
+           Objects.equals(myTargetAddress, that.myTargetAddress) &&
+           Objects.equals(myTarget, that.myTarget);
   }
 
   @Override
   public int hashCode() {
-    int result = myRoot.hashCode();
-    result = 31 * result + (myGeneratedSources ? 1 : 0);
-    result = 31 * result + myExcludes.hashCode();
-    result = 31 * result + (myTargetAddress != null ? myTargetAddress.hashCode() : 0);
-    result = 31 * result + myTarget.hashCode();
-    return result;
+    return Objects.hash(
+      myRoot,
+      myGeneratedSources,
+      myExcludes,
+      myTargetAddress,
+      myTarget
+    );
   }
 }

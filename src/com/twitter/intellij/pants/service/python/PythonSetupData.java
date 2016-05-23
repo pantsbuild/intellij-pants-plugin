@@ -7,7 +7,6 @@ import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
-import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
