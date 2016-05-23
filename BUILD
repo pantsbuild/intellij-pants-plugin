@@ -1,4 +1,4 @@
 target(
     name = 'pants-intellij-plugin',
-    dependencies = [ 'src:pants-intellij-plugin-scala' ]
+    dependencies = [ 'src:pants-intellij-plugin' ]
 )
