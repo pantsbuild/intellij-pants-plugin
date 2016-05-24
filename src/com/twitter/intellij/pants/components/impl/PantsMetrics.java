@@ -29,19 +29,25 @@ public class PantsMetrics {
   private static ScheduledExecutorService indexThreadPool;
 
   private static int counter = 0;
+
+  private static String METRIC_INDEXING = "indexing_second";
+  private static String METRIC_LOAD = "load_second";
+  
+  private static Timer.Context resolveContext;
   private static Timer.Context indexing_context;
 
   public static void timeNextIndexing(Project myProject) {
+    Timer myTimer = metricsRegistry.timer(METRIC_INDEXING);
+    if (ApplicationManager.getApplication().isUnitTestMode()) {
+      indexing_context = myTimer.time();
+      return;
+    }
+    /**
+     * This portion only applies in manual testing.
+     */
     handle = indexThreadPool.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        Timer myTimer = metricsRegistry.timer("indexing");
-        if (ApplicationManager.getApplication().isUnitTestMode()) {
-          indexing_context = myTimer.time();
-          handle.cancel(false);
-          return;
-        }
-
         // Start counting now in unit test mode, because dumb mode is never set.
         if (!DumbServiceImpl.getInstance(myProject).isDumb()) {
           return;
@@ -78,13 +84,11 @@ public class PantsMetrics {
       });
   }
 
-  private static Timer.Context resolveContext;
-
   public static void markResolveStart() {
     if (resolveContext != null) {
       resolveContext.close();
     }
-    Timer resolveTimer = metricsRegistry.timer("resolve");
+    Timer resolveTimer = metricsRegistry.timer(METRIC_LOAD);
     resolveContext = resolveTimer.time();
   }
 
@@ -109,22 +113,24 @@ public class PantsMetrics {
 
   public static void report() {
     String metricsDir = System.getProperty("metricsReportDir");
-    Assert.assertNotNull("-DmetricsReportDir not specified", metricsDir);
-    final CsvReporter csvReporter = CsvReporter.forRegistry(metricsRegistry)
-      .formatFor(Locale.US)
-      .convertRatesTo(TimeUnit.SECONDS)
-      .convertDurationsTo(TimeUnit.SECONDS)
-      .build(new File(metricsDir));
-    //csvReporter.start(1, TimeUnit.SECONDS);    //resolveContext.close();
-    //csvReporter.start(0, TimeUnit.SECONDS);
-    csvReporter.report();
-    csvReporter.close();
-
-    ConsoleReporter reporter = ConsoleReporter.forRegistry(metricsRegistry)
-      .convertRatesTo(TimeUnit.SECONDS)
-      .convertDurationsTo(TimeUnit.SECONDS)
-      .build();
-    reporter.report();
-    reporter.close();
+    // report csv if output dir specified.
+    // otherwise report to console.
+    if (metricsDir != null) {
+      final CsvReporter csvReporter = CsvReporter.forRegistry(metricsRegistry)
+        .formatFor(Locale.US)
+        .convertRatesTo(TimeUnit.SECONDS)
+        .convertDurationsTo(TimeUnit.SECONDS)
+        .build(new File(metricsDir));
+      csvReporter.report();
+      csvReporter.close();
+    }
+    else {
+      ConsoleReporter reporter = ConsoleReporter.forRegistry(metricsRegistry)
+        .convertRatesTo(TimeUnit.SECONDS)
+        .convertDurationsTo(TimeUnit.SECONDS)
+        .build();
+      reporter.report();
+      reporter.close();
+    }
   }
 }
