@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#set -e
+set -e
 
 # Important: to update the build number of intellij, you need to update the following hashes:
 # Intellij tarball for Community and Ultimate Edition

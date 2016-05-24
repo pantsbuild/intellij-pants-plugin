@@ -32,7 +32,7 @@ public class PantsMetrics {
 
   private static String METRIC_INDEXING = "indexing_second";
   private static String METRIC_LOAD = "load_second";
-  
+
   private static Timer.Context resolveContext;
   private static Timer.Context indexing_context;
 
