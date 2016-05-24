@@ -116,8 +116,17 @@ public class PantsCompileOptionsExecutor {
       //noinspection ConstantConditions
       return PantsUtil.fileNameWithoutExtension(VfsUtil.extractFileName(myOptions.getExternalProjectPath()));
     }
-    final String targetsSuffix = myOptions.getTargetNames().isEmpty() ? ":" : StringUtil.join(myOptions.getTargetNames(), " :");
-    return getProjectRelativePath() + "/:" + targetsSuffix;
+    String projectRelativePath = getProjectRelativePath();
+    String projectName = getWorkingDir().getName();
+    if (!projectRelativePath.equals(".")) {
+      projectName += File.separator + projectRelativePath;
+    }
+
+    if (myOptions.getTargetNames().isEmpty()) {
+      return projectName;
+    } else {
+      return projectName + ":" + StringUtil.join(myOptions.getTargetNames(), " :");
+    }
   }
 
   @NotNull @Nls
