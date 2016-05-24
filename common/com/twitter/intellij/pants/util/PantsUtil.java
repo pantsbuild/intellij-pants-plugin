@@ -790,16 +790,5 @@ public class PantsUtil {
     }
     return findPantsExecutable(file.getParent());
   }
-
-  public static void synchronizeFiles() {
-    ApplicationManager.getApplication().invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        // Explicitly synchronize the project after resolve because generated file can be changed.
-        // Equivalent to File -> Synchronize.
-        new SynchronizeAction().actionPerformed(null);
-      }
-    });
-  }
 }
 
