@@ -10,7 +10,8 @@ jdk:
 
 cache:
   directories:
-    - .cache/bootstrap # See pants.ini [cache.bootstrap]
+    - .cache/bootstrap	# See pants.ini [cache.bootstrap]
+    - .cache/pants	# Pants downloaded by scripts/setup-ci-environment.sh
 
 notifications:
   email:
