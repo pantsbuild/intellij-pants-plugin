@@ -170,3 +170,17 @@ test sources, resources, test resources, generated sources, etc).
         /path/to/pants_dev/pants goals
 
   This will bootstrap pants and resolve all the dependencies or else you will get an `ExecutionException` exception for exceeding 30s timeout.
+
+
+## References
+
+The IDEA code base is not extensively documented, but some information can be found on
+the [SDK documentation page](http://www.jetbrains.org/intellij/sdk/docs/).
+More specifically:
+ * [Custom language support](http://www.jetbrains.org/intellij/sdk/docs/reference_guide/custom_language_support.html) for code completion,
+   refactoring, ... of BUILD files
+ * [File based indexes](http://www.jetbrains.org/intellij/sdk/docs/basics/indexing_and_psi_stubs/file_based_indexes.html)
+   as used in [`src/com/twitter/intellij/pants/index/*`](https://github.com/pantsbuild/intellij-pants-plugin/tree/master/src/com/twitter/intellij/pants/index)
+ * [Testing plugin](http://www.jetbrains.org/intellij/sdk/docs/basics/testing_plugins.html)
+ * [Tutorial](http://www.jetbrains.org/intellij/sdk/docs/tutorials/custom_language_support_tutorial.html) going through the implementation
+   and tests of a custom language support
