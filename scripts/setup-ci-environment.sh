@@ -61,7 +61,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   mv plugins ".cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 fi
 
-if [ ! -d .cache/pants ]; then
+if [ ! -d .cache/pants/.git ]; then
   echo "Getting latest Pants..."
   pushd .cache
   git clone https://github.com/pantsbuild/pants

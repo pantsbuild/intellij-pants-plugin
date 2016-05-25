@@ -11,9 +11,9 @@ mkdir -p $IDEA_TEST_HOME
 
 pushd .cache
 pushd pants
-git pull
 if [ -z ${PANTS_SHA+x} ]; then
   echo "Pulling the latest master..."
+  git pull
 else
   echo "Using $PANTS_SHA..."
   git reset --hard $PANTS_SHA
