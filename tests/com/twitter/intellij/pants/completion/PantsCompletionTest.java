@@ -95,4 +95,14 @@ public class PantsCompletionTest extends PantsCompletionTestBase {
     configure("foo");
     doCompletionTest('\n');
   }
+
+  public void testAbsoluteAddress() throws Throwable {
+    myFixture.addFileToProject("bar/BUILD", "jar_library(name='bar')");
+    myFixture.addFileToProject("bar-segment/path/with/bz/BUILD", "jar_library(name='bz')");
+    myFixture.addFileToProject("some/long/path/containing/bar/BUILD", "jar_library(name='bar')");
+    myFixture.addFileToProject("another-long/path/with/baz/BUILD", "jar_library(name='baz')");
+
+    configure("foo");
+    doTestVariants();
+  }
 }
