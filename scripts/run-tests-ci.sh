@@ -16,6 +16,7 @@ if [ -z ${PANTS_SHA+x} ]; then
   git pull
 else
   echo "Using $PANTS_SHA..."
+  git fetch
   git reset --hard $PANTS_SHA
 fi
 popd
