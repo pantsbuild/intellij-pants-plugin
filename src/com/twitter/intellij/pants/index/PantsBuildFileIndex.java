@@ -92,16 +92,19 @@ public class PantsBuildFileIndex extends ScalarIndexExtension<String> {
       if (!PantsUtil.isPantsProject(inputData.getProject())) {
         return Collections.emptyMap();
       }
+
+      final VirtualFile file = inputData.getFile();
+      VirtualFile buildRoot = PantsUtil.findBuildRoot(file);
+      if (buildRoot == null) {
+        return Collections.emptyMap();
+      }
+
+      String relative = FileUtil.getRelativePath(buildRoot.getPath(), file.getParent().getPath(), File.separatorChar);
+      if (relative == null || relative.isEmpty()) {
+        return Collections.emptyMap();
+      }
       else {
-        final VirtualFile file = inputData.getFile();
-        VirtualFile buildRoot = PantsUtil.findBuildRoot(file);
-        String relative = FileUtil.getRelativePath(buildRoot.getPath(), file.getParent().getPath(), File.separatorChar);
-        if (relative == null || relative.isEmpty()) {
-          return Collections.emptyMap();
-        }
-        else {
-          return Collections.singletonMap(relative, null);
-        }
+        return Collections.singletonMap(relative, null);
       }
     }
   };
