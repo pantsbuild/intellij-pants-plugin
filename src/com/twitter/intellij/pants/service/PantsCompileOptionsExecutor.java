@@ -122,11 +122,10 @@ public class PantsCompileOptionsExecutor {
       projectName += File.separator + projectRelativePath;
     }
 
-    if (myOptions.getTargetNames().isEmpty()) {
-      return projectName;
-    } else {
-      return projectName + ":" + StringUtil.join(myOptions.getTargetNames(), " :");
+    for (String targetName: myOptions.getTargetNames()) {
+      projectName += ":" + targetName;
     }
+    return projectName;
   }
 
   @NotNull @Nls
