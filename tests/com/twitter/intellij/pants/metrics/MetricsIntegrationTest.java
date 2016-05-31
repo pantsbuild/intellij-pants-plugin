@@ -3,11 +3,13 @@
 
 package com.twitter.intellij.pants.metrics;
 
+import com.twitter.intellij.pants.components.impl.PantsMetrics;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class MetricsIntegrationTest extends OSSPantsIntegrationTest {
   public void testMetrics() throws Exception {
-    String importDir = System.getProperty("metricsImportDir");
+    String importDir = PantsMetrics.getMetricsImportDir();
+    assertNotNull(importDir);
     doImport(importDir);
   }
 }
