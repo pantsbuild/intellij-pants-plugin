@@ -18,6 +18,7 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsExecutionException;
+import com.twitter.intellij.pants.components.impl.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -172,7 +173,9 @@ public class PantsCompileOptionsExecutor {
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
     final GeneralCommandLine command = getCommand(outputFile, statusConsumer);
     statusConsumer.consume("Resolving dependencies...");
+    PantsMetrics.markExportStart();
     final ProcessOutput processOutput = getProcessOutput(command, processAdapter);
+    PantsMetrics.markExportEnd();
     if (processOutput.getStdout().contains("no such option")) {
       throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
     }

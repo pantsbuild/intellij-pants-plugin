@@ -10,7 +10,7 @@ import com.codahale.metrics.Timer;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
-import org.junit.Assert;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Locale;
@@ -22,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 
 public class PantsMetrics {
+  private static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "metrics.report.dir";
+  private static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "metrics.import.dir";
   private static MetricRegistry metricsRegistry = new MetricRegistry();
 
   private static ScheduledFuture handle;
@@ -30,16 +32,23 @@ public class PantsMetrics {
 
   private static int counter = 0;
 
-  private static String METRIC_INDEXING = "indexing_second";
-  private static String METRIC_LOAD = "load_second";
+  private static final String METRIC_INDEXING = "indexing_second";
+  private static final String METRIC_LOAD = "load_second";
+  private static final String METRIC_EXPORT = "export_second";
 
   private static Timer.Context resolveContext;
-  private static Timer.Context indexing_context;
+  private static Timer.Context indexingContext;
+  private static Timer.Context exportContext;
+
+  @Nullable
+  public static String getMetricsImportDir() {
+    return System.getProperty(SYSTEM_PROPERTY_METRICS_IMPORT_DIR);
+  }
 
   public static void timeNextIndexing(Project myProject) {
     Timer myTimer = metricsRegistry.timer(METRIC_INDEXING);
     if (ApplicationManager.getApplication().isUnitTestMode()) {
-      indexing_context = myTimer.time();
+      indexingContext = myTimer.time();
       return;
     }
     /**
@@ -58,11 +67,11 @@ public class PantsMetrics {
           handle.cancel(false);
           counter = 0;
         }
-        indexing_context = myTimer.time();
+        indexingContext = myTimer.time();
         DumbServiceImpl.getInstance(myProject).runWhenSmart(new Runnable() {
           @Override
           public void run() {
-            markIndexFinished();
+            markIndexEnd();
             report();
           }
         });
@@ -97,8 +106,21 @@ public class PantsMetrics {
     resolveContext.close();
   }
 
-  public static void markIndexFinished() {
-    indexing_context.stop();
+  public static void markExportStart() {
+    if (exportContext != null) {
+      exportContext.close();
+    }
+    Timer resolveTimer = metricsRegistry.timer(METRIC_EXPORT);
+    exportContext = resolveTimer.time();
+  }
+
+  public static void markExportEnd() {
+    exportContext.stop();
+    exportContext.close();
+  }
+
+  public static void markIndexEnd() {
+    indexingContext.stop();
   }
 
   public static void projectClosed() {
@@ -112,7 +134,7 @@ public class PantsMetrics {
   }
 
   public static void report() {
-    String metricsDir = System.getProperty("metricsReportDir");
+    String metricsDir = System.getProperty(SYSTEM_PROPERTY_METRICS_REPORT_DIR);
     // report csv if output dir specified.
     // otherwise report to console.
     if (metricsDir != null) {

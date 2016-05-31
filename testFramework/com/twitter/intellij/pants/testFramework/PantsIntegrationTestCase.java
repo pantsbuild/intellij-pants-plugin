@@ -296,7 +296,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     myRelativeProjectPath = projectFolderPathToImport;
     myProjectSettings.setTargetNames(Arrays.asList(targetNames));
     importProject();
-    PantsMetrics.markIndexFinished();
+    PantsMetrics.markIndexEnd();
   }
 
   protected void assertGotoFileContains(String filename) {
