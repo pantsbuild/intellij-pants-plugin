@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.psi.reference;
 
-import com.google.common.collect.Lists;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
@@ -11,12 +10,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.python.psi.PyCallExpression;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
-import com.intellij.util.ObjectUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,10 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 public class PantsTargetReference extends PantsPsiReferenceBase {
   public PantsTargetReference(@NotNull PsiElement element, @NotNull TextRange range, @Nls String text, @Nls String relativePath) {
@@ -48,7 +40,7 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
     }
     Collection<VirtualFile> buildFiles = PantsUtil.findBUILDFiles(file);
     final PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
-    return buildFiles.stream().map(psiManager::findFile).collect(toSet());
+    return buildFiles.stream().map(psiManager::findFile).collect(Collectors.toSet());
   }
 
   @NotNull

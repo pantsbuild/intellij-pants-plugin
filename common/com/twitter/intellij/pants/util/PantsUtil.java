@@ -82,8 +82,7 @@ import java.util.regex.Pattern;
 
 public class PantsUtil {
   public static final Gson gson = new Gson();
-  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {
-  }.getType();
+  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
     new ThreadFactory() {
       @Override
@@ -132,14 +131,12 @@ public class PantsUtil {
     if (vFile.isDirectory()) {
       return ContainerUtil.filter(vFile.getChildren(), VIRTUAL_FILE_IS_BUILD_FILE);
     }
-    else {
-      if (isBUILDFileName(vFile.getName())) {
-        return Collections.singleton(vFile);
-      }
-      else {
-        return Collections.emptyList();
-      }
+
+    if (isBUILDFileName(vFile.getName())) {
+      return Collections.singleton(vFile);
     }
+
+    return Collections.emptyList();
   }
 
 
