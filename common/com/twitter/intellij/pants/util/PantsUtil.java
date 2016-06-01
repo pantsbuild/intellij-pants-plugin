@@ -79,6 +79,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PantsUtil {
   public static final Gson gson = new Gson();
@@ -113,13 +115,6 @@ public class PantsUtil {
     }
   }
 
-  public static final Condition<VirtualFile> VIRTUAL_FILE_IS_BUILD_FILE = new Condition<VirtualFile>() {
-    @Override
-    public boolean value(VirtualFile file) {
-      return isBUILDFileName(file.getName());
-    }
-  };
-
   /**
    * @param vFile a virtual file pointing at either a file or a directory
    * @return a collection with one item if `vFile` is a valid BUILD file, an empty collection
@@ -129,7 +124,7 @@ public class PantsUtil {
   @NotNull
   public static Collection<VirtualFile> findBUILDFiles(@NotNull VirtualFile vFile) {
     if (vFile.isDirectory()) {
-      return ContainerUtil.filter(vFile.getChildren(), VIRTUAL_FILE_IS_BUILD_FILE);
+      return Stream.of(vFile.getChildren()).filter(f -> isBUILDFileName(f.getName())).collect(Collectors.toList());
     }
 
     if (isBUILDFileName(vFile.getName())) {
