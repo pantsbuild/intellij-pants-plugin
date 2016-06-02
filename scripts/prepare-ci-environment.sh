@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-if [[ $EXIT_ON_ERROR -ne 0 ]]; then
+exit_on_error="${EXIT_ON_ERROR:-1}"
+if [[ $exit_on_error -ne 0 ]]; then
   set -e
 fi
 # Important: to update the build number of intellij, you need to update the following hashes:

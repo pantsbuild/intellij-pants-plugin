@@ -68,5 +68,8 @@ jvm_binary(
   dependencies = [
     ':all',
     ':metrics',
+    'jps-plugin',
+    'common',
+    'src:pants-intellij-plugin-scala',
   ]
 )
