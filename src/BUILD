@@ -25,3 +25,9 @@ scala_library(
     ],
     sources=rglobs('*.scala')
 )
+
+jvm_binary(
+  name = 'pants',
+  basename = 'pants',
+  dependencies = [':pants-intellij-plugin-scala']
+)

@@ -19,3 +19,8 @@ resources(
     sources = globs('META-INF/services/*')
 )
 
+jvm_binary(
+  name = 'pants-jps-plugin',
+  basename = 'pants-jps-plugin',
+  dependencies = [':jps-plugin']
+)

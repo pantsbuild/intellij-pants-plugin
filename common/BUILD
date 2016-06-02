@@ -15,3 +15,9 @@ resources(
     name = 'properties',
     sources = globs('com/twitter/intellij/pants/PantsBundle.properties')
 )
+
+jvm_binary(
+  name = 'pants-common',
+  basename = 'pants-common',
+  dependencies = [':common']
+)
