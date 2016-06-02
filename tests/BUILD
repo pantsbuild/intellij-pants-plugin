@@ -61,3 +61,12 @@ junit_tests(
     ],
     sources = globs('com/twitter/intellij/pants/metrics/*.java')
 )
+
+jvm_binary(
+  name = 'pants-test-lib',
+  basename = 'pants-test-lib',
+  dependencies = [
+    ':all',
+    ':metrics',
+  ]
+)
