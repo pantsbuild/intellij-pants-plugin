@@ -30,3 +30,21 @@ jvm_binary(
   basename = 'intellij-scala-plugin',
   dependencies = ['3rdparty/intellij:scala-plugin']
 )
+
+jvm_binary(
+  name = 'pants-test-lib',
+  basename = 'pants-test-lib',
+  dependencies = [
+    ':plugin-resources',
+    'common',
+    'tests:all',
+    'tests:metrics',
+    'jps-plugin',
+    'src:pants-intellij-plugin-scala',
+    '3rdparty/intellij:external-system-test-api',
+    '3rdparty/intellij:sdk',
+    '3rdparty/intellij:junit-plugin',
+    '3rdparty/intellij:python-plugin',
+    '3rdparty/intellij:scala-plugin',
+  ]
+)

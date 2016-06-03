@@ -71,5 +71,7 @@ jvm_binary(
     'jps-plugin',
     'common',
     'src:pants-intellij-plugin-scala',
+    '3rdparty/intellij:python-plugin',
+    '3rdparty/intellij:scala-plugin',
   ]
 )

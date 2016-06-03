@@ -51,7 +51,6 @@ public class PantsProjectCacheImpl extends AbstractProjectComponent implements P
   @Override
   public void projectOpened() {
     super.projectOpened();
-    PantsMetrics.initialize();
     if (myProject.isDefault() || !PantsUtil.isPantsProject(myProject)) {
       return;
     }
