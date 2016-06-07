@@ -37,7 +37,7 @@ public class OSSFileSyncIntegrationTest extends OSSPantsIntegrationTest {
         /**
          * Open 'Distances.java' in editor and make sure it only contains `getNumber` and not `getNewDummyNumber`.
          */
-        FileEditorManager.getInstance(myProject).openFile(getVirtualFileInProject("Distances.java"), true);
+        FileEditorManager.getInstance(myProject).openFile(searchForVirtualFileInProject("Distances.java"), true);
         Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
 
         assertContainsSubstring(Collections.singletonList(editor.getDocument().getText()), "getNumber()");
@@ -46,7 +46,7 @@ public class OSSFileSyncIntegrationTest extends OSSPantsIntegrationTest {
         /**
          * Find distances.proto, and replaces it with the new text which adds the line "required int64 new_dummy_number = 3"
          */
-        Document distanceDotProtoDoc = getFileInProjectByName("distances.proto");
+        Document distanceDotProtoDoc = getDocumentFileInProject("distances.proto");
         Document newDistanceProtoDoc = getTestData("testData/protobuf/distances.proto");
         distanceDotProtoDoc.setText(newDistanceProtoDoc.getText());
 
@@ -58,30 +58,34 @@ public class OSSFileSyncIntegrationTest extends OSSPantsIntegrationTest {
         assertContainsSubstring(Collections.singletonList(editor.getDocument().getText()), "getNewDummyNumber()");
       }
     });
-
   }
 
   @NotNull
   private Document getTestData(String testDataPath) {
-    File newProto = PantsTestUtils.findTestPath(testDataPath);
-    VirtualFile newDistanceDotProto = VirtualFileManager.getInstance().findFileByUrl("file://" + newProto.getPath());
-    assertNotNull(newDistanceDotProto);
-    Document newDistanceProtoDoc = FileDocumentManager.getInstance().getDocument(newDistanceDotProto);
-    assertNotNull(newDistanceProtoDoc);
-    return newDistanceProtoDoc;
+    File dataFile = PantsTestUtils.findTestPath(testDataPath);
+    VirtualFile dataVirtualFile = VirtualFileManager.getInstance().findFileByUrl("file://" + dataFile.getPath());
+    assertNotNull(dataVirtualFile);
+    Document dataDocument = FileDocumentManager.getInstance().getDocument(dataVirtualFile);
+    assertNotNull(dataDocument);
+    return dataDocument;
   }
 
   /**
-   * Find the document associated with the filename. Return the cached version first if available, otherwise actually go find it.
+   * Find the document in project by filename.
    */
-  private Document getFileInProjectByName(String filename) {
-    VirtualFile sourceFile = getVirtualFileInProject(filename);
+  @NotNull
+  private Document getDocumentFileInProject(String filename) {
+    VirtualFile sourceFile = searchForVirtualFileInProject(filename);
     Document doc = FileDocumentManager.getInstance().getDocument(sourceFile);
     assertNotNull(String.format("%s not found.", filename), doc);
     return doc;
   }
 
-  private VirtualFile getVirtualFileInProject(String filename) {
+  /**
+   * Find VirtualFile in project by filename.
+   */
+  @NotNull
+  private VirtualFile searchForVirtualFileInProject(String filename) {
     Collection<VirtualFile> files = FilenameIndex.getVirtualFilesByName(myProject, filename, GlobalSearchScope.allScope(myProject));
     assertEquals(1, files.size());
     return files.iterator().next();
