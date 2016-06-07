@@ -6,7 +6,7 @@ java_library(
         '3rdparty/intellij:python-plugin',
         '3rdparty/intellij:sdk',
         '3rdparty/intellij:scala-plugin',
-        'src:pants-intellij-plugin-scala'
+        'src:pants-intellij-plugin'
     ],
     sources = globs('*.java')
 )
