@@ -61,7 +61,8 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   mv plugins ".cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 fi
 
-# Checking .git because .travis.yml will create folder .cache/pants
+# Checking .git because cache entry '.cache/pants' in .travis.yml
+# will alawys create directory .cache/pants
 if [ ! -d .cache/pants/.git ]; then
   echo "Getting latest Pants..."
   pushd .cache
