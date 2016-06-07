@@ -796,11 +796,19 @@ public class PantsUtil {
 
   public static void synchronizeFiles() {
     // Run in SYNC in unit test mode.
-    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()) {
-      ApplicationManager.getApplication().runWriteAction(() -> new SynchronizeAction().actionPerformed(null));
+    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()){
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        FileDocumentManager.getInstance().saveAllDocuments();
+        SaveAndSyncHandler.getInstance().refreshOpenFiles();
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
+      });
     }
     else {
-      ApplicationManager.getApplication().invokeLater(() -> new SynchronizeAction().actionPerformed(null));
+      ApplicationManager.getApplication().invokeLater(() -> {
+        FileDocumentManager.getInstance().saveAllDocuments();
+        SaveAndSyncHandler.getInstance().refreshOpenFiles();
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true);
+      });
     }
   }
 }
