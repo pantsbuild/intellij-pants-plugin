@@ -795,7 +795,10 @@ public class PantsUtil {
   }
 
   public static void synchronizeFiles() {
-    // Run in SYNC in unit test mode.
+    /**
+     * Run in SYNC in unit test mode, and {@link com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport}
+     * is required to be wrapped in WriteAction. Otherwise it will run in async mode.
+     */
     if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()){
       ApplicationManager.getApplication().runWriteAction(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
