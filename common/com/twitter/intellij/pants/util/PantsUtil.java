@@ -795,13 +795,9 @@ public class PantsUtil {
   }
 
   public static void synchronizeFiles() {
-    // Similar in unit test mode, except everything has to be in sync mode.
-    if (ApplicationManager.getApplication().isUnitTestMode()){
-      ApplicationManager.getApplication().invokeAndWait(() -> {
-        FileDocumentManager.getInstance().saveAllDocuments();
-        SaveAndSyncHandler.getInstance().refreshOpenFiles();
-        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
-      }, ModalityState.current());
+    // Run in SYNC in unit test mode.
+    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()) {
+      ApplicationManager.getApplication().runWriteAction(() -> new SynchronizeAction().actionPerformed(null));
     }
     else {
       ApplicationManager.getApplication().invokeLater(() -> new SynchronizeAction().actionPerformed(null));
