@@ -71,7 +71,7 @@ public class OSSFileSyncIntegrationTest extends OSSPantsIntegrationTest {
   }
 
   /**
-   * Find the document in project by filename.
+   * Find document in project by filename.
    */
   @NotNull
   private Document getDocumentFileInProject(String filename) {
