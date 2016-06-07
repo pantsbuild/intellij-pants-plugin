@@ -17,12 +17,24 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private final List<String> myTargetNames;
   private final List<String> myTargetSpecs;
 
-  public PantsExecutionSettings() {
-    this(Collections.<String>emptyList(), Collections.<String>emptyList(), false, true, false);
+  private static final List<String> DEFAULT_TARGET_SPECS = Collections.emptyList();
+  private static final List<String> DEFAULT_TARGET_NAMES = Collections.emptyList();
+  private static final boolean DEFAULT_WITH_DEPENDEES = false;
+  private static final boolean DEFAULT_WITH_SOURCES_AND_DOCS = true;
+  private static final boolean DEFAULT_USE_IDEA_PROJECT_SDK = false;
+
+  public static PantsExecutionSettings createDefault() {
+    return new PantsExecutionSettings(
+      DEFAULT_TARGET_SPECS,
+      DEFAULT_TARGET_NAMES,
+      DEFAULT_WITH_DEPENDEES,
+      DEFAULT_WITH_SOURCES_AND_DOCS,
+      DEFAULT_USE_IDEA_PROJECT_SDK
+    );
   }
 
   /**
-   * @param targetSpecs:            targets explicted listed from `pants idea-plugin` goal.
+   * @param targetSpecs:            targets explicitly listed from `pants idea-plugin` goal.
    * @param targetNames:            target names selected via import GUI. Ignored if `targetSpecs` is non empty.
    * @param withDependees:          whether depeedees need to be imported. (Untested and probably not working).
    * @param libsWithSourcesAndDocs: whether to import sources and docs when resolving for jars.

@@ -23,6 +23,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
+import com.intellij.util.ObjectUtils;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.service.project.PantsSystemProjectResolver;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
@@ -115,36 +116,26 @@ public class PantsManager implements
       public PantsExecutionSettings fun(Pair<Project, String> projectStringPair) {
         final Project ideProject = projectStringPair.getFirst();
         final String projectPath = projectStringPair.getSecond();
-
-        final PantsExecutionSettings executionSettings = getExecutionsSettingsFromPath(ideProject, projectPath);
-        return executionSettings;
+        return getExecutionsSettingsFromPath(ideProject, projectPath);
       }
 
       @NotNull
-      public PantsExecutionSettings getExecutionsSettingsFromPath(@NotNull Project ideProject, @NotNull String projectPath) {
-        boolean isUseIdeaProjectJdk = PantsSettings.getInstance(ideProject).isUseIdeaProjectJdk();
-
-        final PantsTargetAddress absoluteTargetAddress = PantsTargetAddress.fromString(projectPath, true);
-
-        if (absoluteTargetAddress != null) {
-          return new PantsExecutionSettings(
-            Collections.<String>emptyList(), Collections.singletonList(absoluteTargetAddress.getTargetName()), false, true, isUseIdeaProjectJdk
-          );
-        }
-
+      private PantsExecutionSettings getExecutionsSettingsFromPath(@NotNull Project ideProject, @NotNull String projectPath) {
         final AbstractExternalSystemSettings systemSettings = ExternalSystemApiUtil.getSettings(ideProject, PantsConstants.SYSTEM_ID);
         final ExternalProjectSettings projectSettings = systemSettings.getLinkedProjectSettings(projectPath);
 
         if (projectSettings instanceof PantsProjectSettings) {
           PantsProjectSettings pantsProjectSettings = (PantsProjectSettings) projectSettings;
-          final List<String> targets = pantsProjectSettings.getTargetNames();
-          final boolean withDependees = pantsProjectSettings.isWithDependees();
-          final boolean libsWithSources = pantsProjectSettings.isLibsWithSources();
-          final List<String> targetSpecs = pantsProjectSettings.getTargetSpecs();
-          return new PantsExecutionSettings(targetSpecs, targets, withDependees, libsWithSources, isUseIdeaProjectJdk);
+          return new PantsExecutionSettings(
+            pantsProjectSettings.getTargetSpecs(),
+            pantsProjectSettings.getTargetNames(),
+            pantsProjectSettings.isWithDependees(),
+            pantsProjectSettings.isLibsWithSources(),
+            PantsSettings.getInstance(ideProject).isUseIdeaProjectJdk()
+          );
         }
         else {
-          return new PantsExecutionSettings();
+          return PantsExecutionSettings.createDefault();
         }
       }
     };

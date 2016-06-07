@@ -76,7 +76,7 @@ public class PantsCompileOptionsExecutor {
   public static PantsCompileOptionsExecutor createMock() {
     return new PantsCompileOptionsExecutor(
       new File(""),
-      new MyPantsCompileOptions("", new PantsExecutionSettings()),
+      new MyPantsCompileOptions("", PantsExecutionSettings.createDefault()),
       true
     ) {
     };

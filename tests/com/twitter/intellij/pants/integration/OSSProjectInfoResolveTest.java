@@ -28,7 +28,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   public ProjectInfo resolveProjectInfo(@NotNull String relativeProjectPath) {
     final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), relativeProjectPath);
     final PantsResolver resolver =
-      new PantsResolver(PantsCompileOptionsExecutor.create(absoluteProjectPath, new PantsExecutionSettings()));
+      new PantsResolver(PantsCompileOptionsExecutor.create(absoluteProjectPath, PantsExecutionSettings.createDefault()));
     resolver.resolve(STRING_CONSUMER, null);
     final ProjectInfo projectInfo = resolver.getProjectInfo();
     assertNotNull(projectInfo);
