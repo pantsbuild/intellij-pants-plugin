@@ -9,7 +9,6 @@ import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import org.jetbrains.jps.model.java.JavaSourceRootType;
 

@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.jps.incremental.model.impl;
 
 import com.twitter.intellij.pants.jps.incremental.model.JpsPantsProjectExtension;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.ex.JpsElementBase;
 
 public class JpsPantsProjectExtensionImpl extends JpsElementBase<JpsPantsProjectExtensionImpl> implements JpsPantsProjectExtension {

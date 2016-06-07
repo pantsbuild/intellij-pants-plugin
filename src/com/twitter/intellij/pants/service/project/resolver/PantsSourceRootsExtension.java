@@ -30,8 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.*;
 
-import static com.twitter.intellij.pants.util.PantsUtil.findChildren;
-
 public class PantsSourceRootsExtension implements PantsResolverExtension {
 
   private static String getSourceRootRegardingTargetType(@NotNull TargetInfo targetInfo, @NotNull SourceRoot root) {

@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.util.text.StringUtil;
-import com.twitter.intellij.pants.model.PantsSourceType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -73,7 +72,7 @@ public class SourceRoot implements Comparable<SourceRoot> {
   }
 
   @Override
-  public int compareTo(SourceRoot o) {
+  public int compareTo(@NotNull SourceRoot o) {
     return StringUtil.naturalCompare(getRawSourceRoot(), o.getRawSourceRoot());
   }
 }

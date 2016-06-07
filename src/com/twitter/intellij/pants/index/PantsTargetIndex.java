@@ -93,7 +93,7 @@ public class PantsTargetIndex extends ScalarIndexExtension<String> {
   private static DataIndexer<String, Void, FileContent> myIndexer = new DataIndexer<String, Void, FileContent>() {
     @Override
     @NotNull
-    public Map<String, Void> map(final FileContent inputData) {
+    public Map<String, Void> map(@NotNull final FileContent inputData) {
       final PsiFile psiFile = inputData.getPsiFile();
       if (psiFile instanceof PyFile) {
         final Map<String, PyReferenceExpression> targetDefinitions = PantsPsiUtil.findTargetDefinitions((PyFile)psiFile);

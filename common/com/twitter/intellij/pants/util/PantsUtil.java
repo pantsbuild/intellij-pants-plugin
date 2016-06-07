@@ -80,6 +80,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PantsUtil {
   public static final Gson gson = new Gson();
@@ -98,24 +100,42 @@ public class PantsUtil {
   private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
+  /**
+   * @param vFile a virtual file pointing at either a file or a directory
+   * @return <code>null</code> if `vFile` is not a BUILD file or if it is a directory that
+   * does not contain one
+   * @deprecated {@link #findBUILDFiles(VirtualFile)} should be used instead, as this is likely
+   * a sign that you're missing BUILD files
+   */
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
     if (vFile == null) {
       return null;
     }
-    else if (vFile.isDirectory()) {
-      return ContainerUtil.find(
-        vFile.getChildren(),
-        new Condition<VirtualFile>() {
-          @Override
-          public boolean value(VirtualFile file) {
-            return isBUILDFileName(file.getName());
-          }
-        }
-      );
+    else {
+      return findBUILDFiles(vFile).stream().findFirst().orElse(null);
     }
-    return isBUILDFileName(vFile.getName()) ? vFile : null;
   }
+
+  /**
+   * @param vFile a virtual file pointing at either a file or a directory
+   * @return a collection with one item if `vFile` is a valid BUILD file, an empty collection
+   * if `vFile` is a file but not a valid BUILD file, or if `vFile` is a directory then all
+   * the valid build files that are in it.
+   */
+  @NotNull
+  public static Collection<VirtualFile> findBUILDFiles(@NotNull VirtualFile vFile) {
+    if (vFile.isDirectory()) {
+      return Stream.of(vFile.getChildren()).filter(f -> isBUILDFileName(f.getName())).collect(Collectors.toList());
+    }
+
+    if (isBUILDFileName(vFile.getName())) {
+      return Collections.singleton(vFile);
+    }
+
+    return Collections.emptyList();
+  }
+
 
   public static boolean isBUILDFilePath(@NotNull String path) {
     return isBUILDFileName(PathUtil.getFileName(path));
@@ -697,9 +717,6 @@ public class PantsUtil {
     );
   }
 
-  public static boolean hasTargetIdInExport(@NotNull final String pantsExecutable) {
-    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.5") >= 0;
-  }
 
   public static boolean supportExportDefaultJavaSdk(@NotNull final String pantsExecutable) {
     return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.7") >= 0;

@@ -11,7 +11,6 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
-import com.jetbrains.python.PythonFileType;
 import com.twitter.intellij.pants.PantsBundle;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,17 +33,17 @@ public class TypeAssociationFix extends PantsQuickFix {
   }
 
   @Override
-  public boolean isAvailable(Project project, Editor editor, PsiFile file) {
+  public boolean isAvailable(@NotNull Project project, Editor editor, PsiFile file) {
     return true;
   }
 
   @Override
-  public void applyFix(Project project, ProblemDescriptor descriptor) {
+  public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
     invoke(project, null, descriptor.getPsiElement().getContainingFile());
   }
 
   @Override
-  public void invoke(final Project project, Editor editor, PsiFile psiFile) throws IncorrectOperationException {
+  public void invoke(@NotNull final Project project, Editor editor, PsiFile psiFile) throws IncorrectOperationException {
     FileTypeManager manager = FileTypeManager.getInstance();
     FileType type = manager.getFileTypeByFileName(psiFile.getName());
     // Remove the BUILD file matcher from the wrong type then add it to PythonFileType

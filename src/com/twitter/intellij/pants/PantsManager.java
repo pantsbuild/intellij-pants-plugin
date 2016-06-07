@@ -24,7 +24,6 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
-import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.PantsSystemProjectResolver;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
 import com.twitter.intellij.pants.settings.*;

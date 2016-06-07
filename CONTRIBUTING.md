@@ -99,11 +99,16 @@ test sources, resources, test resources, generated sources, etc).
 * Open the project via File -> Open, then select the plugin source folder. Do not import the plugin source as pants project because the plugin does not work on itself.
 * Use IntelliJ IDEA 2016 Community Edition as IDEA IC SDK. Project Structure(Cmd + ;) -> SDK -> '+' button -> IntelliJ Platform Plugin SDK
 * Setup the SDK's classpath
-  * Add the following to the SDK's classpath
+  * __Mac users__ add the following to the SDK's classpath
     * `~/Library/Application Support/IdeaIC2016/python/lib/python.jar`
     * `~/Library/Application Support/IdeaIC2016/Scala/lib/scala-plugin.jar`
     * `~/Library/Application Support/IdeaIC2016/Scala/lib/jps/*.jar`
     * `/Applications/IntelliJ IDEA 2016 CE.app/Contents/plugins/junit/lib/idea-junit.jar`
+  * __Linux users__ add the following to the SDK's classpath
+    * `~/.IdeaIC2016.1/config/plugins/python/lib/python.jar`
+    * `~/.IdeaIC2016.1/config/plugins/Scala/lib/scala-plugin.jar`
+    * `~/.IdeaIC2016.1/config/plugins/Scala/lib/jps/*.jar`
+    * `<IDEA_BIN_HOME>/plugins/junit/lib/idea-junit.jar` where `<IDEA_BIN_HOME>` is the path to your Idea binary
 * Set Scala 2.11.2 as your Scala SDK
 * Make sure that your project is set to configure bytecode compatible with 1.8.  Preferences -> Compiler -> Java Compiler -> Project bytecode version
 * Run plugin configuration 'Pants' to verify your setup. It should launch a separate IntelliJ app.
@@ -165,3 +170,17 @@ test sources, resources, test resources, generated sources, etc).
         /path/to/pants_dev/pants goals
 
   This will bootstrap pants and resolve all the dependencies or else you will get an `ExecutionException` exception for exceeding 30s timeout.
+
+
+## References
+
+The IDEA code base is not extensively documented, but some information can be found on
+the [SDK documentation page](http://www.jetbrains.org/intellij/sdk/docs/).
+More specifically:
+ * [Custom language support](http://www.jetbrains.org/intellij/sdk/docs/reference_guide/custom_language_support.html) for code completion,
+   refactoring, ... of BUILD files
+ * [File based indexes](http://www.jetbrains.org/intellij/sdk/docs/basics/indexing_and_psi_stubs/file_based_indexes.html)
+   as used in [`src/com/twitter/intellij/pants/index/*`](https://github.com/pantsbuild/intellij-pants-plugin/tree/master/src/com/twitter/intellij/pants/index)
+ * [Testing plugin](http://www.jetbrains.org/intellij/sdk/docs/basics/testing_plugins.html)
+ * [Tutorial](http://www.jetbrains.org/intellij/sdk/docs/tutorials/custom_language_support_tutorial.html) going through the implementation
+   and tests of a custom language support

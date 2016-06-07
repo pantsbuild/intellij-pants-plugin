@@ -8,6 +8,13 @@ public class PantsCompletionTest extends PantsCompletionTestBase {
     super("completion");
   }
 
+  public void testTargetFromBuildFileWithExtension() throws Throwable {
+    myFixture.addFileToProject("foo/BUILD", "jar_library(name='bar')");
+    myFixture.addFileToProject("foo/BUILD.other", "jar_library(name='baz')");
+    configure();
+    doTestVariants();
+  }
+
   public void testTargetName1() throws Throwable {
     myFixture.addFileToProject("foo/BUILD", "jar_library(name='bar')\njar_library(name='baz')");
     configure();
@@ -94,5 +101,15 @@ public class PantsCompletionTest extends PantsCompletionTestBase {
     myFixture.addFileToProject("foo/bar/baz/BUILD", "jar_library(name='bar')\njar_library(name='baz')");
     configure("foo");
     doCompletionTest('\n');
+  }
+
+  public void testAbsoluteAddress() throws Throwable {
+    myFixture.addFileToProject("bar/BUILD", "jar_library(name='bar')");
+    myFixture.addFileToProject("bar-segment/path/with/bz/BUILD", "jar_library(name='bz')");
+    myFixture.addFileToProject("some/long/path/containing/bar/BUILD", "jar_library(name='bar')");
+    myFixture.addFileToProject("another-long/path/with/baz/BUILD", "jar_library(name='baz')");
+
+    configure("foo");
+    doTestVariants();
   }
 }

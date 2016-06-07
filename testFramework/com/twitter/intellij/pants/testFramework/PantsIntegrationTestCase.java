@@ -195,6 +195,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return myCompilerTester;
   }
 
+  protected void assertProjectName(String name) {
+    assertEquals(name, myProject.getName());
+  }
+
   protected void assertScalaLibrary(String moduleName) throws Exception {
     assertModuleLibDep(moduleName, "Pants: org.scala-lang:scala-library:2.10.4");
   }
@@ -236,9 +240,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
     List<String> compilerOutputPaths = ContainerUtil.newArrayList();
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(PantsUtil.findBuildRoot(module).getPath());
-    compilerOutputPaths.addAll(
-      PantsClasspathRunConfigurationExtension.findPublishedClasspath(module, PantsUtil.hasTargetIdInExport(pantsExecutable.getPath())));
+    compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module));
 
     for (String compilerOutputPath : compilerOutputPaths) {
       VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));
