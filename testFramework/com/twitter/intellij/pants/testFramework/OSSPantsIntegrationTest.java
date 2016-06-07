@@ -42,13 +42,13 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
         return;
       }
     }
-    fail(String.format("String %s does not contain substring '%s'.", stringList.toString(), expected));
+    fail(String.format("String '%s' does not contain substring '%s'.", stringList.toString(), expected));
   }
 
   protected void assertNotContainsSubstring(List<String> stringList, String expected) {
     for (String line : stringList) {
       if (line.contains(expected)) {
-        fail(String.format("String %s contains substring '%s'.", stringList.toString(), expected));
+        fail(String.format("String '%s' contains substring '%s'.", stringList.toString(), expected));
       }
     }
   }
