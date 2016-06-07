@@ -10,10 +10,12 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.ide.SaveAndSyncHandler;
 import com.intellij.ide.actions.SynchronizeAction;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
@@ -24,6 +26,7 @@ import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMo
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -66,7 +69,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -447,6 +449,7 @@ public class PantsUtil {
     if (!PantsUtil.isPantsProject(project)) {
       return;
     }
+    FileDocumentManager.getInstance().saveAllDocuments();
     final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
     ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
                                           ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
@@ -792,14 +795,17 @@ public class PantsUtil {
   }
 
   public static void synchronizeFiles() {
-    ApplicationManager.getApplication().invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        // Explicitly synchronize the project after resolve because generated file can be changed.
-        // Equivalent to File -> Synchronize.
-        new SynchronizeAction().actionPerformed(null);
-      }
-    });
+    // Similar in unit test mode, except everything has to be in sync mode.
+    if (ApplicationManager.getApplication().isUnitTestMode()){
+      ApplicationManager.getApplication().invokeAndWait(() -> {
+        FileDocumentManager.getInstance().saveAllDocuments();
+        SaveAndSyncHandler.getInstance().refreshOpenFiles();
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
+      }, ModalityState.current());
+    }
+    else {
+      ApplicationManager.getApplication().invokeLater(() -> new SynchronizeAction().actionPerformed(null));
+    }
   }
 }
 

@@ -14,9 +14,9 @@ import org.jetbrains.annotations.NotNull;
 public class PantsProjectImportNotificationListener extends ExternalSystemTaskNotificationListenerAdapter {
   @Override
   public void onEnd(@NotNull ExternalSystemTaskId id) {
-    super.onEnd(id);
     // Sync files as generated sources may have changed after `pants export` called
     // due to import and refresh.
     PantsUtil.synchronizeFiles();
+    super.onEnd(id);
   }
 }
