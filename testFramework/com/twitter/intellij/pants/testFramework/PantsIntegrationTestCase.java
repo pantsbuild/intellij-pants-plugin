@@ -296,6 +296,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {
     myRelativeProjectPath = projectFolderPathToImport;
+    myProjectSettings.setTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
     importProject();
   }
 

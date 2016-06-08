@@ -148,16 +148,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     }
 
     // Generate target specs based on `projectPath` and a list of selected target names.
-    File projectPath = new File(settings.getExternalProjectPath());
-    final String projectDir =
-      PantsUtil.isBUILDFileName(projectPath.getName()) ? projectPath.getParent() : projectPath.getPath();
-    if (targetNames.isEmpty()) {
-      settings.setTargetSpecs(Collections.singletonList(projectDir + "::"));
-    }
-    else {
-      List<String> targetSpecs = targetNames.stream().map(targetName -> projectDir + ":" + targetName).collect(Collectors.toList());
-      settings.setTargetSpecs(targetSpecs);
-    }
+    settings.setTargetSpecs(PantsUtil.convertToTargetSpecs(settings.getExternalProjectPath(), targetNames));
   }
 
   @Override

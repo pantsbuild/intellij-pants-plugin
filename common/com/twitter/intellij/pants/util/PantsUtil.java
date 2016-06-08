@@ -819,5 +819,17 @@ public class PantsUtil {
     }
     return findPantsExecutable(file.getParent());
   }
+
+  public static List<String> convertToTargetSpecs(String projectPath, List<String> targetNames) {
+    File projectPathFile = new File(projectPath);
+    final String projectDir =
+      PantsUtil.isBUILDFileName(projectPathFile.getName()) ? projectPathFile.getParent() : projectPathFile.getPath();
+    if (targetNames.isEmpty()) {
+      return Collections.singletonList(projectDir + "::");
+    }
+    else {
+      return targetNames.stream().map(targetName -> projectDir + ":" + targetName).collect(Collectors.toList());
+    }
+  }
 }
 
