@@ -32,7 +32,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     PantsExecutionSettings settings = new PantsExecutionSettings(
       Collections.singletonList(relativeProjectPath),
       false,
-      false,
+      true,
       true
     );
     final PantsResolver resolver =
@@ -56,7 +56,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   }
 
   public void testTargetJars() {
-    final ProjectInfo info = resolveProjectInfo("intellij-integration/3rdparty/hadoop::");
+    final ProjectInfo info = resolveProjectInfo("intellij-integration/3rdparty/hadoop/::");
 
     final TargetInfo welcomeTarget = info.getTarget("intellij-integration/3rdparty/hadoop:hadoop-stuff");
     assertNotNull(welcomeTarget);

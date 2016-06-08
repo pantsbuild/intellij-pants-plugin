@@ -46,20 +46,27 @@ public class PantsCompileOptionsExecutor {
     @NotNull String externalProjectPath,
     @Nullable PantsExecutionSettings executionOptions
   ) throws ExternalSystemException {
+    if (executionOptions == null) {
+      throw new ExternalSystemException("No execution options for " + externalProjectPath);
+    }
+
     PantsCompileOptions options;
     final int targetNameDelimiterIndex = externalProjectPath.indexOf(':');
     if (targetNameDelimiterIndex > 0) {
       // normalizing. we don't have per module settings and a linked project path of a module contains target name.
       final String buildFilePath = externalProjectPath.substring(0, targetNameDelimiterIndex);
       final String targetName = externalProjectPath.substring(targetNameDelimiterIndex + 1);
-      options = new MyPantsCompileOptions(buildFilePath, new MyPantsExecutionOptions(Collections.singletonList(targetName)));
-    }
-    else if (executionOptions == null) {
-      throw new ExternalSystemException("No execution options for " + externalProjectPath);
+      options = new MyPantsCompileOptions(
+        buildFilePath,
+        new MyPantsExecutionOptions(
+          Collections.singletonList(PantsUtil.getRelativeProjectPath(new File(buildFilePath)) + ":" + targetName)
+        )
+      );
     }
     else {
       options = new MyPantsCompileOptions(externalProjectPath, executionOptions);
     }
+
     final File buildRoot = PantsUtil.findBuildRoot(new File(options.getExternalProjectPath()));
     if (buildRoot == null || !buildRoot.exists()) {
       throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", options.getExternalProjectPath()));
@@ -67,7 +74,7 @@ public class PantsCompileOptionsExecutor {
     return new PantsCompileOptionsExecutor(
       buildRoot,
       options,
-      executionOptions != null && executionOptions.isLibsWithSourcesAndDocs()
+      executionOptions.isLibsWithSourcesAndDocs()
     );
   }
 
@@ -275,10 +282,7 @@ public class PantsCompileOptionsExecutor {
 
     @NotNull
     public List<String> getTargetSpecs() {
-      if (myExecutionOptions instanceof PantsExecutionSettings) {
-        return ((PantsExecutionSettings) myExecutionOptions).getTargetSpecs();
-      }
-      return Collections.emptyList();
+      return myExecutionOptions.getTargetSpecs();
     }
 
     @Override
@@ -289,16 +293,16 @@ public class PantsCompileOptionsExecutor {
 
   private static class MyPantsExecutionOptions implements PantsExecutionOptions {
 
-    private final List<String> myTargetNames;
+    private final List<String> myTargetSpecs;
 
-    public MyPantsExecutionOptions(@NotNull List<String> targetNames) {
-      myTargetNames = targetNames;
+    public MyPantsExecutionOptions(@NotNull List<String> targetSpecs) {
+      myTargetSpecs = targetSpecs;
     }
 
     @NotNull
     @Override
     public List<String> getTargetSpecs() {
-      return Collections.emptyList();
+      return myTargetSpecs;
     }
 
     @Override
