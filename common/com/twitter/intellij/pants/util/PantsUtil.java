@@ -395,7 +395,8 @@ public class PantsUtil {
    * looking at the "pants_idea_plugin_version" property.
    */
   public static boolean isSeedPantsProject(@NotNull Project project) {
-    return PropertiesComponent.getInstance(project).getValue("pants_idea_plugin_version") != null;
+    return !PantsUtil.isPantsProject(project) &&
+           PropertiesComponent.getInstance(project).getValue("pants_idea_plugin_version") != null;
   }
 
   public static boolean isPantsModule(@NotNull Module module) {

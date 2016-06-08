@@ -13,8 +13,8 @@ import java.util.List;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
-  private boolean myWithDependees = false;
-  private boolean myLibsWithSources = false;
+  private boolean myWithDependees;
+  private boolean myLibsWithSources;
 
   /**
    * @param targetSpecs targets explicted listed from `pants idea-plugin` goal.

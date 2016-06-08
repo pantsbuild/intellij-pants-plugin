@@ -14,6 +14,8 @@ import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+
 public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   private static Consumer<String> STRING_CONSUMER = new Consumer<String>() {
     public void consume(final String t) {
@@ -27,8 +29,14 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   @NotNull
   public ProjectInfo resolveProjectInfo(@NotNull String relativeProjectPath) {
     final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), relativeProjectPath);
+    PantsExecutionSettings settings = new PantsExecutionSettings(
+      Collections.singletonList(relativeProjectPath),
+      false,
+      false,
+      true
+    );
     final PantsResolver resolver =
-      new PantsResolver(PantsCompileOptionsExecutor.create(absoluteProjectPath, PantsExecutionSettings.createDefault()));
+      new PantsResolver(PantsCompileOptionsExecutor.create(absoluteProjectPath, settings));
     resolver.resolve(STRING_CONSUMER, null);
     final ProjectInfo projectInfo = resolver.getProjectInfo();
     assertNotNull(projectInfo);
@@ -48,7 +56,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   }
 
   public void testTargetJars() {
-    final ProjectInfo info = resolveProjectInfo("intellij-integration/3rdparty/hadoop/");
+    final ProjectInfo info = resolveProjectInfo("intellij-integration/3rdparty/hadoop::");
 
     final TargetInfo welcomeTarget = info.getTarget("intellij-integration/3rdparty/hadoop:hadoop-stuff");
     assertNotNull(welcomeTarget);

@@ -20,7 +20,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
 
   private static final List<String> DEFAULT_TARGET_SPECS = Collections.emptyList();
   private static final boolean DEFAULT_WITH_DEPENDEES = false;
-  private static final boolean DEFAULT_WITH_SOURCES_AND_DOCS = false;
+  private static final boolean DEFAULT_WITH_SOURCES_AND_DOCS = true;
   private static final boolean DEFAULT_USE_IDEA_PROJECT_SDK = false;
 
   public static PantsExecutionSettings createDefault() {
@@ -78,7 +78,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     if (myUseIdeaProjectJdk != settings.myUseIdeaProjectJdk) return false;
     if (myWithDependees != settings.myWithDependees) return false;
     if (myLibsWithSourcesAndDocs != settings.myLibsWithSourcesAndDocs) return false;
-    if (myTargetSpecs.equals(settings.myTargetSpecs)) return false;
+    if (myTargetSpecs != null ? !myTargetSpecs.equals(settings.myTargetSpecs) : settings.myTargetSpecs != null) return false;
     return true;
   }
 
