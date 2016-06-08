@@ -31,6 +31,7 @@ import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
@@ -46,6 +47,7 @@ import com.intellij.util.ObjectUtils;
 import com.intellij.util.PathUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
@@ -99,6 +101,9 @@ public class PantsUtil {
   private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
   private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
+
+  private static final String PANTS_IDEA_PLUGIN_VERESION_MIN = "0.0.1";
+  private static final String PANTS_IDEA_PLUGIN_VERESION_MAX = "0.1.0";
 
   /**
    * @param vFile a virtual file pointing at either a file or a directory
@@ -395,8 +400,20 @@ public class PantsUtil {
    * looking at the "pants_idea_plugin_version" property.
    */
   public static boolean isSeedPantsProject(@NotNull Project project) {
-    return !PantsUtil.isPantsProject(project) &&
-           PropertiesComponent.getInstance(project).getValue("pants_idea_plugin_version") != null;
+    if (PantsUtil.isPantsProject(project)) {
+      return false;
+    }
+    String version = PropertiesComponent.getInstance(project).getValue("pants_idea_plugin_version");
+    if (version == null) {
+      return false;
+    }
+    if (PantsUtil.versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MIN) < 0 ||
+        PantsUtil.versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MAX) > 0
+      ) {
+      Messages.showInfoMessage(project, PantsBundle.message("pants.idea.plugin.goal.version.unsupported"), "Version Error");
+      return false;
+    }
+    return true;
   }
 
   public static boolean isPantsModule(@NotNull Module module) {
