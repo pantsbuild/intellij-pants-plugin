@@ -46,10 +46,6 @@ public class PantsCompileOptionsExecutor {
     @NotNull String externalProjectPath,
     @Nullable PantsExecutionSettings executionOptions
   ) throws ExternalSystemException {
-    if (executionOptions == null) {
-      throw new ExternalSystemException("No execution options for " + externalProjectPath);
-    }
-
     PantsCompileOptions options;
     final int targetNameDelimiterIndex = externalProjectPath.indexOf(':');
     if (targetNameDelimiterIndex > 0) {
@@ -63,6 +59,9 @@ public class PantsCompileOptionsExecutor {
         )
       );
     }
+    else if (executionOptions == null) {
+      throw new ExternalSystemException("No execution options for " + externalProjectPath);
+    }
     else {
       options = new MyPantsCompileOptions(externalProjectPath, executionOptions);
     }
@@ -74,7 +73,7 @@ public class PantsCompileOptionsExecutor {
     return new PantsCompileOptionsExecutor(
       buildRoot,
       options,
-      executionOptions.isLibsWithSourcesAndDocs()
+      executionOptions != null && executionOptions.isLibsWithSourcesAndDocs()
     );
   }
 
@@ -269,7 +268,7 @@ public class PantsCompileOptionsExecutor {
     private final String myExternalProjectPath;
     private final PantsExecutionOptions myExecutionOptions;
 
-    public MyPantsCompileOptions(@NotNull String externalProjectPath, @NotNull PantsExecutionOptions executionOptions) {
+    private MyPantsCompileOptions(@NotNull String externalProjectPath, @NotNull PantsExecutionOptions executionOptions) {
       myExternalProjectPath = PantsUtil.resolveSymlinks(externalProjectPath);
       myExecutionOptions = executionOptions;
     }
@@ -295,7 +294,7 @@ public class PantsCompileOptionsExecutor {
 
     private final List<String> myTargetSpecs;
 
-    public MyPantsExecutionOptions(@NotNull List<String> targetSpecs) {
+    private MyPantsExecutionOptions(@NotNull List<String> targetSpecs) {
       myTargetSpecs = targetSpecs;
     }
 
