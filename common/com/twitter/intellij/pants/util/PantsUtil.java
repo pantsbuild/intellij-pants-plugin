@@ -825,11 +825,14 @@ public class PantsUtil {
     File projectPathFile = new File(projectPath);
     final String projectDir =
       PantsUtil.isBUILDFileName(projectPathFile.getName()) ? projectPathFile.getParent() : projectPathFile.getPath();
+    final String relativeProjectDir = getRelativeProjectPath(new File(projectDir));
+    // If relativeProjectDir is null, that means the projectDir is already relative.
+    String relativePath = ObjectUtils.notNull(relativeProjectDir, projectDir);
     if (targetNames.isEmpty()) {
-      return Collections.singletonList(projectDir + "::");
+      return Collections.singletonList(relativePath + "::");
     }
     else {
-      return targetNames.stream().map(targetName -> projectDir + ":" + targetName).collect(Collectors.toList());
+      return targetNames.stream().map(targetName -> relativePath + ":" + targetName).collect(Collectors.toList());
     }
   }
 }

@@ -115,20 +115,7 @@ public class PantsCompileOptionsExecutor {
   @NotNull
   @Nls
   public String getProjectName() {
-    if (PantsUtil.isExecutable(myOptions.getExternalProjectPath())) {
-      //noinspection ConstantConditions
-      return PantsUtil.fileNameWithoutExtension(VfsUtil.extractFileName(myOptions.getExternalProjectPath()));
-    }
-    String projectRelativePath = getProjectRelativePath();
-    String projectName = getWorkingDir().getName();
-    if (!projectRelativePath.equals(".")) {
-      projectName += File.separator + projectRelativePath;
-    }
-
-    for (String spec: myOptions.getTargetSpecs()) {
-      projectName += spec;
-    }
-    return projectName;
+    return String.join("__", myOptions.getTargetSpecs());
   }
 
   @NotNull
