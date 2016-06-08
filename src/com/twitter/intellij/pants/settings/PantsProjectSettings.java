@@ -60,7 +60,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
    */
   @NotNull
   public List<String> getTargetSpecs() {
-    return Collections.unmodifiableList(myTargetSpecs);
+    return myTargetSpecs;
   }
 
   public void setTargetSpecs(List<String> targetSpecs) {
