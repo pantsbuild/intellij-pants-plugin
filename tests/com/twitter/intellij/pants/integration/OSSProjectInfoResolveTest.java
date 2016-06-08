@@ -22,19 +22,24 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     }
   };
 
-  protected void assertPathContainsJar(String path, String jarName) {
+  private void assertPathContainsJar(String path, String jarName) {
     assertTrue(String.format("%s is not found in path %s", jarName, path), path.endsWith(jarName));
   }
 
   @NotNull
-  public ProjectInfo resolveProjectInfo(@NotNull String relativeProjectPath) {
-    final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), relativeProjectPath);
+  private ProjectInfo resolveProjectInfo(@NotNull String targetSpec) {
+    final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), targetSpec);
+
+    final boolean withDependees = false;
+    final boolean libsWithSourcesAndDocs = true;
+    final boolean useIdeaProjectJdk = false;
     PantsExecutionSettings settings = new PantsExecutionSettings(
-      Collections.singletonList(relativeProjectPath),
-      false,
-      true,
-      true
+      Collections.singletonList(targetSpec),
+      withDependees,
+      libsWithSourcesAndDocs,
+      useIdeaProjectJdk
     );
+
     final PantsResolver resolver =
       new PantsResolver(PantsCompileOptionsExecutor.create(absoluteProjectPath, settings));
     resolver.resolve(STRING_CONSUMER, null);
