@@ -125,8 +125,8 @@ public class PantsCompileOptionsExecutor {
       projectName += File.separator + projectRelativePath;
     }
 
-    for (String targetName: myOptions.getTargetNames()) {
-      projectName += ":" + targetName;
+    for (String spec: myOptions.getTargetSpecs()) {
+      projectName += spec;
     }
     return projectName;
   }
@@ -253,18 +253,6 @@ public class PantsCompileOptionsExecutor {
     if (!getOptions().getTargetSpecs().isEmpty()) {
       return getOptions().getTargetSpecs();
     }
-    // Target names selected via import GUI.
-    else if (!getOptions().getTargetNames().isEmpty()) {
-      return ContainerUtil.map(
-        getOptions().getTargetNames(),
-        new Function<String, String>() {
-          @Override
-          public String fun(String targetName) {
-            return getProjectRelativePath() + File.separator + ":" + targetName;
-          }
-        }
-      );
-    }
     // Directory selected via import GUI.
     else {
       return Collections.singletonList(getProjectRelativePath() + File.separator + "::");
@@ -312,12 +300,6 @@ public class PantsCompileOptionsExecutor {
       return Collections.emptyList();
     }
 
-    @NotNull
-    @Override
-    public List<String> getTargetNames() {
-      return myExecutionOptions.getTargetNames();
-    }
-
     @Override
     public boolean isWithDependees() {
       return myExecutionOptions.isWithDependees();
@@ -330,12 +312,6 @@ public class PantsCompileOptionsExecutor {
 
     public MyPantsExecutionOptions(@NotNull List<String> targetNames) {
       myTargetNames = targetNames;
-    }
-
-    @NotNull
-    @Override
-    public List<String> getTargetNames() {
-      return myTargetNames;
     }
 
     @NotNull

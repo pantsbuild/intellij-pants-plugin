@@ -54,7 +54,6 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     super.copyTo(receiver);
     if (receiver instanceof PantsProjectSettings) {
       ((PantsProjectSettings)receiver).setWithDependees(isWithDependees());
-      ((PantsProjectSettings)receiver).setTargetNames(getTargetNames());
       ((PantsProjectSettings)receiver).setLibsWithSources(isLibsWithSources());
       ((PantsProjectSettings)receiver).setTargetSpecs(getTargetSpecs());
     }
@@ -70,12 +69,6 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
 
   public void setTargetSpecs(List<String> targetSpecs) {
     myTargetSpecs = targetSpecs;
-  }
-
-  @NotNull
-  @Override
-  public List<String> getTargetNames() {
-    return Collections.unmodifiableList(myTargetNames);
   }
 
   public void setTargetNames(List<String> targets) {
