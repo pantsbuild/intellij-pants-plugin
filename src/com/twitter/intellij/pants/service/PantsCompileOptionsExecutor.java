@@ -250,13 +250,7 @@ public class PantsCompileOptionsExecutor {
   @NotNull
   private List<String> getAllTargetAddresses() {
     // If project is opened via pants cli, the targets are in specs.
-    if (!getOptions().getTargetSpecs().isEmpty()) {
-      return getOptions().getTargetSpecs();
-    }
-    // Directory selected via import GUI.
-    else {
-      return Collections.singletonList(getProjectRelativePath() + File.separator + "::");
-    }
+    return getOptions().getTargetSpecs();
   }
 
   /**

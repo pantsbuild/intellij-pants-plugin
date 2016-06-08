@@ -27,6 +27,7 @@ import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -150,8 +151,13 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     File projectPath = new File(settings.getExternalProjectPath());
     final String projectDir =
       PantsUtil.isBUILDFileName(projectPath.getName()) ? projectPath.getParent() : projectPath.getPath();
-    List<String> targetSpecs = targetNames.stream().map(s -> projectDir + ":" + s).collect(Collectors.toList());
-    settings.setTargetSpecs(targetSpecs);
+    if (targetNames.isEmpty()) {
+      settings.setTargetSpecs(Collections.singletonList(projectDir + "::"));
+    }
+    else {
+      List<String> targetSpecs = targetNames.stream().map(targetName -> projectDir + ":" + targetName).collect(Collectors.toList());
+      settings.setTargetSpecs(targetSpecs);
+    }
   }
 
   @Override
