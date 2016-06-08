@@ -838,10 +838,10 @@ public class PantsUtil {
     return findPantsExecutable(file.getParent());
   }
 
-  public static List<String> convertToTargetSpecs(String projectPath, List<String> targetNames) {
-    File projectPathFile = new File(projectPath);
+  public static List<String> convertToTargetSpecs(String importPath, List<String> targetNames) {
+    File importPathFile = new File(importPath);
     final String projectDir =
-      PantsUtil.isBUILDFileName(projectPathFile.getName()) ? projectPathFile.getParent() : projectPathFile.getPath();
+      PantsUtil.isBUILDFileName(importPathFile.getName()) ? importPathFile.getParent() : importPathFile.getPath();
     final String relativeProjectDir = getRelativeProjectPath(new File(projectDir));
     // If relativeProjectDir is null, that means the projectDir is already relative.
     String relativePath = ObjectUtils.notNull(relativeProjectDir, projectDir);
