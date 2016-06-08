@@ -12,10 +12,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
-  private List<String> myTargetNames = ContainerUtilRt.newArrayList();
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
-  private boolean myWithDependees;
-  private boolean myLibsWithSources;
+  private boolean myWithDependees = false;
+  private boolean myLibsWithSources = false;
 
   /**
    * @param targetSpecs targets explicted listed from `pants idea-plugin` goal.
@@ -26,13 +25,11 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
    */
   public PantsProjectSettings(
     List<String> targetSpecs,
-    List<String> targetNames,
     String externalProjectPath,
     boolean withDependees,
     boolean libsWithSources
   ) {
     myTargetSpecs = targetSpecs;
-    myTargetNames = targetNames;
     myWithDependees = withDependees;
     myLibsWithSources = libsWithSources;
     setExternalProjectPath(externalProjectPath);
@@ -69,10 +66,6 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
 
   public void setTargetSpecs(List<String> targetSpecs) {
     myTargetSpecs = targetSpecs;
-  }
-
-  public void setTargetNames(List<String> targets) {
-    myTargetNames = targets;
   }
 
   public void setWithDependees(boolean withDependees) {

@@ -78,7 +78,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     if (myUseIdeaProjectJdk != settings.myUseIdeaProjectJdk) return false;
     if (myWithDependees != settings.myWithDependees) return false;
     if (myLibsWithSourcesAndDocs != settings.myLibsWithSourcesAndDocs) return false;
-
+    if (myTargetSpecs.equals(settings.myTargetSpecs)) return false;
     return true;
   }
 
