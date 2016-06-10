@@ -279,13 +279,11 @@
       <add-to-group group-id="MainMenu" anchor="last"/>
       <action id="com.twitter.intellij.pants.ui.PantsProjectRefresh"
               class="com.twitter.intellij.pants.ui.PantsProjectRefresh"
-              text="Refresh Pants project"
-              description="Refresh Pants project">
+              text="Refresh Pants project">
       </action>
       <action id="com.twitter.intellij.pants.ui.PantsOptionsInvalidation"
               class="com.twitter.intellij.pants.ui.PantsOptionsInvalidation"
-              text="Invalidate Pants options"
-              description="Invalidate Pants options">
+              text="Invalidate Pants plugin caches">
       </action>
     </group>
   </actions>
