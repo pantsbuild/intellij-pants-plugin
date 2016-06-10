@@ -30,4 +30,14 @@ public class PantsOptionsTest extends TestCase {
     PantsOptions options = new PantsOptions("test.junit.strict_jvm_version = False (from HARDCODED)");
     assertEquals("False", options.get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
   }
+
+  public void testOptionsCache() {
+    PantsOptions options_a = PantsOptions.getPantsOptions("./pants");
+    PantsOptions options_b = PantsOptions.getPantsOptions("./pants");
+    // option_b should be cached result, so identical to options_a
+    assertTrue( options_a == options_b);
+    PantsOptions.clearCache();
+    PantsOptions options_c = PantsOptions.getPantsOptions("./pants");
+    assertTrue( options_a != options_c);
+  }
 }

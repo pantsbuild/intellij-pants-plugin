@@ -92,4 +92,13 @@ public class SimpleExportResultTest extends TestCase {
     assertNull(exportResult.getPreferredJvmDistributions());
   }
 
+  public void testExportCache() {
+    SimpleExportResult export_a = SimpleExportResult.getExportResult("./pants");
+    SimpleExportResult export_b = SimpleExportResult.getExportResult("./pants");
+    // export_b should be cached result, so identical to export_a
+    assertTrue( export_a == export_b);
+    SimpleExportResult.clearCache();
+    SimpleExportResult export_c = SimpleExportResult.getExportResult("./pants");
+    assertTrue( export_a != export_c);
+  }
 }

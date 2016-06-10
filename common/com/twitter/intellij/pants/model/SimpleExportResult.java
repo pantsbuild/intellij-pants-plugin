@@ -19,6 +19,7 @@ import com.twitter.intellij.pants.util.Tempfile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -30,6 +31,11 @@ import java.util.Map;
  * target level information from pants export.
  */
 public class SimpleExportResult {
+  /**
+   * Cahce storing SimpleExportResult mapped from path of Pants executable.
+   */
+  private static Map<String, SimpleExportResult> simpleExportCache = new HashMap<>();
+
   private static final Logger LOG = Logger.getInstance(SimpleExportResult.class);
 
   private String version;
@@ -37,6 +43,10 @@ public class SimpleExportResult {
   private Map<String, Map<String, String>> preferredJvmDistributions;
 
   private DefaultPlatform jvmPlatforms;
+
+  public static void clearCache() {
+    simpleExportCache.clear();
+  }
 
   public Map<String, Map<String, String>> getPreferredJvmDistributions() {
     return preferredJvmDistributions;
@@ -63,6 +73,10 @@ public class SimpleExportResult {
 
   @NotNull
   public static SimpleExportResult getExportResult(@NotNull String pantsExecutable) {
+    SimpleExportResult cache = simpleExportCache.get(pantsExecutable);
+    if (cache != null) {
+      return cache;
+    }
     final GeneralCommandLine commandline = PantsUtil.defaultCommandLine(pantsExecutable);
     commandline.addParameters("export", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     try (Tempfile tempfile = Tempfile.create("pants_export_run", ".out")) {
@@ -71,7 +85,9 @@ public class SimpleExportResult {
                       tempfile.getFile().getPath()));
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       if (processOutput.checkSuccess(LOG)) {
-        return parse(FileUtil.loadFile(tempfile.getFile()));
+        SimpleExportResult result = parse(FileUtil.loadFile(tempfile.getFile()));
+        simpleExportCache.put(pantsExecutable, result);
+        return result;
       }
     }
     catch (IOException | ExecutionException e) {

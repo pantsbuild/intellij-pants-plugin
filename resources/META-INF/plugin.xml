@@ -243,13 +243,13 @@
 
   <!--Scala plugin related extensions-->
   <depends>org.intellij.scala</depends>
-    <extensions defaultExtensionNs="com.intellij.plugins.pants">
-      <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaSdkResolver"/>
-    </extensions>
-    <extensions defaultExtensionNs="com.intellij">
-      <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService" order="last"/>
-      <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantScalaHighlightVisitor"/>
-    </extensions>
+  <extensions defaultExtensionNs="com.intellij.plugins.pants">
+    <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaSdkResolver"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService" order="last"/>
+    <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantScalaHighlightVisitor"/>
+  </extensions>
   <!--End of scala plugin related extensions-->
 
   <depends>JUnit</depends>
@@ -273,6 +273,22 @@
       <implementation-class>com.twitter.intellij.pants.components.impl.PantsProjectCacheImpl</implementation-class>
     </component>
   </project-components>
+
+  <actions>
+    <group id="Pants.Menu" text="_Pants" description="Pants">
+      <add-to-group group-id="MainMenu" anchor="last"/>
+      <action id="com.twitter.intellij.pants.ui.PantsProjectRefresh"
+              class="com.twitter.intellij.pants.ui.PantsProjectRefresh"
+              text="Refresh Pants project"
+              description="Refresh Pants project">
+      </action>
+      <action id="com.twitter.intellij.pants.ui.PantsOptionsInvalidation"
+              class="com.twitter.intellij.pants.ui.PantsOptionsInvalidation"
+              text="Invalidate Pants options"
+              description="Invalidate Pants options">
+      </action>
+    </group>
+  </actions>
 
   <extensionPoints>
     <extensionPoint name="projectResolver" interface="com.twitter.intellij.pants.service.project.PantsResolverExtension"/>
@@ -346,4 +362,5 @@
     <externalSystemNotificationExtension implementation="com.twitter.intellij.pants.notification.PantsNotificationCustomizer"/>
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.PantsMetadataService"/>
   </extensions>
+
 </idea-plugin>
