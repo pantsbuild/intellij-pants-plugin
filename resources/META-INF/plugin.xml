@@ -362,5 +362,4 @@
     <externalSystemNotificationExtension implementation="com.twitter.intellij.pants.notification.PantsNotificationCustomizer"/>
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.PantsMetadataService"/>
   </extensions>
-
 </idea-plugin>
