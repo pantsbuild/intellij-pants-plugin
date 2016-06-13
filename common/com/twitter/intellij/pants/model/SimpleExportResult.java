@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SimpleExportResult {
   /**
-   * Cahce storing SimpleExportResult mapped from path of Pants executable.
+   * Cache of SimpleExportResult mapped from path of Pants executable files.
    */
   private static ConcurrentHashMap<File, SimpleExportResult> simpleExportCache = new ConcurrentHashMap<>();
 
