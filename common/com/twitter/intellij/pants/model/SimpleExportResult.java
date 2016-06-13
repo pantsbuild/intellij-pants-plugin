@@ -18,9 +18,10 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import com.twitter.intellij.pants.util.Tempfile;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This represents information from pants export that is not tied with targets,
@@ -34,7 +35,7 @@ public class SimpleExportResult {
   /**
    * Cahce storing SimpleExportResult mapped from path of Pants executable.
    */
-  private static Map<String, SimpleExportResult> simpleExportCache = new HashMap<>();
+  private static ConcurrentHashMap<File, SimpleExportResult> simpleExportCache = new ConcurrentHashMap<>();
 
   private static final Logger LOG = Logger.getInstance(SimpleExportResult.class);
 
@@ -73,7 +74,8 @@ public class SimpleExportResult {
 
   @NotNull
   public static SimpleExportResult getExportResult(@NotNull String pantsExecutable) {
-    SimpleExportResult cache = simpleExportCache.get(pantsExecutable);
+    File pantsExecutableFile = new File(pantsExecutable);
+    SimpleExportResult cache = simpleExportCache.get(pantsExecutableFile);
     if (cache != null) {
       return cache;
     }
@@ -86,7 +88,7 @@ public class SimpleExportResult {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       if (processOutput.checkSuccess(LOG)) {
         SimpleExportResult result = parse(FileUtil.loadFile(tempfile.getFile()));
-        simpleExportCache.put(pantsExecutable, result);
+        simpleExportCache.put(pantsExecutableFile, result);
         return result;
       }
     }

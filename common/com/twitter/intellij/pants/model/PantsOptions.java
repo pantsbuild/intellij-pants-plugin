@@ -14,15 +14,17 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class PantsOptions {
   /**
-   * Cahce storing PantsOptions mapped from path of Pants executable.
+   * Cache of PantsOptions mapped from Pants executable files.
    */
-  private static Map<String, PantsOptions> optionsCache = new HashMap<>();
+  private static ConcurrentHashMap<File, PantsOptions> optionsCache = new ConcurrentHashMap<>();
 
   private Map<String, String> options;
 
@@ -57,16 +59,18 @@ public class PantsOptions {
   }
 
   public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {
-    PantsOptions cache = optionsCache.get(pantsExecutable);
+    File pantsExecutableFile = new File(pantsExecutable);
+    PantsOptions cache = optionsCache.get(pantsExecutableFile);
     if (cache != null) {
       return cache;
     }
-    final GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
+
+    GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
     exportCommandline.addParameters("options", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
       PantsOptions result = new PantsOptions(processOutput.getStdout());
-      optionsCache.put(pantsExecutable, result);
+      optionsCache.put(pantsExecutableFile, result);
       return result;
     }
     catch (ExecutionException e) {

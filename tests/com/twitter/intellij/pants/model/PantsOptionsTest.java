@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.model;
 
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import junit.framework.TestCase;
 
@@ -39,5 +40,14 @@ public class PantsOptionsTest extends TestCase {
     PantsOptions.clearCache();
     PantsOptions options_c = PantsOptions.getPantsOptions("./pants");
     assertTrue( options_a != options_c);
+  }
+
+  public void testOptionsException() {
+    try {
+      PantsOptions.getPantsOptions("some_invalid_pants_path");
+    }
+    catch (PantsException e) {
+
+    }
   }
 }
