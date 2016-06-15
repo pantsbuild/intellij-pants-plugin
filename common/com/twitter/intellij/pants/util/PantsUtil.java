@@ -809,5 +809,10 @@ public class PantsUtil {
     }
     return findPantsExecutable(file.getParent());
   }
+
+  public static void invalidatePluginCaches() {
+    PantsOptions.clearCache();
+    SimpleExportResult.clearCache();
+  }
 }
 
