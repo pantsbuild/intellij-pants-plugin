@@ -285,6 +285,10 @@
               class="com.twitter.intellij.pants.ui.PantsOptionsInvalidation"
               text="Invalidate Pants plugin caches">
       </action>
+      <action id="com.twitter.intellij.pants.ui.PantsProcessCancel"
+              class="com.twitter.intellij.pants.ui.PantsProcessCancel"
+              text="Cancel all running PantsCompile processes">
+      </action>
     </group>
   </actions>
 

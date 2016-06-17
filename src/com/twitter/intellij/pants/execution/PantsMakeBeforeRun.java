@@ -16,6 +16,7 @@ import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -35,11 +36,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.containers.ConcurrentList;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
+import io.netty.util.internal.ConcurrentSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
@@ -48,6 +51,7 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -60,6 +64,8 @@ import java.util.Set;
 public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
+
+  private static final ConcurrentSet<Process> runningPantsProcesses = new ConcurrentSet<>();
 
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
@@ -190,7 +196,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
     addMessageHandler(processHandler, currentProject);
+
+    runningPantsProcesses.add(process);
     processHandler.runProcess();
+    runningPantsProcesses.remove(process);
 
     final boolean success = process.exitValue() == 0;
     notifyCompileResult(success);
@@ -279,5 +288,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     NotificationData notification =
       new NotificationData(PantsConstants.PANTS, message, type, NotificationSource.TASK_EXECUTION);
     ExternalSystemNotificationManager.getInstance(project).showNotification(PantsConstants.SYSTEM_ID, notification);
+  }
+
+  public static void cancelAllRunningPantsProcesses() {
+    for (Process process: runningPantsProcesses) {
+      UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM);
+    }
+    runningPantsProcesses.clear();
   }
 }
