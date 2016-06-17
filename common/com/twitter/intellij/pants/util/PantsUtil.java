@@ -104,7 +104,7 @@ public class PantsUtil {
   /**
    * This aims to prepares for any breakage we might introduce from pants side, in which case we can adjust the version
    * of Pants `idea-plugin` goal to be greater than 0.1.0.
-   * @see <a href="https://github.com/pantsbuild/pants/blob/d31ec5b4b1fb4f91e5beb685539ea14278dc62cf/src/python/pants/backend/project_info/tasks/idea_plugin_gen.py#L28">idea-plugin goal version</a>
+   * @see <a href="https://github.com/pantsbuild/pants/blob/d31ec5b4b1fb4f91e5beb685539ea14278dc62cf/src/python/pants/backend/project_info/tasks/idea_plugin_gen.py#L28">Pants `idea-plugin` goal version</a>
    */
   private static final String PANTS_IDEA_PLUGIN_VERESION_MIN = "0.0.1";
   private static final String PANTS_IDEA_PLUGIN_VERESION_MAX = "0.1.0";
@@ -265,7 +265,7 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findDistExportClasspathDirectory(@NotNull Module module) {
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    final VirtualFile buildRoot = findBuildRoot(module);
     if (buildRoot == null) {
       return null;
     }
@@ -293,12 +293,12 @@ public class PantsUtil {
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull Project project) throws PantsException {
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(project);
+    VirtualFile pantsExecutable = findPantsExecutable(project);
     return defaultCommandLine(pantsExecutable.getPath());
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
-    final File pantsExecutable = PantsUtil.findPantsExecutable(new File(projectPath));
+    final File pantsExecutable = findPantsExecutable(new File(projectPath));
     if (pantsExecutable == null) {
       throw new PantsException("Couldn't find pants executable for: " + projectPath);
     }
@@ -377,7 +377,7 @@ public class PantsUtil {
       return Collections.emptyList();
     }
     return ContainerUtil.mapNotNull(
-      PantsUtil.hydrateTargetAddresses(targets),
+      hydrateTargetAddresses(targets),
       new Function<String, PantsTargetAddress>() {
         @Override
         public PantsTargetAddress fun(String targetAddress) {
@@ -404,15 +404,19 @@ public class PantsUtil {
    * looking at the "pants_idea_plugin_version" property.
    */
   public static boolean isSeedPantsProject(@NotNull Project project) {
-    if (PantsUtil.isPantsProject(project)) {
+    class SeedPantsProjectKeys {
+      private static final String PANTS_IDEA_PLUGIN_VERSION = "pants_idea_plugin_version";
+    }
+
+    if (isPantsProject(project)) {
       return false;
     }
-    String version = PropertiesComponent.getInstance(project).getValue("pants_idea_plugin_version");
+    String version = PropertiesComponent.getInstance(project).getValue(SeedPantsProjectKeys.PANTS_IDEA_PLUGIN_VERSION);
     if (version == null) {
       return false;
     }
-    if (PantsUtil.versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MIN) < 0 ||
-        PantsUtil.versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MAX) > 0
+    if (versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MIN) < 0 ||
+        versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MAX) > 0
       ) {
       Messages.showInfoMessage(project, PantsBundle.message("pants.idea.plugin.goal.version.unsupported"), "Version Error");
       return false;
@@ -804,7 +808,7 @@ public class PantsUtil {
       throw new PantsException("No module found in project.");
     }
     Module moduleSample = modules[0];
-    VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
+    VirtualFile buildRoot = findBuildRoot(moduleSample);
     return findPantsExecutable(buildRoot);
   }
 
@@ -845,7 +849,7 @@ public class PantsUtil {
   public static List<String> convertToTargetSpecs(String importPath, List<String> targetNames) {
     File importPathFile = new File(importPath);
     final String projectDir =
-      PantsUtil.isBUILDFileName(importPathFile.getName()) ? importPathFile.getParent() : importPathFile.getPath();
+      isBUILDFileName(importPathFile.getName()) ? importPathFile.getParent() : importPathFile.getPath();
     final String relativeProjectDir = getRelativeProjectPath(new File(projectDir));
     // If relativeProjectDir is null, that means the projectDir is already relative.
     String relativePath = ObjectUtils.notNull(relativeProjectDir, projectDir);

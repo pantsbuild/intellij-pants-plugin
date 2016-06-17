@@ -55,10 +55,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            */
           PropertiesComponent.getInstance(myProject).setValue("dynamic.classpath", true);
 
-          /**
-           * If the project contains the properties described in pants.backend.project_info.tasks.plugin_gen.PluginGen
-           * we know it is a seed Pants project launched from CLI and will convert it to a Pants project.
-           */
           if (PantsUtil.isSeedPantsProject(myProject)) {
             convertToPantsProject();
           }
