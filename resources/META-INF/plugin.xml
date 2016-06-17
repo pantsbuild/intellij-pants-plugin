@@ -345,6 +345,8 @@
     <configurationType implementation="com.twitter.intellij.pants.execution.PantsExternalTaskConfigurationType"/>
     <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsTestRunConfigurationProducer" order="last"/>
 
+    <!--Listener to be called after resolving projects finishes. -->
+    <externalSystemTaskNotificationListener implementation="com.twitter.intellij.pants.service.project.PantsProjectImportNotificationListener"/>
 
     <externalSystemManager implementation="com.twitter.intellij.pants.PantsManager"/>
 

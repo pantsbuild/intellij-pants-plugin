@@ -37,11 +37,20 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
   }
 
   protected void assertContainsSubstring(List<String> stringList, String expected) {
-    for (String line : stringList) {
-      if (line.contains(expected)) {
-        return;
-      }
+    if (containsSubstring(stringList, expected)) {
+      return;
     }
-    fail(String.format("Compile output %s does not contain substring '%s'.", stringList.toString(), expected));
+    fail(String.format("String '%s' does not contain expected substring '%s'.", stringList.toString(), expected));
+  }
+
+  protected void assertNotContainsSubstring(List<String> stringList, String unexpected) {
+    if (!containsSubstring(stringList, unexpected)) {
+      return;
+    }
+    fail(String.format("String '%s' contains unexpected substring '%s'.", stringList.toString(), unexpected));
+  }
+
+  private boolean containsSubstring(List<String> stringList, String subString) {
+    return stringList.stream().anyMatch(s -> s.contains(subString));
   }
 }
