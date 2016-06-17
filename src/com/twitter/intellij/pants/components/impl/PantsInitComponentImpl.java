@@ -6,16 +6,23 @@ package com.twitter.intellij.pants.components.impl;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
+import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.event.HyperlinkEvent;
 import java.io.File;
 
 public class PantsInitComponentImpl implements PantsInitComponent {
@@ -41,10 +48,29 @@ public class PantsInitComponentImpl implements PantsInitComponent {
       ((IdeaPluginDescriptorImpl)plugin).setPath(new File(basePath));
     }
 
+    Keymap keymap = KeymapManager.getInstance().getActiveKeymap();
+    KeyboardShortcut keyboardShortcut = KeyboardShortcut.fromString("shift meta pressed R");
+
     // Add (Cmd Shift R) as shortcut to refresh the project if there is no shortcut for that action yet.
-    if (KeymapManager.getInstance().getActiveKeymap().getShortcuts("ExternalSystem.RefreshAllProjects").length == 0) {
-      KeymapManager.getInstance().getActiveKeymap()
-        .addShortcut("ExternalSystem.RefreshAllProjects", KeyboardShortcut.fromString("shift meta pressed R"));
+    //  Shows error message if conflicting shortcut exists
+    if (KeymapManager.getInstance().getActiveKeymap().getShortcuts("ExternalSystem.RefreshAllProjects").length == 0 &&
+        keymap.getActionIds(keyboardShortcut).length > 0) {
+
+      Notification notification = new Notification(
+        "Keymap Error",
+        "Keymap Error",
+        "Conflict found assigning '⌘+Shift+R' to 'Refresh all external projects'. Please set it manually in " +
+        "<a href='#'>Keymap settings</a>.",
+        NotificationType.WARNING,
+        new NotificationListener() {
+          @Override
+          public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+            ShowSettingsUtil.getInstance().showSettingsDialog(null, "Keymap");
+          }
+        }
+      );
+      Notifications.Bus.notify(notification);
+      keymap.addShortcut("ExternalSystem.RefreshAllProjects", keyboardShortcut);
     }
   }
 
