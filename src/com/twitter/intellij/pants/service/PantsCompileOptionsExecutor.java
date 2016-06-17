@@ -52,12 +52,20 @@ public class PantsCompileOptionsExecutor {
       // normalizing. we don't have per module settings and a linked project path of a module contains target name.
       final String buildFilePath = externalProjectPath.substring(0, targetNameDelimiterIndex);
       final String targetName = externalProjectPath.substring(targetNameDelimiterIndex + 1);
-      options = new MyPantsCompileOptions(buildFilePath, new MyPantsExecutionOptions(Collections.singletonList(targetName)));
-    } else if (executionOptions == null) {
+      options = new MyPantsCompileOptions(
+        buildFilePath,
+        new MyPantsExecutionOptions(
+          Collections.singletonList(PantsUtil.getRelativeProjectPath(new File(buildFilePath)) + ":" + targetName)
+        )
+      );
+    }
+    else if (executionOptions == null) {
       throw new ExternalSystemException("No execution options for " + externalProjectPath);
-    } else {
+    }
+    else {
       options = new MyPantsCompileOptions(externalProjectPath, executionOptions);
     }
+
     final File buildRoot = PantsUtil.findBuildRoot(new File(options.getExternalProjectPath()));
     if (buildRoot == null || !buildRoot.exists()) {
       throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", options.getExternalProjectPath()));
@@ -74,7 +82,7 @@ public class PantsCompileOptionsExecutor {
   public static PantsCompileOptionsExecutor createMock() {
     return new PantsCompileOptionsExecutor(
       new File(""),
-      new MyPantsCompileOptions("", new PantsExecutionSettings()),
+      new MyPantsCompileOptions("", PantsExecutionSettings.createDefault()),
       true
     ) {
     };
@@ -110,25 +118,14 @@ public class PantsCompileOptionsExecutor {
     return projectDir != null ? projectDir.getAbsolutePath() : projectFile.getAbsolutePath();
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public String getProjectName() {
-    if (PantsUtil.isExecutable(myOptions.getExternalProjectPath())) {
-      //noinspection ConstantConditions
-      return PantsUtil.fileNameWithoutExtension(VfsUtil.extractFileName(myOptions.getExternalProjectPath()));
-    }
-    String projectRelativePath = getProjectRelativePath();
-    String projectName = getWorkingDir().getName();
-    if (!projectRelativePath.equals(".")) {
-      projectName += File.separator + projectRelativePath;
-    }
-
-    for (String targetName: myOptions.getTargetNames()) {
-      projectName += ":" + targetName;
-    }
-    return projectName;
+    return String.join("__", myOptions.getTargetSpecs());
   }
 
-  @NotNull @Nls
+  @NotNull
+  @Nls
   public String getRootModuleName() {
     if (PantsUtil.isExecutable(myOptions.getExternalProjectPath())) {
       //noinspection ConstantConditions
@@ -149,7 +146,8 @@ public class PantsCompileOptionsExecutor {
   ) throws IOException, ExecutionException {
     if (PantsUtil.isExecutable(getProjectPath())) {
       return loadProjectStructureFromScript(getProjectPath(), statusConsumer, processAdapter);
-    } else {
+    }
+    else {
       return loadProjectStructureFromTargets(statusConsumer, processAdapter);
     }
   }
@@ -208,7 +206,7 @@ public class PantsCompileOptionsExecutor {
     throws IOException, ExecutionException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
     commandLine.addParameter("export");
-    if (myResolveSourcesAndDocsForJars){
+    if (myResolveSourcesAndDocsForJars) {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");
     }
@@ -216,11 +214,12 @@ public class PantsCompileOptionsExecutor {
     commandLine.addParameters(getAllTargetAddresses());
 
     if (getOptions().isWithDependees()) {
-      statusConsumer.consume( "Looking for dependents...");
+      statusConsumer.consume("Looking for dependents...");
       commandLine.addParameters(loadDependees(getAllTargetAddresses()));
     }
 
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
+    LOG.debug(commandLine.toString());
     return commandLine;
   }
 
@@ -243,19 +242,8 @@ public class PantsCompileOptionsExecutor {
 
   @NotNull
   private List<String> getAllTargetAddresses() {
-    if (!getOptions().getTargetNames().isEmpty()) {
-      return ContainerUtil.map(
-        getOptions().getTargetNames(),
-        new Function<String, String>() {
-          @Override
-          public String fun(String targetName) {
-            return getProjectRelativePath() + File.separator + ":" + targetName;
-          }
-        }
-      );
-    } else {
-      return Collections.singletonList(getProjectRelativePath() + File.separator + "::");
-    }
+    // If project is opened via pants cli, the targets are in specs.
+    return getOptions().getTargetSpecs();
   }
 
   /**
@@ -280,7 +268,7 @@ public class PantsCompileOptionsExecutor {
     private final String myExternalProjectPath;
     private final PantsExecutionOptions myExecutionOptions;
 
-    public MyPantsCompileOptions(@NotNull String externalProjectPath, @NotNull PantsExecutionOptions executionOptions) {
+    private MyPantsCompileOptions(@NotNull String externalProjectPath, @NotNull PantsExecutionOptions executionOptions) {
       myExternalProjectPath = PantsUtil.resolveSymlinks(externalProjectPath);
       myExecutionOptions = executionOptions;
     }
@@ -292,9 +280,8 @@ public class PantsCompileOptionsExecutor {
     }
 
     @NotNull
-    @Override
-    public List<String> getTargetNames() {
-      return myExecutionOptions.getTargetNames();
+    public List<String> getTargetSpecs() {
+      return myExecutionOptions.getTargetSpecs();
     }
 
     @Override
@@ -305,16 +292,16 @@ public class PantsCompileOptionsExecutor {
 
   private static class MyPantsExecutionOptions implements PantsExecutionOptions {
 
-    private final List<String> myTargetNames;
+    private final List<String> myTargetSpecs;
 
-    public MyPantsExecutionOptions(@NotNull List<String> targetNames) {
-      myTargetNames = targetNames;
+    private MyPantsExecutionOptions(@NotNull List<String> targetSpecs) {
+      myTargetSpecs = targetSpecs;
     }
 
     @NotNull
     @Override
-    public List<String> getTargetNames() {
-      return myTargetNames;
+    public List<String> getTargetSpecs() {
+      return myTargetSpecs;
     }
 
     @Override

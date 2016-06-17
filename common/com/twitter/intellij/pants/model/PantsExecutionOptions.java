@@ -8,8 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public interface PantsExecutionOptions {
+
   @NotNull
-  List<String> getTargetNames();
+  List<String> getTargetSpecs();
 
   boolean isWithDependees();
 }

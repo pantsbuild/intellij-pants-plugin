@@ -13,6 +13,7 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.SaveAndSyncHandler;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
@@ -32,6 +33,7 @@ import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
@@ -47,6 +49,7 @@ import com.intellij.util.ObjectUtils;
 import com.intellij.util.PathUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
@@ -85,6 +88,7 @@ import java.util.stream.Stream;
 
 public class PantsUtil {
   public static final Gson gson = new Gson();
+  public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {}.getType();
   public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
     new ThreadFactory() {
@@ -98,6 +102,14 @@ public class PantsUtil {
   private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
   private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
+
+  /**
+   * This aims to prepares for any breakage we might introduce from pants side, in which case we can adjust the version
+   * of Pants `idea-plugin` goal to be greater than 0.1.0.
+   * @see <a href="https://github.com/pantsbuild/pants/blob/d31ec5b4b1fb4f91e5beb685539ea14278dc62cf/src/python/pants/backend/project_info/tasks/idea_plugin_gen.py#L28">Pants `idea-plugin` goal version</a>
+   */
+  private static final String PANTS_IDEA_PLUGIN_VERESION_MIN = "0.0.1";
+  private static final String PANTS_IDEA_PLUGIN_VERESION_MAX = "0.1.0";
 
   /**
    * @param vFile a virtual file pointing at either a file or a directory
@@ -255,7 +267,7 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findDistExportClasspathDirectory(@NotNull Module module) {
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    final VirtualFile buildRoot = findBuildRoot(module);
     if (buildRoot == null) {
       return null;
     }
@@ -283,12 +295,12 @@ public class PantsUtil {
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull Project project) throws PantsException {
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(project);
+    VirtualFile pantsExecutable = findPantsExecutable(project);
     return defaultCommandLine(pantsExecutable.getPath());
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
-    final File pantsExecutable = PantsUtil.findPantsExecutable(new File(projectPath));
+    final File pantsExecutable = findPantsExecutable(new File(projectPath));
     if (pantsExecutable == null) {
       throw new PantsException("Couldn't find pants executable for: " + projectPath);
     }
@@ -367,7 +379,7 @@ public class PantsUtil {
       return Collections.emptyList();
     }
     return ContainerUtil.mapNotNull(
-      PantsUtil.hydrateTargetAddresses(targets),
+      hydrateTargetAddresses(targets),
       new Function<String, PantsTargetAddress>() {
         @Override
         public PantsTargetAddress fun(String targetAddress) {
@@ -387,6 +399,31 @@ public class PantsUtil {
         }
       }
     );
+  }
+
+  /**
+   * Determine whether a project is trigger by Pants `idea-plugin` goal by
+   * looking at the "pants_idea_plugin_version" property.
+   */
+  public static boolean isSeedPantsProject(@NotNull Project project) {
+    class SeedPantsProjectKeys {
+      private static final String PANTS_IDEA_PLUGIN_VERSION = "pants_idea_plugin_version";
+    }
+
+    if (isPantsProject(project)) {
+      return false;
+    }
+    String version = PropertiesComponent.getInstance(project).getValue(SeedPantsProjectKeys.PANTS_IDEA_PLUGIN_VERSION);
+    if (version == null) {
+      return false;
+    }
+    if (versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MIN) < 0 ||
+        versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MAX) > 0
+      ) {
+      Messages.showInfoMessage(project, PantsBundle.message("pants.idea.plugin.goal.version.unsupported"), "Version Error");
+      return false;
+    }
+    return true;
   }
 
   public static boolean isPantsModule(@NotNull Module module) {
@@ -464,7 +501,7 @@ public class PantsUtil {
   }
 
   public static void refreshAllProjects(@NotNull Project project) {
-    if (!PantsUtil.isPantsProject(project)) {
+    if (!isPantsProject(project) && !isSeedPantsProject(project)) {
       return;
     }
     ApplicationManager.getApplication().runWriteAction(() -> FileDocumentManager.getInstance().saveAllDocuments());
@@ -774,7 +811,7 @@ public class PantsUtil {
       throw new PantsException("No module found in project.");
     }
     Module moduleSample = modules[0];
-    VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
+    VirtualFile buildRoot = findBuildRoot(moduleSample);
     return findPantsExecutable(buildRoot);
   }
 
@@ -810,6 +847,21 @@ public class PantsUtil {
       }
     }
     return findPantsExecutable(file.getParent());
+  }
+
+  public static List<String> convertToTargetSpecs(String importPath, List<String> targetNames) {
+    File importPathFile = new File(importPath);
+    final String projectDir =
+      isBUILDFileName(importPathFile.getName()) ? importPathFile.getParent() : importPathFile.getPath();
+    final String relativeProjectDir = getRelativeProjectPath(new File(projectDir));
+    // If relativeProjectDir is null, that means the projectDir is already relative.
+    String relativePath = ObjectUtils.notNull(relativeProjectDir, projectDir);
+    if (targetNames.isEmpty()) {
+      return Collections.singletonList(relativePath + "::");
+    }
+    else {
+      return targetNames.stream().map(targetName -> relativePath + ":" + targetName).collect(Collectors.toList());
+    }
   }
 
   public static void synchronizeFiles() {

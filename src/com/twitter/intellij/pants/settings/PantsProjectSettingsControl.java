@@ -27,7 +27,9 @@ import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
   private static final Logger LOG = Logger.getInstance(PantsProjectSettingsControl.class);
@@ -66,7 +68,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected boolean isExtraSettingModified() {
-    return myTargets.getSelectedValues().length > 0;
+    return !myTargets.getSelectedValuesList().isEmpty();
   }
 
   @Override
@@ -94,7 +96,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myWithDependeesCheckBox.setEnabled(true);
 
       myLibsWithSourcesCheckBox.setEnabled(true);
-    } else if (PantsUtil.isExecutable(file.getPath())) {
+    }
+    else if (PantsUtil.isExecutable(file.getPath())) {
       myTargets.setEnabled(false);
       myTargets.setEmptyText(file.getName());
 
@@ -103,7 +106,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
       myLibsWithSourcesCheckBox.setSelected(false);
       myLibsWithSourcesCheckBox.setEnabled(false);
-    } else {
+    }
+    else {
       myTargets.setEnabled(true);
       myTargets.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
 
@@ -133,16 +137,18 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
-    final List<String> result = new ArrayList<String>();
+    final List<String> targetNames = new ArrayList<String>();
     settings.setWithDependees(myWithDependeesCheckBox.isSelected());
     settings.setLibsWithSources(myLibsWithSourcesCheckBox.isSelected());
     for (int i = 0; i < myTargets.getItemsCount(); i++) {
       String target = myTargets.getItemAt(i);
       if (myTargets.isItemSelected(target)) {
-        result.add(target);
+        targetNames.add(target);
       }
     }
-    settings.setTargetNames(result);
+
+    // Generate target specs based on `projectPath` and a list of selected target names.
+    settings.setTargetSpecs(PantsUtil.convertToTargetSpecs(settings.getExternalProjectPath(), targetNames));
   }
 
   @Override

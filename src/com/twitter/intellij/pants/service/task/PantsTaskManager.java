@@ -83,14 +83,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     // Appending goals.
     commandLine.addParameters(taskNames);
     // Appending targets.
-    if (!settings.getTargetNames().isEmpty()) {
-      for (String targetName : settings.getTargetNames()) {
-        commandLine.addParameter(relativeProjectPath + ":" + targetName);
-      }
-    }
-    else {
-      commandLine.addParameter(relativeProjectPath + File.separator + "::");
-    }
+    commandLine.addParameter(relativeProjectPath + File.separator + "::");
     // Appending VM options.
     for (String goal : taskNames) {
       final String jvmOptionsFlag = goal2JvmOptionsFlag.get(goal);
