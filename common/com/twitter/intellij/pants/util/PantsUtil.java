@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.ide.SaveAndSyncHandler;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
@@ -24,6 +25,7 @@ import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMo
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -502,6 +504,7 @@ public class PantsUtil {
     if (!isPantsProject(project) && !isSeedPantsProject(project)) {
       return;
     }
+    ApplicationManager.getApplication().runWriteAction(() -> FileDocumentManager.getInstance().saveAllDocuments());
     final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
     ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
                                           ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
@@ -858,6 +861,27 @@ public class PantsUtil {
     }
     else {
       return targetNames.stream().map(targetName -> relativePath + ":" + targetName).collect(Collectors.toList());
+    }
+  }
+
+  public static void synchronizeFiles() {
+    /**
+     * Run in SYNC in unit test mode, and {@link com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport}
+     * is required to be wrapped in WriteAction. Otherwise it will run in async mode.
+     */
+    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()){
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        FileDocumentManager.getInstance().saveAllDocuments();
+        SaveAndSyncHandler.getInstance().refreshOpenFiles();
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false); /** synchronous */
+      });
+    }
+    else {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        FileDocumentManager.getInstance().saveAllDocuments();
+        SaveAndSyncHandler.getInstance().refreshOpenFiles();
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true); /** asynchronous */
+      });
     }
   }
 
