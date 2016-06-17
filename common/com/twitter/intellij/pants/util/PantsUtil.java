@@ -852,5 +852,10 @@ public class PantsUtil {
       return targetNames.stream().map(targetName -> relativePath + ":" + targetName).collect(Collectors.toList());
     }
   }
+
+  public static void invalidatePluginCaches() {
+    PantsOptions.clearCache();
+    SimpleExportResult.clearCache();
+  }
 }
 
