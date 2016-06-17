@@ -11,14 +11,26 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class PantsOptions {
+  /**
+   * Cache of PantsOptions mapped from Pants executable files.
+   */
+  private static ConcurrentHashMap<File, PantsOptions> optionsCache = new ConcurrentHashMap<>();
+
   private Map<String, String> options;
+
+  public static void clearCache() {
+    optionsCache.clear();
+  }
 
   public PantsOptions(final String rawOutput) {
     options = parseOptions(rawOutput);
@@ -46,12 +58,20 @@ public class PantsOptions {
     return has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
   }
 
-  public static PantsOptions getPantsOptions(final String pantsExecutable) {
-    final GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
+  public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {
+    File pantsExecutableFile = new File(pantsExecutable);
+    PantsOptions cache = optionsCache.get(pantsExecutableFile);
+    if (cache != null) {
+      return cache;
+    }
+
+    GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
     exportCommandline.addParameters("options", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     try {
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
-      return new PantsOptions(processOutput.getStdout());
+      PantsOptions result = new PantsOptions(processOutput.getStdout());
+      optionsCache.put(pantsExecutableFile, result);
+      return result;
     }
     catch (ExecutionException e) {
       throw new PantsException("Failed:" + exportCommandline.getCommandLineString());

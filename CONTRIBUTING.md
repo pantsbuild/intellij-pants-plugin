@@ -132,7 +132,7 @@ test sources, resources, test resources, generated sources, etc).
 
 # Running plugin CI tests with Pants
 
-1. `./scripts/prepare-environment.sh`
+1. `./scripts/prepare-ci-environment.sh`
 2. `./scripts/setup-ci-environment.sh`
 3. `./scripts/run-tests-ci.sh`
 

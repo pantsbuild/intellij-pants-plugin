@@ -10,57 +10,61 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
+import com.jetbrains.python.psi.PyCallExpression;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
-import com.intellij.util.ObjectUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PantsTargetReference extends PantsPsiReferenceBase {
   public PantsTargetReference(@NotNull PsiElement element, @NotNull TextRange range, @Nls String text, @Nls String relativePath) {
     super(element, range, text, relativePath);
   }
 
-  @Nullable
-  private PsiFile findBuildFile() {
+  @NotNull
+  private Collection<PsiFile> findBuildFiles() {
     if (StringUtil.isEmpty(getRelativePath())) {
       // same file reference
-      return getElement().getContainingFile();
+      return Collections.singleton(getElement().getContainingFile());
     }
-    final VirtualFile buildFile = PantsUtil.findBUILDFile(findFile());
-    if (buildFile == null) {
-      return null;
+
+    VirtualFile file = findFile();
+    if (file == null) {
+      return Collections.emptyList();
     }
+    Collection<VirtualFile> buildFiles = PantsUtil.findBUILDFiles(file);
     final PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
-    return psiManager.findFile(buildFile);
+    return buildFiles.stream().map(psiManager::findFile).collect(Collectors.toSet());
   }
 
   @NotNull
   @Override
   public Object[] getVariants() {
-    return ContainerUtil.map2Array(
-      PantsPsiUtil.findTargets(findBuildFile()).keySet(),
-      new Function<String, Object>() {
-        @Override
-        public Object fun(String targetName) {
-          return LookupElementBuilder.create(targetName);
-        }
-      }
-    );
+    return findBuildFiles().stream()
+      .map(PantsPsiUtil::findTargets)
+      .map(Map::keySet)
+      .flatMap(Collection::stream)
+      .map(LookupElementBuilder::create)
+      .toArray();
   }
 
   @Nullable
   @Override
   public PsiElement resolve() {
-    PsiFile file = findBuildFile();
-    if (file == null) {
-      return null;
+    Collection<PsiFile> files = findBuildFiles();
+    for(PsiFile file: files) {
+      Map<String, PyCallExpression> targets = PantsPsiUtil.findTargets(file);
+      if (targets.containsKey(getText())) {
+        return targets.get(getText());
+      }
     }
 
-    PsiElement target = PantsPsiUtil.findTargets(file).get(getText());
-    return ObjectUtils.notNull(target, file);
+    return files.stream().findFirst().orElse(null);
   }
 }
