@@ -803,14 +803,14 @@ public class PantsUtil {
       ApplicationManager.getApplication().runWriteAction(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         SaveAndSyncHandler.getInstance().refreshOpenFiles();
-        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false); /** synchronous */
       });
     }
     else {
       ApplicationManager.getApplication().invokeLater(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         SaveAndSyncHandler.getInstance().refreshOpenFiles();
-        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true);
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true); /** asynchronous */
       });
     }
   }
