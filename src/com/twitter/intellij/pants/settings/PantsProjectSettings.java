@@ -8,12 +8,34 @@ import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
-  private List<String> myTargets = ContainerUtilRt.newArrayList();
+  private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
   private boolean myWithDependees;
   private boolean myLibsWithSources;
+
+  /**
+   * @param targetSpecs targets explicted listed from `pants idea-plugin` goal.
+   * @param externalProjectPath path to the Pants project.
+   * @param withDependees whether depeedees need to be imported. (Untested and probably not working).
+   * @param libsWithSources whether to import sources and docs when resolving for jars.
+   */
+  public PantsProjectSettings(
+    List<String> targetSpecs,
+    String externalProjectPath,
+    boolean withDependees,
+    boolean libsWithSources
+  ) {
+    myTargetSpecs = targetSpecs;
+    myWithDependees = withDependees;
+    myLibsWithSources = libsWithSources;
+    setExternalProjectPath(externalProjectPath);
+  }
+
+  public PantsProjectSettings() {
+  }
 
   @NotNull
   @Override
@@ -28,19 +50,21 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     super.copyTo(receiver);
     if (receiver instanceof PantsProjectSettings) {
       ((PantsProjectSettings)receiver).setWithDependees(isWithDependees());
-      ((PantsProjectSettings)receiver).setTargetNames(getTargetNames());
       ((PantsProjectSettings)receiver).setLibsWithSources(isLibsWithSources());
+      ((PantsProjectSettings)receiver).setTargetSpecs(getTargetSpecs());
     }
   }
 
+  /**
+   * Get the target specs used to launched `pants idea-plugin`.
+   */
   @NotNull
-  @Override
-  public List<String> getTargetNames() {
-    return myTargets;
+  public List<String> getTargetSpecs() {
+    return myTargetSpecs;
   }
 
-  public void setTargetNames(List<String> targets) {
-    myTargets = targets;
+  public void setTargetSpecs(List<String> targetSpecs) {
+    myTargetSpecs = targetSpecs;
   }
 
   public void setWithDependees(boolean withDependees) {
