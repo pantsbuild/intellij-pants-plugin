@@ -68,7 +68,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -102,6 +101,11 @@ public class PantsUtil {
   private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
+  /**
+   * This aims to prepares for any breakage we might introduce from pants side, in which case we can adjust the version
+   * of Pants `idea-plugin` goal to be greater than 0.1.0.
+   * @see <a href="https://github.com/pantsbuild/pants/blob/d31ec5b4b1fb4f91e5beb685539ea14278dc62cf/src/python/pants/backend/project_info/tasks/idea_plugin_gen.py#L28">idea-plugin goal version</a>
+   */
   private static final String PANTS_IDEA_PLUGIN_VERESION_MIN = "0.0.1";
   private static final String PANTS_IDEA_PLUGIN_VERESION_MAX = "0.1.0";
 
