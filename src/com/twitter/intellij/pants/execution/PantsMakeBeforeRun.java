@@ -76,6 +76,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     VirtualFile buildRoot = PantsUtil.findBuildRoot(project);
 
     /**
+     /**
      * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
      */
     if (runConfiguration instanceof AbstractTestRunConfiguration) {
@@ -140,6 +141,15 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Project currentProject = configuration.getProject();
     prepareIDE(currentProject);
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
+    return executeTask(currentProject, targetAddressesToCompile);
+  }
+
+  public boolean executeTask(Project project, Module[] modules) {
+    return executeTask(project, getTargetAddressesToCompile(modules));
+  }
+
+  public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile) {
+    prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
       return true;
@@ -256,22 +266,30 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   @NotNull
   private Set<String> getTargetAddressesToCompile(RunConfiguration configuration) {
-    Set<String> result = new HashSet<String>();
     /* JUnit, Application, Scala runs */
     if (configuration instanceof RunProfileWithCompileBeforeLaunchOption) {
       RunProfileWithCompileBeforeLaunchOption config = (RunProfileWithCompileBeforeLaunchOption) configuration;
       Module[] targetModules = config.getModules();
-      if (targetModules.length == 0) {
-        return Collections.emptySet();
-      }
-      for (Module targetModule : targetModules) {
-        String dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-        if (dehydratedAddresses == null) {
-          continue;
-        }
-        result.addAll(PantsUtil.hydrateTargetAddresses(dehydratedAddresses));
-      }
+      return getTargetAddressesToCompile(targetModules);
+    } else {
+      return Collections.emptySet();
     }
+  }
+
+  private Set<String> getTargetAddressesToCompile(Module[] targetModules) {
+    Set<String> result = new HashSet<String>();
+
+    if (targetModules.length == 0) {
+      return Collections.emptySet();
+    }
+    for (Module targetModule : targetModules) {
+      String dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+      if (dehydratedAddresses == null) {
+        continue;
+      }
+      result.addAll(PantsUtil.hydrateTargetAddresses(dehydratedAddresses));
+    }
+
     return result;
   }
 
