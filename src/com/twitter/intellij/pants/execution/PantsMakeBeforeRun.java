@@ -50,6 +50,7 @@ import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfigurat
 import javax.swing.*;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -197,9 +198,13 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
     addMessageHandler(processHandler, currentProject);
 
-    runningPantsProcesses.add(process);
-    processHandler.runProcess();
-    runningPantsProcesses.remove(process);
+    try {
+      runningPantsProcesses.add(process);
+      processHandler.runProcess();
+    }
+    finally {
+      runningPantsProcesses.remove(process);
+    }
 
     final boolean success = process.exitValue() == 0;
     notifyCompileResult(success);
@@ -213,7 +218,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
-        String message = success ? "Pants compile succeeded." : "Pants compile failed.";
+        String message = success ? "Pants compile succeeded." : "Pants compile failed or aborted.";
         NotificationType type = success ? NotificationType.INFORMATION : NotificationType.ERROR;
         Notification start = new Notification(PantsConstants.PANTS, "Compile message", message, type);
         Notifications.Bus.notify(start);
@@ -291,9 +296,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   public static void cancelAllRunningPantsProcesses() {
-    for (Process process: runningPantsProcesses) {
-      UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM);
+    for (Iterator<Process> it = runningPantsProcesses.iterator(); it.hasNext(); ) {
+      Process process = it.next();
+      if (UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM)) {
+        it.remove();
+      }
     }
-    runningPantsProcesses.clear();
   }
 }
