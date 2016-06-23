@@ -31,6 +31,7 @@ import com.intellij.openapi.externalSystem.service.notification.NotificationData
 import com.intellij.openapi.externalSystem.service.notification.NotificationSource;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
@@ -144,8 +145,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return executeTask(currentProject, targetAddressesToCompile);
   }
 
-  public boolean executeTask(Project project, Module[] modules) {
-    return executeTask(project, getTargetAddressesToCompile(modules));
+  public boolean executeTask(Project project) {
+    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()));
   }
 
   public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile) {

@@ -8,7 +8,8 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -23,11 +24,20 @@ public class PantsCompileAllTargets extends AnAction {
     Project project = e.getProject();
 
     if (project != null) {
-      PantsMakeBeforeRun runner = new PantsMakeBeforeRun(e.getProject());
-      runner.executeTask(e.getProject(), ModuleManager.getInstance(e.getProject()).getModules());
+      PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
+      ApplicationManager.getApplication().executeOnPooledThread((Runnable)() -> {
+        runner.executeTask(project);
+      });
     } else {
-      Notification notification = new Notification(PantsConstants.PANTS, PantsIcons.Icon, "Project not found", "Compile failed", null,
-                                                   NotificationType.ERROR, null);
+      Notification notification = new Notification(
+        PantsConstants.PANTS,
+        PantsIcons.Icon,
+        "Project not found",
+        "Compile failed",
+        null,
+        NotificationType.ERROR,
+        null
+      );
       Notifications.Bus.notify(notification);
     }
   }
