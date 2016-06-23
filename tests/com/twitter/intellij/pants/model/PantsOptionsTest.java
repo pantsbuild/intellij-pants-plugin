@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.model;
 
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import junit.framework.TestCase;
 
@@ -29,5 +30,25 @@ public class PantsOptionsTest extends TestCase {
   public void testStrictJvmVersion() {
     PantsOptions options = new PantsOptions("test.junit.strict_jvm_version = False (from HARDCODED)");
     assertEquals("False", options.get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
+  }
+
+  public void testOptionsCache() {
+    PantsOptions options_a = PantsOptions.getPantsOptions("./pants");
+    PantsOptions options_b = PantsOptions.getPantsOptions("./pants");
+    // option_b should be cached result, so identical to options_a
+    assertTrue( options_a == options_b);
+    PantsOptions.clearCache();
+    PantsOptions options_c = PantsOptions.getPantsOptions("./pants");
+    assertTrue( options_a != options_c);
+  }
+
+  public void testOptionsException() {
+    try {
+      PantsOptions.getPantsOptions("some_invalid_pants_path");
+      fail(String.format("%s should have been thrown.", PantsException.class));
+    }
+    catch (PantsException e) {
+
+    }
   }
 }

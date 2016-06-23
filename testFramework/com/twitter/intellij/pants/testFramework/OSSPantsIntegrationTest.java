@@ -3,7 +3,15 @@
 
 package com.twitter.intellij.pants.testFramework;
 
+import com.intellij.execution.BeforeRunTask;
+import com.intellij.execution.BeforeRunTaskProvider;
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.impl.RunManagerImpl;
+import com.intellij.execution.junit.JUnitConfiguration;
+import com.intellij.execution.junit.JUnitConfigurationType;
 import com.intellij.openapi.util.text.StringUtil;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -37,11 +45,46 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
   }
 
   protected void assertContainsSubstring(List<String> stringList, String expected) {
-    for (String line : stringList) {
-      if (line.contains(expected)) {
-        return;
-      }
+    if (containsSubstring(stringList, expected)) {
+      return;
     }
-    fail(String.format("Compile output %s does not contain substring '%s'.", stringList.toString(), expected));
+    fail(String.format("String '%s' does not contain expected substring '%s'.", stringList.toString(), expected));
+  }
+
+  protected void assertNotContainsSubstring(List<String> stringList, String unexpected) {
+    if (!containsSubstring(stringList, unexpected)) {
+      return;
+    }
+    fail(String.format("String '%s' contains unexpected substring '%s'.", stringList.toString(), unexpected));
+  }
+
+  private boolean containsSubstring(List<String> stringList, String subString) {
+    return stringList.stream().anyMatch(s -> s.contains(subString));
+  }
+
+  protected void assertAndRunPantsMake(JUnitConfiguration runConfiguration) {
+
+    RunManager runManager = RunManager.getInstance(myProject);
+    assertTrue(runManager instanceof RunManagerImpl);
+    RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
+
+    RunnerAndConfigurationSettings runnerAndConfigurationSettings =
+      runManagerImpl.createConfiguration(runConfiguration, JUnitConfigurationType.getInstance().getConfigurationFactories()[0]);
+    runManagerImpl.addConfiguration(runnerAndConfigurationSettings, false);
+
+    // Make sure PantsMake is the one and only task before JUnit run.
+    List<BeforeRunTask> beforeRunTaskList = runManagerImpl.getBeforeRunTasks(runConfiguration);
+    assertEquals(1, beforeRunTaskList.size());
+    BeforeRunTask task = beforeRunTaskList.iterator().next();
+    assertEquals(PantsMakeBeforeRun.ID, task.getProviderId());
+
+    /*
+     * Manually invoke BeforeRunTask as {@link ExecutionManager#compileAndRun} launches another task asynchronously,
+     * and there is no way to catch that.
+     */
+    BeforeRunTaskProvider<BeforeRunTask> provider = BeforeRunTaskProvider.getProvider(myProject, task.getProviderId());
+    assertNotNull("Cannot find BeforeRunTaskProvider for id='" + task.getProviderId() + "'", provider);
+
+    assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 }

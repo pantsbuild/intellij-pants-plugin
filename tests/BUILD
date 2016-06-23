@@ -19,7 +19,6 @@ junit_tests(
         'com/twitter/intellij/pants/util/*.java',
     )
 )
-
 junit_tests(
     name = 'integration',
     dependencies = [
@@ -33,6 +32,7 @@ junit_tests(
     ],
     sources = globs('com/twitter/intellij/pants/integration/*.java')
 )
+
 
 junit_tests(
     name = 'py-integration',

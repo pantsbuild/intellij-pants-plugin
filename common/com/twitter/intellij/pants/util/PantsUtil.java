@@ -10,8 +10,10 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.ide.SaveAndSyncHandler;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
@@ -23,6 +25,7 @@ import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMo
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -30,6 +33,7 @@ import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
@@ -45,6 +49,7 @@ import com.intellij.util.ObjectUtils;
 import com.intellij.util.PathUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
@@ -65,7 +70,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -79,9 +83,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PantsUtil {
   public static final Gson gson = new Gson();
+  public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {}.getType();
   public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
     new ThreadFactory() {
@@ -96,24 +103,50 @@ public class PantsUtil {
   private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
   private static final String PEX_RELATIVE_PATH = ".pants.d/bin/pants.pex";
 
+  /**
+   * This aims to prepares for any breakage we might introduce from pants side, in which case we can adjust the version
+   * of Pants `idea-plugin` goal to be greater than 0.1.0.
+   * @see <a href="https://github.com/pantsbuild/pants/blob/d31ec5b4b1fb4f91e5beb685539ea14278dc62cf/src/python/pants/backend/project_info/tasks/idea_plugin_gen.py#L28">Pants `idea-plugin` goal version</a>
+   */
+  private static final String PANTS_IDEA_PLUGIN_VERESION_MIN = "0.0.1";
+  private static final String PANTS_IDEA_PLUGIN_VERESION_MAX = "0.1.0";
+
+  /**
+   * @param vFile a virtual file pointing at either a file or a directory
+   * @return <code>null</code> if `vFile` is not a BUILD file or if it is a directory that
+   * does not contain one
+   * @deprecated {@link #findBUILDFiles(VirtualFile)} should be used instead, as this is likely
+   * a sign that you're missing BUILD files
+   */
   @Nullable
   public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
     if (vFile == null) {
       return null;
     }
-    else if (vFile.isDirectory()) {
-      return ContainerUtil.find(
-        vFile.getChildren(),
-        new Condition<VirtualFile>() {
-          @Override
-          public boolean value(VirtualFile file) {
-            return isBUILDFileName(file.getName());
-          }
-        }
-      );
+    else {
+      return findBUILDFiles(vFile).stream().findFirst().orElse(null);
     }
-    return isBUILDFileName(vFile.getName()) ? vFile : null;
   }
+
+  /**
+   * @param vFile a virtual file pointing at either a file or a directory
+   * @return a collection with one item if `vFile` is a valid BUILD file, an empty collection
+   * if `vFile` is a file but not a valid BUILD file, or if `vFile` is a directory then all
+   * the valid build files that are in it.
+   */
+  @NotNull
+  public static Collection<VirtualFile> findBUILDFiles(@NotNull VirtualFile vFile) {
+    if (vFile.isDirectory()) {
+      return Stream.of(vFile.getChildren()).filter(f -> isBUILDFileName(f.getName())).collect(Collectors.toList());
+    }
+
+    if (isBUILDFileName(vFile.getName())) {
+      return Collections.singleton(vFile);
+    }
+
+    return Collections.emptyList();
+  }
+
 
   public static boolean isBUILDFilePath(@NotNull String path) {
     return isBUILDFileName(PathUtil.getFileName(path));
@@ -234,7 +267,7 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findDistExportClasspathDirectory(@NotNull Module module) {
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
+    final VirtualFile buildRoot = findBuildRoot(module);
     if (buildRoot == null) {
       return null;
     }
@@ -262,12 +295,12 @@ public class PantsUtil {
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull Project project) throws PantsException {
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(project);
+    VirtualFile pantsExecutable = findPantsExecutable(project);
     return defaultCommandLine(pantsExecutable.getPath());
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
-    final File pantsExecutable = PantsUtil.findPantsExecutable(new File(projectPath));
+    final File pantsExecutable = findPantsExecutable(new File(projectPath));
     if (pantsExecutable == null) {
       throw new PantsException("Couldn't find pants executable for: " + projectPath);
     }
@@ -346,7 +379,7 @@ public class PantsUtil {
       return Collections.emptyList();
     }
     return ContainerUtil.mapNotNull(
-      PantsUtil.hydrateTargetAddresses(targets),
+      hydrateTargetAddresses(targets),
       new Function<String, PantsTargetAddress>() {
         @Override
         public PantsTargetAddress fun(String targetAddress) {
@@ -366,6 +399,31 @@ public class PantsUtil {
         }
       }
     );
+  }
+
+  /**
+   * Determine whether a project is trigger by Pants `idea-plugin` goal by
+   * looking at the "pants_idea_plugin_version" property.
+   */
+  public static boolean isSeedPantsProject(@NotNull Project project) {
+    class SeedPantsProjectKeys {
+      private static final String PANTS_IDEA_PLUGIN_VERSION = "pants_idea_plugin_version";
+    }
+
+    if (isPantsProject(project)) {
+      return false;
+    }
+    String version = PropertiesComponent.getInstance(project).getValue(SeedPantsProjectKeys.PANTS_IDEA_PLUGIN_VERSION);
+    if (version == null) {
+      return false;
+    }
+    if (versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MIN) < 0 ||
+        versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MAX) > 0
+      ) {
+      Messages.showInfoMessage(project, PantsBundle.message("pants.idea.plugin.goal.version.unsupported"), "Version Error");
+      return false;
+    }
+    return true;
   }
 
   public static boolean isPantsModule(@NotNull Module module) {
@@ -443,9 +501,10 @@ public class PantsUtil {
   }
 
   public static void refreshAllProjects(@NotNull Project project) {
-    if (!PantsUtil.isPantsProject(project)) {
+    if (!isPantsProject(project) && !isSeedPantsProject(project)) {
       return;
     }
+    ApplicationManager.getApplication().runWriteAction(() -> FileDocumentManager.getInstance().saveAllDocuments());
     final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
     ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
                                           ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
@@ -752,7 +811,7 @@ public class PantsUtil {
       throw new PantsException("No module found in project.");
     }
     Module moduleSample = modules[0];
-    VirtualFile buildRoot = PantsUtil.findBuildRoot(moduleSample);
+    VirtualFile buildRoot = findBuildRoot(moduleSample);
     return findPantsExecutable(buildRoot);
   }
 
@@ -788,6 +847,47 @@ public class PantsUtil {
       }
     }
     return findPantsExecutable(file.getParent());
+  }
+
+  public static List<String> convertToTargetSpecs(String importPath, List<String> targetNames) {
+    File importPathFile = new File(importPath);
+    final String projectDir =
+      isBUILDFileName(importPathFile.getName()) ? importPathFile.getParent() : importPathFile.getPath();
+    final String relativeProjectDir = getRelativeProjectPath(new File(projectDir));
+    // If relativeProjectDir is null, that means the projectDir is already relative.
+    String relativePath = ObjectUtils.notNull(relativeProjectDir, projectDir);
+    if (targetNames.isEmpty()) {
+      return Collections.singletonList(relativePath + "::");
+    }
+    else {
+      return targetNames.stream().map(targetName -> relativePath + ":" + targetName).collect(Collectors.toList());
+    }
+  }
+
+  public static void synchronizeFiles() {
+    /**
+     * Run in SYNC in unit test mode, and {@link com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport}
+     * is required to be wrapped in WriteAction. Otherwise it will run in async mode.
+     */
+    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()){
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        FileDocumentManager.getInstance().saveAllDocuments();
+        SaveAndSyncHandler.getInstance().refreshOpenFiles();
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false); /** synchronous */
+      });
+    }
+    else {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        FileDocumentManager.getInstance().saveAllDocuments();
+        SaveAndSyncHandler.getInstance().refreshOpenFiles();
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true); /** asynchronous */
+      });
+    }
+  }
+
+  public static void invalidatePluginCaches() {
+    PantsOptions.clearCache();
+    SimpleExportResult.clearCache();
   }
 }
 

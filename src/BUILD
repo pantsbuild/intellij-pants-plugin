@@ -1,5 +1,5 @@
-java_library(
-    name='pants-intellij-plugin-java',
+scala_library(
+    name='pants-intellij-plugin',
     dependencies=[
         '3rdparty/intellij:junit-plugin',
         '3rdparty/intellij:python-plugin',
@@ -10,24 +10,7 @@ java_library(
         'jps-plugin',
     ],
     resources=[
-        'resources'
-    ],
-    sources=rglobs('*.java')
-)
-
-scala_library(
-    name='pants-intellij-plugin-scala',
-    dependencies=[
-        ':pants-intellij-plugin-java'
-    ],
-    resources=[
         'resources',
     ],
-    sources=rglobs('*.scala')
-)
-
-jvm_binary(
-  name = 'pants',
-  basename = 'pants',
-  dependencies = [':pants-intellij-plugin-scala']
+    sources=rglobs('*.scala', '*.java')
 )
