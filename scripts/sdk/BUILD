@@ -40,7 +40,7 @@ jvm_binary(
     'tests:all',
     'tests:metrics',
     'jps-plugin',
-    'src:pants-intellij-plugin-scala',
+    'src:pants-intellij-plugin',
     '3rdparty/intellij:external-system-test-api',
     '3rdparty/intellij:sdk',
     '3rdparty/intellij:junit-plugin',
