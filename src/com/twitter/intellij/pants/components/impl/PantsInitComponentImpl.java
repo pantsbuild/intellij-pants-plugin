@@ -10,6 +10,9 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
@@ -72,6 +75,19 @@ public class PantsInitComponentImpl implements PantsInitComponent {
       Notifications.Bus.notify(notification);
       keymap.addShortcut("ExternalSystem.RefreshAllProjects", keyboardShortcut);
     }
+
+    ActionManager actionManager = ActionManager.getInstance();
+    //DefaultActionGroup actionGroup = new DefaultActionGroup(actionManager.getAction("Compile"));
+    //actionGroup.remove(actionGroup.getChildActionsOrStubs()[0]);
+    DefaultActionGroup actions = (DefaultActionGroup) actionManager.getAction("ProjectViewCompileGroup");
+    for (AnAction action : actions.getChildActionsOrStubs()) {
+      if (action != null && action.toString().contains("Make")) {
+        actions.remove(action);
+      }
+      System.out.println(actionManager.getId(action));
+      System.out.println(action);
+    }
+
   }
 
   @Override

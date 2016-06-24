@@ -295,6 +295,7 @@
             id="com.twitter.intellij.pants.ui.PantsCompileTarget" text="Pants Compile Target">
       <add-to-group anchor="after" group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites"/>
       <add-to-group anchor="after" group-id="NavbarPopupMenu" relative-to-action="AddToFavorites"/>
+      <add-to-group anchor="after" group-id="EditorTabPopupMenu" relative-to-action="AddToFavorites"/>
     </action>
   </actions>
 
