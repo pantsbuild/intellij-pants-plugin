@@ -149,7 +149,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()));
   }
 
-  public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile) {
+  private boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile) {
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
@@ -277,12 +277,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
   }
 
+  @NotNull
   private Set<String> getTargetAddressesToCompile(Module[] targetModules) {
-    Set<String> result = new HashSet<String>();
-
     if (targetModules.length == 0) {
       return Collections.emptySet();
     }
+
+    Set<String> result = new HashSet<String>();
+
     for (Module targetModule : targetModules) {
       String dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
       if (dehydratedAddresses == null) {

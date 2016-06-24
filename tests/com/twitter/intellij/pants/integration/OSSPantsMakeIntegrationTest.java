@@ -20,4 +20,11 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
     assertSuccessfulJUnitTest(runConfiguration);
   }
 
+  public void testCompileAll() throws Throwable {
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/cwdexample");
+
+    assertCompileAll();
+  }
+
 }
