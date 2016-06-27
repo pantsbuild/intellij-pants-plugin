@@ -30,7 +30,8 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
       "org.pantsbuild.testproject.annotation.AnnotationTest",
       null
     );
-    assertCompileAll(runConfiguration);
+
+    assertCompileAll();
     assertSuccessfulJUnitTest(runConfiguration);
   }
 
