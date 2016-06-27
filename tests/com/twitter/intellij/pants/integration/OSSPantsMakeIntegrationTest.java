@@ -24,7 +24,14 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
     doImport("testprojects/tests/java/org/pantsbuild/testproject/cwdexample");
 
-    assertCompileAll();
+
+    JUnitConfiguration runConfiguration = generateJUnitConfiguration(
+      "testprojects_tests_java_org_pantsbuild_testproject_annotation_annotation",
+      "org.pantsbuild.testproject.annotation.AnnotationTest",
+      null
+    );
+    assertCompileAll(runConfiguration);
+    assertSuccessfulJUnitTest(runConfiguration);
   }
 
 }

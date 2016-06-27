@@ -89,9 +89,9 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
-  protected void assertCompileAll() {
-    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    assertTrue(runner.executeTask(myProject));
+  protected void assertCompileAll(JUnitConfiguration runConfiguration) {
+    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(runConfiguration.getProject());
+    assertTrue(runner.executeTask(runConfiguration.getProject()));
   }
 
 }
