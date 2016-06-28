@@ -10,6 +10,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.execution.junit.JUnitConfigurationType;
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import org.jetbrains.annotations.NotNull;
@@ -87,4 +88,10 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
 
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
+
+  protected void assertCompileAll() {
+    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
+    assertTrue(runner.executeTask(myProject));
+  }
+
 }
