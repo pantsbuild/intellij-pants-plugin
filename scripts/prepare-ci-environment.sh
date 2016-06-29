@@ -8,8 +8,8 @@ set -e
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2016.1.1"
-export IJ_BUILD_NUMBER="145.597"
+export IJ_VERSION="162.1120.6"
+export IJ_BUILD_NUMBER="162.1120.6"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
