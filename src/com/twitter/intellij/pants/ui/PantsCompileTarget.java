@@ -5,29 +5,43 @@ package com.twitter.intellij.pants.ui;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.twitter.intellij.pants.util.PantsUtil;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
+import com.twitter.intellij.pants.model.PantsTargetAddress;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * PantsCompileAllTargets is a UI action that, when in a project, compiles all targets in the project
+ * PantsCompileTarget is a UI action that is used to compile a Pants target or collection or targets
  */
 public class PantsCompileTarget extends AnAction {
+
+  HashSet<String> myTargetAddresses = new HashSet<String>();
+
+  public PantsCompileTarget() { super(); }
+
+  public PantsCompileTarget(PantsTargetAddress targetAddress) {
+    super("Compile " + targetAddress.getTargetName());
+    this.myTargetAddresses .add(targetAddress.toString());
+  }
+
+  public PantsCompileTarget(Collection<PantsTargetAddress> addresses) {
+    super("Compile all targets in module");
+    Set<String> paths = addresses
+      .stream()
+      .map(PantsTargetAddress::toString)
+      .collect(Collectors.toSet());
+    this.myTargetAddresses.addAll(paths);
+  }
+
   @Override
   public void actionPerformed(AnActionEvent e) {
     Project project = e.getProject();
-    VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
-    System.out.println("got here boi");
-  }
-
-  //  TODO: compile all files in directory
-  //  TODO: compile file
-  //
-  public void update(AnActionEvent e) {
-    super.update(e);
-    VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
-    boolean isEnabled = PantsUtil.findBuildRoot(file) != null;
-    e.getPresentation().setEnabled(isEnabled);
+    PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
+    runner.executeTask(project, myTargetAddresses);
   }
 }

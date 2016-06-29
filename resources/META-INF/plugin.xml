@@ -295,12 +295,10 @@
               text="Compile all targets in project">
       </action>
     </group>
-    <action class="com.twitter.intellij.pants.ui.PantsCompileTarget"
-            id="com.twitter.intellij.pants.ui.PantsCompileTarget" text="Pants Compile Target">
+    <group id="Pants.Compile" text="PANTS _Compile Target" description="Pants compilation options" icon="PantsIcons.Icon"
+           popup="true" class="com.twitter.intellij.pants.ui.PantsCompileActionGroup">
       <add-to-group anchor="after" group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites"/>
-      <add-to-group anchor="after" group-id="NavbarPopupMenu" relative-to-action="AddToFavorites"/>
-      <add-to-group anchor="after" group-id="EditorTabPopupMenu" relative-to-action="AddToFavorites"/>
-    </action>
+    </group>
   </actions>
 
   <extensionPoints>

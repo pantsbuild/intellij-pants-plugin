@@ -76,18 +76,15 @@ public class PantsInitComponentImpl implements PantsInitComponent {
       keymap.addShortcut("ExternalSystem.RefreshAllProjects", keyboardShortcut);
     }
 
+    //  Remove MakeModule actions from menus.
+    //  Because Make actions are generated dynamically, calling actions.remove(makeActionId) does not always work.
     ActionManager actionManager = ActionManager.getInstance();
-    //DefaultActionGroup actionGroup = new DefaultActionGroup(actionManager.getAction("Compile"));
-    //actionGroup.remove(actionGroup.getChildActionsOrStubs()[0]);
     DefaultActionGroup actions = (DefaultActionGroup) actionManager.getAction("ProjectViewCompileGroup");
     for (AnAction action : actions.getChildActionsOrStubs()) {
       if (action != null && action.toString().contains("Make")) {
         actions.remove(action);
       }
-      System.out.println(actionManager.getId(action));
-      System.out.println(action);
     }
-
   }
 
   @Override
