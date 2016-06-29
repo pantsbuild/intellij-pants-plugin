@@ -4,9 +4,11 @@
 package com.twitter.intellij.pants.ui;
 
 import com.intellij.openapi.actionSystem.ActionGroup;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
@@ -26,14 +28,20 @@ public class PantsCompileActionGroup extends ActionGroup {
   @NotNull
   @Override
   public AnAction[] getChildren(@Nullable AnActionEvent event) {
+    //  Deletes existing make and compile options.
+    ActionManager actionManager = ActionManager.getInstance();
+    DefaultActionGroup actionGroup = (DefaultActionGroup) actionManager.getAction("ProjectViewCompileGroup");
+    actionGroup.remove(actionManager.getAction("MakeModule"));
+    actionGroup.remove(actionManager.getAction("Compile"));
+
     if (event != null) {
       Project project = event.getProject();
       VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
       if (project != null && file != null) {
         Module module = ModuleUtil.findModuleForFile(file, project);
         Collection<PantsTargetAddress> targetAddresses = PantsUtil.getTargetAddressesFromModule(module);
-        System.out.println(targetAddresses);
         int numTargetAddresses = targetAddresses.size();
+
         if (numTargetAddresses >= 1) {
           int offset = numTargetAddresses > 1 ? 1 : 0;
           AnAction[] actions = new AnAction[numTargetAddresses + offset];
