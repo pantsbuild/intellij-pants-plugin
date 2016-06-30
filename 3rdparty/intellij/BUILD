@@ -95,7 +95,7 @@ jar_library(
          [jar(org='com.intellij.plugins',
               name='kotlin-compiler.jar',
               rev='latest',
-              url='file://' + os.environ['INTELLIJ_HOME'] + 'plugins/Kotlin/kotlinc/lib/kotlin-compiler.jar'
+              url='file://' + os.environ['INTELLIJ_HOME'] + '/plugins/Kotlin/kotlinc/lib/kotlin-compiler.jar'
               )]
 )
 
