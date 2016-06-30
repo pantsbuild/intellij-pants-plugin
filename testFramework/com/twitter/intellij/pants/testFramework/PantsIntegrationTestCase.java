@@ -91,14 +91,16 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     for (String pluginId : getRequiredPluginIds()) {
       final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
       assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
-      assertTrue(pluginId + " is not enabled!", plugin.isEnabled());
+      //plugin.setEnabled(true);
+      //assertTrue(pluginId + " is not enabled!", plugin.isEnabled());
     }
+    Arrays.stream(PluginManager.getPlugins()).forEach(s -> s.setEnabled(true));
     myProjectSettings = new PantsProjectSettings();
     myCompilerTester = null;
   }
 
   protected String[] getRequiredPluginIds() {
-    return new String[]{"org.intellij.scala"};
+    return new String[]{"org.intellij.scala", PantsConstants.PLUGIN_ID};
   }
 
   @Override
