@@ -54,7 +54,8 @@ append_intellij_jvm_options() {
     "-Didea.home.path=$IDEA_TEST_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
     "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/rt/jps-plugin-system.jar:$CWD/jps-plugin/lib/gson-2.3.1.jar"
-    "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER" #EAP builds do not know its own build number, failing to tell plugin compatibility
+    #EAP build does not know its own build number, thus failing to tell plugin compatibility.
+    "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"
   )
   for jvm_option in ${INTELLIJ_JVM_OPTIONS[@]}
