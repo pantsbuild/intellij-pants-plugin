@@ -3,6 +3,8 @@ manually trimming duplicates and editing missing names.
 
 Alexander Johnson
 Andy Reitz
+Bruno Bieth
+Ebube Chuba
 Eric Ayers
 Fedor Korotkov
 Johan Oskarsson
