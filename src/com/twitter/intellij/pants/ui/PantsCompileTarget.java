@@ -5,43 +5,37 @@ package com.twitter.intellij.pants.ui;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
-import com.twitter.intellij.pants.model.PantsTargetAddress;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
- * PantsCompileTarget is a UI action that is used to compile a Pants target or collection or targets
+ * PantsCompileTarget is a UI action that is used to compile a Pants target or collection of targets
  */
 public class PantsCompileTarget extends AnAction {
 
   HashSet<String> myTargetAddresses = new HashSet<String>();
 
-  public PantsCompileTarget() { super(); }
-
-  public PantsCompileTarget(PantsTargetAddress targetAddress) {
-    super("Compile " + targetAddress.getTargetName());
-    this.myTargetAddresses .add(targetAddress.toString());
+  public PantsCompileTarget(String targetAddress) {
+    super(targetAddress);
+    myTargetAddresses.add(targetAddress);
   }
 
-  public PantsCompileTarget(Collection<PantsTargetAddress> addresses) {
+  public PantsCompileTarget(Collection<String> addresses) {
     super("Compile all targets in module");
-    Set<String> paths = addresses
-      .stream()
-      .map(PantsTargetAddress::toString)
-      .collect(Collectors.toSet());
-    this.myTargetAddresses.addAll(paths);
+    myTargetAddresses.addAll(addresses);
   }
 
   @Override
   public void actionPerformed(AnActionEvent e) {
     Project project = e.getProject();
     PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
-    runner.executeTask(project, myTargetAddresses);
+    ApplicationManager.getApplication().executeOnPooledThread((Runnable)() -> {
+      runner.executeTask(project, myTargetAddresses);
+    });
   }
 }

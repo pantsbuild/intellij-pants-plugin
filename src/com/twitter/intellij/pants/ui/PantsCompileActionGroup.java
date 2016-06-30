@@ -18,7 +18,9 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * PantsCompileActionGroup is an dynamic action group to compile Pants targets
@@ -34,30 +36,32 @@ public class PantsCompileActionGroup extends ActionGroup {
     actionGroup.remove(actionManager.getAction("MakeModule"));
     actionGroup.remove(actionManager.getAction("Compile"));
 
-    if (event != null) {
-      Project project = event.getProject();
-      VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
-      if (project != null && file != null) {
-        Module module = ModuleUtil.findModuleForFile(file, project);
-        Collection<PantsTargetAddress> targetAddresses = PantsUtil.getTargetAddressesFromModule(module);
-        int numTargetAddresses = targetAddresses.size();
+    final AnAction[] empty = new AnAction[0];
 
-        if (numTargetAddresses >= 1) {
-          int offset = numTargetAddresses > 1 ? 1 : 0;
-          AnAction[] actions = new AnAction[numTargetAddresses + offset];
+    if (event == null) return empty;
 
-          if (numTargetAddresses > 1) actions[0] = new PantsCompileTarget(targetAddresses);
+    Project project = event.getProject();
+    VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
 
-          int idx = offset;
-          for (PantsTargetAddress targetAddress : targetAddresses) {
-            actions[idx] = new PantsCompileTarget(targetAddress);
-            idx++;
-          }
+    if (project == null || file == null) return empty;
 
-          return actions;
-        }
-      }
+    Module module = ModuleUtil.findModuleForFile(file, project);
+    List<String> targetAddresses = PantsUtil.getTargetAddressesFromModule(module)
+      .stream()
+      .map(PantsTargetAddress::toString)
+      .collect(Collectors.toList());
+
+    if (targetAddresses.isEmpty()) return empty;
+
+    LinkedList<AnAction> actions = new LinkedList<AnAction>();
+
+    for (String targetAddress : targetAddresses) {
+      actions.push(new PantsCompileTarget(targetAddress));
     }
-    return new AnAction[0];
+
+    //  Adds compile all option for modules with multiple targets.
+    if (targetAddresses.size() > 1) actions.addFirst(new PantsCompileTarget(targetAddresses));
+
+    return actions.toArray(empty);
   }
 }
