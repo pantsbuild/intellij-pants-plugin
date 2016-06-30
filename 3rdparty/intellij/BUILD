@@ -91,12 +91,13 @@ def _jdk_jar(path):
 
 jar_library(
     name='sdk',
-    jars=_intellij_sdk_classpath() + [_jdk_jar(path) for path in _jdk_classpath()] +
-         [jar(org='com.intellij.plugins',
-              name='kotlin-compiler.jar',
-              rev='latest',
-              url='file://' + os.environ['INTELLIJ_HOME'] + '/plugins/Kotlin/kotlinc/lib/kotlin-compiler.jar'
-              )]
+    jars=_intellij_sdk_classpath() + [_jdk_jar(path) for path in _jdk_classpath()]
+         # +
+         # [jar(org='com.intellij.plugins',
+         #      name='kotlin-compiler.jar',
+         #      rev='latest',
+         #      url='file://' + os.environ['INTELLIJ_HOME'] + '/plugins/Kotlin/kotlinc/lib/kotlin-compiler.jar'
+         #      )]
 )
 
 jar_library(
