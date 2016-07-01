@@ -10,6 +10,9 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
@@ -19,6 +22,7 @@ import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
+import com.twitter.intellij.pants.ui.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,10 +76,31 @@ public class PantsInitComponentImpl implements PantsInitComponent {
       Notifications.Bus.notify(notification);
       keymap.addShortcut("ExternalSystem.RefreshAllProjects", keyboardShortcut);
     }
+
+    //  Deletes existing make and compile options.
+    //  Registers the rebuild action to Pants rebuild
+    ActionManager actionManager = ActionManager.getInstance();
+    NeverShowAction neverShowAction = new NeverShowAction();
+
+    actionManager.registerAction("CompileDirty", neverShowAction);
+    actionManager.registerAction("MakeModule", neverShowAction);
+    actionManager.registerAction("Compile", neverShowAction);
+    actionManager.registerAction("CompileProject", new PantsRebuildAction());
   }
 
   @Override
   public void disposeComponent() {
 
+  }
+
+  //  Used to disable actions
+  private class NeverShowAction extends AnAction {
+    @Override
+    public void update(AnActionEvent event) {
+      event.getPresentation().setEnabled(false);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent event) {}
   }
 }
