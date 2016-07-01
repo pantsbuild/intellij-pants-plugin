@@ -36,14 +36,18 @@ public class PantsCompileActionGroup extends ActionGroup {
     actionGroup.remove(actionManager.getAction("MakeModule"));
     actionGroup.remove(actionManager.getAction("Compile"));
 
-    final AnAction[] empty = new AnAction[0];
+    final AnAction[] emptyAction = new AnAction[0];
 
-    if (event == null) return empty;
+    if (event == null) {
+      return emptyAction;
+    }
 
     Project project = event.getProject();
     VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
 
-    if (project == null || file == null) return empty;
+    if (project == null || file == null) {
+      return emptyAction;
+    }
 
     Module module = ModuleUtil.findModuleForFile(file, project);
     List<String> targetAddresses = PantsUtil.getTargetAddressesFromModule(module)
@@ -51,17 +55,21 @@ public class PantsCompileActionGroup extends ActionGroup {
       .map(PantsTargetAddress::toString)
       .collect(Collectors.toList());
 
-    if (targetAddresses.isEmpty()) return empty;
+    if (targetAddresses.isEmpty()) {
+      return emptyAction;
+    }
 
     LinkedList<AnAction> actions = new LinkedList<AnAction>();
 
-    for (String targetAddress : targetAddresses) {
-      actions.push(new PantsCompileTarget(targetAddress));
+    //  Adds compile all option for modules with multiple targets.
+    if (targetAddresses.size() > 1) {
+      actions.push(new PantsCompileTargetAction(targetAddresses));
     }
 
-    //  Adds compile all option for modules with multiple targets.
-    if (targetAddresses.size() > 1) actions.addFirst(new PantsCompileTarget(targetAddresses));
+    for (String targetAddress : targetAddresses) {
+      actions.push(new PantsCompileTargetAction(targetAddress));
+    }
 
-    return actions.toArray(empty);
+    return actions.toArray(emptyAction);
   }
 }

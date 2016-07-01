@@ -14,18 +14,18 @@ import java.util.Collection;
 import java.util.HashSet;
 
 /**
- * PantsCompileTarget is a UI action that is used to compile a Pants target or collection of targets
+ * PantsCompileTargetAction is a UI action that is used to compile a Pants target or collection of targets
  */
-public class PantsCompileTarget extends AnAction {
+public class PantsCompileTargetAction extends AnAction {
 
-  HashSet<String> myTargetAddresses = new HashSet<String>();
+  private HashSet<String> myTargetAddresses = new HashSet<String>();
 
-  public PantsCompileTarget(String targetAddress) {
+  public PantsCompileTargetAction(String targetAddress) {
     super(targetAddress);
     myTargetAddresses.add(targetAddress);
   }
 
-  public PantsCompileTarget(Collection<String> addresses) {
+  public PantsCompileTargetAction(Collection<String> addresses) {
     super("Compile all targets in module");
     myTargetAddresses.addAll(addresses);
   }
