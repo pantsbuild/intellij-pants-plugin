@@ -237,8 +237,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   //  Attempts to run Pants clean all and then compile all targets in project
   public boolean rebuild(Project project) {
-    final boolean cleanStatus = cleanAll(project);
-    return cleanStatus ? executeTask(project) : false;
+    return cleanAll(project) && executeTask(project);
   }
 
   private void notifyCompileResult(final boolean success) {
