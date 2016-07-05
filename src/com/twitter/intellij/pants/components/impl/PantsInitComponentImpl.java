@@ -80,12 +80,16 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     //  Deletes existing make and compile options.
     //  Registers the rebuild action to Pants rebuild
     ActionManager actionManager = ActionManager.getInstance();
-    NeverShowAction neverShowAction = new NeverShowAction();
 
-    actionManager.registerAction("CompileDirty", neverShowAction);
-    actionManager.registerAction("MakeModule", neverShowAction);
-    actionManager.registerAction("Compile", neverShowAction);
-    actionManager.registerAction("CompileProject", new PantsRebuildAction());
+    actionManager.unregisterAction("CompileDirty");
+    actionManager.unregisterAction("MakeModule");
+    actionManager.unregisterAction("Compile");
+    actionManager.unregisterAction("CompileProject");
+
+    actionManager.registerAction("CompileDirty", new NeverShowAction("Make Project"));
+    actionManager.registerAction("MakeModule", new NeverShowAction("Make Module"));
+    actionManager.registerAction("Compile", new NeverShowAction("Compile"));
+    actionManager.registerAction("CompileProject", new PantsRebuildAction("Rebuild Project"));
   }
 
   @Override
@@ -95,6 +99,10 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
   //  Used to disable actions
   private class NeverShowAction extends AnAction {
+    private NeverShowAction(String s) {
+      super(s);
+    }
+
     @Override
     public void update(AnActionEvent event) {
       event.getPresentation().setEnabled(false);

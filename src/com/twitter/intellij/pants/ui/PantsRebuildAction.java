@@ -20,6 +20,9 @@ import icons.PantsIcons;
  */
 public class PantsRebuildAction extends AnAction {
 
+  public PantsRebuildAction(String s) {
+    super(s);
+  }
 
   @Override
   public void actionPerformed(AnActionEvent e) {
