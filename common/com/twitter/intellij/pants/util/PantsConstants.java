@@ -53,6 +53,9 @@ public class PantsConstants {
   public static final String PANTS_CLI_OPTION_NO_COLORS = "--no-colors";
   public static final String PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";
 
+  public static final String ACTION_MAKE_PROJECT_ID = "CompileDirty";
+  public static final String ACTION_MAKE_PROJECT_DESCRIPTION = "Make Project";
+
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(
       "android_binary", "android_resources", "annotation_processor", "artifact", "artifactory", "bundle", "consume_thrift_libraries",
