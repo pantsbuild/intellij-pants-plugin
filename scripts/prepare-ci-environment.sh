@@ -22,13 +22,13 @@ get_md5(){
 if [[ $IJ_ULTIMATE == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="4c799af6028384423e65c20e9ca5ab5b"
+  export EXPECTED_IJ_MD5="a6fe09e81411cc958eb4c3b7653c40f1"
   export PYTHON_PLUGIN_ID="Pythonid"
   export PYTHON_PLUGIN_MD5="a44eb219fe7283348852a807119b0056"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="46edd235a6297b7563bd5df292ee0fdf"
+  export EXPECTED_IJ_MD5="4c799af6028384423e65c20e9ca5ab5b"
   export PYTHON_PLUGIN_ID="PythonCore"
   export PYTHON_PLUGIN_MD5="e4af345f34f703745de0e3bddde874bf"
 fi
