@@ -8,7 +8,7 @@ set -e
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2016.1.1"
+export IJ_VERSION="2016.1.3"
 export IJ_BUILD_NUMBER="145.597"
 
 get_md5(){
