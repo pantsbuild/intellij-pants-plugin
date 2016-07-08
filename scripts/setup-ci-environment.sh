@@ -19,7 +19,6 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   wget -O $IJ_TAR_NAME "http://download.jetbrains.com/idea/$IJ_TAR_NAME"
   if [ $(get_md5 $IJ_TAR_NAME) != $EXPECTED_IJ_MD5 ];
   then
-    echo $(get_md5 $IJ_TAR_NAME)
     echo "IJ tar md5 incorrect" >&2
     exit 1
   fi
