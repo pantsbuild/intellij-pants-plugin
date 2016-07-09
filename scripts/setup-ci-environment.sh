@@ -28,7 +28,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   IJ_TAR_NAME=idea${IJ_BUILD}.tar.gz
   echo "Loading $IJ_BUILD..."
   wget -O $IJ_TAR_NAME "http://download.jetbrains.com/idea/$IJ_TAR_NAME"
-  verify_md5 $IJ_TAR_NAME $EXPECTED_IJ_MD5
+  # verify_md5 $IJ_TAR_NAME $EXPECTED_IJ_MD5
   {
     tar zxf $IJ_TAR_NAME &&
     UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1) &&
@@ -47,12 +47,12 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   pushd plugins
 
   wget --no-check-certificate -O Scala.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$SCALA_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
-  verify_md5 Scala.zip $SCALA_PLUGIN_MD5
+  # verify_md5 Scala.zip $SCALA_PLUGIN_MD5
   unzip Scala.zip
   rm -f Scala.zip
 
   wget --no-check-certificate  -O python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
-  verify_md5 python.zip $PYTHON_PLUGIN_MD5
+  # verify_md5 python.zip $PYTHON_PLUGIN_MD5
   unzip python.zip
   rm -f python.zip
 
