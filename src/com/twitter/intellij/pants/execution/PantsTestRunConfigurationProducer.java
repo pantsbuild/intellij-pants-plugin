@@ -26,6 +26,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -60,7 +61,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
 
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
 
-    List<String> scriptParameters = new ArrayList<>();
+    final List<String> scriptParameters = new ArrayList<>();
     /**
      * Add the module's folder:: to target_roots
      **/
@@ -96,62 +97,29 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     final PsiMethod psiMethod = PsiTreeUtil.getParentOfType(psiLocation, PsiMethod.class, false);
 
     if (psiMethod != null) {
-      getTestOptions(psiMethod, sourceElement, configuration, scriptParameters);
+      sourceElement.set(psiMethod);
+      configuration.setName(psiMethod.getName());
+      scriptParameters.add("--test-junit-test=" + psiClass.getQualifiedName() + "#" + psiMethod.getName());
     }
     else if (psiClass != null) {
-      getTestOptions(psiClass, sourceElement, configuration, scriptParameters);
+      sourceElement.set(psiClass);
+      configuration.setName(psiClass.getName());
+      scriptParameters.add("--test-junit-test=" + psiClass.getQualifiedName());
     }
     else if (testPackage != null) {
-      getTestOptions(testPackage, sourceElement, configuration, module, scriptParameters);
+      sourceElement.set(testPackage);
+      configuration.setName(testPackage.getName());
+      // Iterate through test classes in testPackage that is only in the scope of the module
+      Arrays.stream(testPackage.getClasses(module.getModuleScope()))
+        .filter(TestIntegrationUtils::isTest)
+        .forEach(psiClazz -> scriptParameters.add("--test-junit-test=" + psiClazz.getQualifiedName()));
     }
     else {
       return false;
     }
 
     taskSettings.setScriptParameters(StringUtil.join(scriptParameters, " "));
-
     return true;
-  }
-
-
-  private void getTestOptions(
-    PsiMethod psiMethod,
-    Ref<PsiElement> sourceElement,
-    ExternalSystemRunConfiguration configuration,
-    List<String> scriptParameters
-  ) {
-    sourceElement.set(psiMethod);
-    PsiClass psiClass = PsiTreeUtil.getParentOfType(psiMethod, PsiClass.class, true);
-    configuration.setName(psiMethod.getName());
-    scriptParameters.add("--test-junit-test=" + psiClass.getQualifiedName() + "#" + psiMethod.getName());
-  }
-
-  private void getTestOptions(
-    PsiClass psiClass,
-    Ref<PsiElement> sourceElement,
-    ExternalSystemRunConfiguration configuration,
-    List<String> scriptParameters
-  ) {
-    sourceElement.set(psiClass);
-    configuration.setName(psiClass.getName());
-    scriptParameters.add("--test-junit-test=" + psiClass.getQualifiedName());
-  }
-
-  private void getTestOptions(
-    PsiPackage psiPackage,
-    Ref<PsiElement> sourceElement,
-    ExternalSystemRunConfiguration configuration,
-    Module module,
-    List<String> scriptParameters
-  ) {
-    sourceElement.set(psiPackage);
-    configuration.setName("Tests " + psiPackage.getName());
-    // Iterate through test classes in testPackage that is only in the scope of the module
-    for (PsiClass psiClass : psiPackage.getClasses(module.getModuleScope())) {
-      if (TestIntegrationUtils.isTest(psiClass)) {
-        scriptParameters.add(" --test-junit-test=" + psiClass.getQualifiedName());
-      }
-    }
   }
 
   private boolean hasTestClasses(PsiPackage psiPackage, Module module) {
