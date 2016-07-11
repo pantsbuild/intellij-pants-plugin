@@ -19,7 +19,6 @@ import icons.PantsIcons;
  * PantsRebuildAction is a UI action that, when in a project, runs clean-all, then compiles all targets in the project
  */
 public class PantsRebuildAction extends AnAction {
-  
   @Override
   public void actionPerformed(AnActionEvent e) {
     Project project = e.getProject();
