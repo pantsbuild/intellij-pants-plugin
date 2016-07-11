@@ -8,8 +8,8 @@ set -e
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2016.1.3"
-export IJ_BUILD_NUMBER="145.597"
+export IJ_VERSION="162.1121.10"
+export IJ_BUILD_NUMBER="162.1121.10"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
@@ -22,20 +22,20 @@ get_md5(){
 if [[ $IJ_ULTIMATE == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="a6fe09e81411cc958eb4c3b7653c40f1"
+  export EXPECTED_IJ_MD5="e03c6d151c498891a47cd38b54b100b8"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="a44eb219fe7283348852a807119b0056"
+  export PYTHON_PLUGIN_MD5="8ca536024429416f53df5e3eccaf0dc1"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="4c799af6028384423e65c20e9ca5ab5b"
+  export EXPECTED_IJ_MD5="38f0387395647a874e0e103b48dd969d"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="e4af345f34f703745de0e3bddde874bf"
+  export PYTHON_PLUGIN_MD5="cb55a98ab7ef78b87a6861591f6d368a"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="4a6630fd30866becad542f17b966357f" #3.0.6
+export SCALA_PLUGIN_MD5="7fd06661fa8c06218dccbef0d7156532" #2016.2.0
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
@@ -54,6 +54,8 @@ append_intellij_jvm_options() {
     "-Didea.home.path=$IDEA_TEST_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
     "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/rt/jps-plugin-system.jar:$CWD/jps-plugin/lib/gson-2.3.1.jar"
+    #EAP build does not know its own build number, thus failing to tell plugin compatibility.
+    "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"
   )
   for jvm_option in ${INTELLIJ_JVM_OPTIONS[@]}
