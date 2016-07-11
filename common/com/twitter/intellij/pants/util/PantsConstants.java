@@ -55,6 +55,7 @@ public class PantsConstants {
 
   public static final String ACTION_MAKE_PROJECT_ID = "CompileDirty";
   public static final String ACTION_MAKE_PROJECT_DESCRIPTION = "Make Project";
+  public static final String REBUILD_PROJECT_DESCRIPTION = "Rebuild Project";
 
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(

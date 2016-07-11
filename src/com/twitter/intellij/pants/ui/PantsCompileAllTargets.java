@@ -41,4 +41,9 @@ public class PantsCompileAllTargets extends AnAction {
       Notifications.Bus.notify(notification);
     }
   }
+
+  @Override
+  public void update(AnActionEvent e) {
+    e.getPresentation().setText("Compile all targets in project");
+  }
 }

@@ -24,6 +24,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
+import com.twitter.intellij.pants.ui.PantsCompileAllTargets;
+import com.twitter.intellij.pants.ui.PantsCompileTargetAction;
 import com.twitter.intellij.pants.ui.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -86,21 +88,27 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
     AnAction compileAllNative = new PantsOverrideAction(
       PantsConstants.ACTION_MAKE_PROJECT_ID,
-      PantsConstants.ACTION_MAKE_PROJECT_DESCRIPTION
+      PantsConstants.ACTION_MAKE_PROJECT_DESCRIPTION,
+      new PantsCompileAllTargets()
     );
-    AnAction makeNative = new PantsOverrideAction(IdeActions.ACTION_MAKE_MODULE);
+    AnAction makeNative = new PantsOverrideAction(
+      IdeActions.ACTION_MAKE_MODULE,
+      new PantsCompileTargetAction()
+    );
     AnAction compileNative = new PantsOverrideAction(IdeActions.ACTION_COMPILE);
 
 
-    actionManager.unregisterAction("CompileDirty");
+    actionManager.unregisterAction(PantsConstants.ACTION_MAKE_PROJECT_ID);
     actionManager.unregisterAction(IdeActions.ACTION_MAKE_MODULE);
     actionManager.unregisterAction(IdeActions.ACTION_COMPILE);
     actionManager.unregisterAction(IdeActions.ACTION_COMPILE_PROJECT);
 
-    actionManager.registerAction("CompileDirty", compileAllNative);
+    actionManager.registerAction(PantsConstants.ACTION_MAKE_PROJECT_ID, compileAllNative);
     actionManager.registerAction(IdeActions.ACTION_MAKE_MODULE, makeNative);
     actionManager.registerAction(IdeActions.ACTION_COMPILE, compileNative);
-    actionManager.registerAction(IdeActions.ACTION_COMPILE_PROJECT, new PantsRebuildAction("Compile all targets with clean-all"));
+    actionManager.registerAction(
+      IdeActions.ACTION_COMPILE_PROJECT,
+      new PantsOverrideAction(IdeActions.ACTION_COMPILE_PROJECT, PantsConstants.REBUILD_PROJECT_DESCRIPTION, new PantsRebuildAction()));
   }
 
   @Override
@@ -112,34 +120,78 @@ public class PantsInitComponentImpl implements PantsInitComponent {
   private class PantsOverrideAction extends AnAction {
 
     private AnAction hiddenAction;
+    private AnAction pantsActiveAction;
 
     private PantsOverrideAction(String actionId) {
-      hiddenAction = ActionManager.getInstance().getAction(actionId);
+      basicConstruction(actionId);
     }
 
-    private PantsOverrideAction(String actionId, String actionName) {
-      super(actionName);
+    private PantsOverrideAction(String actionId, @NotNull AnAction pantsAction) {
+      basicConstruction(actionId);
+      pantsActiveAction = pantsAction;
+    }
+
+    private PantsOverrideAction(String actionId, String oldName, @NotNull AnAction pantsAction) {
+      super(oldName);
+      basicConstruction(actionId);
+      pantsActiveAction = pantsAction;
+    }
+
+
+    private void basicConstruction(String actionId) {
       hiddenAction = ActionManager.getInstance().getAction(actionId);
+      pantsActiveAction = new PantsShieldAction(hiddenAction);
+    }
+
+    private boolean isPantsProject(AnActionEvent event) {
+      if (event == null) {
+        return false;
+      }
+      Project project = event.getProject();
+      return project != null && PantsUtil.isPantsProject(project);
     }
 
     @Override
     public void update(AnActionEvent event) {
-      Project project = event.getProject();
-      if (project == null || hiddenAction == null) {
-        return;
+      if (hiddenAction != null) {
+        hiddenAction.update(event);
       }
-      hiddenAction.update(event);
-      if (PantsUtil.isPantsProject(project)) {
-        event.getPresentation().setEnabled(false);
+      if (isPantsProject(event)) {
+        pantsActiveAction.update(event);
       }
     }
 
     @Override
     public void actionPerformed(AnActionEvent event) {
-      Project project = event.getProject();
-      if (project != null && hiddenAction != null && !PantsUtil.isPantsProject(project)) {
+      if (isPantsProject(event)) {
+        pantsActiveAction.actionPerformed(event);
+      }
+      else if (hiddenAction != null) {
         hiddenAction.actionPerformed(event);
       }
+    }
+  }
+
+  /**
+   * Shield action allows previous action's text to still be displayed
+   * and update, but disables all possible user interaction
+   */
+  private class PantsShieldAction extends AnAction {
+    private AnAction hidden;
+
+    private PantsShieldAction(AnAction action) {
+      hidden = action;
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent event) {}
+
+    @Override
+    public void update(AnActionEvent event) {
+      if (hidden != null) {
+        hidden.update(event);
+      }
+      event.getPresentation().setEnabled(false);
     }
   }
 }

@@ -19,11 +19,7 @@ import icons.PantsIcons;
  * PantsRebuildAction is a UI action that, when in a project, runs clean-all, then compiles all targets in the project
  */
 public class PantsRebuildAction extends AnAction {
-
-  public PantsRebuildAction(String s) {
-    super(s);
-  }
-
+  
   @Override
   public void actionPerformed(AnActionEvent e) {
     Project project = e.getProject();
@@ -45,5 +41,10 @@ public class PantsRebuildAction extends AnAction {
       );
       Notifications.Bus.notify(notification);
     }
+  }
+
+  @Override
+  public void update(AnActionEvent e) {
+    e.getPresentation().setText("Compile all targets with clean-all");
   }
 }
