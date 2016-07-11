@@ -14,12 +14,16 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testIntegration.TestIntegrationUtils;
+import com.jetbrains.python.psi.PyClass;
+import com.jetbrains.python.psi.PyFile;
+import com.jetbrains.python.testing.pytest.PyTestUtil;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -76,15 +80,27 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       testPackage = null;
     }
 
-    // return false if it is a neither a test class nor a test package
-    if (!TestIntegrationUtils.isTest(psiLocation) && !hasTestClasses(testPackage, module)) {
+
+    boolean isPython = isOrContainsPyTests(psiLocation);
+    // return false if it is a not a test class, a test package, or python file
+    if (!TestIntegrationUtils.isTest(psiLocation) && !hasTestClasses(testPackage, module) && !isPython) {
       return false;
     }
 
     final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);
     final PsiMethod psiMethod = PsiTreeUtil.getParentOfType(psiLocation, PsiMethod.class, false);
 
-    if (psiMethod != null) {
+    if (isPython) {
+      if (psiLocation instanceof PyFile) {
+        PyFile file = (PyFile) psiLocation;
+        buildFromPyTest(file, taskSettings, sourceElement, configuration);
+      }
+      else if (psiLocation instanceof PsiDirectory) {
+        PsiDirectory directory = (PsiDirectory) psiLocation;
+        buildFromPyTest(directory, taskSettings, sourceElement, configuration);
+      }
+    }
+    else if (psiMethod != null) {
       buildFromPsiElement(psiMethod, taskSettings, sourceElement, configuration);
     }
     else if (psiClass != null) {
@@ -99,6 +115,29 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     return true;
   }
 
+  private void buildFromPyTest(
+    PyFile testFile,
+    ExternalSystemTaskExecutionSettings taskSettings,
+    Ref<PsiElement> sourceElement,
+    ExternalSystemRunConfiguration configuration
+  ) {
+    sourceElement.set(testFile);
+    configuration.setName(testFile.getName());
+    taskSettings.setExternalProjectPath(testFile.getVirtualFile().getPath());
+    taskSettings.setExecutionName(testFile.getName());
+  }
+
+  private void buildFromPyTest(
+    PsiDirectory testDir,
+    ExternalSystemTaskExecutionSettings taskSettings,
+    Ref<PsiElement> sourceElement,
+    ExternalSystemRunConfiguration configuration
+  ) {
+    sourceElement.set(testDir);
+    configuration.setName("Tests " + testDir.getName());
+    taskSettings.setExternalProjectPath(testDir.getVirtualFile().getPath());
+    taskSettings.setExecutionName(testDir.getName());
+  }
 
   private void buildFromPsiElement(
     PsiMethod psiMethod,
@@ -167,14 +206,30 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
   }
 
   private boolean compareSettings(ExternalSystemTaskExecutionSettings settings1, ExternalSystemTaskExecutionSettings settings2) {
-    if (!settings1.equals(settings2)) {
-      return false;
+    return settings1.equals(settings2) &&
+           StringUtil.equalsIgnoreWhitespaces(settings1.getScriptParameters(), settings2.getScriptParameters()) &&
+           StringUtil.equalsIgnoreWhitespaces(settings1.getExecutionName(), settings2.getExecutionName());
+  }
+
+  private boolean isOrContainsPyTests(PsiElement element) {
+    if (element instanceof PyFile) {
+      PyFile pyFile = (PyFile) element;
+
+      for (PyClass pyClass : pyFile.getTopLevelClasses()) {
+        if (PyTestUtil.isPyTestClass(pyClass, null)) {
+          return true;
+        }
+      }
+    }
+    else if (element instanceof PsiDirectory) {
+      PsiDirectory directory = (PsiDirectory) element;
+      for (PsiFile file : directory.getFiles()) {
+        if (isOrContainsPyTests(file)) {
+          return true;
+        }
+      }
     }
 
-    if (!StringUtil.equalsIgnoreWhitespaces(settings1.getScriptParameters(), settings2.getScriptParameters())) {
-      return false;
-    }
-
-    return true;
+    return false;
   }
 }
