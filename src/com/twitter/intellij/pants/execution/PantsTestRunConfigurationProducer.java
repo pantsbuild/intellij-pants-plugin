@@ -25,8 +25,10 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
   protected PantsTestRunConfigurationProducer() {
@@ -58,6 +60,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
 
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
 
+    List<String> scriptParameters = new ArrayList<>();
     /**
      * Add the module's folder:: to target_roots
      **/
@@ -76,71 +79,79 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
       testPackage = null;
     }
 
-    // return false if it is a neither a test class nor a test package
+    // Return false if it is a neither a test class nor a test package
     if (!TestIntegrationUtils.isTest(psiLocation) && !hasTestClasses(testPackage, module)) {
       return false;
     }
+
+    // Obtain target address associated with this module.
+    String serializedAddresses = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+    if (serializedAddresses == null) {
+      return false;
+    }
+    Set<String> targetAddresses = PantsUtil.filterGenTargets(PantsUtil.hydrateTargetAddresses(serializedAddresses));
+    scriptParameters.addAll(targetAddresses);
 
     final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);
     final PsiMethod psiMethod = PsiTreeUtil.getParentOfType(psiLocation, PsiMethod.class, false);
 
     if (psiMethod != null) {
-      buildFromPsiElement(psiMethod, taskSettings, sourceElement, configuration);
+      getTestOptions(psiMethod, sourceElement, configuration, scriptParameters);
     }
     else if (psiClass != null) {
-      buildFromPsiElement(psiClass, taskSettings, sourceElement, configuration);
+      getTestOptions(psiClass, sourceElement, configuration, scriptParameters);
     }
     else if (testPackage != null) {
-      buildFromPsiElement(testPackage, taskSettings, sourceElement, configuration, module);
+      getTestOptions(testPackage, sourceElement, configuration, module, scriptParameters);
     }
     else {
       return false;
     }
+
+    taskSettings.setScriptParameters(StringUtil.join(scriptParameters, " "));
+
     return true;
   }
 
 
-  private void buildFromPsiElement(
+  private void getTestOptions(
     PsiMethod psiMethod,
-    ExternalSystemTaskExecutionSettings taskSettings,
-    Ref<PsiElement> sourceElement, ExternalSystemRunConfiguration configuration
+    Ref<PsiElement> sourceElement,
+    ExternalSystemRunConfiguration configuration,
+    List<String> scriptParameters
   ) {
     sourceElement.set(psiMethod);
     PsiClass psiClass = PsiTreeUtil.getParentOfType(psiMethod, PsiClass.class, true);
     configuration.setName(psiMethod.getName());
-    taskSettings.setScriptParameters(
-      "--test-junit-test=" + psiClass.getQualifiedName() + "#" + psiMethod.getName()
-    );
+    scriptParameters.add("--test-junit-test=" + psiClass.getQualifiedName() + "#" + psiMethod.getName());
   }
 
-  private void buildFromPsiElement(
-    PsiClass psiClass, ExternalSystemTaskExecutionSettings taskSettings,
-    Ref<PsiElement> sourceElement, ExternalSystemRunConfiguration configuration
+  private void getTestOptions(
+    PsiClass psiClass,
+    Ref<PsiElement> sourceElement,
+    ExternalSystemRunConfiguration configuration,
+    List<String> scriptParameters
   ) {
     sourceElement.set(psiClass);
     configuration.setName(psiClass.getName());
-    taskSettings.setScriptParameters(
-      "--test-junit-test=" + psiClass.getQualifiedName()
-    );
+    scriptParameters.add("--test-junit-test=" + psiClass.getQualifiedName());
   }
 
-  private void buildFromPsiElement(
-    PsiPackage psiPackage, ExternalSystemTaskExecutionSettings taskSettings,
-    Ref<PsiElement> sourceElement, ExternalSystemRunConfiguration configuration, Module module
+  private void getTestOptions(
+    PsiPackage psiPackage,
+    Ref<PsiElement> sourceElement,
+    ExternalSystemRunConfiguration configuration,
+    Module module,
+    List<String> scriptParameters
   ) {
     sourceElement.set(psiPackage);
     configuration.setName("Tests " + psiPackage.getName());
-    String junitTestArgs = "";
     // Iterate through test classes in testPackage that is only in the scope of the module
     for (PsiClass psiClass : psiPackage.getClasses(module.getModuleScope())) {
       if (TestIntegrationUtils.isTest(psiClass)) {
-        junitTestArgs += " --test-junit-test=" + psiClass.getQualifiedName();
+        scriptParameters.add(" --test-junit-test=" + psiClass.getQualifiedName());
       }
     }
-
-    taskSettings.setScriptParameters(
-      junitTestArgs
-    );
   }
 
   private boolean hasTestClasses(PsiPackage psiPackage, Module module) {

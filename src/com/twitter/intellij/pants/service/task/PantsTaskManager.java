@@ -77,25 +77,12 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       }
     }
     /**
-     * Goals and targets section.
+     * Goals.
      */
-    final String relativeProjectPath = PantsUtil.getRelativeProjectPath(commandLine.getWorkDirectory(), new File(projectPath));
-    // Appending goals.
     commandLine.addParameters(taskNames);
-    // Appending targets.
-    commandLine.addParameter(relativeProjectPath + File.separator + "::");
-    // Appending VM options.
-    for (String goal : taskNames) {
-      final String jvmOptionsFlag = goal2JvmOptionsFlag.get(goal);
-      if (jvmOptionsFlag == null) {
-        continue;
-      }
-      for (String vmOption : vmOptions) {
-        commandLine.addParameter(jvmOptionsFlag + "=" + vmOption);
-      }
-    }
+
     /**
-     * Script parameters section.
+     * Script parameters section including targets and options.
      */
     commandLine.addParameters(scriptParameters);
 
