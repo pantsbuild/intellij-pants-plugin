@@ -93,6 +93,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.getPath());
       }
     }
+    /**
+     * If neither applies (e.g. Pants or pytest configuration), do not continue.
+     */
+    else {
+      return;
+    }
 
     /**
      * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.

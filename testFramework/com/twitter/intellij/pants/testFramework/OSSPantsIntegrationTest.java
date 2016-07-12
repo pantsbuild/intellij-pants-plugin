@@ -7,10 +7,11 @@ import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.BeforeRunTaskProvider;
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.impl.RunManagerImpl;
+import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.execution.junit.JUnitConfigurationType;
-import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import org.jetbrains.annotations.NotNull;
@@ -83,15 +84,30 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
      * Manually invoke BeforeRunTask as {@link ExecutionManager#compileAndRun} launches another task asynchronously,
      * and there is no way to catch that.
      */
-    BeforeRunTaskProvider<BeforeRunTask> provider = BeforeRunTaskProvider.getProvider(myProject, task.getProviderId());
+    BeforeRunTaskProvider provider = BeforeRunTaskProvider.getProvider(myProject, task.getProviderId());
     assertNotNull("Cannot find BeforeRunTaskProvider for id='" + task.getProviderId() + "'", provider);
-
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
   protected void assertCompileAll() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
     assertTrue(runner.executeTask(myProject));
+  }
+
+  private List<BeforeRunTask> getBeforeRunTask(RunConfiguration configuration) {
+    RunManagerImpl runManager = (RunManagerImpl) RunManager.getInstance(myProject);
+    runManager.addConfiguration(new RunnerAndConfigurationSettingsImpl(runManager, configuration, true), true);
+    return runManager.getBeforeRunTasks(configuration);
+  }
+
+  public void assertEmptyBeforeRunTask(RunConfiguration configuration) {
+    assertEmpty(getBeforeRunTask(configuration));
+  }
+
+  public void assertPantsMakeBeforeRunTaskOnly(RunConfiguration configuration) {
+    List<BeforeRunTask> beforeRunTasks = getBeforeRunTask(configuration);
+    assertEquals(1, beforeRunTasks.size());
+    assertInstanceOf(beforeRunTasks.iterator().next(), PantsMakeBeforeRun.class);
   }
 
 }

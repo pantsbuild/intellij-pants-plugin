@@ -5,9 +5,16 @@ package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.Location;
 import com.intellij.execution.PsiLocation;
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.impl.RunManagerImpl;
+import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
+import com.intellij.execution.junit.JUnitConfiguration;
+import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
@@ -35,8 +42,10 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
 
     // esc.getSettings().getScriptParameters() will return something like:
     // "--no-colors test --test-junit-test=org.pantsbuild.testproject.testjvms.TestSix"
-    Set<String> items = new HashSet<String>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
+    Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
     assertTrue(items.contains("--test-junit-test=" + classReference));
+
+    assertEmptyBeforeRunTask(esc);
   }
 
   public void testMethodRunConfiguration() throws Throwable {
@@ -62,11 +71,11 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
     PsiPackage testPackage = JavaPsiFacade.getInstance(myProject).findPackage("org.pantsbuild.testproject.testjvms");
-    assertEquals(testPackage.getDirectories().length, 1);
+    assertEquals(1, testPackage.getDirectories().length);
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testPackage.getDirectories()[0]);
 
-    Set<String> items = new HashSet<String>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
+    Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
     assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestSix"));
     assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestSeven"));
     assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestEight"));
