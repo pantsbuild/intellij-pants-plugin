@@ -16,9 +16,9 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import icons.PantsIcons;
 
 /**
- * PantsCompileAllTargets is a UI action that, when in a project, compiles all targets in the project
+ * PantsCompileAllTargetsAction is a UI action that, when in a project, compiles all targets in the project
  */
-public class PantsCompileAllTargets extends AnAction {
+public class PantsCompileAllTargetsAction extends AnAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
     Project project = e.getProject();

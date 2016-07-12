@@ -290,8 +290,8 @@
               class="com.twitter.intellij.pants.ui.PantsOptionsInvalidation"
               text="Invalidate Pants plugin caches">
       </action>
-      <action id="com.twitter.intellij.pants.ui.PantsCompileAllTargets"
-              class="com.twitter.intellij.pants.ui.PantsCompileAllTargets"
+      <action id="com.twitter.intellij.pants.ui.PantsCompileAllTargetsAction"
+              class="com.twitter.intellij.pants.ui.PantsCompileAllTargetsAction"
               text="Compile all targets in project">
       </action>
     </group>

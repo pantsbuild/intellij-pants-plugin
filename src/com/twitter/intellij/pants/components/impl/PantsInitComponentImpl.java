@@ -24,7 +24,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
-import com.twitter.intellij.pants.ui.PantsCompileAllTargets;
+import com.twitter.intellij.pants.ui.PantsCompileAllTargetsAction;
 import com.twitter.intellij.pants.ui.PantsCompileTargetAction;
 import com.twitter.intellij.pants.ui.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -78,7 +78,7 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     AnAction pantsCompileAllTargetAction = new PantsOverrideAction(
       PantsConstants.ACTION_MAKE_PROJECT_ID,
       PantsConstants.ACTION_MAKE_PROJECT_DESCRIPTION,
-      new PantsCompileAllTargets()
+      new PantsCompileAllTargetsAction()
     );
     AnAction pantsMakeModuleAction = new PantsOverrideAction(
       IdeActions.ACTION_MAKE_MODULE,
@@ -154,6 +154,12 @@ public class PantsInitComponentImpl implements PantsInitComponent {
       else if (secondaryIdeaAction != null) {
         secondaryIdeaAction.actionPerformed(event);
       }
+    }
+
+    @Override
+    public String toString() {
+      return
+        primaryPantsAction.getClass().getSimpleName() + " overriding " + (secondaryIdeaAction == null ? "NullAction" : secondaryIdeaAction.getClass().getSimpleName());
     }
   }
 
