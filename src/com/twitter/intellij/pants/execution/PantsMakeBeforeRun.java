@@ -149,7 +149,15 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()));
   }
 
+  public boolean executeTask(Project project, boolean useCleanAll) {
+    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), useCleanAll);
+  }
+
   public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile) {
+    return executeTask(currentProject, targetAddressesToCompile, false);
+  }
+
+  public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
@@ -169,6 +177,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     /* Global options section. */
     commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
 
+    if (useCleanAll) {
+      commandLine.addParameter("clean-all");
+      if (pantsOptions.supportsAsyncCleanAll()) {
+        commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_ASYNC_CLEAN_ALL);
+      }
+    }
     if (pantsOptions.supportsManifestJar()) {
       commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
     }
@@ -210,46 +224,17 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return success;
   }
 
-  private boolean cleanAll(Project currentProject) {
-    String pantsExecutable = PantsUtil.findPantsExecutable(currentProject).getPath();
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
-
-    commandLine.addParameter("clean-all");
-
-    final Process process;
-    try {
-      process = commandLine.createProcess();
-    }
-    catch (ExecutionException e) {
-      showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR, currentProject);
-      return false;
-    }
-
-    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
-    addMessageHandler(processHandler, currentProject);
-    processHandler.runProcess();
-
-    final boolean success = process.exitValue() == 0;
-    notifyTypeResult(success, "clean all");
-
-    return success;
-  }
-
   //  Attempts to run Pants clean all and then compile all targets in project
   public boolean rebuild(Project project) {
-    return cleanAll(project) && executeTask(project);
+    return executeTask(project, true);
   }
 
   private void notifyCompileResult(final boolean success) {
   /* Show pop up notification about pants compile result. */
-    notifyTypeResult(success, "compile");
-  }
-
-  private void notifyTypeResult(final boolean success, String type) {
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
-        String message = success ? "Pants " + type + " succeeded." : "Pants " + type + " failed.";
+        String message = success ? "Pants compile succeeded." : "Pants compile failed.";
         NotificationType type = success ? NotificationType.INFORMATION : NotificationType.ERROR;
         Notification start = new Notification(PantsConstants.PANTS, "Compile message", message, type);
         Notifications.Bus.notify(start);

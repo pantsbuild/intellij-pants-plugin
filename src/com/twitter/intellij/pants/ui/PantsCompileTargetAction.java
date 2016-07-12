@@ -57,6 +57,7 @@ public class PantsCompileTargetAction extends AnAction {
         .stream()
         .map(PantsTargetAddress::toString)
         .collect(Collectors.toList());
+      myTargetAddresses.addAll(targetAddresses);
     }
     PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
     ApplicationManager.getApplication().executeOnPooledThread((Runnable)() -> {
