@@ -13,14 +13,12 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * PantsCompileActionGroup is an dynamic action group to compile Pants targets
@@ -50,16 +48,13 @@ public class PantsCompileActionGroup extends ActionGroup {
     }
 
     Module module = ModuleUtil.findModuleForFile(file, project);
-    List<String> targetAddresses = PantsUtil.getTargetAddressesFromModule(module)
-      .stream()
-      .map(PantsTargetAddress::toString)
-      .collect(Collectors.toList());
+    List<String> targetAddresses = PantsUtil.getNonGenTargetAddressFromModule(module);
 
     if (targetAddresses.isEmpty()) {
       return emptyAction;
     }
 
-    LinkedList<AnAction> actions = new LinkedList<AnAction>();
+    LinkedList<AnAction> actions = new LinkedList<>();
 
     //  Adds compile all option for modules with multiple targets.
     if (targetAddresses.size() > 1) {

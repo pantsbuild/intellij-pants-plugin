@@ -85,7 +85,7 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
      * and there is no way to catch that.
      */
     BeforeRunTaskProvider provider = BeforeRunTaskProvider.getProvider(myProject, task.getProviderId());
-    assertNotNull("Cannot find BeforeRunTaskProvider for id='" + task.getProviderId() + "'", provider);
+    assertNotNull(String.format("Cannot find BeforeRunTaskProvider for id='%s'", task.getProviderId()), provider);
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
@@ -100,14 +100,12 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     return runManager.getBeforeRunTasks(configuration);
   }
 
-  public void assertEmptyBeforeRunTask(RunConfiguration configuration) {
+  /**
+   * Assert `configuration` contains no before-run task such as Make or PantsMakeBeforeRun.
+   * Side Effort: `configuration` will be added to the project.
+   * @param configuration to add to the project.
+   */
+  protected void assertEmptyBeforeRunTask(RunConfiguration configuration) {
     assertEmpty(getBeforeRunTask(configuration));
   }
-
-  public void assertPantsMakeBeforeRunTaskOnly(RunConfiguration configuration) {
-    List<BeforeRunTask> beforeRunTasks = getBeforeRunTask(configuration);
-    assertEquals(1, beforeRunTasks.size());
-    assertInstanceOf(beforeRunTasks.iterator().next(), PantsMakeBeforeRun.class);
-  }
-
 }

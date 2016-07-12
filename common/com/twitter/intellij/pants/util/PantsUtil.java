@@ -55,6 +55,7 @@ import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.model.SimpleExportResult;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
@@ -387,6 +388,14 @@ public class PantsUtil {
         }
       }
     );
+  }
+
+  @NotNull
+  public static List<String> getNonGenTargetAddressFromModule(@Nullable Module module) {
+    return getTargetAddressesFromModule(module)
+      .stream()
+      .map(PantsTargetAddress::toString)
+      .filter(s -> !PantsUtil.isGenTarget(s)).collect(Collectors.toList());
   }
 
   public static boolean isPantsProject(@NotNull Project project) {
