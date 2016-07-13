@@ -29,6 +29,7 @@ import com.twitter.intellij.pants.ui.PantsCompileTargetAction;
 import com.twitter.intellij.pants.ui.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -106,6 +107,7 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
     private AnAction secondaryIdeaAction;
     private AnAction primaryPantsAction;
+    private boolean pantsActive;
 
     private PantsOverrideAction(String actionId, @NotNull AnAction pantsAction) {
       basicConstruction(actionId);
@@ -133,7 +135,9 @@ public class PantsInitComponentImpl implements PantsInitComponent {
         return false;
       }
       Project project = event.getProject();
-      return project != null && PantsUtil.isPantsProject(project);
+      final boolean result = project != null && PantsUtil.isPantsProject(project);
+      pantsActive = result;
+      return pantsActive;
     }
 
     @Override
@@ -142,6 +146,7 @@ public class PantsInitComponentImpl implements PantsInitComponent {
         secondaryIdeaAction.update(event);
       }
       if (isPantsProject(event)) {
+        event.getPresentation().setIcon(PantsIcons.Icon);
         primaryPantsAction.update(event);
       }
     }
@@ -158,8 +163,10 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
     @Override
     public String toString() {
+      String activeOverride = pantsActive ? " actively" : "";
       return
-        primaryPantsAction.getClass().getSimpleName() + " overriding " + (secondaryIdeaAction == null ? "NullAction" : secondaryIdeaAction.getClass().getSimpleName());
+        primaryPantsAction.getClass().getSimpleName() + activeOverride +  " overriding " +
+        (secondaryIdeaAction == null ? "NullAction" : secondaryIdeaAction.getClass().getSimpleName());
     }
   }
 

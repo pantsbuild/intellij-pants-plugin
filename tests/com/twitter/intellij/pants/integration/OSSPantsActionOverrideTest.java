@@ -3,59 +3,114 @@
 
 package com.twitter.intellij.pants.integration;
 
-import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.IdeActions;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
-import com.twitter.intellij.pants.ui.PantsCompileAllTargetsAction;
-import com.twitter.intellij.pants.ui.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
+import net.miginfocom.layout.AC;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
 
 
 public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
 
+  final String PANTS_ON = "actively overriding";
+
   public void testPantsRebuildOverride() throws Throwable {
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
+    makeActionOverrideTest(
+      IdeActions.ACTION_COMPILE_PROJECT,
+      true,
+      "PantsRebuildAction",
+      "testprojects/tests/java/org/pantsbuild/testproject/annotation"
+    );
+  }
 
-    ActionManager actionManager = ActionManager.getInstance();
-    AnAction rebuildAction = actionManager.getAction(IdeActions.ACTION_COMPILE_PROJECT);
-    String actionString  = rebuildAction.toString();
-
-    assertTrue(actionString, actionString.contains("overriding"));
-    assertTrue(actionString, actionString.contains("PantsRebuildAction"));
+  public void testNonPantsRebuildOverride() throws Throwable {
+    makeActionOverrideTest(
+      IdeActions.ACTION_COMPILE_PROJECT,
+      false,
+      "PantsRebuildAction"
+    );
   }
 
   public void testPantsCompileOverride() throws Throwable {
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/cwdexample");
+    makeActionOverrideTest(
+      IdeActions.ACTION_COMPILE,
+      true,
+      "PantsShieldAction",
+      "testprojects/tests/java/org/pantsbuild/testproject/cwdexample"
+    );
+  }
 
-    ActionManager actionManager = ActionManager.getInstance();
-    AnAction compileAction = actionManager.getAction(IdeActions.ACTION_COMPILE);
-    String actionString  = compileAction.toString();
-
-    assertTrue(actionString, actionString.contains("overriding"));
-    assertTrue(actionString, actionString.contains("PantsShieldAction"));
+  public void testPantsNonCompileOverride() throws Throwable {
+    makeActionOverrideTest(
+      IdeActions.ACTION_COMPILE,
+      false,
+      "PantsShieldAction"
+    );
   }
 
   public void testPantsMakeOverride() throws Throwable {
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
+    makeActionOverrideTest(
+      IdeActions.ACTION_MAKE_MODULE,
+      true,
+      "PantsCompileTargetAction",
+      "testprojects/tests/java/org/pantsbuild/testproject/matcher"
+    );
+  }
 
-    ActionManager actionManager = ActionManager.getInstance();
-    AnAction makeAction = actionManager.getAction(IdeActions.ACTION_MAKE_MODULE);
-    String actionString  = makeAction.toString();
-
-    assertTrue(actionString, actionString.contains("overriding"));
-    assertTrue(actionString, actionString.contains("PantsCompileTargetAction"));
+  public void testNonPantsMakeOverride() throws Throwable {
+    makeActionOverrideTest(
+      IdeActions.ACTION_MAKE_MODULE,
+      false,
+      "PantsCompileTargetAction"
+    );
   }
 
   public void testPantsCompileAllOverride() throws Throwable {
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/unicode");
+    makeActionOverrideTest(
+      PantsConstants.ACTION_MAKE_PROJECT_ID,
+      true,
+      "PantsCompileAllTargetsAction",
+      "testprojects/tests/java/org/pantsbuild/testproject/unicode"
+    );
+  }
+
+  public void testNonPantsCompileAllOverride() throws Throwable {
+    makeActionOverrideTest(
+      PantsConstants.ACTION_MAKE_PROJECT_ID,
+      false,
+      "PantsCompileAllTargetsAction"
+    );
+  }
+
+  private void makeActionOverrideTest(String actionId, boolean isPantsProject, String pantsActionClassName, String... projectPaths) {
+    if (isPantsProject) {
+      for (String path : projectPaths) {
+        doImport(path);
+      }
+    }
 
     ActionManager actionManager = ActionManager.getInstance();
-    AnAction compileAllAction = actionManager.getAction(PantsConstants.ACTION_MAKE_PROJECT_ID);
-    String actionString  = compileAllAction.toString();
+    AnAction action = actionManager.getAction(actionId);
+    action.update(AnActionEvent.createFromDataContext("menu", null, s -> s.equals("project") ? myProject : null));
+    String actionString = action.toString();
 
-    assertTrue(actionString, actionString.contains("overriding"));
-    assertTrue(actionString, actionString.contains("PantsCompileAllTargetsAction"));
+    if (isPantsProject) {
+      assertTrue(actionString, actionString.contains(PANTS_ON));
+    } else {
+      assertFalse(actionString, actionString.contains(PANTS_ON));
+    }
+    assertTrue(actionString, actionString.contains(pantsActionClassName));
   }
 }
