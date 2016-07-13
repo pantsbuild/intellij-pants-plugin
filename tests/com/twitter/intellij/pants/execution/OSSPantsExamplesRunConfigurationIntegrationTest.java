@@ -4,10 +4,19 @@
 package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.Location;
+import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.PsiLocation;
+import com.intellij.execution.RunManager;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
+import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.impl.RunManagerImpl;
+import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
+import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
@@ -21,6 +30,7 @@ import com.intellij.psi.PsiPackage;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.MapDataContext;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.testFramework.PantsJUnitRunnerAndConfigurationSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +55,7 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
 
 
     // Make sure task name is `test` goal.
-    assertEquals(Collections.singleton("test"), esc.getSettings().getTaskNames());
+    assertEquals(Collections.singletonList("test"), esc.getSettings().getTaskNames());
 
     // `scriptParameters` will return something like:
     // testprojects/tests/java/org/pantsbuild/testproject/testjvms:base
@@ -53,7 +63,7 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     // --test-junit-test=org.pantsbuild.testproject.testjvms.TestSix"
     // [some more options]
     List<String> scriptParameters = Arrays.asList(esc.getSettings().getScriptParameters().split(" "));
-    List<String> targetAddresses = PantsUtil.getNonGenTargetAddressFromModule(ModuleUtil.findModuleForPsiElement(testClass));
+    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(ModuleUtil.findModuleForPsiElement(testClass));
 
 
 

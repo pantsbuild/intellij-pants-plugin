@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
   protected PantsTestRunConfigurationProducer() {
@@ -61,7 +60,6 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
 
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
 
-    final List<String> scriptParameters = new ArrayList<>();
     /**
      * Add the module's folder:: to target_roots
      **/
@@ -86,11 +84,13 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     }
 
     // Obtain target address associated with this module.
-    String serializedAddresses = module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-    if (serializedAddresses == null) {
+    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(targets);
+    if (targetAddresses.isEmpty()) {
       return false;
     }
-    Set<String> targetAddresses = PantsUtil.filterGenTargets(PantsUtil.hydrateTargetAddresses(serializedAddresses));
+
+    final List<String> scriptParameters = new ArrayList<>();
+
     scriptParameters.addAll(targetAddresses);
 
     final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);

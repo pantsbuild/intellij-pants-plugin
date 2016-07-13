@@ -96,13 +96,16 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
 
   private List<BeforeRunTask> getBeforeRunTask(RunConfiguration configuration) {
     RunManagerImpl runManager = (RunManagerImpl) RunManager.getInstance(myProject);
-    runManager.addConfiguration(new RunnerAndConfigurationSettingsImpl(runManager, configuration, true), true);
-    return runManager.getBeforeRunTasks(configuration);
+    RunnerAndConfigurationSettingsImpl configurationSettings = new RunnerAndConfigurationSettingsImpl(runManager, configuration, true);
+    runManager.addConfiguration(configurationSettings, true);
+    List<BeforeRunTask> tasks = runManager.getBeforeRunTasks(configuration);
+    runManager.removeConfiguration(configurationSettings);
+    return tasks;
   }
 
   /**
    * Assert `configuration` contains no before-run task such as Make or PantsMakeBeforeRun.
-   * Side Effort: `configuration` will be added to the project.
+   *
    * @param configuration to add to the project.
    */
   protected void assertEmptyBeforeRunTask(RunConfiguration configuration) {

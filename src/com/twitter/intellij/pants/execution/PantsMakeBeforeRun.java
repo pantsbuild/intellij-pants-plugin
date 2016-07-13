@@ -290,7 +290,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
     Set<String> result = new HashSet<>();
     for (Module targetModule : targetModules) {
-      result.addAll(PantsUtil.getNonGenTargetAddressFromModule(targetModule));
+      result.addAll(PantsUtil.getNonGenTargetAddresses(targetModule));
     }
     return result;
   }

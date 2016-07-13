@@ -48,7 +48,7 @@ public class PantsCompileActionGroup extends ActionGroup {
     }
 
     Module module = ModuleUtil.findModuleForFile(file, project);
-    List<String> targetAddresses = PantsUtil.getNonGenTargetAddressFromModule(module);
+    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(module);
 
     if (targetAddresses.isEmpty()) {
       return emptyAction;

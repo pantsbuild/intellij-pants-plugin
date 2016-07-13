@@ -391,8 +391,13 @@ public class PantsUtil {
   }
 
   @NotNull
-  public static List<String> getNonGenTargetAddressFromModule(@Nullable Module module) {
-    return getTargetAddressesFromModule(module)
+  public static List<String> getNonGenTargetAddresses(@Nullable Module module) {
+    return getNonGenTargetAddresses(getTargetAddressesFromModule(module));
+  }
+
+  @NotNull
+  public static List<String> getNonGenTargetAddresses(@NotNull List<PantsTargetAddress> targets) {
+    return targets
       .stream()
       .map(PantsTargetAddress::toString)
       .filter(s -> !PantsUtil.isGenTarget(s)).collect(Collectors.toList());
