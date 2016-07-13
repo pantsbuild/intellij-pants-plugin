@@ -6,20 +6,9 @@ package com.twitter.intellij.pants.integration;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.IdeActions;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsConstants;
-import com.twitter.intellij.pants.util.PantsUtil;
-import net.miginfocom.layout.AC;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
 
 
 public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
