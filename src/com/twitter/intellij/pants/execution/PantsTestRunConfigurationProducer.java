@@ -12,12 +12,12 @@ import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testIntegration.TestIntegrationUtils;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
@@ -69,10 +69,10 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     final PsiPackage testPackage;
     // Find out whether the click is on a test package
     if (psiLocation instanceof PsiPackage) {
-      testPackage = (PsiPackage)psiLocation;
+      testPackage = (PsiPackage) psiLocation;
     }
     else if (psiLocation instanceof PsiDirectory) {
-      testPackage = JavaDirectoryService.getInstance().getPackage(((PsiDirectory)psiLocation));
+      testPackage = JavaDirectoryService.getInstance().getPackage(((PsiDirectory) psiLocation));
     }
     else {
       testPackage = null;

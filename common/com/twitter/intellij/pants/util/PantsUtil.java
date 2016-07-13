@@ -400,7 +400,8 @@ public class PantsUtil {
     return targets
       .stream()
       .map(PantsTargetAddress::toString)
-      .filter(s -> !PantsUtil.isGenTarget(s)).collect(Collectors.toList());
+      .filter(s -> !PantsUtil.isGenTarget(s))
+      .collect(Collectors.toList());
   }
 
   public static boolean isPantsProject(@NotNull Project project) {

@@ -53,7 +53,6 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testClass);
 
-
     // Make sure task name is `test` goal.
     assertEquals(Collections.singletonList("test"), esc.getSettings().getTaskNames());
 
@@ -64,8 +63,6 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     // [some more options]
     List<String> scriptParameters = Arrays.asList(esc.getSettings().getScriptParameters().split(" "));
     List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(ModuleUtil.findModuleForPsiElement(testClass));
-
-
 
     // Make sure parameters contains all target addresses in module.
     assertTrue(scriptParameters.containsAll(targetAddresses));
