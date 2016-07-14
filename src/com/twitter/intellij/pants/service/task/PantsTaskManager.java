@@ -24,7 +24,6 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -47,8 +46,51 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     @Nullable String debuggerSetup,
     @NotNull final ExternalSystemTaskNotificationListener listener
   ) throws ExternalSystemException {
+    final GeneralCommandLine commandLine = constructCommandLine(taskNames, projectPath, settings, vmOptions, scriptParameters, debuggerSetup);
+    if (commandLine == null) return;
+
+    listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);
+    try {
+      final Process process = commandLine.createProcess();
+      myCancellationMap.put(id, process);
+      PantsUtil.getOutput(
+        process,
+        new ProcessAdapter() {
+          @Override
+          public void startNotified(ProcessEvent event) {
+            super.startNotified(event);
+            listener.onStart(id);
+          }
+
+          @Override
+          public void onTextAvailable(ProcessEvent event, Key outputType) {
+            super.onTextAvailable(event, outputType);
+            listener.onTaskOutput(id, event.getText(), outputType == ProcessOutputTypes.STDOUT);
+          }
+        }
+      );
+    }
+    catch (ExecutionException e) {
+      throw new ExternalSystemException(e);
+    }
+    finally {
+      myCancellationMap.remove(id);
+      // Sync files as generated sources may have changed after `pants test` called
+      PantsUtil.synchronizeFiles();
+    }
+  }
+
+  @Nullable
+  public GeneralCommandLine constructCommandLine(
+    @NotNull List<String> taskNames,
+    @NotNull String projectPath,
+    @Nullable PantsExecutionSettings settings,
+    @NotNull List<String> vmOptions,
+    @NotNull List<String> scriptParameters,
+    @Nullable String debuggerSetup
+  ) {
     if (settings == null) {
-      return;
+      return null;
     }
     projectPath = PantsTargetAddress.extractPath(projectPath);
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
@@ -61,6 +103,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       if (taskNames.size() > 1) {
         throw new ExternalSystemException(PantsBundle.message("pants.error.multiple.tasks.for.debugging"));
       }
+      commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_TEST_JUNIT_TIMEOUTS);
       final String goal = taskNames.iterator().next();
       final String jvmOptionsFlag = goal2JvmOptionsFlag.get(goal);
       if (jvmOptionsFlag == null) {
@@ -94,36 +137,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
      * Script parameters section including targets and options.
      */
     commandLine.addParameters(scriptParameters);
-
-    listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);
-    try {
-      final Process process = commandLine.createProcess();
-      myCancellationMap.put(id, process);
-      PantsUtil.getOutput(
-        process,
-        new ProcessAdapter() {
-          @Override
-          public void startNotified(ProcessEvent event) {
-            super.startNotified(event);
-            listener.onStart(id);
-          }
-
-          @Override
-          public void onTextAvailable(ProcessEvent event, Key outputType) {
-            super.onTextAvailable(event, outputType);
-            listener.onTaskOutput(id, event.getText(), outputType == ProcessOutputTypes.STDOUT);
-          }
-        }
-      );
-    }
-    catch (ExecutionException e) {
-      throw new ExternalSystemException(e);
-    }
-    finally {
-      myCancellationMap.remove(id);
-      // Sync files as generated sources may have changed after `pants test` called
-      PantsUtil.synchronizeFiles();
-    }
+    return commandLine;
   }
 
   @Override

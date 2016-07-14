@@ -4,23 +4,16 @@
 package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.Location;
-import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.PsiLocation;
-import com.intellij.execution.RunManager;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
-import com.intellij.execution.executors.DefaultRunExecutor;
-import com.intellij.execution.impl.RunManagerImpl;
-import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
-import com.intellij.execution.runners.ExecutionUtil;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
+import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
-import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.externalSystem.task.ExternalSystemTaskManager;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -29,8 +22,10 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.MapDataContext;
+import com.twitter.intellij.pants.PantsManager;
+import com.twitter.intellij.pants.service.task.PantsTaskManager;
+import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
-import com.twitter.intellij.pants.testFramework.PantsJUnitRunnerAndConfigurationSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,7 +41,6 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
     String classReference = "org.pantsbuild.testproject.testjvms.TestSix";
-    String expectedJunitTestOption = "--test-junit-test=" + classReference;
 
     PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
     assertNotNull(testClass);
@@ -56,24 +50,79 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     // Make sure task name is `test` goal.
     assertEquals(Collections.singletonList("test"), esc.getSettings().getTaskNames());
 
-    // `scriptParameters` will return something like:
-    // testprojects/tests/java/org/pantsbuild/testproject/testjvms:base
-    // [some more targets]
-    // --test-junit-test=org.pantsbuild.testproject.testjvms.TestSix"
-    // [some more options]
-    List<String> scriptParameters = Arrays.asList(esc.getSettings().getScriptParameters().split(" "));
-    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(ModuleUtil.findModuleForPsiElement(testClass));
+    List<String> configScriptParameters = PantsUtil.parseCmdParameters(esc.getSettings().getScriptParameters());
 
-    // Make sure parameters contains all target addresses in module.
-    assertTrue(scriptParameters.containsAll(targetAddresses));
-
-    assertEquals(
-      String.format("%s is either not in the script parameters or not the last element", expectedJunitTestOption),
-      Math.max(0, scriptParameters.size() - 1), scriptParameters.indexOf(expectedJunitTestOption)
+    List<String> expectedConfigScriptParameters = Arrays.asList(
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:seven",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:base",
+      "--test-junit-test=" + classReference
     );
+    assertEquals(expectedConfigScriptParameters, configScriptParameters);
 
     // Make sure this configuration does not contain any task before running if added to the project.
     assertEmptyBeforeRunTask(esc);
+
+    /**
+     * Check the final command line parameters when config is run, as
+     * {@link com.twitter.intellij.pants.service.task.PantsTaskManager} will insert additional parameters post user action.
+     */
+    Class<? extends ExternalSystemTaskManager<PantsExecutionSettings>> taskManagerClass =
+      ExternalSystemManager.EP_NAME.findExtension(PantsManager.class).getTaskManagerClass();
+    assertEquals(PantsTaskManager.class, taskManagerClass);
+
+    String debuggerSetup = "dummy_debugger_setup";
+
+    GeneralCommandLine finalDebugCommandline = getFinalCommandline(esc, debuggerSetup, taskManagerClass);
+
+    List<String> expectedFinalDebugCommandlineParameters = Arrays.asList(
+      "--no-colors",
+      "--no-test-junit-timeouts",
+      "--jvm-test-junit-options=" + debuggerSetup,
+      "test",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:seven",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:base",
+      "--test-junit-test=" + classReference
+    );
+
+    assertEquals(expectedFinalDebugCommandlineParameters, finalDebugCommandline.getParametersList().getParameters());
+
+    GeneralCommandLine finalRunCommandline = getFinalCommandline(esc, null, taskManagerClass);
+
+    List<String> expectedFinalRunCommandlineParameters = Arrays.asList(
+      "--no-colors",
+      "test",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:seven",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight",
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:base",
+      "--test-junit-test=" + classReference
+    );
+    assertEquals(expectedFinalRunCommandlineParameters, finalRunCommandline.getParametersList().getParameters());
+  }
+
+  @NotNull
+  private GeneralCommandLine getFinalCommandline(
+    ExternalSystemRunConfiguration esc,
+    String debuggerSetup,
+    Class<? extends ExternalSystemTaskManager<PantsExecutionSettings>> taskManagerClass
+  ) throws InstantiationException, IllegalAccessException {
+    GeneralCommandLine commandLine = ((PantsTaskManager) taskManagerClass.newInstance()).constructCommandLine(
+      esc.getSettings().getTaskNames(),
+      esc.getSettings().getExternalProjectPath(),
+      PantsExecutionSettings.createDefault(),
+      PantsUtil.parseCmdParameters(esc.getSettings().getVmOptions()),
+      PantsUtil.parseCmdParameters(esc.getSettings().getScriptParameters()),
+      debuggerSetup
+    );
+    assertNotNull(commandLine);
+    return commandLine;
   }
 
   public void testMethodRunConfiguration() throws Throwable {
