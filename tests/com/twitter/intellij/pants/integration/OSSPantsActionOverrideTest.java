@@ -53,7 +53,7 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     makeActionOverrideTest(
       IdeActions.ACTION_MAKE_MODULE,
       true,
-      "PantsCompileTargetAction",
+      "PantsCompileAllTargetsInModuleAction",
       "testprojects/tests/java/org/pantsbuild/testproject/matcher"
     );
   }
@@ -62,7 +62,7 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     makeActionOverrideTest(
       IdeActions.ACTION_MAKE_MODULE,
       false,
-      "PantsCompileTargetAction"
+      "PantsCompileAllTargetsInModuleAction"
     );
   }
 
