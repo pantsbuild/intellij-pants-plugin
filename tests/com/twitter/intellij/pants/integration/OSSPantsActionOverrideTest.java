@@ -83,21 +83,31 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     );
   }
 
+  /**
+   * This function generates tests that ensure an action is being properly overriden (or not) depending on whether or not
+   * the project is a Pants project.
+   *
+   * @param actionId             The ID of the action to override
+   * @param isPantsProject       Whether or not the project is intended to be a Pants project
+   * @param pantsActionClassName The short Class name of the Pants action that is overriding the function
+   * @param projectPaths         The (optional) projects paths to import
+   */
   private void makeActionOverrideTest(String actionId, boolean isPantsProject, String pantsActionClassName, String... projectPaths) {
-    if (isPantsProject) {
-      for (String path : projectPaths) {
-        doImport(path);
-      }
+    for (String path : projectPaths) {
+      doImport(path);
     }
 
     ActionManager actionManager = ActionManager.getInstance();
     AnAction action = actionManager.getAction(actionId);
+
+    //  Updates the action and passes in the data context on the current project it is in.
     action.update(AnActionEvent.createFromDataContext("menu", null, s -> s.equals("project") ? myProject : null));
     String actionString = action.toString();
 
     if (isPantsProject) {
       assertTrue(actionString, actionString.contains(PANTS_ON));
-    } else {
+    }
+    else {
       assertFalse(actionString, actionString.contains(PANTS_ON));
     }
     assertTrue(actionString, actionString.contains(pantsActionClassName));

@@ -16,21 +16,17 @@ import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsUtil;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * PantsCompileTargetAction is a UI action that is used to compile a Pants target or collection of targets
+ * PantsCompileAllTargetsInModuleAction is a UI action that is used to compile all Pants targets for a module
  */
-public class PantsCompileTargetAction extends AnAction {
+public class PantsCompileAllTargetsInModuleAction extends AnAction {
 
-  private HashSet<String> myTargetAddresses = new HashSet<String>();
 
-  public PantsCompileTargetAction(String targetAddress) {
-    super(targetAddress);
-    myTargetAddresses.add(targetAddress);
+  public PantsCompileAllTargetsInModuleAction() {
+    super("Compile all targets in module");
   }
 
   @Override
@@ -41,16 +37,12 @@ public class PantsCompileTargetAction extends AnAction {
       return;
     }
 
-    //  If empty constructor was called, make targets on the fly.
-    if (myTargetAddresses.isEmpty()) {
-      Module module = ModuleUtil.findModuleForFile(file, project);
-      List<String> targetAddresses = PantsUtil.getTargetAddressesFromModule(module)
-        .stream()
-        .map(PantsTargetAddress::toString)
-        .collect(Collectors.toList());
-      myTargetAddresses.addAll(targetAddresses);
-    }
+    Module module = ModuleUtil.findModuleForFile(file, project);
+    Set<String> targetAddresses = PantsUtil.getTargetAddressesFromModule(module)
+      .stream()
+      .map(PantsTargetAddress::toString)
+      .collect(Collectors.toSet());
     PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
-    ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeTask(project, myTargetAddresses));
+    ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeTask(project, targetAddresses));
   }
 }

@@ -20,18 +20,20 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
 import com.twitter.intellij.pants.ui.PantsCompileAllTargetsAction;
-import com.twitter.intellij.pants.ui.PantsCompileTargetAction;
+import com.twitter.intellij.pants.ui.PantsCompileAllTargetsInModuleAction;
 import com.twitter.intellij.pants.ui.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 import javax.swing.event.HyperlinkEvent;
 import java.io.File;
@@ -62,9 +64,6 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
     registerRefreshKey();
 
-    //  Registers the rebuild action to Pants rebuild action.
-    //  Registers Make module action to 'Make all targets in module' action.
-    //  Disables compile action
     registerPantsActions();
   }
 
@@ -73,6 +72,9 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
   }
 
+  //  Registers the rebuild action to Pants rebuild action.
+  //  Registers Make module action to 'Make all targets in module' action.
+  //  Disables compile action
   private void registerPantsActions() {
     ActionManager actionManager = ActionManager.getInstance();
 
@@ -83,9 +85,14 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     );
     AnAction pantsMakeModuleAction = new PantsOverrideAction(
       IdeActions.ACTION_MAKE_MODULE,
-      new PantsCompileTargetAction()
+      new PantsCompileAllTargetsInModuleAction()
     );
     AnAction pantsDisableCompileAction = PantsOverrideAction.createDisabledEmptyAction(IdeActions.ACTION_COMPILE);
+    AnAction pantsRebuildAction = new PantsOverrideAction(
+      IdeActions.ACTION_COMPILE_PROJECT,
+      PantsConstants.REBUILD_PROJECT_DESCRIPTION,
+      new PantsRebuildAction()
+    );
 
 
     actionManager.unregisterAction(PantsConstants.ACTION_MAKE_PROJECT_ID);
@@ -96,14 +103,12 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     actionManager.registerAction(PantsConstants.ACTION_MAKE_PROJECT_ID, pantsCompileAllTargetAction);
     actionManager.registerAction(IdeActions.ACTION_MAKE_MODULE, pantsMakeModuleAction);
     actionManager.registerAction(IdeActions.ACTION_COMPILE, pantsDisableCompileAction);
-    actionManager.registerAction(
-      IdeActions.ACTION_COMPILE_PROJECT,
-      new PantsOverrideAction(IdeActions.ACTION_COMPILE_PROJECT, PantsConstants.REBUILD_PROJECT_DESCRIPTION, new PantsRebuildAction()));
+    actionManager.registerAction(IdeActions.ACTION_COMPILE_PROJECT, pantsRebuildAction);
   }
 
   //  Used to toggle between two actions, one that is active for Pants projects, and
   //  another for other projects.
-  private static class PantsOverrideAction extends AnAction {
+  private static class PantsOverrideAction extends AnAction implements DumbAware {
 
     private AnAction secondaryIdeaAction;
     private AnAction primaryPantsAction;
@@ -162,6 +167,7 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     }
 
     @Override
+    @TestOnly
     public String toString() {
       String activeOverride = pantsActive ? " actively" : "";
       return

@@ -63,7 +63,7 @@ public class PantsCompileActionGroup extends ActionGroup {
 
     //  Adds compile all option for modules with multiple targets.
     if (targetAddresses.size() > 1) {
-      actions.add(new PantsCompileTargetAction(targetAddresses));
+      actions.add(new PantsCompileAllTargetsInModuleAction());
     }
 
     for (String targetAddress : targetAddresses) {
