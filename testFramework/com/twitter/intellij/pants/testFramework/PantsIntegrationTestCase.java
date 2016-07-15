@@ -99,7 +99,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected String[] getRequiredPluginIds() {
-    return new String[]{"org.intellij.scala"};
+    return new String[]{"org.intellij.scala", PantsConstants.PLUGIN_ID};
   }
 
   @Override

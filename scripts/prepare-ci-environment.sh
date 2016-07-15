@@ -8,8 +8,8 @@ set -e
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2016.1.1"
-export IJ_BUILD_NUMBER="145.597"
+export IJ_VERSION="2016.2"
+export IJ_BUILD_NUMBER="162.1121.32"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
@@ -22,20 +22,20 @@ get_md5(){
 if [[ $IJ_ULTIMATE == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="edebf2e5cf187c2aca5d7cb28c1136f3"
+  export EXPECTED_IJ_MD5="3e4cec44604eabfe9043efbd5527950b"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="a44eb219fe7283348852a807119b0056"
+  export PYTHON_PLUGIN_MD5="553a68036a761a95d2b57637613e39df"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="46edd235a6297b7563bd5df292ee0fdf"
+  export EXPECTED_IJ_MD5="b6077e3e54bd0b300e1e75e40201c65a"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="e4af345f34f703745de0e3bddde874bf"
+  export PYTHON_PLUGIN_MD5="c4e885fea86f5ad5da17a40804a3cafe"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="4a6630fd30866becad542f17b966357f" #3.0.6
+export SCALA_PLUGIN_MD5="8aad157a73234877dcbd1941eee705ea" #2016.2.0
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
@@ -54,6 +54,8 @@ append_intellij_jvm_options() {
     "-Didea.home.path=$IDEA_TEST_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
     "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/rt/jps-plugin-system.jar:$CWD/jps-plugin/lib/gson-2.3.1.jar"
+    #EAP build does not know its own build number, thus failing to tell plugin compatibility.
+    "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"
   )
   for jvm_option in ${INTELLIJ_JVM_OPTIONS[@]}

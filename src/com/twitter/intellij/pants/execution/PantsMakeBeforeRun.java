@@ -32,6 +32,7 @@ import com.intellij.openapi.externalSystem.service.notification.NotificationData
 import com.intellij.openapi.externalSystem.service.notification.NotificationSource;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
@@ -83,6 +84,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     VirtualFile buildRoot = PantsUtil.findBuildRoot(project);
 
     /**
+     /**
      * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
      */
     if (runConfiguration instanceof AbstractTestRunConfiguration) {
@@ -147,6 +149,15 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Project currentProject = configuration.getProject();
     prepareIDE(currentProject);
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
+    return executeTask(currentProject, targetAddressesToCompile);
+  }
+
+  public boolean executeTask(Project project) {
+    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()));
+  }
+
+  public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile) {
+    prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
       return true;
@@ -270,22 +281,32 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   @NotNull
   private Set<String> getTargetAddressesToCompile(RunConfiguration configuration) {
-    Set<String> result = new HashSet<String>();
     /* JUnit, Application, Scala runs */
     if (configuration instanceof RunProfileWithCompileBeforeLaunchOption) {
       RunProfileWithCompileBeforeLaunchOption config = (RunProfileWithCompileBeforeLaunchOption) configuration;
       Module[] targetModules = config.getModules();
-      if (targetModules.length == 0) {
-        return Collections.emptySet();
-      }
-      for (Module targetModule : targetModules) {
-        String dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-        if (dehydratedAddresses == null) {
-          continue;
-        }
-        result.addAll(PantsUtil.hydrateTargetAddresses(dehydratedAddresses));
-      }
+      return getTargetAddressesToCompile(targetModules);
+    } else {
+      return Collections.emptySet();
     }
+  }
+
+  @NotNull
+  private Set<String> getTargetAddressesToCompile(Module[] targetModules) {
+    if (targetModules.length == 0) {
+      return Collections.emptySet();
+    }
+
+    Set<String> result = new HashSet<String>();
+
+    for (Module targetModule : targetModules) {
+      String dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
+      if (dehydratedAddresses == null) {
+        continue;
+      }
+      result.addAll(PantsUtil.hydrateTargetAddresses(dehydratedAddresses));
+    }
+
     return result;
   }
 
