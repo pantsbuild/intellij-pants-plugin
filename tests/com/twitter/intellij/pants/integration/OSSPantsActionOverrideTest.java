@@ -6,14 +6,17 @@ package com.twitter.intellij.pants.integration;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.ui.PantsOverrideAction;
 import com.twitter.intellij.pants.util.PantsConstants;
 
 
 public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
 
   final String PANTS_ON = "actively overriding";
+  final DataContext PANTS_PROJECT_DATA = s -> s.equals("project") ? myProject : null;
 
   public void testPantsRebuildOverride() throws Throwable {
     makeActionOverrideTest(
@@ -83,6 +86,28 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     );
   }
 
+  public void testPantsOverrideActionInPantsProject() {
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
+
+    MemorableAction primary = new MemorableAction();
+    MemorableAction secondary = new MemorableAction();
+    PantsOverrideAction pantsOverrideAction = new PantsOverrideAction(primary, secondary);
+
+    pantsOverrideAction.actionPerformed(AnActionEvent.createFromDataContext("", null, PANTS_PROJECT_DATA));
+    assertTrue(primary.hasBeenClicked());
+    assertFalse(secondary.hasBeenClicked());
+  }
+
+  public void testNonPantsOverrideActionInPantsProject() {
+    MemorableAction primary = new MemorableAction();
+    MemorableAction secondary = new MemorableAction();
+    PantsOverrideAction pantsOverrideAction = new PantsOverrideAction(primary, secondary);
+
+    pantsOverrideAction.actionPerformed(AnActionEvent.createFromDataContext("", null, PANTS_PROJECT_DATA));
+    assertTrue(secondary.hasBeenClicked());
+    assertFalse(primary.hasBeenClicked());
+  }
+
   /**
    * This function generates tests that ensure an action is being properly overriden (or not) depending on whether or not
    * the project is a Pants project.
@@ -101,7 +126,7 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     AnAction action = actionManager.getAction(actionId);
 
     //  Updates the action and passes in the data context on the current project it is in.
-    action.update(AnActionEvent.createFromDataContext("menu", null, s -> s.equals("project") ? myProject : null));
+    action.update(AnActionEvent.createFromDataContext("menu", null, PANTS_PROJECT_DATA));
     String actionString = action.toString();
 
     if (isPantsProject) {
@@ -111,5 +136,17 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
       assertFalse(actionString, actionString.contains(PANTS_ON));
     }
     assertTrue(actionString, actionString.contains(pantsActionClassName));
+  }
+
+  private class MemorableAction extends AnAction {
+    private int clickCounts = 0;
+    @Override
+    public void actionPerformed(AnActionEvent event) {
+      clickCounts++;
+    }
+
+    public boolean hasBeenClicked() {
+      return clickCounts > 0;
+    }
   }
 }
