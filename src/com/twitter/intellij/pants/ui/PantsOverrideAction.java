@@ -3,22 +3,14 @@
 
 package com.twitter.intellij.pants.ui;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
-import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 /**
@@ -46,7 +38,7 @@ public  class PantsOverrideAction extends AnAction implements DumbAware {
   }
 
   public static PantsOverrideAction createDisabledEmptyAction(String actionId) {
-    return new PantsOverrideAction(actionId, new PantsShieldAction(getAction(actionId)));
+    return new PantsOverrideAction(actionId, new ShieldAction(getAction(actionId)));
   }
 
   private boolean isPantsProject(AnActionEvent event) {

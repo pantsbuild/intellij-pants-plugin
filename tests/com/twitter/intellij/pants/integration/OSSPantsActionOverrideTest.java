@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.ui.PantsOverrideAction;
+import com.twitter.intellij.pants.ui.ShieldAction;
 import com.twitter.intellij.pants.util.PantsConstants;
 
 
@@ -39,7 +40,7 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     makeActionOverrideTest(
       IdeActions.ACTION_COMPILE,
       true,
-      "PantsShieldAction",
+      "ShieldAction",
       "testprojects/tests/java/org/pantsbuild/testproject/cwdexample"
     );
   }
@@ -48,7 +49,7 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     makeActionOverrideTest(
       IdeActions.ACTION_COMPILE,
       false,
-      "PantsShieldAction"
+      "ShieldAction"
     );
   }
 
@@ -86,7 +87,7 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     );
   }
 
-  public void testPantsOverrideActionInPantsProject() {
+  public void testPantsOverrideAction() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
 
     MemorableAction primary = new MemorableAction();
@@ -98,7 +99,7 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     assertFalse(secondary.hasBeenClicked());
   }
 
-  public void testNonPantsOverrideActionInPantsProject() {
+  public void testNonPantsOverrideAction() throws Throwable {
     MemorableAction primary = new MemorableAction();
     MemorableAction secondary = new MemorableAction();
     PantsOverrideAction pantsOverrideAction = new PantsOverrideAction(primary, secondary);
@@ -106,6 +107,25 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     pantsOverrideAction.actionPerformed(AnActionEvent.createFromDataContext("", null, PANTS_PROJECT_DATA));
     assertTrue(secondary.hasBeenClicked());
     assertFalse(primary.hasBeenClicked());
+  }
+
+
+  public void testPantsShieldAction() throws Throwable {
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
+
+    MemorableAction primary = new MemorableAction();
+    ShieldAction shieldAction = new ShieldAction(primary);
+    shieldAction.actionPerformed(AnActionEvent.createFromDataContext("", null, PANTS_PROJECT_DATA));
+
+    assertFalse(primary.hasBeenClicked());
+  }
+
+  public void testNonPantsShieldAction() throws Throwable {
+    MemorableAction action = new MemorableAction();
+    ShieldAction shieldAction = new ShieldAction(action);
+    shieldAction.actionPerformed(AnActionEvent.createFromDataContext("", null, PANTS_PROJECT_DATA));
+
+    assertFalse(action.hasBeenClicked());
   }
 
   /**
@@ -126,7 +146,7 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
     AnAction action = actionManager.getAction(actionId);
 
     //  Updates the action and passes in the data context on the current project it is in.
-    action.update(AnActionEvent.createFromDataContext("menu", null, PANTS_PROJECT_DATA));
+    action.update(AnActionEvent.createFromDataContext("", null, PANTS_PROJECT_DATA));
     String actionString = action.toString();
 
     if (isPantsProject) {

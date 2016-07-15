@@ -11,10 +11,10 @@ import org.jetbrains.annotations.Nullable;
  * Shield action allows previous action's text to still be displayed
  * and update, but disables all possible user interaction
  */
-public class PantsShieldAction extends AnAction {
+public class ShieldAction extends AnAction {
   private AnAction shieldedAction;
 
-  public PantsShieldAction(@Nullable AnAction action) {
+  public ShieldAction(@Nullable AnAction action) {
     shieldedAction = action;
   }
 
