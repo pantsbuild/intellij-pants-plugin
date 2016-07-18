@@ -18,6 +18,7 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.notification.EventLog;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -286,7 +287,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       RunProfileWithCompileBeforeLaunchOption config = (RunProfileWithCompileBeforeLaunchOption) configuration;
       Module[] targetModules = config.getModules();
       return getTargetAddressesToCompile(targetModules);
-    } else {
+    }
+    else {
       return Collections.emptySet();
     }
   }
@@ -310,17 +312,23 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return result;
   }
 
-  private void showPantsMakeTaskMessage(String message, NotificationCategory type, Project project) {
+  private static void showPantsMakeTaskMessage(String message, NotificationCategory type, Project project) {
     NotificationData notification =
       new NotificationData(PantsConstants.PANTS, message, type, NotificationSource.TASK_EXECUTION);
     ExternalSystemNotificationManager.getInstance(project).showNotification(PantsConstants.SYSTEM_ID, notification);
   }
 
-  public static void cancelAllRunningPantsProcesses() {
+  public static void cancelAllRunningPantsProcesses(@Nullable Project project) {
     for (Iterator<Process> it = runningPantsProcesses.iterator(); it.hasNext(); ) {
       Process process = it.next();
       if (UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM)) {
         it.remove();
+      }
+      else {
+        showPantsMakeTaskMessage(
+          String.format("Failed to cancel pid: %s.", UnixProcessManager.getProcessPid(process)),
+          NotificationCategory.ERROR, project
+        );
       }
     }
   }

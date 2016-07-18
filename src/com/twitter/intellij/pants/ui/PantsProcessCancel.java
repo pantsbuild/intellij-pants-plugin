@@ -11,6 +11,6 @@ import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 public class PantsProcessCancel extends AnAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
-    PantsMakeBeforeRun.cancelAllRunningPantsProcesses();
+    PantsMakeBeforeRun.cancelAllRunningPantsProcesses(e.getProject());
   }
 }
