@@ -83,7 +83,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
 
     boolean isPython = isOrContainsPyTests(psiLocation);
     // return false if it is a not a test class, a test package, or python file
-    if (!TestIntegrationUtils.isTest(psiLocation) && !hasTestClasses(testPackage, module) && !isPython) {
+    if (!TestIntegrationUtils.isTest(psiLocation) && !hasJUnitTestClasses(testPackage, module) && !isPython) {
       return false;
     }
 
@@ -125,6 +125,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     configuration.setName(testFile.getName());
     taskSettings.setExternalProjectPath(testFile.getVirtualFile().getPath());
     taskSettings.setExecutionName(testFile.getName());
+    taskSettings.setScriptParameters("");
   }
 
   private void buildFromPyTest(
@@ -137,6 +138,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     configuration.setName("Tests " + testDir.getName());
     taskSettings.setExternalProjectPath(testDir.getVirtualFile().getPath());
     taskSettings.setExecutionName(testDir.getName());
+    taskSettings.setScriptParameters("");
   }
 
   private void buildFromPsiElement(
@@ -182,7 +184,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     );
   }
 
-  private boolean hasTestClasses(PsiPackage psiPackage, Module module) {
+  private boolean hasJUnitTestClasses(PsiPackage psiPackage, Module module) {
     if (psiPackage == null) return false;
     for (PsiClass psiClass : psiPackage.getClasses(module.getModuleScope())) {
       if (TestIntegrationUtils.isTest(psiClass)) {
@@ -208,7 +210,7 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
   private boolean compareSettings(ExternalSystemTaskExecutionSettings settings1, ExternalSystemTaskExecutionSettings settings2) {
     return settings1.equals(settings2) &&
            StringUtil.equalsIgnoreWhitespaces(settings1.getScriptParameters(), settings2.getScriptParameters()) &&
-           StringUtil.equalsIgnoreWhitespaces(settings1.getExecutionName(), settings2.getExecutionName());
+           StringUtil.equals(settings1.getExecutionName(), settings2.getExecutionName());
   }
 
   private boolean isOrContainsPyTests(PsiElement element) {
