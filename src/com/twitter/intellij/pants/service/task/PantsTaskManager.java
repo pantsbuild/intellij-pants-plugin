@@ -24,7 +24,6 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -47,57 +46,8 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     @Nullable String debuggerSetup,
     @NotNull final ExternalSystemTaskNotificationListener listener
   ) throws ExternalSystemException {
-    if (settings == null) {
-      return;
-    }
-    projectPath = PantsTargetAddress.extractPath(projectPath);
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
-
-    /**
-     * Global options section.
-     */
-    commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
-    if (debuggerSetup != null) {
-      if (taskNames.size() > 1) {
-        throw new ExternalSystemException(PantsBundle.message("pants.error.multiple.tasks.for.debugging"));
-      }
-      final String goal = taskNames.iterator().next();
-      final String jvmOptionsFlag = goal2JvmOptionsFlag.get(goal);
-      if (jvmOptionsFlag == null) {
-        throw new ExternalSystemException(PantsBundle.message("pants.error.cannot.debug.task", goal));
-      }
-      commandLine.addParameter(jvmOptionsFlag + "=" + debuggerSetup);
-    }
-    if (settings.isUseIdeaProjectJdk()) {
-      try{
-        commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
-      }
-      catch(Exception e){
-        throw new ExternalSystemException(e);
-      }
-    }
-    /**
-     * Goals and targets section.
-     */
-    final String relativeProjectPath = PantsUtil.getRelativeProjectPath(commandLine.getWorkDirectory(), new File(projectPath));
-    // Appending goals.
-    commandLine.addParameters(taskNames);
-    // Appending targets.
-    commandLine.addParameter(relativeProjectPath + File.separator + "::");
-    // Appending VM options.
-    for (String goal : taskNames) {
-      final String jvmOptionsFlag = goal2JvmOptionsFlag.get(goal);
-      if (jvmOptionsFlag == null) {
-        continue;
-      }
-      for (String vmOption : vmOptions) {
-        commandLine.addParameter(jvmOptionsFlag + "=" + vmOption);
-      }
-    }
-    /**
-     * Script parameters section.
-     */
-    commandLine.addParameters(scriptParameters);
+    final GeneralCommandLine commandLine = constructCommandLine(taskNames, projectPath, settings, vmOptions, scriptParameters, debuggerSetup);
+    if (commandLine == null) return;
 
     listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);
     try {
@@ -128,6 +78,66 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       // Sync files as generated sources may have changed after `pants test` called
       PantsUtil.synchronizeFiles();
     }
+  }
+
+  @Nullable
+  public GeneralCommandLine constructCommandLine(
+    @NotNull List<String> taskNames,
+    @NotNull String projectPath,
+    @Nullable PantsExecutionSettings settings,
+    @NotNull List<String> vmOptions,
+    @NotNull List<String> scriptParameters,
+    @Nullable String debuggerSetup
+  ) {
+    if (settings == null) {
+      return null;
+    }
+    projectPath = PantsTargetAddress.extractPath(projectPath);
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
+
+    /**
+     * Global options section.
+     */
+    commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
+    if (debuggerSetup != null) {
+      if (taskNames.size() > 1) {
+        throw new ExternalSystemException(PantsBundle.message("pants.error.multiple.tasks.for.debugging"));
+      }
+      commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_TEST_JUNIT_TIMEOUTS);
+      final String goal = taskNames.iterator().next();
+      final String jvmOptionsFlag = goal2JvmOptionsFlag.get(goal);
+      if (jvmOptionsFlag == null) {
+        throw new ExternalSystemException(PantsBundle.message("pants.error.cannot.debug.task", goal));
+      }
+      commandLine.addParameter(jvmOptionsFlag + "=" + debuggerSetup);
+    }
+    if (settings.isUseIdeaProjectJdk()) {
+      try{
+        commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
+      }
+      catch(Exception e){
+        throw new ExternalSystemException(e);
+      }
+    }
+    /**
+     * Goals.
+     */
+    commandLine.addParameters(taskNames);
+    // Appending VM options.
+    for (String goal : taskNames) {
+      final String jvmOptionsFlag = goal2JvmOptionsFlag.get(goal);
+      if (jvmOptionsFlag == null) {
+        continue;
+      }
+      for (String vmOption : vmOptions) {
+        commandLine.addParameter(jvmOptionsFlag + "=" + vmOption);
+      }
+    }
+    /**
+     * Script parameters section including targets and options.
+     */
+    commandLine.addParameters(scriptParameters);
+    return commandLine;
   }
 
   @Override

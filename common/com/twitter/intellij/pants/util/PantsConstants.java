@@ -52,6 +52,7 @@ public class PantsConstants {
   public static final String PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR = "--export-classpath-manifest-jar-only";
   public static final String PANTS_CLI_OPTION_NO_COLORS = "--no-colors";
   public static final String PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";
+  public static final String PANTS_CLI_OPTION_NO_TEST_JUNIT_TIMEOUTS = "--no-test-junit-timeouts";
 
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(
