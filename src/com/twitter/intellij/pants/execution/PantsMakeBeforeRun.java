@@ -93,6 +93,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.getPath());
       }
     }
+    /**
+     * If neither applies (e.g. Pants or pytest configuration), do not continue.
+     */
+    else {
+      return;
+    }
 
     /**
      * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.
@@ -282,17 +288,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     if (targetModules.length == 0) {
       return Collections.emptySet();
     }
-
-    Set<String> result = new HashSet<String>();
-
+    Set<String> result = new HashSet<>();
     for (Module targetModule : targetModules) {
-      String dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-      if (dehydratedAddresses == null) {
-        continue;
-      }
-      result.addAll(PantsUtil.hydrateTargetAddresses(dehydratedAddresses));
+      result.addAll(PantsUtil.getNonGenTargetAddresses(targetModule));
     }
-
     return result;
   }
 
