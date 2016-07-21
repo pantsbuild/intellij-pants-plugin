@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -22,6 +23,9 @@ import java.util.concurrent.TimeUnit;
 
 
 public class PantsMetrics {
+  private static ConcurrentHashMap<Project, PantsMetrics> projectMetrics;
+
+
   private static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "metrics.report.dir";
   private static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "metrics.import.dir";
   private static MetricRegistry metricsRegistry = new MetricRegistry();
