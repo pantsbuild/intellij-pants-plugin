@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.components.impl;
 
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Stopwatch;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbServiceImpl;
@@ -29,11 +28,9 @@ public class PantsMetrics {
   private static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "metrics.report.dir";
   private static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "metrics.import.dir";
 
-  private static MetricRegistry metricsRegistry = new MetricRegistry();
-
   private static volatile ScheduledFuture handle;
 
-  private static ScheduledExecutorService indexThreadPool;
+  public static ScheduledExecutorService indexThreadPool;
 
   private static int counter = 0;
 
@@ -123,16 +120,6 @@ public class PantsMetrics {
   public static void markIndexEnd() {
     timers.get(METRIC_INDEXING).stop();
   }
-
-  //public static void projectClosed() {
-  //  if (handle != null) {
-  //    handle.cancel(true);
-  //  }
-  //  if (indexThreadPool != null) {
-  //    indexThreadPool.shutdown();
-  //  }
-  //  report();
-  //}
 
   public static void report() {
     Map<String, Long> output = timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry->entry.getValue().elapsed(TimeUnit.SECONDS)));
