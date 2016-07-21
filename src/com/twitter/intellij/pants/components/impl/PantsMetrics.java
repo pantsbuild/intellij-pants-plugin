@@ -3,34 +3,35 @@
 
 package com.twitter.intellij.pants.components.impl;
 
-import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.CsvReporter;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
+import com.google.common.base.Stopwatch;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 public class PantsMetrics {
-  private static ConcurrentHashMap<Project, PantsMetrics> projectMetrics;
+  //private static ConcurrentHashMap<Project, PantsMetrics> projectMetrics;
+
+  private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
 
 
   private static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "metrics.report.dir";
   private static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "metrics.import.dir";
+
   private static MetricRegistry metricsRegistry = new MetricRegistry();
 
-  private static ScheduledFuture handle;
+  private static volatile ScheduledFuture handle;
 
   private static ScheduledExecutorService indexThreadPool;
 
@@ -40,9 +41,6 @@ public class PantsMetrics {
   private static final String METRIC_LOAD = "load_second";
   private static final String METRIC_EXPORT = "export_second";
 
-  private static Timer.Context resolveContext;
-  private static Timer.Context indexingContext;
-  private static Timer.Context exportContext;
 
   @Nullable
   public static String getMetricsImportDir() {
@@ -50,11 +48,11 @@ public class PantsMetrics {
   }
 
   public static void timeNextIndexing(Project myProject) {
-    Timer myTimer = metricsRegistry.timer(METRIC_INDEXING);
     if (ApplicationManager.getApplication().isUnitTestMode()) {
-      indexingContext = myTimer.time();
+      markIndexStart();
       return;
     }
+
     /**
      * This portion only applies in manual testing.
      */
@@ -71,7 +69,7 @@ public class PantsMetrics {
           handle.cancel(false);
           counter = 0;
         }
-        indexingContext = myTimer.time();
+        markIndexStart();
         DumbServiceImpl.getInstance(myProject).runWhenSmart(new Runnable() {
           @Override
           public void run() {
@@ -85,6 +83,11 @@ public class PantsMetrics {
   }
 
   public static void initialize() {
+    timers.put(METRIC_EXPORT, Stopwatch.createUnstarted());
+    timers.put(METRIC_LOAD, Stopwatch.createUnstarted());
+    timers.put(METRIC_INDEXING, Stopwatch.createUnstarted());
+
+    // Thread related things.
     if (indexThreadPool != null && !indexThreadPool.isShutdown()) {
       indexThreadPool.shutdown();
     }
@@ -98,65 +101,41 @@ public class PantsMetrics {
   }
 
   public static void markResolveStart() {
-    if (resolveContext != null) {
-      resolveContext.close();
-    }
-    Timer resolveTimer = metricsRegistry.timer(METRIC_LOAD);
-    resolveContext = resolveTimer.time();
+    timers.get(METRIC_LOAD).start();
   }
 
   public static void markResolveEnd() {
-    resolveContext.stop();
-    resolveContext.close();
+    timers.get(METRIC_LOAD).stop();
   }
 
   public static void markExportStart() {
-    if (exportContext != null) {
-      exportContext.close();
-    }
-    Timer resolveTimer = metricsRegistry.timer(METRIC_EXPORT);
-    exportContext = resolveTimer.time();
+    timers.get(METRIC_EXPORT).start();
   }
 
   public static void markExportEnd() {
-    exportContext.stop();
-    exportContext.close();
+    timers.get(METRIC_EXPORT).stop();
+  }
+
+  public static void markIndexStart() {
+    timers.get(METRIC_INDEXING).start();
   }
 
   public static void markIndexEnd() {
-    indexingContext.stop();
+    timers.get(METRIC_INDEXING).stop();
   }
 
-  public static void projectClosed() {
-    if (handle != null) {
-      handle.cancel(true);
-    }
-    if (indexThreadPool != null) {
-      indexThreadPool.shutdown();
-    }
-    report();
-  }
+  //public static void projectClosed() {
+  //  if (handle != null) {
+  //    handle.cancel(true);
+  //  }
+  //  if (indexThreadPool != null) {
+  //    indexThreadPool.shutdown();
+  //  }
+  //  report();
+  //}
 
   public static void report() {
-    String metricsDir = System.getProperty(SYSTEM_PROPERTY_METRICS_REPORT_DIR);
-    // report csv if output dir specified.
-    // otherwise report to console.
-    if (metricsDir != null) {
-      final CsvReporter csvReporter = CsvReporter.forRegistry(metricsRegistry)
-        .formatFor(Locale.US)
-        .convertRatesTo(TimeUnit.SECONDS)
-        .convertDurationsTo(TimeUnit.SECONDS)
-        .build(new File(metricsDir));
-      csvReporter.report();
-      csvReporter.close();
-    }
-    else {
-      ConsoleReporter reporter = ConsoleReporter.forRegistry(metricsRegistry)
-        .convertRatesTo(TimeUnit.SECONDS)
-        .convertDurationsTo(TimeUnit.SECONDS)
-        .build();
-      reporter.report();
-      reporter.close();
-    }
+    Map<String, Long> output = timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry->entry.getValue().elapsed(TimeUnit.SECONDS)));
+    System.out.println(output);
   }
 }
