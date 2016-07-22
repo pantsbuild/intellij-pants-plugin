@@ -29,25 +29,16 @@ jvm_binary(
   name='intellij-scala-plugin-bin',
   basename='intellij-scala-plugin',
   dependencies=['3rdparty/intellij:scala-plugin'],
-  provides=artifact(org='org.intellij',
-                    name='scala',
-                    repo=artifactory)
 )
 
 jvm_binary(
-  name='pants-test-lib',
-  basename='pants-test-lib',
+  name='intellij-pants-plugin-bin',
+  basename='intellij-pants-plugin',
   dependencies=[
-    ':plugin-resources',
     'common',
     'tests:all',
     'tests:metrics',
     'jps-plugin',
     'src:pants-intellij-plugin',
-    '3rdparty/intellij:external-system-test-api',
-    '3rdparty/intellij:sdk',
-    '3rdparty/intellij:junit-plugin',
-    '3rdparty/intellij:python-plugin',
-    '3rdparty/intellij:scala-plugin',
   ]
 )
