@@ -266,6 +266,10 @@
         </codeStyleSettings>
         <codeStyleSettings language="Python">
           <option name="PARENT_SETTINGS_INSTALLED" value="true" />
+          <indentOptions>
+            <option name="INDENT_SIZE" value="2" />
+            <option name="TAB_SIZE" value="2" />
+          </indentOptions>
         </codeStyleSettings>
         <codeStyleSettings language="Scala">
           <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="0" />

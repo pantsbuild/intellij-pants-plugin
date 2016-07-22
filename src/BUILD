@@ -5,7 +5,6 @@ scala_library(
         '3rdparty/intellij:python-plugin',
         '3rdparty/intellij:scala-plugin',
         '3rdparty/intellij:sdk',
-        '3rdparty/jvm:metrics',
         'common',
         'jps-plugin',
     ],

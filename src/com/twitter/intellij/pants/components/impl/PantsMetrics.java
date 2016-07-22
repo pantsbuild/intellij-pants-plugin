@@ -7,8 +7,12 @@ import com.google.common.base.Stopwatch;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -42,6 +46,10 @@ public class PantsMetrics {
   @Nullable
   public static String getMetricsImportDir() {
     return System.getProperty(SYSTEM_PROPERTY_METRICS_IMPORT_DIR);
+  }
+  @Nullable
+  public static String getMetricsReportDir() {
+    return System.getProperty(SYSTEM_PROPERTY_METRICS_REPORT_DIR);
   }
 
   public static void timeNextIndexing(Project myProject) {
@@ -122,7 +130,14 @@ public class PantsMetrics {
   }
 
   public static void report() {
-    Map<String, Long> output = timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry->entry.getValue().elapsed(TimeUnit.SECONDS)));
-    System.out.println(output);
+    Map<String, Long> report = timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry->entry.getValue().elapsed(TimeUnit.SECONDS)));
+
+    try (Writer writer = new FileWriter("Output.json")) {
+      PantsUtil.gson.toJson(report, writer);
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+    System.out.println(report);
   }
 }
