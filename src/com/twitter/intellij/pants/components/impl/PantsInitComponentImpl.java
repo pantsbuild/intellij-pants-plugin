@@ -27,6 +27,7 @@ import com.twitter.intellij.pants.ui.PantsCompileAllTargetsInModuleAction;
 import com.twitter.intellij.pants.ui.PantsOverrideAction;
 import com.twitter.intellij.pants.ui.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
+import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.HyperlinkEvent;
@@ -45,7 +46,6 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     // to start an external JVM each time.
     // The plugin only calls `export` goal and parses JSON response.
     // So it will be in process all the time.
-
     final String key = PantsConstants.SYSTEM_ID.getId() + ExternalSystemConstants.USE_IN_PROCESS_COMMUNICATION_REGISTRY_KEY_SUFFIX;
     Registry.get(key).setValue(true);
 
@@ -75,13 +75,16 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     AnAction pantsCompileAllTargetAction = new PantsOverrideAction(
       PantsConstants.ACTION_MAKE_PROJECT_ID,
       PantsConstants.ACTION_MAKE_PROJECT_DESCRIPTION,
-      new PantsCompileAllTargetsAction()
+      new PantsCompileAllTargetsAction(),
+      PantsIcons.getMakeIcon()
     );
     AnAction pantsMakeModuleAction = new PantsOverrideAction(
       IdeActions.ACTION_MAKE_MODULE,
       new PantsCompileAllTargetsInModuleAction()
     );
+    //  Disables compile option (not applicable in Pants).
     AnAction pantsDisableCompileAction = PantsOverrideAction.createDisabledEmptyAction(IdeActions.ACTION_COMPILE);
+
     AnAction pantsRebuildAction = new PantsOverrideAction(
       IdeActions.ACTION_COMPILE_PROJECT,
       PantsConstants.REBUILD_PROJECT_DESCRIPTION,

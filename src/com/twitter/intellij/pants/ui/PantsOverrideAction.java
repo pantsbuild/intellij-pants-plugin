@@ -13,17 +13,26 @@ import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 
+import javax.swing.*;
+
 /**
  * PantsOverrideAction is a wrapper action that toggles active actions on Pants or non-Pants projects
  */
-public  class PantsOverrideAction extends AnAction implements DumbAware {
+public class PantsOverrideAction extends AnAction implements DumbAware {
 
   private AnAction secondaryIdeaAction;
   private AnAction primaryPantsAction;
+  private Icon secondaryIdeaIcon;
+  @TestOnly
   private boolean pantsActive;
 
   public PantsOverrideAction(String actionId, @NotNull AnAction pantsAction) {
     this(pantsAction, getAction(actionId));
+  }
+
+  public PantsOverrideAction(String actionId, String oldName, @NotNull AnAction pantsAction, Icon icon) {
+    this(actionId, oldName, pantsAction);
+    secondaryIdeaIcon = icon;
   }
 
   public PantsOverrideAction(String actionId, String oldName, @NotNull AnAction pantsAction) {
@@ -54,6 +63,9 @@ public  class PantsOverrideAction extends AnAction implements DumbAware {
   public void update(AnActionEvent event) {
     if (secondaryIdeaAction != null) {
       secondaryIdeaAction.update(event);
+      if (secondaryIdeaIcon != null) {
+        event.getPresentation().setIcon(secondaryIdeaIcon);
+      }
     }
     if (isPantsProject(event)) {
       event.getPresentation().setIcon(PantsIcons.Icon);
