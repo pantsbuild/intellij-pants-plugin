@@ -7,6 +7,10 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.4.4</p>
+      <ul>
+        <li><a href="https://github.com/pantsbuild/intellij-pants-plugin/releases">Please see release notes.</a></li>
+      </ul>
 
       <p>1.4.3</p>
       <ul>
@@ -240,11 +244,11 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.4.3</version>
+  <version>1.4.4</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
-  <idea-version since-build="145.1" until-build="162.*"/>
+  <idea-version since-build="162.1120" until-build="162.*"/>
 
   <!--Scala plugin related extensions-->
   <depends>org.intellij.scala</depends>
