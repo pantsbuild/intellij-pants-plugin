@@ -5,11 +5,16 @@ package com.twitter.intellij.pants.testFramework;
 
 import com.google.common.base.Joiner;
 import com.intellij.compiler.impl.ModuleCompileScope;
+import com.intellij.execution.BeforeRunTask;
+import com.intellij.execution.BeforeRunTaskProvider;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ProgramRunnerUtil;
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.execution.junit.JUnitConfigurationType;
 import com.intellij.execution.process.OSProcessHandler;
@@ -49,6 +54,7 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.components.impl.PantsMetrics;
 import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -547,5 +553,30 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   protected String getExternalSystemConfigFileName() {
     return "BUILD";
+  }
+
+  protected void assertAndRunPantsMake(JUnitConfiguration runConfiguration) {
+
+    RunManager runManager = RunManager.getInstance(myProject);
+    assertTrue(runManager instanceof RunManagerImpl);
+    RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
+
+    RunnerAndConfigurationSettings runnerAndConfigurationSettings =
+      runManagerImpl.createConfiguration(runConfiguration, JUnitConfigurationType.getInstance().getConfigurationFactories()[0]);
+    runManagerImpl.addConfiguration(runnerAndConfigurationSettings, false);
+
+    // Make sure PantsMake is the one and only task before JUnit run.
+    List<BeforeRunTask> beforeRunTaskList = runManagerImpl.getBeforeRunTasks(runConfiguration);
+    assertEquals(1, beforeRunTaskList.size());
+    BeforeRunTask task = beforeRunTaskList.iterator().next();
+    assertEquals(PantsMakeBeforeRun.ID, task.getProviderId());
+
+    /*
+     * Manually invoke BeforeRunTask as {@link ExecutionManager#compileAndRun} launches another task asynchronously,
+     * and there is no way to catch that.
+     */
+    BeforeRunTaskProvider provider = BeforeRunTaskProvider.getProvider(myProject, task.getProviderId());
+    assertNotNull(String.format("Cannot find BeforeRunTaskProvider for id='%s'", task.getProviderId()), provider);
+    assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 }
