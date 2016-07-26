@@ -1,8 +1,19 @@
-junit_tests(
-  name='all',
+# Alias for sources and libs needed for tests
+target(name='sources-and-libs',
   dependencies=[
-    ':integration',
-    ':py-integration',
+    '3rdparty/intellij:sdk',
+    '3rdparty/intellij:python-plugin',
+    '3rdparty/intellij:scala-plugin',
+    'jps-plugin',
+    'src:pants-intellij-plugin',
+    'testFramework:test-lib',
+  ],
+)
+
+junit_tests(
+  name='integration',
+  dependencies=[
+    ':sources-and-libs',
   ],
   sources=globs(
     'com/twitter/intellij/pants/completion/*.java',
@@ -17,43 +28,15 @@ junit_tests(
     'com/twitter/intellij/pants/service/project/*.java',
     'com/twitter/intellij/pants/service/util/*.java',
     'com/twitter/intellij/pants/util/*.java',
+    'com/twitter/intellij/pants/integration/python/*.java',
+    'com/twitter/intellij/pants/integration/*.java',
   )
-)
-junit_tests(
-  name='integration',
-  dependencies=[
-    '3rdparty/intellij:sdk',
-    '3rdparty/intellij:python-plugin',
-    '3rdparty/intellij:scala-plugin',
-    'jps-plugin',
-    'src:pants-intellij-plugin',
-    'testFramework:test-lib',
-  ],
-  sources=globs('com/twitter/intellij/pants/integration/*.java')
-)
-
-junit_tests(
-  name='py-integration',
-  dependencies=[
-    '3rdparty/intellij:sdk',
-    '3rdparty/intellij:python-plugin',
-    '3rdparty/intellij:scala-plugin',
-    'jps-plugin',
-    'src:pants-intellij-plugin',
-    'testFramework:test-lib',
-  ],
-  sources=globs('com/twitter/intellij/pants/integration/python/*.java')
 )
 
 junit_tests(
   name='metrics',
   dependencies=[
-    '3rdparty/intellij:sdk',
-    '3rdparty/intellij:python-plugin',
-    '3rdparty/intellij:scala-plugin',
-    'jps-plugin',
-    'src:pants-intellij-plugin',
-    'testFramework:test-lib',
+    ':sources-and-libs',
   ],
   sources=globs('com/twitter/intellij/pants/metrics/*.java')
 )

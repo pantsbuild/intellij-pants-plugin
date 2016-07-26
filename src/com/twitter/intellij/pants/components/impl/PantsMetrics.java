@@ -22,13 +22,16 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-
+/**
+ * This class keeps track of the metrics globally.
+ * TODO: keep the metrics per project.
+ */
 public class PantsMetrics {
   public static ScheduledExecutorService indexThreadPool;
 
   private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
-  private static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "metrics.report.dir";
-  private static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "metrics.import.dir";
+  private static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "pants.metrics.report.dir";
+  private static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "pants.metrics.import.dir";
 
   private static volatile ScheduledFuture handle;
   private static volatile int counter = 0;
@@ -103,7 +106,7 @@ public class PantsMetrics {
       new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
-          return new Thread(r, "Pants-Plugin-Index-Pool");
+          return new Thread(r, "Pants-Plugin-Metrics-Pool");
         }
       });
   }

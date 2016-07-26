@@ -11,8 +11,8 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * This class overrides the methods that will be called before/after project resolve.
- * for metrics measurement purposes and other procedures around project resolve.
+ * This class overrides the methods that will be called before/after project resolve
+ * for metrics measurements and other procedures around project resolve.
  */
 public class PantsProjectImportNotificationListener extends ExternalSystemTaskNotificationListenerAdapter {
   @Override
