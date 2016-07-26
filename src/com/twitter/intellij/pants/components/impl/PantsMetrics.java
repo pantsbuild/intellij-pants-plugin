@@ -42,6 +42,7 @@ public class PantsMetrics {
   public static String getMetricsImportDir() {
     return System.getProperty(SYSTEM_PROPERTY_METRICS_IMPORT_DIR);
   }
+
   @Nullable
   public static String getMetricsReportDir() {
     return System.getProperty(SYSTEM_PROPERTY_METRICS_REPORT_DIR);
@@ -51,6 +52,7 @@ public class PantsMetrics {
    * This starts the indexing timer when certain conditions are met,
    * because the factor to determine whether indexing has started is
    * different in unit test and in GUI mode.
+   *
    * @param myProject current Project.
    */
   public static void prepareTimeIndexing(Project myProject) {
@@ -131,13 +133,18 @@ public class PantsMetrics {
   }
 
   public static void report() {
-    Map<String, Long> report = timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry->entry.getValue().elapsed(TimeUnit.SECONDS)));
+    Map<String, Long> report =
+      timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().elapsed(TimeUnit.SECONDS)));
+    System.out.println(report);
+    String reportDir = getMetricsReportDir();
+    if (reportDir == null) {
+      return;
+    }
     try (Writer writer = new FileWriter(getMetricsReportDir() + "/output.json")) {
       PantsUtil.gson.toJson(report, writer);
     }
     catch (IOException e) {
       e.printStackTrace();
     }
-    System.out.println(report);
   }
 }
