@@ -64,7 +64,8 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
   @Override
   public void disposeComponent() {
-
+    PantsUtil.scheduledThreadPool.shutdown();
+    PantsMetrics.indexThreadPool.shutdown();
   }
 
   //  Registers the rebuild action to Pants rebuild action.
@@ -130,11 +131,5 @@ public class PantsInitComponentImpl implements PantsInitComponent {
       Notifications.Bus.notify(notification);
       keymap.addShortcut("ExternalSystem.RefreshAllProjects", keyboardShortcut);
     }
-  }
-
-  @Override
-  public void disposeComponent() {
-    PantsUtil.scheduledThreadPool.shutdown();
-    PantsMetrics.indexThreadPool.shutdown();
   }
 }

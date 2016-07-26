@@ -4,14 +4,10 @@
 package com.twitter.intellij.pants.testFramework;
 
 import com.intellij.execution.BeforeRunTask;
-import com.intellij.execution.BeforeRunTaskProvider;
 import com.intellij.execution.RunManager;
-import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
-import com.intellij.execution.junit.JUnitConfiguration;
-import com.intellij.execution.junit.JUnitConfigurationType;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import org.jetbrains.annotations.NotNull;
