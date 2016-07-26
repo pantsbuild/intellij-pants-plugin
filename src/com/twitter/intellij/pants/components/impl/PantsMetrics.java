@@ -30,8 +30,8 @@ public class PantsMetrics {
   public static ScheduledExecutorService indexThreadPool;
 
   private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
-  private static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "pants.metrics.report.dir";
-  private static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "pants.metrics.import.dir";
+  public static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "pants.metrics.report.dir";
+  public static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "pants.metrics.import.dir";
 
   private static volatile ScheduledFuture handle;
   private static volatile int counter = 0;
@@ -46,9 +46,17 @@ public class PantsMetrics {
     return System.getProperty(SYSTEM_PROPERTY_METRICS_IMPORT_DIR);
   }
 
+  public static void setMetricsImportDir(String dir) {
+    System.setProperty(SYSTEM_PROPERTY_METRICS_IMPORT_DIR, dir);
+  }
+
   @Nullable
   public static String getMetricsReportDir() {
     return System.getProperty(SYSTEM_PROPERTY_METRICS_REPORT_DIR);
+  }
+
+  public static void setMetricsReportDir(String dir) {
+    System.setProperty(SYSTEM_PROPERTY_METRICS_REPORT_DIR, dir);
   }
 
   /**
@@ -139,15 +147,24 @@ public class PantsMetrics {
     Map<String, Long> report =
       timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().elapsed(TimeUnit.SECONDS)));
     System.out.println(report);
-    String reportDir = getMetricsReportDir();
-    if (reportDir == null) {
+    String reportFilePath = getReportFilePath();
+    if (reportFilePath == null) {
       return;
     }
-    try (Writer writer = new FileWriter(getMetricsReportDir() + "/output.json")) {
+    try (Writer writer = new FileWriter(reportFilePath)) {
       PantsUtil.gson.toJson(report, writer);
     }
     catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  @Nullable
+  public static String getReportFilePath() {
+    String reportDir = getMetricsReportDir();
+    if (reportDir == null) {
+      return null;
+    }
+    return getMetricsReportDir() + "/output.json";
   }
 }

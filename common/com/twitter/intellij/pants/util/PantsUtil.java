@@ -92,6 +92,7 @@ public class PantsUtil {
   public static final Gson gson = new Gson();
   public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {}.getType();
   public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
+  public static final Type TYPE_MAP_STRING_STRING = new TypeToken<Map<String, Integer>>() {}.getType();
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
     new ThreadFactory() {
       @Override
