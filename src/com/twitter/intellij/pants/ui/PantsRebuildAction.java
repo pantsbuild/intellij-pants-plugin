@@ -16,9 +16,9 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import icons.PantsIcons;
 
 /**
- * PantsCompileAllTargets is a UI action that, when in a project, compiles all targets in the project
+ * PantsRebuildAction is a UI action that, when in a project, runs clean-all, then compiles all targets in the project
  */
-public class PantsCompileAllTargets extends AnAction {
+public class PantsRebuildAction extends AnAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
     Project project = e.getProject();
@@ -26,19 +26,24 @@ public class PantsCompileAllTargets extends AnAction {
     if (project != null) {
       PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
       ApplicationManager.getApplication().executeOnPooledThread((Runnable)() -> {
-        runner.executeTask(project);
+        runner.rebuild(project);
       });
     } else {
       Notification notification = new Notification(
         PantsConstants.PANTS,
         PantsIcons.Icon,
         "Project not found",
-        "Compile failed",
+        "Rebuild failed",
         null,
         NotificationType.ERROR,
         null
       );
       Notifications.Bus.notify(notification);
     }
+  }
+
+  @Override
+  public void update(AnActionEvent e) {
+    e.getPresentation().setText("Compile all targets with clean-all");
   }
 }
