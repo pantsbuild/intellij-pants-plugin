@@ -11,9 +11,19 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * This class overrides the methods that will be called before/after project import/refresh.
+ * This class overrides the methods that will be called before/after project resolve.
+ * for metrics measurement purposes and other procedures around project resolve.
  */
 public class PantsProjectImportNotificationListener extends ExternalSystemTaskNotificationListenerAdapter {
+  @Override
+  public void onQueued(@NotNull ExternalSystemTaskId id, String workingDir) {
+    super.onQueued(id, workingDir);
+    if (id.findProject() == null) {
+      return;
+    }
+    PantsMetrics.markResolveStart();
+  }
+
   @Override
   public void onEnd(@NotNull ExternalSystemTaskId id) {
     Project project = id.findProject();
@@ -26,14 +36,5 @@ public class PantsProjectImportNotificationListener extends ExternalSystemTaskNo
     // due to import and refresh.
     PantsUtil.synchronizeFiles();
     super.onEnd(id);
-  }
-
-  @Override
-  public void onQueued(@NotNull ExternalSystemTaskId id, String workingDir) {
-    super.onQueued(id, workingDir);
-    if (id.findProject() == null) {
-      return;
-    }
-    PantsMetrics.markResolveStart();
   }
 }
