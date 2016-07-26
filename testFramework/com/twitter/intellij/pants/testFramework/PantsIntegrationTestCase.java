@@ -526,10 +526,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
   }
 
-  public void passthroughTearDown() throws Exception {
-    super.tearDown();
-  }
-
   @Override
   protected void importProject(@NonNls @Language("Python") String config) throws IOException {
     super.importProject(config);

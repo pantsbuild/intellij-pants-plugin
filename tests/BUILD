@@ -57,17 +57,3 @@ junit_tests(
   ],
   sources=globs('com/twitter/intellij/pants/metrics/*.java')
 )
-
-jvm_binary(
-  name='idea_plugin_all_in_one',
-  basename='idea_plugin_all_in_one',
-  dependencies=[
-    ':all',
-    ':metrics',
-    'jps-plugin',
-    'common',
-    'src:pants-intellij-plugin',
-    '3rdparty/intellij:python-plugin',
-    '3rdparty/intellij:scala-plugin',
-  ]
-)
