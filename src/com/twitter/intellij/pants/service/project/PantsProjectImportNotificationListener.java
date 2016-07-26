@@ -21,7 +21,7 @@ public class PantsProjectImportNotificationListener extends ExternalSystemTaskNo
       return;
     }
     PantsMetrics.markResolveEnd();
-    PantsMetrics.timeNextIndexing(project);
+    PantsMetrics.prepareTimeIndexing(project);
     // Sync files as generated sources may have changed after `pants export` called
     // due to import and refresh.
     PantsUtil.synchronizeFiles();

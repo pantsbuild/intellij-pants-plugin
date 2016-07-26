@@ -94,7 +94,6 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     GeneralCommandLine finalRunCommandline = getFinalCommandline(esc, null, taskManagerClass);
 
     List<String> expectedFinalRunCommandlineParameters = Arrays.asList(
-      "--no-colors",
       "test",
       "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
       "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",

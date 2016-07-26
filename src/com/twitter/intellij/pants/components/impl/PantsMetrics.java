@@ -24,19 +24,14 @@ import java.util.stream.Collectors;
 
 
 public class PantsMetrics {
-  //private static ConcurrentHashMap<Project, PantsMetrics> projectMetrics;
+  public static ScheduledExecutorService indexThreadPool;
 
   private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
-
-
   private static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "metrics.report.dir";
   private static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "metrics.import.dir";
 
   private static volatile ScheduledFuture handle;
-
-  public static ScheduledExecutorService indexThreadPool;
-
-  private static int counter = 0;
+  private static volatile int counter = 0;
 
   private static final String METRIC_INDEXING = "indexing_second";
   private static final String METRIC_LOAD = "load_second";
@@ -52,7 +47,13 @@ public class PantsMetrics {
     return System.getProperty(SYSTEM_PROPERTY_METRICS_REPORT_DIR);
   }
 
-  public static void timeNextIndexing(Project myProject) {
+  /**
+   * This starts the indexing timer when certain conditions are met,
+   * because the factor to determine whether indexing has started is
+   * different in unit test and in GUI mode.
+   * @param myProject current Project.
+   */
+  public static void prepareTimeIndexing(Project myProject) {
     if (ApplicationManager.getApplication().isUnitTestMode()) {
       markIndexStart();
       return;
