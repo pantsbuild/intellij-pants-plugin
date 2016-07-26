@@ -58,6 +58,10 @@ public class PantsOptions {
     return has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
   }
 
+  public boolean supportsAsyncCleanAll() {
+    return has(PantsConstants.PANTS_OPTION_ASYNC_CLEAN_ALL);
+  }
+
   public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {
     File pantsExecutableFile = new File(pantsExecutable);
     PantsOptions cache = optionsCache.get(pantsExecutableFile);

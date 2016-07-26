@@ -294,14 +294,15 @@
               class="com.twitter.intellij.pants.ui.PantsOptionsInvalidation"
               text="Invalidate Pants plugin caches">
       </action>
-      <action id="com.twitter.intellij.pants.ui.PantsCompileAllTargets"
-              class="com.twitter.intellij.pants.ui.PantsCompileAllTargets"
+      <action id="com.twitter.intellij.pants.ui.PantsCompileAllTargetsAction"
+              class="com.twitter.intellij.pants.ui.PantsCompileAllTargetsAction"
               text="Compile all targets in project">
       </action>
     </group>
     <group id="Pants.Compile" text="Pants Compile" description="Pants compilation options" icon="PantsIcons.Icon"
            popup="true" class="com.twitter.intellij.pants.ui.PantsCompileActionGroup">
       <add-to-group anchor="before" group-id="ProjectViewCompileGroup" relative-to-action="ProjectViewCompileGroup" />
+      <add-to-group group-id="Pants.Menu" anchor="first" />
     </group>
   </actions>
 

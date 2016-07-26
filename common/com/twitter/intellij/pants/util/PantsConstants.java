@@ -44,6 +44,7 @@ public class PantsConstants {
   public static final String PANTS_OPTION_PANTS_WORKDIR = "pants_workdir";
   public static final String PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION = "test.junit.strict_jvm_version";
   public static final String PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR = "export-classpath.manifest_jar_only";
+  public static final String PANTS_OPTION_ASYNC_CLEAN_ALL = "clean-all.async";
 
   // Used to initialize project sdk therefore use project processing weight, i.e, the highest.
   public static final Key<Sdk> SDK_KEY = Key.create(Sdk.class, ProjectKeys.PROJECT.getProcessingWeight());
@@ -53,6 +54,11 @@ public class PantsConstants {
   public static final String PANTS_CLI_OPTION_NO_COLORS = "--no-colors";
   public static final String PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";
   public static final String PANTS_CLI_OPTION_NO_TEST_JUNIT_TIMEOUTS = "--no-test-junit-timeouts";
+  public static final String PANTS_CLI_OPTION_ASYNC_CLEAN_ALL = "--async";
+
+  public static final String ACTION_MAKE_PROJECT_ID = "CompileDirty";
+  public static final String ACTION_MAKE_PROJECT_DESCRIPTION = "Make Project";
+  public static final String REBUILD_PROJECT_DESCRIPTION = "Rebuild Project";
 
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(
