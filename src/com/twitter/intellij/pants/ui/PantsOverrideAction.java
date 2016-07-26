@@ -13,7 +13,7 @@ import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
 /**
  * PantsOverrideAction is a wrapper action that toggles active actions on Pants or non-Pants projects

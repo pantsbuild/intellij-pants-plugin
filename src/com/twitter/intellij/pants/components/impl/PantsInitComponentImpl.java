@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.components.impl;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
 import com.intellij.ide.plugins.PluginManager;
@@ -27,7 +28,6 @@ import com.twitter.intellij.pants.ui.PantsCompileAllTargetsInModuleAction;
 import com.twitter.intellij.pants.ui.PantsOverrideAction;
 import com.twitter.intellij.pants.ui.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
-import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.HyperlinkEvent;
@@ -76,7 +76,7 @@ public class PantsInitComponentImpl implements PantsInitComponent {
       PantsConstants.ACTION_MAKE_PROJECT_ID,
       PantsConstants.ACTION_MAKE_PROJECT_DESCRIPTION,
       new PantsCompileAllTargetsAction(),
-      PantsIcons.getMakeIcon()
+      AllIcons.Actions.Compile
     );
     AnAction pantsMakeModuleAction = new PantsOverrideAction(
       IdeActions.ACTION_MAKE_MODULE,
