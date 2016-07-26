@@ -131,8 +131,7 @@ public class PantsMetrics {
 
   public static void report() {
     Map<String, Long> report = timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry->entry.getValue().elapsed(TimeUnit.SECONDS)));
-
-    try (Writer writer = new FileWriter("Output.json")) {
+    try (Writer writer = new FileWriter(getMetricsReportDir() + "/output.json")) {
       PantsUtil.gson.toJson(report, writer);
     }
     catch (IOException e) {
