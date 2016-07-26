@@ -12,23 +12,21 @@ import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testIntegration.TestIntegrationUtils;
-import com.jetbrains.python.psi.PyClass;
-import com.jetbrains.python.psi.PyFile;
-import com.jetbrains.python.testing.pytest.PyTestUtil;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -71,117 +69,57 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
     final PsiPackage testPackage;
     // Find out whether the click is on a test package
     if (psiLocation instanceof PsiPackage) {
-      testPackage = (PsiPackage)psiLocation;
+      testPackage = (PsiPackage) psiLocation;
     }
     else if (psiLocation instanceof PsiDirectory) {
-      testPackage = JavaDirectoryService.getInstance().getPackage(((PsiDirectory)psiLocation));
+      testPackage = JavaDirectoryService.getInstance().getPackage(((PsiDirectory) psiLocation));
     }
     else {
       testPackage = null;
     }
 
-
-    boolean isPython = isOrContainsPyTests(psiLocation);
-    // return false if it is a not a test class, a test package, or python file
-    if (!TestIntegrationUtils.isTest(psiLocation) && !hasJUnitTestClasses(testPackage, module) && !isPython) {
+    // Return false if it is a neither a test class nor a test package
+    if (!TestIntegrationUtils.isTest(psiLocation) && !hasJUnitTestClasses(testPackage, module)) {
       return false;
     }
+
+    // Obtain target address associated with this module.
+    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(targets);
+    if (targetAddresses.isEmpty()) {
+      return false;
+    }
+
+    final List<String> scriptParameters = new ArrayList<>();
+
+    scriptParameters.addAll(targetAddresses);
 
     final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);
     final PsiMethod psiMethod = PsiTreeUtil.getParentOfType(psiLocation, PsiMethod.class, false);
 
-    if (isPython) {
-      if (psiLocation instanceof PyFile) {
-        PyFile file = (PyFile) psiLocation;
-        buildFromPyTest(file, taskSettings, sourceElement, configuration);
-      }
-      else if (psiLocation instanceof PsiDirectory) {
-        PsiDirectory directory = (PsiDirectory) psiLocation;
-        buildFromPyTest(directory, taskSettings, sourceElement, configuration);
-      }
-    }
-    else if (psiMethod != null) {
-      buildFromPsiElement(psiMethod, taskSettings, sourceElement, configuration);
+    if (psiMethod != null) {
+      sourceElement.set(psiMethod);
+      configuration.setName(psiMethod.getName());
+      scriptParameters.add("--test-junit-test=" + psiClass.getQualifiedName() + "#" + psiMethod.getName());
     }
     else if (psiClass != null) {
-      buildFromPsiElement(psiClass, taskSettings, sourceElement, configuration);
+      sourceElement.set(psiClass);
+      configuration.setName(psiClass.getName());
+      scriptParameters.add("--test-junit-test=" + psiClass.getQualifiedName());
     }
     else if (testPackage != null) {
-      buildFromPsiElement(testPackage, taskSettings, sourceElement, configuration, module);
+      sourceElement.set(testPackage);
+      configuration.setName(testPackage.getName());
+      // Iterate through test classes in testPackage that is only in the scope of the module
+      Arrays.stream(testPackage.getClasses(module.getModuleScope()))
+        .filter(TestIntegrationUtils::isTest)
+        .forEach(psiClazz -> scriptParameters.add("--test-junit-test=" + psiClazz.getQualifiedName()));
     }
     else {
       return false;
     }
+
+    taskSettings.setScriptParameters(StringUtil.join(scriptParameters, " "));
     return true;
-  }
-
-  private void buildFromPyTest(
-    PyFile testFile,
-    ExternalSystemTaskExecutionSettings taskSettings,
-    Ref<PsiElement> sourceElement,
-    ExternalSystemRunConfiguration configuration
-  ) {
-    sourceElement.set(testFile);
-    configuration.setName(testFile.getName());
-    taskSettings.setExternalProjectPath(testFile.getVirtualFile().getPath());
-    taskSettings.setExecutionName(testFile.getName());
-    taskSettings.setScriptParameters("");
-  }
-
-  private void buildFromPyTest(
-    PsiDirectory testDir,
-    ExternalSystemTaskExecutionSettings taskSettings,
-    Ref<PsiElement> sourceElement,
-    ExternalSystemRunConfiguration configuration
-  ) {
-    sourceElement.set(testDir);
-    configuration.setName("Tests " + testDir.getName());
-    taskSettings.setExternalProjectPath(testDir.getVirtualFile().getPath());
-    taskSettings.setExecutionName(testDir.getName());
-    taskSettings.setScriptParameters("");
-  }
-
-  private void buildFromPsiElement(
-    PsiMethod psiMethod,
-    ExternalSystemTaskExecutionSettings taskSettings,
-    Ref<PsiElement> sourceElement, ExternalSystemRunConfiguration configuration
-  ) {
-    sourceElement.set(psiMethod);
-    PsiClass psiClass = PsiTreeUtil.getParentOfType(psiMethod, PsiClass.class, true);
-    configuration.setName(psiMethod.getName());
-    taskSettings.setScriptParameters(
-      "--test-junit-test=" + psiClass.getQualifiedName() + "#" + psiMethod.getName()
-    );
-  }
-
-  private void buildFromPsiElement(
-    PsiClass psiClass, ExternalSystemTaskExecutionSettings taskSettings,
-    Ref<PsiElement> sourceElement, ExternalSystemRunConfiguration configuration
-  ) {
-    sourceElement.set(psiClass);
-    configuration.setName(psiClass.getName());
-    taskSettings.setScriptParameters(
-      "--test-junit-test=" + psiClass.getQualifiedName()
-    );
-  }
-
-  private void buildFromPsiElement(
-    PsiPackage psiPackage, ExternalSystemTaskExecutionSettings taskSettings,
-    Ref<PsiElement> sourceElement, ExternalSystemRunConfiguration configuration, Module module
-  ) {
-    sourceElement.set(psiPackage);
-    configuration.setName("Tests " + psiPackage.getName());
-    String junitTestArgs = "";
-    // Iterate through test classes in testPackage that is only in the scope of the module
-    for (PsiClass psiClass : psiPackage.getClasses(module.getModuleScope())) {
-      if (TestIntegrationUtils.isTest(psiClass)) {
-        junitTestArgs += " --test-junit-test=" + psiClass.getQualifiedName();
-      }
-    }
-
-    taskSettings.setScriptParameters(
-      junitTestArgs
-    );
   }
 
   private boolean hasJUnitTestClasses(PsiPackage psiPackage, Module module) {
@@ -213,25 +151,4 @@ public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<
            StringUtil.equals(settings1.getExecutionName(), settings2.getExecutionName());
   }
 
-  private boolean isOrContainsPyTests(PsiElement element) {
-    if (element instanceof PyFile) {
-      PyFile pyFile = (PyFile) element;
-
-      for (PyClass pyClass : pyFile.getTopLevelClasses()) {
-        if (PyTestUtil.isPyTestClass(pyClass, null)) {
-          return true;
-        }
-      }
-    }
-    else if (element instanceof PsiDirectory) {
-      PsiDirectory directory = (PsiDirectory) element;
-      for (PsiFile file : directory.getFiles()) {
-        if (isOrContainsPyTests(file)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
 }

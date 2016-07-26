@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.components.impl;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
 import com.intellij.ide.plugins.PluginManager;
@@ -10,6 +11,9 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
@@ -19,6 +23,10 @@ import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
+import com.twitter.intellij.pants.ui.PantsCompileAllTargetsAction;
+import com.twitter.intellij.pants.ui.PantsCompileAllTargetsInModuleAction;
+import com.twitter.intellij.pants.ui.PantsOverrideAction;
+import com.twitter.intellij.pants.ui.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,6 +56,55 @@ public class PantsInitComponentImpl implements PantsInitComponent {
       ((IdeaPluginDescriptorImpl)plugin).setPath(new File(basePath));
     }
 
+    registerRefreshKey();
+
+    registerPantsActions();
+  }
+
+  @Override
+  public void disposeComponent() {
+
+  }
+
+  //  Registers the rebuild action to Pants rebuild action.
+  //  Registers Make module action to 'Make all targets in module' action.
+  //  Disables compile action
+  private void registerPantsActions() {
+    ActionManager actionManager = ActionManager.getInstance();
+
+    AnAction pantsCompileAllTargetAction = new PantsOverrideAction(
+      PantsConstants.ACTION_MAKE_PROJECT_ID,
+      PantsConstants.ACTION_MAKE_PROJECT_DESCRIPTION,
+      new PantsCompileAllTargetsAction(),
+      AllIcons.Actions.Compile
+    );
+    AnAction pantsMakeModuleAction = new PantsOverrideAction(
+      IdeActions.ACTION_MAKE_MODULE,
+      new PantsCompileAllTargetsInModuleAction()
+    );
+    //  Disables compile option (not applicable in Pants).
+    AnAction pantsDisableCompileAction = PantsOverrideAction.createDisabledEmptyAction(IdeActions.ACTION_COMPILE);
+
+    AnAction pantsRebuildAction = new PantsOverrideAction(
+      IdeActions.ACTION_COMPILE_PROJECT,
+      PantsConstants.REBUILD_PROJECT_DESCRIPTION,
+      new PantsRebuildAction()
+    );
+
+
+    actionManager.unregisterAction(PantsConstants.ACTION_MAKE_PROJECT_ID);
+    actionManager.unregisterAction(IdeActions.ACTION_MAKE_MODULE);
+    actionManager.unregisterAction(IdeActions.ACTION_COMPILE);
+    actionManager.unregisterAction(IdeActions.ACTION_COMPILE_PROJECT);
+
+    actionManager.registerAction(PantsConstants.ACTION_MAKE_PROJECT_ID, pantsCompileAllTargetAction);
+    actionManager.registerAction(IdeActions.ACTION_MAKE_MODULE, pantsMakeModuleAction);
+    actionManager.registerAction(IdeActions.ACTION_COMPILE, pantsDisableCompileAction);
+    actionManager.registerAction(IdeActions.ACTION_COMPILE_PROJECT, pantsRebuildAction);
+  }
+
+
+  private void registerRefreshKey() {
     Keymap keymap = KeymapManager.getInstance().getActiveKeymap();
     KeyboardShortcut keyboardShortcut = KeyboardShortcut.fromString("shift meta pressed R");
 
@@ -72,10 +129,5 @@ public class PantsInitComponentImpl implements PantsInitComponent {
       Notifications.Bus.notify(notification);
       keymap.addShortcut("ExternalSystem.RefreshAllProjects", keyboardShortcut);
     }
-  }
-
-  @Override
-  public void disposeComponent() {
-
   }
 }

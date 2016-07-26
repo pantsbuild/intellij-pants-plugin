@@ -93,6 +93,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.getPath());
       }
     }
+    /**
+     * If neither applies (e.g. Pants or pytest configuration), do not continue.
+     */
+    else {
+      return;
+    }
 
     /**
      * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.
@@ -149,7 +155,15 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()));
   }
 
+  public boolean executeTask(Project project, boolean useCleanAll) {
+    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), useCleanAll);
+  }
+
   public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile) {
+    return executeTask(currentProject, targetAddressesToCompile, false);
+  }
+
+  public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
@@ -169,6 +183,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     /* Global options section. */
     commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
 
+    if (useCleanAll) {
+      commandLine.addParameter("clean-all");
+      if (pantsOptions.supportsAsyncCleanAll()) {
+        commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_ASYNC_CLEAN_ALL);
+      }
+    }
     if (pantsOptions.supportsManifestJar()) {
       commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
     }
@@ -208,6 +228,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     // Sync files as generated sources may have changed after Pants compile.
     PantsUtil.synchronizeFiles();
     return success;
+  }
+
+  //  Attempts to run Pants clean all and then compile all targets in project
+  public boolean rebuild(Project project) {
+    return executeTask(project, true);
   }
 
   private void notifyCompileResult(final boolean success) {
@@ -282,17 +307,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     if (targetModules.length == 0) {
       return Collections.emptySet();
     }
-
-    Set<String> result = new HashSet<String>();
-
+    Set<String> result = new HashSet<>();
     for (Module targetModule : targetModules) {
-      String dehydratedAddresses = targetModule.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESSES_KEY);
-      if (dehydratedAddresses == null) {
-        continue;
-      }
-      result.addAll(PantsUtil.hydrateTargetAddresses(dehydratedAddresses));
+      result.addAll(PantsUtil.getNonGenTargetAddresses(targetModule));
     }
-
     return result;
   }
 
