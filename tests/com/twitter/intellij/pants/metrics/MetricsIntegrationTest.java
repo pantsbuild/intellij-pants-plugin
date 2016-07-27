@@ -38,9 +38,9 @@ public class MetricsIntegrationTest extends OSSPantsIntegrationTest {
     String reportFilePath = PantsMetrics.getReportFilePath();
     assertNotNull(reportFilePath);
     Map result = PantsUtil.gson.fromJson(new JsonReader(new FileReader(reportFilePath)), PantsUtil.TYPE_MAP_STRING_STRING);
-    assertTrue(0 < (int) result.get("export_second"));
-    assertTrue(0 < (int) result.get("load_second"));
-    assertTrue(0 < (int) result.get("indexing_second"));
+    assertTrue(0 <= (int) result.get("export_second"));
+    assertTrue(0 <= (int) result.get("load_second"));
+    assertTrue(0 <= (int) result.get("indexing_second"));
   }
 
   @Override
