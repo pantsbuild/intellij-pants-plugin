@@ -29,10 +29,4 @@ public class PantsCompileTargetAction extends PantsCompileActionBase {
   public Stream<PantsTargetAddress> getTargets(AnActionEvent e, @NotNull Project project) {
     return myTargetAddresses.stream().map(PantsTargetAddress::fromString);
   }
-
-  @Override
-  public boolean doCleanAll() {
-    return false;
-  }
-
 }

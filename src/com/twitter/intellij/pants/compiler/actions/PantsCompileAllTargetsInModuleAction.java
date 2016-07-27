@@ -45,9 +45,4 @@ public class PantsCompileAllTargetsInModuleAction extends PantsCompileActionBase
 
     return PantsUtil.getTargetAddressesFromModule(myModule).stream();
   }
-
-  @Override
-  public boolean doCleanAll() {
-    return false;
-  }
 }

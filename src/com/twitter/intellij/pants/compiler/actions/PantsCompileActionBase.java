@@ -36,7 +36,9 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
   @Nullable
   public abstract Stream<PantsTargetAddress> getTargets(AnActionEvent e, @NotNull Project project);
 
-  public abstract boolean doCleanAll();
+  public boolean doCleanAll() {
+    return false;
+  }
 
   @Override
   public void actionPerformed(AnActionEvent e) {

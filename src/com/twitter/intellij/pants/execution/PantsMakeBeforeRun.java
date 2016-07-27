@@ -154,7 +154,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   public boolean executeTask(Project project) {
     return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), false);
   }
-  
+
   public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
@@ -284,7 +284,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       RunProfileWithCompileBeforeLaunchOption config = (RunProfileWithCompileBeforeLaunchOption) configuration;
       Module[] targetModules = config.getModules();
       return getTargetAddressesToCompile(targetModules);
-    } else {
+    }
+    else {
       return Collections.emptySet();
     }
   }

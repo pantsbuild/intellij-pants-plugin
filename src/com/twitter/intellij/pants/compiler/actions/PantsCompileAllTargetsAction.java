@@ -35,9 +35,4 @@ public class PantsCompileAllTargetsAction extends PantsCompileActionBase {
       .map(PantsUtil::getTargetAddressesFromModule)
       .flatMap(Collection::stream);
   }
-
-  @Override
-  public boolean doCleanAll() {
-    return false;
-  }
 }
