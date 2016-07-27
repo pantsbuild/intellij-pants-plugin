@@ -3,7 +3,7 @@
 source scripts/prepare-ci-environment.sh
 
 if [[ $IJ_ULTIMATE == "true" ]]; then
-  export TEST_SET="integration"
+  export TEST_SET='jvm-integration'
 fi
 
 rm -rf $IDEA_TEST_HOME
