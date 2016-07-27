@@ -42,7 +42,7 @@ junit_tests(
 )
 
 junit_tests(
-  name='python-integration',
+  name='py-integration',
   dependencies=[
     ':sources-and-libs',
   ],
