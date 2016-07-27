@@ -148,21 +148,13 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Project currentProject = configuration.getProject();
     prepareIDE(currentProject);
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
-    return executeTask(currentProject, targetAddressesToCompile);
-  }
-
-  public boolean executeTask(Project project) {
-    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()));
-  }
-
-  public boolean executeTask(Project project, boolean useCleanAll) {
-    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), useCleanAll);
-  }
-
-  public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile) {
     return executeTask(currentProject, targetAddressesToCompile, false);
   }
 
+  public boolean executeTask(Project project) {
+    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), false);
+  }
+  
   public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
@@ -228,11 +220,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     // Sync files as generated sources may have changed after Pants compile.
     PantsUtil.synchronizeFiles();
     return success;
-  }
-
-  //  Attempts to run Pants clean all and then compile all targets in project
-  public boolean rebuild(Project project) {
-    return executeTask(project, true);
   }
 
   private void notifyCompileResult(final boolean success) {
