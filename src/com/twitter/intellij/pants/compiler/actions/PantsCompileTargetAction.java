@@ -23,7 +23,7 @@ public class PantsCompileTargetAction extends PantsCompileActionBase {
     myTargetAddresses.add(targetAddress);
   }
 
-  @Nullable
+  @NotNull
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
     return myTargetAddresses.stream();

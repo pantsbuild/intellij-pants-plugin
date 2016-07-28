@@ -31,7 +31,7 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
     super(name);
   }
 
-  @Nullable
+  @NotNull
   public abstract Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project);
 
   public boolean doCleanAll() {
@@ -39,7 +39,7 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
   }
 
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public void actionPerformed(@Nullable AnActionEvent e) {
     if (e == null) {
       return;
     }
@@ -47,13 +47,7 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
     Project project = e.getProject();
 
     if (project != null) {
-      Stream<String> pantsTargets = getTargets(e, project);
-      if (pantsTargets == null) {
-        return;
-      }
-
-      Set<String> fullTargets = pantsTargets.collect(Collectors.toSet());
-
+      Set<String> fullTargets = getTargets(e, project).collect(Collectors.toSet());
       PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
       ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeTask(project, fullTargets, doCleanAll()));
     } else {

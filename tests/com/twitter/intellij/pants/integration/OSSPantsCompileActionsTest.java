@@ -26,9 +26,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
   public void testCompileAllAction() throws Throwable {
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
     PantsCompileAllTargetsAction compileAllTargetsAction = new PantsCompileAllTargetsAction();
-    Stream<String> rawTargets = compileAllTargetsAction.getTargets(getPantsActionEvent(), myProject);
-    assertNotNull(rawTargets);
-    Set<String> targetAddresses = rawTargets.collect(Collectors.toSet());
+    Set<String> targetAddresses = compileAllTargetsAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
     Set<String> expectedTargets = new HashSet<>(Arrays.asList(
       "testprojects/src/java/org/pantsbuild/testproject/annotation/processor:processor",
       "testprojects/src/java/org/pantsbuild/testproject/annotation/processorwithdep/hellomaker:hellomaker",
@@ -44,9 +42,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
     PantsCompileTargetAction compileTargetAction =
       new PantsCompileTargetAction("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
-    Stream<String> rawTargets = compileTargetAction.getTargets(getPantsActionEvent(), myProject);
-    assertNotNull(rawTargets);
-    Set<String> targetAddresses = rawTargets.collect(Collectors.toSet());
+    Set<String> targetAddresses = compileTargetAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
     Set<String> expectedTarget = new HashSet<>(Arrays.asList("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main"));
     assertEquals(expectedTarget, targetAddresses);
     assertFalse(compileTargetAction.doCleanAll());
@@ -55,9 +51,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
   public void testRebuildAction() throws Throwable {
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
     PantsRebuildAction rebuildAction = new PantsRebuildAction();
-    Stream<String> rawTargets = rebuildAction.getTargets(getPantsActionEvent(), myProject);
-    assertNotNull(rawTargets);
-    Set<String> targetAddresses = rawTargets.collect(Collectors.toSet());
+    Set<String> targetAddresses = rebuildAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
     Set<String> expectedTargets = new HashSet<>(Arrays.asList(
       "testprojects/src/java/org/pantsbuild/testproject/annotation/processor:processor",
       "testprojects/src/java/org/pantsbuild/testproject/annotation/processorwithdep/hellomaker:hellomaker",
@@ -74,9 +68,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     assertModuleExists("_testprojects_src_java_org_pantsbuild_testproject_junit_testscope_common_sources");
     Module module = getModule("_testprojects_src_java_org_pantsbuild_testproject_junit_testscope_common_sources");
     PantsCompileAllTargetsInModuleAction compileAllTargetsInModuleAction = new PantsCompileAllTargetsInModuleAction(module);
-    Stream<String> rawTargets = compileAllTargetsInModuleAction.getTargets(getPantsActionEvent(), myProject);
-    assertNotNull(rawTargets);
-    Set<String> targetAddresses = rawTargets.collect(Collectors.toSet());
+    Set<String> targetAddresses = compileAllTargetsInModuleAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
     Set<String> expectedTargets = new HashSet<>(Arrays.asList(
       "testprojects/src/java/org/pantsbuild/testproject/junit/testscope:tests",
       "testprojects/src/java/org/pantsbuild/testproject/junit/testscope:check",

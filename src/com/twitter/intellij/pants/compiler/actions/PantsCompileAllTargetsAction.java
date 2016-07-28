@@ -27,7 +27,7 @@ public class PantsCompileAllTargetsAction extends PantsCompileActionBase {
     this("Compile all targets in project");
   }
 
-  @Nullable
+  @NotNull
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
     return Arrays.stream(ModuleManager.getInstance(project).getModules())

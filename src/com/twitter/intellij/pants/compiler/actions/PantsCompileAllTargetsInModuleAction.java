@@ -31,13 +31,13 @@ public class PantsCompileAllTargetsInModuleAction extends PantsCompileActionBase
     super("Compile all targets in module");
   }
 
-  @Nullable
+  @NotNull
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
     if (myModule == null) {
       VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
       if (file == null) {
-        return null;
+        return Stream.empty();
       }
       myModule = ModuleUtil.findModuleForFile(file, project);
     }
