@@ -13,13 +13,11 @@ import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBefor
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
-import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsConstants;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,7 +32,7 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
   }
 
   @Nullable
-  public abstract Stream<PantsTargetAddress> getTargets(AnActionEvent e, @NotNull Project project);
+  public abstract Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project);
 
   public boolean doCleanAll() {
     return false;
@@ -42,17 +40,19 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    if (e == null) {
+      return;
+    }
+
     Project project = e.getProject();
 
     if (project != null) {
-      Stream<PantsTargetAddress> pantsTargets = getTargets(e, project);
+      Stream<String> pantsTargets = getTargets(e, project);
       if (pantsTargets == null) {
         return;
       }
 
-      Set<String> fullTargets = pantsTargets
-        .map(PantsTargetAddress::toString)
-        .collect(Collectors.toSet());
+      Set<String> fullTargets = pantsTargets.collect(Collectors.toSet());
 
       PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
       ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeTask(project, fullTargets, doCleanAll()));

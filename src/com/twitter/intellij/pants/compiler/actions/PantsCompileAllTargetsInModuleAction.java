@@ -9,7 +9,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +33,7 @@ public class PantsCompileAllTargetsInModuleAction extends PantsCompileActionBase
 
   @Nullable
   @Override
-  public Stream<PantsTargetAddress> getTargets(AnActionEvent e, @NotNull Project project) {
+  public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
     if (myModule == null) {
       VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
       if (file == null) {
@@ -43,6 +42,6 @@ public class PantsCompileAllTargetsInModuleAction extends PantsCompileActionBase
       myModule = ModuleUtil.findModuleForFile(file, project);
     }
 
-    return PantsUtil.getTargetAddressesFromModule(myModule).stream();
+    return PantsUtil.getNonGenTargetAddresses(myModule).stream();
   }
 }

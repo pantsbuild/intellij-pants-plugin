@@ -6,7 +6,6 @@ package com.twitter.intellij.pants.compiler.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,9 +29,9 @@ public class PantsCompileAllTargetsAction extends PantsCompileActionBase {
 
   @Nullable
   @Override
-  public Stream<PantsTargetAddress> getTargets(AnActionEvent e, @NotNull Project project) {
+  public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
     return Arrays.stream(ModuleManager.getInstance(project).getModules())
-      .map(PantsUtil::getTargetAddressesFromModule)
+      .map(PantsUtil::getNonGenTargetAddresses)
       .flatMap(Collection::stream);
   }
 }

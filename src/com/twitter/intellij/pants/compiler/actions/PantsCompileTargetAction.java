@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.compiler.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.twitter.intellij.pants.model.PantsTargetAddress;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +25,7 @@ public class PantsCompileTargetAction extends PantsCompileActionBase {
 
   @Nullable
   @Override
-  public Stream<PantsTargetAddress> getTargets(AnActionEvent e, @NotNull Project project) {
-    return myTargetAddresses.stream().map(PantsTargetAddress::fromString);
+  public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
+    return myTargetAddresses.stream();
   }
 }
