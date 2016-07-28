@@ -36,7 +36,9 @@ jvm_binary(
   basename='intellij-pants-plugin',
   dependencies=[
     'common',
-    'tests:integration',
+    'tests:misc',
+    'tests:jvm-integration',
+    'tests:py-integration',
     'tests:metrics',
     'jps-plugin',
     'src:pants-intellij-plugin',
