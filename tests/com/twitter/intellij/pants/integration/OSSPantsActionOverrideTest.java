@@ -16,8 +16,8 @@ import com.twitter.intellij.pants.util.PantsConstants;
 
 public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
 
-  final String PANTS_ON = "actively overriding";
-  final DataContext PANTS_PROJECT_DATA = s -> s.equals("project") ? myProject : null;
+  private final String PANTS_ON = "actively overriding";
+  private final DataContext PANTS_PROJECT_DATA = s -> s.equals("project") ? myProject : null;
 
   public void testPantsRebuildOverride() throws Throwable {
     makeActionOverrideTest(
@@ -165,7 +165,7 @@ public class OSSPantsActionOverrideTest extends OSSPantsIntegrationTest {
       clickCounts++;
     }
 
-    public boolean hasBeenClicked() {
+    private boolean hasBeenClicked() {
       return clickCounts > 0;
     }
   }

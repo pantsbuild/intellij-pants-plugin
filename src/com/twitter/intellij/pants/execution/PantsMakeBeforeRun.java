@@ -148,19 +148,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Project currentProject = configuration.getProject();
     prepareIDE(currentProject);
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
-    return executeTask(currentProject, targetAddressesToCompile);
+    return executeTask(currentProject, targetAddressesToCompile, false);
   }
 
   public boolean executeTask(Project project) {
-    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()));
-  }
-
-  public boolean executeTask(Project project, boolean useCleanAll) {
-    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), useCleanAll);
-  }
-
-  public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile) {
-    return executeTask(currentProject, targetAddressesToCompile, false);
+    return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), false);
   }
 
   public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
@@ -230,11 +222,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return success;
   }
 
-  //  Attempts to run Pants clean all and then compile all targets in project
-  public boolean rebuild(Project project) {
-    return executeTask(project, true);
-  }
-
   private void notifyCompileResult(final boolean success) {
   /* Show pop up notification about pants compile result. */
     ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -297,7 +284,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       RunProfileWithCompileBeforeLaunchOption config = (RunProfileWithCompileBeforeLaunchOption) configuration;
       Module[] targetModules = config.getModules();
       return getTargetAddressesToCompile(targetModules);
-    } else {
+    }
+    else {
       return Collections.emptySet();
     }
   }
