@@ -19,3 +19,4 @@
 /build-support/*.pex
 /build-support/*.venv
 /build-support/virtualenv-*
+.pants.workdir.file_lock

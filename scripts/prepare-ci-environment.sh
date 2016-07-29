@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-
-set -e
-
+# Option not to exit terminal while iterating.
+exit_on_error="${EXIT_ON_ERROR:-1}"
+if [[ $exit_on_error -ne 0 ]]; then
+  set -e
+fi
 # Important: to update the build number of intellij, you need to update the following hashes:
 # Intellij tarball for Community and Ultimate Edition
 # Scala plugin

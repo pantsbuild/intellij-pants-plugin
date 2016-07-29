@@ -40,7 +40,14 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   }
 
   @Override
+  public void projectClosed() {
+    PantsMetrics.report();
+    super.projectClosed();
+  }
+
+  @Override
   public void projectOpened() {
+    PantsMetrics.initialize();
     super.projectOpened();
     if (myProject.isDefault()) {
       return;
