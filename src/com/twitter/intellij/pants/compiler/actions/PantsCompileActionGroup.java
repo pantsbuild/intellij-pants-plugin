@@ -1,7 +1,7 @@
 // Copyright 2016 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.ui;
+package com.twitter.intellij.pants.compiler.actions;
 
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -58,7 +58,7 @@ public class PantsCompileActionGroup extends ActionGroup {
 
     //  Adds compile all option for modules with multiple targets.
     if (targetAddresses.size() > 1) {
-      actions.add(new PantsCompileAllTargetsInModuleAction());
+      actions.add(new PantsCompileAllTargetsInModuleAction(module));
     }
 
     for (String targetAddress : targetAddresses) {
