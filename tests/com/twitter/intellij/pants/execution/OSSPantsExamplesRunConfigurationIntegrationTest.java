@@ -78,7 +78,6 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     GeneralCommandLine finalDebugCommandline = getFinalCommandline(esc, debuggerSetup, taskManagerClass);
 
     List<String> expectedFinalDebugCommandlineParameters = Arrays.asList(
-      "--no-colors",
       "--no-test-junit-timeouts",
       "--jvm-test-junit-options=" + debuggerSetup,
       "test",
@@ -95,7 +94,6 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     GeneralCommandLine finalRunCommandline = getFinalCommandline(esc, null, taskManagerClass);
 
     List<String> expectedFinalRunCommandlineParameters = Arrays.asList(
-      "--no-colors",
       "test",
       "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
       "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",

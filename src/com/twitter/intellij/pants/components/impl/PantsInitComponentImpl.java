@@ -28,6 +28,7 @@ import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModul
 import com.twitter.intellij.pants.ui.PantsOverrideAction;
 import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.HyperlinkEvent;
@@ -63,7 +64,8 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
   @Override
   public void disposeComponent() {
-
+    PantsUtil.scheduledThreadPool.shutdown();
+    PantsMetrics.indexThreadPool.shutdown();
   }
 
   //  Registers the rebuild action to Pants rebuild action.
