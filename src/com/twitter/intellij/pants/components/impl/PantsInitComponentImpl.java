@@ -23,11 +23,12 @@ import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
-import com.twitter.intellij.pants.ui.PantsCompileAllTargetsAction;
-import com.twitter.intellij.pants.ui.PantsCompileAllTargetsInModuleAction;
+import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsAction;
+import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModuleAction;
 import com.twitter.intellij.pants.ui.PantsOverrideAction;
-import com.twitter.intellij.pants.ui.PantsRebuildAction;
+import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.HyperlinkEvent;
@@ -63,7 +64,8 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
   @Override
   public void disposeComponent() {
-
+    PantsUtil.scheduledThreadPool.shutdown();
+    PantsMetrics.indexThreadPool.shutdown();
   }
 
   //  Registers the rebuild action to Pants rebuild action.

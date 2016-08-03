@@ -3,7 +3,7 @@
 source scripts/prepare-ci-environment.sh
 
 if [[ $IJ_ULTIMATE == "true" ]]; then
-  export TEST_SET='jvm-integration'
+  export TEST_SET="integration"
 fi
 
 rm -rf $IDEA_TEST_HOME
@@ -21,7 +21,7 @@ fi
 popd
 popd
 
-args="test tests:${TEST_SET:-:} $(append_intellij_jvm_options test-junit) ${ADDITIONAL_ARGS:-$@}"
+args="test tests:metrics $(append_intellij_jvm_options test-junit) ${ADDITIONAL_ARGS:-$@}"
 
 echo "Running ./pants $args"
 ./pants $args
