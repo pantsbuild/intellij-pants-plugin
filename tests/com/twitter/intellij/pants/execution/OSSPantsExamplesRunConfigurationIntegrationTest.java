@@ -190,7 +190,7 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
 
   private ConfigurationFromContext getPantsConfigurationFromContext(ConfigurationContext context) {
     for (RunConfigurationProducer producer : RunConfigurationProducer.getProducers(myProject)) {
-      if (producer instanceof PantsTestRunConfigurationProducer) {
+      if (producer instanceof PantsJUnitTestRunConfigurationProducer) {
         return producer.createConfigurationFromContext(context);
       }
     }

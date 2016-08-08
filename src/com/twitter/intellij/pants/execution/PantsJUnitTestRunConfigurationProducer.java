@@ -30,8 +30,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PantsTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
-  protected PantsTestRunConfigurationProducer() {
+public class PantsJUnitTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
+  protected PantsJUnitTestRunConfigurationProducer() {
     super(PantsExternalTaskConfigurationType.getInstance());
   }
 
