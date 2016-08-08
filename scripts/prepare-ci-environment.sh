@@ -10,8 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2016.2"
-export IJ_BUILD_NUMBER="162.1121.32"
+export IJ_VERSION="2016.2.1"
+export IJ_BUILD_NUMBER="162.1447.26"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
@@ -24,13 +24,13 @@ get_md5(){
 if [[ $IJ_ULTIMATE == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="3e4cec44604eabfe9043efbd5527950b"
+  export EXPECTED_IJ_MD5="27e122905e0cd2358b911abdbb44f41f"
   export PYTHON_PLUGIN_ID="Pythonid"
   export PYTHON_PLUGIN_MD5="553a68036a761a95d2b57637613e39df"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="b6077e3e54bd0b300e1e75e40201c65a"
+  export EXPECTED_IJ_MD5="74aedaf61882e984bfb134a6a1db4c5b"
   export PYTHON_PLUGIN_ID="PythonCore"
   export PYTHON_PLUGIN_MD5="c4e885fea86f5ad5da17a40804a3cafe"
 fi
