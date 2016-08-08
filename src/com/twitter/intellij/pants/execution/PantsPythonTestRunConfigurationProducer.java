@@ -30,7 +30,6 @@ public class PantsPythonTestRunConfigurationProducer extends RunConfigurationPro
     super(PantsExternalTaskConfigurationType.getInstance());
   }
 
-  //  TODO: reconfigure to two run config producers that still work just as well (git stash to co old versions)
   @Override
   protected boolean setupConfigurationFromContext(
     @NotNull ExternalSystemRunConfiguration configuration,
