@@ -339,18 +339,6 @@ public class PantsUtil {
     }
   }
 
-  public static Collection<String> listAllTargets(@NotNull String projectPath, String type) throws PantsException {
-    try {
-      final String fileContent = removeWhitespace(FileUtil.loadFile(new File(projectPath)));
-      final Set<String> result = new TreeSet<String>();
-      result.addAll(StringUtil.findMatches(fileContent, Pattern.compile(type + "\\Wname=(['\"])([\\w-_]+)\\1"), 2));
-      return result;
-    }
-    catch (IOException e) {
-      throw new PantsException(e.getMessage());
-    }
-  }
-
   public static String removeWhitespace(@NotNull String text) {
     return text.replaceAll("\\s", "");
   }
