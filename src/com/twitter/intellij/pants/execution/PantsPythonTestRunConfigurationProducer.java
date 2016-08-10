@@ -3,8 +3,6 @@
 
 package com.twitter.intellij.pants.execution;
 
-import com.intellij.execution.Location;
-import com.intellij.execution.PsiLocation;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.openapi.externalSystem.model.execution.ExternalSystemTaskExecutionSettings;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
@@ -15,7 +13,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiNamedElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.python.codeInsight.testIntegration.PyTestFinder;
 import com.jetbrains.python.psi.PyClass;
@@ -91,6 +88,7 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
     Ref<PsiElement> sourceElement,
     ExternalSystemRunConfiguration configuration
   ) {
+    System.out.println(testElem);
     sourceElement.set(testElem);
     configuration.setName("Pants tests in " + elemStr);
     taskSettings.setExternalProjectPath(path);
