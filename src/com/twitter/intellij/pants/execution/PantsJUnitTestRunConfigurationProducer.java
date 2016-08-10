@@ -30,11 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PantsJUnitTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
-  protected PantsJUnitTestRunConfigurationProducer() {
-    super(PantsExternalTaskConfigurationType.getInstance());
-  }
-
+public class PantsJUnitTestRunConfigurationProducer extends PantsTestRunConfigurationProducer {
   @Override
   protected boolean setupConfigurationFromContext(
     @NotNull ExternalSystemRunConfiguration configuration,
@@ -131,24 +127,4 @@ public class PantsJUnitTestRunConfigurationProducer extends RunConfigurationProd
     }
     return false;
   }
-
-  @Override
-  public boolean isConfigurationFromContext(
-    @NotNull ExternalSystemRunConfiguration configuration,
-    @NotNull ConfigurationContext context
-  ) {
-    final ExternalSystemRunConfiguration tempConfig = new ExternalSystemRunConfiguration(
-      PantsConstants.SYSTEM_ID, context.getProject(), configuration.getFactory(), configuration.getName()
-    );
-    final Ref<PsiElement> locationRef = new Ref<PsiElement>(context.getPsiLocation());
-    setupConfigurationFromContext(tempConfig, context, locationRef);
-    return compareSettings(configuration.getSettings(), tempConfig.getSettings());
-  }
-
-  private boolean compareSettings(ExternalSystemTaskExecutionSettings settings1, ExternalSystemTaskExecutionSettings settings2) {
-    return settings1.equals(settings2) &&
-           StringUtil.equalsIgnoreWhitespaces(settings1.getScriptParameters(), settings2.getScriptParameters()) &&
-           StringUtil.equals(settings1.getExecutionName(), settings2.getExecutionName());
-  }
-
 }

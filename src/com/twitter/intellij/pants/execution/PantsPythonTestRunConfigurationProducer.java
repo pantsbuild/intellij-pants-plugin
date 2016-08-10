@@ -3,8 +3,9 @@
 
 package com.twitter.intellij.pants.execution;
 
+import com.intellij.execution.Location;
+import com.intellij.execution.PsiLocation;
 import com.intellij.execution.actions.ConfigurationContext;
-import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.externalSystem.model.execution.ExternalSystemTaskExecutionSettings;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
 import com.intellij.openapi.module.Module;
@@ -14,9 +15,12 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiNamedElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.python.codeInsight.testIntegration.PyTestFinder;
 import com.jetbrains.python.psi.PyClass;
 import com.jetbrains.python.psi.PyFile;
+import com.jetbrains.python.psi.PyFunction;
 import com.jetbrains.python.testing.pytest.PyTestUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -25,10 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 
-public class PantsPythonTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
-  protected PantsPythonTestRunConfigurationProducer() {
-    super(PantsExternalTaskConfigurationType.getInstance());
-  }
+public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigurationProducer {
 
   @Override
   protected boolean setupConfigurationFromContext(
@@ -52,61 +53,38 @@ public class PantsPythonTestRunConfigurationProducer extends RunConfigurationPro
     if (psiLocation == null) {
       return false;
     }
-
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
     taskSettings.setTaskNames(Collections.singletonList("test"));
 
     boolean isPython = isOrContainsPyTests(psiLocation);
-
-    if (isPython) {
-      if (psiLocation instanceof PyFile) {
-        PyFile file = (PyFile) psiLocation;
-        return buildFromPyTest(file, file.getName(), file.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
-      }
-      else if (psiLocation instanceof PsiDirectory) {
-        PsiDirectory dir = (PsiDirectory) psiLocation;
-        return buildFromPyTest(
-          dir,
-          "Tests in " + dir.getName(),
-          dir.getName(),
-          dir.getVirtualFile().getPath(),
-          targets,
-          taskSettings,
-          sourceElement,
-          configuration
-        );
-      }
-      else {
-        return buildFromPyTest(
-          psiLocation,
-          psiLocation.getText(),
-          psiLocation.getContainingFile().getVirtualFile().getPath(),
-          targets,
-          taskSettings,
-          sourceElement,
-          configuration
-        );
-      }
+    if (!isPython) {
+      return false;
     }
-    return false;
+    if (psiLocation instanceof PyFile) {
+      PyFile file = (PyFile) psiLocation;
+      return buildFromPyTest(file, file.getName(), file.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
+    }
+    else if (psiLocation instanceof PsiDirectory) {
+      PsiDirectory dir = (PsiDirectory) psiLocation;
+      return buildFromPyTest(dir, dir.getName(), dir.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
+    }
+    else {
+      PyFile file = (PyFile) psiLocation.getContainingFile();
+      PyFunction pyFunction = PsiTreeUtil.getParentOfType(psiLocation, PyFunction.class, false);
+      PyClass pyClass = PsiTreeUtil.getParentOfType(psiLocation, PyClass.class, false);
+      if (pyFunction != null) {
+        return buildFromPyTest(psiLocation, pyFunction.getName(), file.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
+      }
+      if (pyClass != null) {
+        return buildFromPyTest(psiLocation, pyClass.getName(), file.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
+      }
+      return buildFromPyTest(psiLocation, file.getName(), file.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
+    }
   }
 
   private boolean buildFromPyTest(
     PsiElement testElem,
-    String elemName,
-    String path,
-    List<String> targets,
-    ExternalSystemTaskExecutionSettings taskSettings,
-    Ref<PsiElement> sourceElement,
-    ExternalSystemRunConfiguration configuration
-  ) {
-    return buildFromPyTest(testElem, elemName, elemName, path, targets, taskSettings, sourceElement, configuration);
-  }
-
-  private boolean buildFromPyTest(
-    PsiElement testElem,
-    String configName,
-    String elemName,
+    String elemStr,
     String path,
     List<String> targets,
     ExternalSystemTaskExecutionSettings taskSettings,
@@ -114,32 +92,13 @@ public class PantsPythonTestRunConfigurationProducer extends RunConfigurationPro
     ExternalSystemRunConfiguration configuration
   ) {
     sourceElement.set(testElem);
-    configuration.setName(configName);
+    configuration.setName("Pants tests in " + elemStr);
     taskSettings.setExternalProjectPath(path);
     String scriptParams = StringUtil.join(targets, " ");
-    scriptParams += " --test-pytest-options=\"-k " + elemName + "\"";
-    taskSettings.setExecutionName(elemName);
+    scriptParams += " " + PantsConstants.PANTS_CLI_OPTION_PYTEST + "=\"-k " + elemStr + "\"";
+    taskSettings.setExecutionName(elemStr);
     taskSettings.setScriptParameters(scriptParams);
     return true;
-  }
-
-  @Override
-  public boolean isConfigurationFromContext(
-    @NotNull ExternalSystemRunConfiguration configuration,
-    @NotNull ConfigurationContext context
-  ) {
-    final ExternalSystemRunConfiguration tempConfig = new ExternalSystemRunConfiguration(
-      PantsConstants.SYSTEM_ID, context.getProject(), configuration.getFactory(), configuration.getName()
-    );
-    final Ref<PsiElement> locationRef = new Ref<PsiElement>(context.getPsiLocation());
-    setupConfigurationFromContext(tempConfig, context, locationRef);
-    return compareSettings(configuration.getSettings(), tempConfig.getSettings());
-  }
-
-  private boolean compareSettings(ExternalSystemTaskExecutionSettings settings1, ExternalSystemTaskExecutionSettings settings2) {
-    return settings1.equals(settings2) &&
-           StringUtil.equalsIgnoreWhitespaces(settings1.getScriptParameters(), settings2.getScriptParameters()) &&
-           StringUtil.equals(settings1.getExecutionName(), settings2.getExecutionName());
   }
 
   private boolean isOrContainsPyTests(PsiElement element) {

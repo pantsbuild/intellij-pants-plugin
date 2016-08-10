@@ -35,6 +35,7 @@ import com.twitter.intellij.pants.PantsManager;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -168,29 +169,46 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
 
   public void testPyTestRunConfiguration() throws Throwable {
     doImport("examples/tests/python/example_test/hello");
-
-    PyClass pyClass = PyClassNameIndex.find("GreetTest", myProject, false).iterator().next();
+    PyClass pyClass = PyClassNameIndex.find("GreetTest", myProject, true).iterator().next();
     PyClass truClass = new PyTestClass(pyClass);
-
+    System.out.println(pyClass);
     assertTrue(PyTestUtil.isPyTestClass(truClass, null));
 
     PsiFile file = new PyTestFile(truClass.getContainingFile(), truClass);
-    ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(file);
+    ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(file, true);
     ArrayList<String> items = new ArrayList<String>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
 
     assertNotContainsSubstring(items, "--test-junit-test");
+    assertContainsSubstring(items, PantsConstants.PANTS_CLI_OPTION_PYTEST);
   }
 
   @NotNull
   private ExternalSystemRunConfiguration getExternalSystemRunConfiguration(PsiElement psiElement) {
+    return getExternalSystemRunConfiguration(psiElement, false);
+  }
+
+  @NotNull
+  private ExternalSystemRunConfiguration getExternalSystemRunConfiguration(PsiElement psiElement, boolean getPython) {
     ConfigurationContext context = createContext(psiElement, new MapDataContext());
-    ConfigurationFromContext myPantsConfigurationFromContext = getPantsConfigurationFromContext(context);
+    ConfigurationFromContext myPantsConfigurationFromContext = getPython ?
+                                                               getPantsPytestConfigurationFromContext(context) :
+                                                               getPantsJunitConfigurationFromContext(context);
+    assertNotNull(myPantsConfigurationFromContext);
     return (ExternalSystemRunConfiguration) myPantsConfigurationFromContext.getConfiguration();
   }
 
-  private ConfigurationFromContext getPantsConfigurationFromContext(ConfigurationContext context) {
+  private ConfigurationFromContext getPantsJunitConfigurationFromContext(ConfigurationContext context) {
     for (RunConfigurationProducer producer : RunConfigurationProducer.getProducers(myProject)) {
       if (producer instanceof PantsJUnitTestRunConfigurationProducer) {
+        return producer.createConfigurationFromContext(context);
+      }
+    }
+    return null;
+  }
+
+  private ConfigurationFromContext getPantsPytestConfigurationFromContext(ConfigurationContext context) {
+    for (RunConfigurationProducer producer : RunConfigurationProducer.getProducers(myProject)) {
+      if (producer instanceof PantsPythonTestRunConfigurationProducer) {
         return producer.createConfigurationFromContext(context);
       }
     }
@@ -210,6 +228,7 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
   private class PyTestFile extends PyFileImpl {
 
     private PyClass myTestClass;
+
     private PyTestFile(PsiFile pyFile, PyClass testClass) {
       super(pyFile.getViewProvider());
       myTestClass = testClass;
@@ -220,8 +239,10 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
       return Collections.singletonList(myTestClass);
     }
   }
+
   private class PyTestClass extends PyClassImpl {
     PyClass within;
+
     private PyTestClass(PyClass pyClass) {
       super(pyClass.getNameNode());
       within = pyClass;
