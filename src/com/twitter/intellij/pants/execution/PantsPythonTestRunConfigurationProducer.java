@@ -72,7 +72,7 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
       if (pyFunction != null) {
         return buildFromPyTest(
           psiLocation,
-          pyFunction.getName() + " and " + pyClass.getName(),
+          "'" + pyClass.getName() + " and " + pyFunction.getName() + "'",
           file.getVirtualFile().getPath(),
           targets,
           taskSettings,
