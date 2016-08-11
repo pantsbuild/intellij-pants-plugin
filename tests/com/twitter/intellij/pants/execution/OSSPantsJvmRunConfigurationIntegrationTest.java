@@ -18,28 +18,17 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.MapDataContext;
-import com.jetbrains.python.psi.PyClass;
-import com.jetbrains.python.psi.impl.PyClassImpl;
-import com.jetbrains.python.psi.impl.PyFileImpl;
-import com.jetbrains.python.psi.stubs.PyClassNameIndex;
-import com.jetbrains.python.psi.types.PyClassLikeType;
-import com.jetbrains.python.psi.types.PyClassTypeImpl;
-import com.jetbrains.python.psi.types.TypeEvalContext;
-import com.jetbrains.python.testing.pytest.PyTestUtil;
 import com.twitter.intellij.pants.PantsManager;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
-import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,7 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
+public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
   public void testClassRunConfiguration() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
@@ -167,32 +156,10 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestEight"));
   }
 
-  public void testPyTestRunConfiguration() throws Throwable {
-    doImport("examples/tests/python/example_test/hello");
-    PyClass pyClass = PyClassNameIndex.find("GreetTest", myProject, true).iterator().next();
-    PyClass truClass = new PyTestClass(pyClass);
-    System.out.println(pyClass);
-    assertTrue(PyTestUtil.isPyTestClass(truClass, null));
-
-    PsiFile file = new PyTestFile(truClass.getContainingFile(), truClass);
-    ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(file, true);
-    ArrayList<String> items = new ArrayList<String>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
-
-    assertNotContainsSubstring(items, "--test-junit-test");
-    assertContainsSubstring(items, PantsConstants.PANTS_CLI_OPTION_PYTEST);
-  }
-
   @NotNull
   private ExternalSystemRunConfiguration getExternalSystemRunConfiguration(PsiElement psiElement) {
-    return getExternalSystemRunConfiguration(psiElement, false);
-  }
-
-  @NotNull
-  private ExternalSystemRunConfiguration getExternalSystemRunConfiguration(PsiElement psiElement, boolean getPython) {
     ConfigurationContext context = createContext(psiElement, new MapDataContext());
-    ConfigurationFromContext myPantsConfigurationFromContext = getPython ?
-                                                               getPantsPytestConfigurationFromContext(context) :
-                                                               getPantsJunitConfigurationFromContext(context);
+    ConfigurationFromContext myPantsConfigurationFromContext = getPantsJunitConfigurationFromContext(context);
     assertNotNull(myPantsConfigurationFromContext);
     return (ExternalSystemRunConfiguration) myPantsConfigurationFromContext.getConfiguration();
   }
@@ -206,15 +173,6 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     return null;
   }
 
-  private ConfigurationFromContext getPantsPytestConfigurationFromContext(ConfigurationContext context) {
-    for (RunConfigurationProducer producer : RunConfigurationProducer.getProducers(myProject)) {
-      if (producer instanceof PantsPythonTestRunConfigurationProducer) {
-        return producer.createConfigurationFromContext(context);
-      }
-    }
-    return null;
-  }
-
   private ConfigurationContext createContext(@NotNull PsiElement psiClass, @NotNull MapDataContext dataContext) {
     dataContext.put(CommonDataKeys.PROJECT, myProject);
     if (LangDataKeys.MODULE.getData(dataContext) == null) {
@@ -222,49 +180,5 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
     }
     dataContext.put(Location.DATA_KEY, PsiLocation.fromPsiElement(psiClass));
     return ConfigurationContext.getFromContext(dataContext);
-  }
-
-  //  The classes below are created to correctly form a context for python testing
-  private class PyTestFile extends PyFileImpl {
-
-    private PyClass myTestClass;
-
-    private PyTestFile(PsiFile pyFile, PyClass testClass) {
-      super(pyFile.getViewProvider());
-      myTestClass = testClass;
-    }
-
-    @Override
-    public List<PyClass> getTopLevelClasses() {
-      return Collections.singletonList(myTestClass);
-    }
-  }
-
-  private class PyTestClass extends PyClassImpl {
-    PyClass within;
-
-    private PyTestClass(PyClass pyClass) {
-      super(pyClass.getNameNode());
-      within = pyClass;
-    }
-
-    @NotNull
-    public List<PyClassLikeType> getAncestorTypes(@NotNull TypeEvalContext context) {
-      ArrayList<PyClassLikeType> ancestors = new ArrayList<PyClassLikeType>();
-      ancestors.add(new AncestorPyClass(within, true));
-      return ancestors;
-    }
-  }
-
-  private class AncestorPyClass extends PyClassTypeImpl {
-
-    private AncestorPyClass(@NotNull PyClass source, boolean isDefinition) {
-      super(source, isDefinition);
-    }
-
-    @Override
-    public String getClassQName() {
-      return "unittest.TestCase";
-    }
   }
 }

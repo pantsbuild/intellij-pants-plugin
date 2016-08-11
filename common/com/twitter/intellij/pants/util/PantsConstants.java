@@ -56,6 +56,7 @@ public class PantsConstants {
   public static final String PANTS_CLI_OPTION_NO_TEST_JUNIT_TIMEOUTS = "--no-test-junit-timeouts";
   public static final String PANTS_CLI_OPTION_ASYNC_CLEAN_ALL = "--async";
   public static final String PANTS_CLI_OPTION_PYTEST = "--test-pytest-options";
+  public static final String PANTS_CLI_OPTION_JUNIT_TEST = "--test-junit-test";
 
   public static final String ACTION_MAKE_PROJECT_ID = "CompileDirty";
   public static final String ACTION_MAKE_PROJECT_DESCRIPTION = "Make Project";

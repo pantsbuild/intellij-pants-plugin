@@ -70,12 +70,29 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
       PyFunction pyFunction = PsiTreeUtil.getParentOfType(psiLocation, PyFunction.class, false);
       PyClass pyClass = PsiTreeUtil.getParentOfType(psiLocation, PyClass.class, false);
       if (pyFunction != null) {
-        return buildFromPyTest(psiLocation, pyFunction.getName(), file.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
+        return buildFromPyTest(
+          psiLocation,
+          pyFunction.getName() + " and " + pyClass.getName(),
+          file.getVirtualFile().getPath(),
+          targets,
+          taskSettings,
+          sourceElement,
+          configuration
+        );
       }
       if (pyClass != null) {
-        return buildFromPyTest(psiLocation, pyClass.getName(), file.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
+        return buildFromPyTest(
+          psiLocation, pyClass.getName(), file.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
       }
-      return buildFromPyTest(psiLocation, file.getName(), file.getVirtualFile().getPath(), targets, taskSettings, sourceElement, configuration);
+      return buildFromPyTest(
+        psiLocation,
+        file.getName(),
+        file.getVirtualFile().getPath(),
+        targets,
+        taskSettings,
+        sourceElement,
+        configuration
+      );
     }
   }
 
@@ -88,7 +105,6 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
     Ref<PsiElement> sourceElement,
     ExternalSystemRunConfiguration configuration
   ) {
-    System.out.println(testElem);
     sourceElement.set(testElem);
     configuration.setName("Pants tests in " + elemStr);
     taskSettings.setExternalProjectPath(path);
@@ -100,7 +116,7 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
   }
 
   private boolean isOrContainsPyTests(PsiElement element) {
-    if ((new PyTestFinder()).isTest(element)) {
+    if (new PyTestFinder().isTest(element)) {
       return true;
     }
 

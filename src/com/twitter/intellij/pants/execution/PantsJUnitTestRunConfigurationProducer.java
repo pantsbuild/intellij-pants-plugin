@@ -95,7 +95,7 @@ public class PantsJUnitTestRunConfigurationProducer extends PantsTestRunConfigur
     if (psiMethod != null) {
       sourceElement.set(psiMethod);
       configuration.setName(psiMethod.getName());
-      scriptParameters.add("--test-junit-test=" + psiClass.getQualifiedName() + "#" + psiMethod.getName());
+      scriptParameters.add(PantsConstants.PANTS_CLI_OPTION_JUNIT_TEST + "=" + psiClass.getQualifiedName() + "#" + psiMethod.getName());
     }
     else if (psiClass != null) {
       sourceElement.set(psiClass);
