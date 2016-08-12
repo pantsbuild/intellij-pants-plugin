@@ -6,10 +6,8 @@ package com.twitter.intellij.pants.execution;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.openapi.externalSystem.model.execution.ExternalSystemTaskExecutionSettings;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -20,7 +18,6 @@ import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyFunction;
 import com.jetbrains.python.testing.pytest.PyTestUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
-import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -34,22 +31,13 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
     @NotNull ConfigurationContext context,
     @NotNull Ref<PsiElement> sourceElement
   ) {
-    final Module module = context.getModule();
-    if (module == null) {
+    PantsContextProcessor processor = PantsContextProcessor.create(context);
+    if (processor == null) {
       return false;
     }
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
-    if (buildRoot == null) {
-      return false;
-    }
-    final List<String> targets = PantsUtil.getNonGenTargetAddresses(module);
-    if (targets.isEmpty()) {
-      return false;
-    }
-    final PsiElement psiLocation = context.getPsiLocation();
-    if (psiLocation == null) {
-      return false;
-    }
+
+    final List<String> targets = processor.targets;
+    final PsiElement psiLocation = processor.psiLocation;
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
     taskSettings.setTaskNames(Collections.singletonList("test"));
 

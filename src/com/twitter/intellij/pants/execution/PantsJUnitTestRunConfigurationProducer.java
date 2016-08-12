@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.actions.ConfigurationContext;
-import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.externalSystem.model.execution.ExternalSystemTaskExecutionSettings;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
 import com.intellij.openapi.module.Module;
@@ -20,9 +19,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testIntegration.TestIntegrationUtils;
-import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsConstants;
-import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -37,29 +34,22 @@ public class PantsJUnitTestRunConfigurationProducer extends PantsTestRunConfigur
     @NotNull ConfigurationContext context,
     @NotNull Ref<PsiElement> sourceElement
   ) {
-    final Module module = context.getModule();
-    if (module == null) {
-      return false;
-    }
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
-    if (buildRoot == null) {
-      return false;
-    }
-    final List<PantsTargetAddress> targets = PantsUtil.getTargetAddressesFromModule(module);
-    if (targets.isEmpty()) {
-      return false;
-    }
-    final PsiElement psiLocation = context.getPsiLocation();
-    if (psiLocation == null) {
+    PantsContextProcessor processor = PantsContextProcessor.create(context);
+    if (processor == null) {
       return false;
     }
 
+    final Module module = processor.module;
+    final VirtualFile buildRoot = processor.buildRoot;
+    final List<String> targets = processor.targets;
+    final PsiElement psiLocation = processor.psiLocation;
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
+    taskSettings.setTaskNames(Collections.singletonList("test"));
 
     /**
      * Add the module's folder:: to target_roots
      **/
-    taskSettings.setExternalProjectPath(FileUtil.join(buildRoot.getPath(), targets.iterator().next().getPath()));
+    taskSettings.setExternalProjectPath(FileUtil.join(buildRoot.getPath(), targets.iterator().next()));
     taskSettings.setTaskNames(Collections.singletonList("test"));
 
     final PsiPackage testPackage;
@@ -79,15 +69,9 @@ public class PantsJUnitTestRunConfigurationProducer extends PantsTestRunConfigur
       return false;
     }
 
-    // Obtain target address associated with this module.
-    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(targets);
-    if (targetAddresses.isEmpty()) {
-      return false;
-    }
-
     final List<String> scriptParameters = new ArrayList<>();
 
-    scriptParameters.addAll(targetAddresses);
+    scriptParameters.addAll(targets);
 
     final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);
     final PsiMethod psiMethod = PsiTreeUtil.getParentOfType(psiLocation, PsiMethod.class, false);
