@@ -154,7 +154,7 @@ public class PantsResolverTest extends PantsResolverTestBase {
     assertSourceRoot("a_java_and_scala", "src/scala/foo/bar");
     assertSourceRoot("a_java_and_scala", "src/scala/foo/baz");
   }
-  
+
   public void testLibraryDependingOnSource() {
     // source:a -> 3rdparty:a -> source:b
     addInfo("source:a").
