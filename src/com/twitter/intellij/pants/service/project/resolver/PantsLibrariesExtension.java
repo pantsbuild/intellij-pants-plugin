@@ -42,6 +42,7 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
     @NotNull Map<String, DataNode<ModuleData>> modules
   ) {
     final Map<String, LibraryData> idToLibraryData = ContainerUtilRt.newHashMap();
+
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
       final TargetInfo targetInfo = entry.getValue();
       if (!targetInfo.isJarLibrary()) {
@@ -59,7 +60,6 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
           LOG.debug("Couldn't find library " + libraryId);
           continue;
         }
-
 
         addPathLoLibrary(libraryData, executor, LibraryPathType.BINARY, libraryInfo.getDefault());
         addPathLoLibrary(libraryData, executor, LibraryPathType.SOURCE, libraryInfo.getSources());
