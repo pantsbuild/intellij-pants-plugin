@@ -103,10 +103,7 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
       if (dependencyTargetInfo == null || dependencyTargetInfo.isJarLibrary()) {
         continue;
       }
-      String warning = String.format(
-        PantsBundle.message("pants.warning.library.depends.on.source"),
-        jarTarget, dependency
-      );
+      String warning = PantsBundle.message("pants.warning.library.depends.on.source", jarTarget, dependency);
       PantsNotificationWrapper.notify(
         new Notification(PantsConstants.PANTS, "Project import", warning, NotificationType.WARNING)
       );

@@ -170,10 +170,7 @@ public class PantsResolverTest extends PantsResolverTestBase {
     assertLibrary("source_a", "3rdparty:a");
     assertContainsElements(
       PantsNotificationWrapper.getLog(),
-      String.format(
-        PantsBundle.message("pants.warning.library.depends.on.source"),
-        "3rdparty:a", "source:b"
-      )
+      PantsBundle.message("pants.warning.library.depends.on.source", "3rdparty:a", "source:b")
     );
   }
 }
