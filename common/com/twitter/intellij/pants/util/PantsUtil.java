@@ -651,16 +651,6 @@ public class PantsUtil {
     return name.substring(0, index);
   }
 
-  @Contract(pure = true)
-  public static <T> boolean forall(@NotNull Iterable<T> iterable, @NotNull Condition<T> condition) {
-    for (T value : iterable) {
-      if (!condition.value(value)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   @NotNull
   public static <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
     return ContainerUtil.mapNotNull(

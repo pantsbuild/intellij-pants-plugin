@@ -5,6 +5,8 @@ package com.twitter.intellij.pants.service.project;
 
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
+import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.notification.PantsNotificationWrapper;
 
 public class PantsResolverTest extends PantsResolverTestBase {
   public void testOneCommonRootOwnedBySingleTargetOneNot() {
@@ -151,5 +153,28 @@ public class PantsResolverTest extends PantsResolverTestBase {
     assertSourceRoot("a_java_and_scala", "src/java/foo/baz");
     assertSourceRoot("a_java_and_scala", "src/scala/foo/bar");
     assertSourceRoot("a_java_and_scala", "src/scala/foo/baz");
+  }
+
+
+  public void testLibraryDependingOnSource() {
+    // source:a -> 3rdparty:a -> source:b
+    addInfo("source:a").
+      withRoot("src/java/foo/bar", "com.foo.bar").
+      withLibrary("3rdparty:a");
+
+    addJarLibrary("3rdparty:a")
+      .withDependency("source:b");
+
+    addInfo("source:b").
+      withRoot("src/java/foo/baz", "com.foo.baz");
+
+    assertLibrary("source_a", "3rdparty:a");
+    assertContainsElements(
+      PantsNotificationWrapper.getLog(),
+       String.format(
+        PantsBundle.message("pants.warning.library.depends.on.source"),
+        "3rdparty:a", "source:b"
+      )
+    );
   }
 }
