@@ -10,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.LinkedList;
 
 
+/**
+ * Wrapper for intellij notification system, so we can go back and check what has been notified in tests.
+ */
 public class PantsNotificationWrapper {
   private static final LinkedList<String> log = new LinkedList<>();
 

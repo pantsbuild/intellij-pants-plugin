@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.service.project.resolver;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.LibraryData;
@@ -17,7 +16,6 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.notification.PantsNotificationWrapper;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
@@ -29,9 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class PantsLibrariesExtension implements PantsResolverExtension {
   @Override
@@ -111,7 +107,9 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
         PantsBundle.message("pants.warning.library.depends.on.source"),
         jarTarget, dependency
       );
-      PantsNotificationWrapper.notify(new Notification(PantsConstants.PANTS, "Project import", warning, NotificationType.WARNING));
+      PantsNotificationWrapper.notify(
+        new Notification(PantsConstants.PANTS, "Project import", warning, NotificationType.WARNING)
+      );
     }
   }
 
