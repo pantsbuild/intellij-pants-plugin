@@ -39,7 +39,6 @@ public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsInteg
 
     PyClass pyClass = PyClassNameIndex.find("GreetTest", myProject, true).iterator().next();
     PyClass truClass = new PyTestClass(pyClass);
-    System.out.println(pyClass);
     assertTrue(PyTestUtil.isPyTestClass(truClass, null));
 
     PsiFile file = new PyTestFile(truClass.getContainingFile(), truClass);
