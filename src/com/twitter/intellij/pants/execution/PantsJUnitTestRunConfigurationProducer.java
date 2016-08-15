@@ -34,15 +34,15 @@ public class PantsJUnitTestRunConfigurationProducer extends PantsTestRunConfigur
     @NotNull ConfigurationContext context,
     @NotNull Ref<PsiElement> sourceElement
   ) {
-    PantsContextProcessor processor = PantsContextProcessor.create(context);
+    PantsConfigurationContext processor = PantsConfigurationContext.validatesAndCreate(context);
     if (processor == null) {
       return false;
     }
 
-    final Module module = processor.module;
-    final VirtualFile buildRoot = processor.buildRoot;
-    final List<String> targets = processor.targets;
-    final PsiElement psiLocation = processor.psiLocation;
+    final Module module = processor.getModule();
+    final VirtualFile buildRoot = processor.getBuildRoot();
+    final List<String> targets = processor.getTargets();
+    final PsiElement psiLocation = processor.getLocation();
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
     taskSettings.setTaskNames(Collections.singletonList("test"));
 

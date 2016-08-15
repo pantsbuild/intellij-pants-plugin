@@ -17,7 +17,7 @@ import java.util.Set;
 public class PythonInfoModifier implements PantsProjectInfoModifierExtension {
   /**
    * Unfortunately Python plugin doesn't support package prefixes for source root.
-   * To workaround it at the moment we will create two targets: one for tests and one for production sources.
+   * To workaround it at the moment we will validatesAndCreate two targets: one for tests and one for production sources.
    *
    * todo: remove once https://youtrack.jetbrains.com/issue/PY-16830 is resolved
    */

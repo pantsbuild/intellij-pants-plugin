@@ -25,10 +25,10 @@ import com.jetbrains.python.psi.types.TypeEvalContext;
 import com.jetbrains.python.testing.pytest.PyTestUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsInteg
 
     PsiFile file = new PyTestFile(truClass.getContainingFile(), truClass);
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(file);
-    ArrayList<String> items = new ArrayList<String>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
+    List<String> items = PantsUtil.parseCmdParameters(esc.getSettings().getScriptParameters());
 
     assertNotContainsSubstring(items, PantsConstants.PANTS_CLI_OPTION_JUNIT_TEST);
     assertContainsSubstring(items, PantsConstants.PANTS_CLI_OPTION_PYTEST);

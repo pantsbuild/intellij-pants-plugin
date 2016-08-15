@@ -31,13 +31,13 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
     @NotNull ConfigurationContext context,
     @NotNull Ref<PsiElement> sourceElement
   ) {
-    PantsContextProcessor processor = PantsContextProcessor.create(context);
+    PantsConfigurationContext processor = PantsConfigurationContext.validatesAndCreate(context);
     if (processor == null) {
       return false;
     }
 
-    final List<String> targets = processor.targets;
-    final PsiElement psiLocation = processor.psiLocation;
+    final List<String> targets = processor.getTargets();
+    final PsiElement psiLocation = processor.getLocation();
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
     taskSettings.setTaskNames(Collections.singletonList("test"));
 
