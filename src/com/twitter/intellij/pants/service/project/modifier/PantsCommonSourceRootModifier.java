@@ -29,7 +29,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     // so, for source roots that point at multiple targets, we need to convert those so that
     // they have only one target that owns them.
     // to do that, we
-    // - find or validatesAndCreate a target to own the source root
+    // - find or create a target to own the source root
     // - for each target that depends on that root,
     //   we replace the root with a dependency on the new target
 
