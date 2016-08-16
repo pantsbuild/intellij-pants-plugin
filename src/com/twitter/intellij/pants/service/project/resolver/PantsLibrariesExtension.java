@@ -13,7 +13,10 @@ import com.intellij.openapi.externalSystem.model.project.LibraryLevel;
 import com.intellij.openapi.externalSystem.model.project.LibraryPathType;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.util.Function;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.notification.PantsNotificationWrapper;
@@ -21,13 +24,20 @@ import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class PantsLibrariesExtension implements PantsResolverExtension {
   @Override
@@ -47,8 +57,6 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
 
       final String jarTarget = entry.getKey();
       final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, jarTarget);
-
-      checkForSourceDependency(projectInfo, targetInfo, jarTarget);
 
       for (String libraryId : targetInfo.getLibraries()) {
         final LibraryInfo libraryInfo = projectInfo.getLibraries(libraryId);
@@ -73,40 +81,22 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
       final String mainTarget = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
+      if (!targetInfo.isJarLibrary()) {
+        continue;
+      }
       if (!modules.containsKey(mainTarget)) {
         continue;
       }
+      final LibraryData libraryData = idToLibraryData.get(mainTarget);
       final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
-      for (final String depTarget : targetInfo.getTargets()) {
-        final LibraryData libraryData = idToLibraryData.get(depTarget);
-        if (libraryData == null) {
-          continue;
-        }
 
-        final LibraryDependencyData library = new LibraryDependencyData(
-          moduleDataNode.getData(),
-          libraryData,
-          LibraryLevel.PROJECT
-        );
-        library.setExported(true);
-        moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
-      }
-    }
-  }
-
-  /**
-   * Check whether libraries could even depend on sources. See http://www.pantsbuild.org/3rdparty_jvm.html#round-trip-dependencies.
-   */
-  private void checkForSourceDependency(@NotNull ProjectInfo projectInfo, TargetInfo targetInfo, String jarTarget) {
-    for (String dependency : targetInfo.getTargets()) {
-      TargetInfo dependencyTargetInfo = projectInfo.getTargets().get(dependency);
-      if (dependencyTargetInfo == null || dependencyTargetInfo.isJarLibrary()) {
-        continue;
-      }
-      String warning = PantsBundle.message("pants.warning.library.depends.on.source", jarTarget, dependency);
-      PantsNotificationWrapper.notify(
-        new Notification(PantsConstants.PANTS, "Project import", warning, NotificationType.WARNING)
+      final LibraryDependencyData library = new LibraryDependencyData(
+        moduleDataNode.getData(),
+        libraryData,
+        LibraryLevel.PROJECT
       );
+      library.setExported(true);
+      moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
     }
   }
 
@@ -124,5 +114,45 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
     if (new File(path).exists()) {
       libraryData.addPath(binary, path);
     }
+  }
+
+  @NotNull
+  private Pair<String, TargetInfo> createEmptyModuleForLibrary(
+    @NotNull String buildRoot,
+    @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
+    @NotNull SourceRoot originalSourceRoot
+  ) throws IOException {
+    Path tempDir = Files.createTempDirectory(buildRoot);
+    final String commonTargetAddress = tempDir + ":3rdparty_empty_module";
+    final TargetInfo commonInfo = createTargetForSourceRootUnioningDeps(targetNameAndInfos, originalSourceRoot);
+    return Pair.create(commonTargetAddress, commonInfo);
+  }
+
+  @NotNull
+  private TargetInfo createTargetForSourceRootUnioningDeps(
+    @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
+    @NotNull SourceRoot originalSourceRoot
+  ) {
+    final Iterator<Pair<String, TargetInfo>> iterator = targetNameAndInfos.iterator();
+    TargetInfo commonInfo = iterator.next().getSecond();
+    while (iterator.hasNext()) {
+      commonInfo = commonInfo.union(iterator.next().getSecond());
+    }
+    // make sure we won't have cyclic deps
+    commonInfo.getTargets().removeAll(
+      ContainerUtil.map(
+        targetNameAndInfos,
+        new Function<Pair<String, TargetInfo>, String>() {
+          @Override
+          public String fun(Pair<String, TargetInfo> info) {
+            return info.getFirst();
+          }
+        }
+      )
+    );
+
+    final Set<SourceRoot> newRoots = ContainerUtil.newHashSet(originalSourceRoot);
+    commonInfo.setRoots(newRoots);
+    return commonInfo;
   }
 }
