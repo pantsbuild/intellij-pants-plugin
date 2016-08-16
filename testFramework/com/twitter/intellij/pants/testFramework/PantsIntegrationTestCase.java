@@ -37,6 +37,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
@@ -67,6 +68,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 
@@ -405,39 +407,28 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   /**
    * Same as super method except it doesn't check for gen modules.
    * It appeared names of gen modules are changing from time to time
-   * and we can't use a determenistic one because we run tests
+   * and we can't use a deterministic one because we run tests
    * for different version of pants.
    * <p/>
    * Use assertGenModules instead.
    */
   @Override
   protected void assertModules(String... expectedNames) {
-    final Module[] actual = ModuleManager.getInstance(myProject).getModules();
-    final List<String> moduleNames = ContainerUtil.mapNotNull(
-      actual,
-      new Function<Module, String>() {
-        @Override
-        public String fun(Module module) {
-          final String moduleName = module.getName();
-          return moduleName.startsWith(".pants.d") || moduleName.startsWith("3rdparty") ? null : moduleName;
-        }
-      }
-    );
+    final Set<Module> sourceModules = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
+      .filter(m -> ModuleRootManager.getInstance(m).getContentRoots().length > 0)
+      .collect(Collectors.toSet());
 
-    assertUnorderedElementsAreEqual(moduleNames, expectedNames);
+    final Set<String> moduleNames = sourceModules.stream()
+      .map(Module::getName)
+      .filter(moduleName -> !(moduleName.startsWith(".pants.d") || moduleName.startsWith("3rdparty")))
+      .collect(Collectors.toSet());
+    assertEquals(moduleNames, Arrays.stream(expectedNames).collect(Collectors.toSet())));
   }
 
   protected void assertModuleExists(String moduleName) {
-    final List<String> moduleNames = ContainerUtil.mapNotNull(
-      ModuleManager.getInstance(myProject).getModules(),
-      new Function<Module, String>() {
-        @Override
-        public String fun(Module module) {
-          return module.getName();
-        }
-      }
-    );
-
+    final List<String> moduleNames = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
+      .map(Module::getName)
+      .collect(Collectors.toList());
     assertContain(moduleNames, moduleName);
   }
 
@@ -506,7 +497,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       ApplicationManager.getApplication(),
       "BaseDataReader",
       "ProcessWaitFor",
-      "Timer");
+      "Timer"
+    );
     try {
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();

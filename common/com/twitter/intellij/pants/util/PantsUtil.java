@@ -394,6 +394,9 @@ public class PantsUtil {
 
   @NotNull
   public static List<String> getNonGenTargetAddresses(@Nullable Module module) {
+    if (module == null || ModuleRootManager.getInstance(module).getContentRoots().length == 0) {
+      return Collections.emptyList();
+    }
     return getNonGenTargetAddresses(getTargetAddressesFromModule(module));
   }
 
