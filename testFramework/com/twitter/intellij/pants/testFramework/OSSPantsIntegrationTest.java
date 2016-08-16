@@ -60,11 +60,6 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     return stringList.stream().anyMatch(s -> s.contains(subString));
   }
 
-  protected void assertCompileAll() {
-    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    assertTrue(runner.executeTask(myProject));
-  }
-
   private List<BeforeRunTask> getBeforeRunTask(RunConfiguration configuration) {
     RunManagerImpl runManager = (RunManagerImpl) RunManager.getInstance(myProject);
     RunnerAndConfigurationSettingsImpl configurationSettings = new RunnerAndConfigurationSettingsImpl(runManager, configuration, true);

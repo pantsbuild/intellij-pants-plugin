@@ -19,7 +19,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
   public void testMissingDepsWhiteList() throws Throwable {
     doImport("intellij-integration/src/scala/org/pantsbuild/testproject/missingdepswhitelist");
 
-    assertModules(
+    assertSourceModules(
       "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist_missingdepswhitelist",
       "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
       "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"

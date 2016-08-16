@@ -34,6 +34,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -46,8 +47,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -148,18 +151,26 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Project currentProject = configuration.getProject();
     prepareIDE(currentProject);
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
-    return executeTask(currentProject, targetAddressesToCompile, false);
+    Pair<Boolean, String> result = executeTask(currentProject, targetAddressesToCompile, false);
+    return result.getFirst();
   }
 
-  public boolean executeTask(Project project) {
+  public Pair<Boolean, String> executeTask(Project project) {
     return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), false);
   }
 
-  public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
+  public Pair<Boolean, String> executeTask(@NotNull Module [] modules) {
+    if (modules.length == 0) {
+      return Pair.create(false, null);
+    }
+    return executeTask(modules[0].getProject(), getTargetAddressesToCompile(modules), false);
+  }
+
+  public Pair<Boolean, String> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
-      return true;
+      return Pair.create(true, null);
     }
 
     String pantsExecutable = PantsUtil.findPantsExecutable(currentProject).getPath();
@@ -169,7 +180,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     PantsOptions pantsOptions = PantsOptions.getPantsOptions(currentProject);
     if (pantsOptions == null) {
       showPantsMakeTaskMessage("Pants Options not found.", NotificationCategory.ERROR, currentProject);
-      return false;
+      return Pair.create(false, null);
     }
 
     /* Global options section. */
@@ -192,7 +203,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       }
       catch (Exception e) {
         showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR, currentProject);
-        return false;
+        return Pair.create(false, null);
       }
     }
 
@@ -208,18 +219,28 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
     catch (ExecutionException e) {
       showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR, currentProject);
-      return false;
+      return Pair.create(false, null);
     }
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
     addMessageHandler(processHandler, currentProject);
+    final List<String> output = new ArrayList<>();
+    processHandler.addProcessListener(new ProcessAdapter() {
+      @Override
+      public void onTextAvailable(ProcessEvent event, Key outputType) {
+        super.onTextAvailable(event, outputType);
+        output.add(event.getText());
+      }
+    });
     processHandler.runProcess();
 
     final boolean success = process.exitValue() == 0;
     notifyCompileResult(success);
     // Sync files as generated sources may have changed after Pants compile.
     PantsUtil.synchronizeFiles();
-    return success;
+    String finalOutString = String.join("", output);
+    Pair<Boolean, String> result = Pair.create(success, finalOutString);
+    return result;
   }
 
   private void notifyCompileResult(final boolean success) {

@@ -18,7 +18,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testJUnitTests() throws Throwable {
     doImport("intellij-integration/tests/java/org/pantsbuild/testprojects");
 
-    assertModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
+    assertSourceModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
 
     List<String> output = makeModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
     assertContainsSubstring(output, "compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects");

@@ -18,7 +18,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
   public void testHelloByTargetName() throws Throwable {
     doImport("examples/src/scala/org/pantsbuild/example/hello/BUILD", "hello");
 
-    assertModules(
+    assertSourceModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",
       "examples_src_scala_org_pantsbuild_example_hello_module",
       "examples_src_scala_org_pantsbuild_example_hello_hello",
@@ -47,7 +47,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     final String moduleName =
       "examples_src_java_org_pantsbuild_example_java_sources_java_sources_and_scala_org_pantsbuild_example_scala_with_java_sources_scala_with_java_sources";
 
-    assertModules(moduleName);
+    assertSourceModules(moduleName);
     //makeProject();
     assertCompileAll();
 
@@ -59,7 +59,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
   public void testExcludes1() throws Throwable {
     doImport("intellij-integration/src/scala/org/pantsbuild/testproject/excludes1");
 
-    assertModules(
+    assertSourceModules(
       "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1",
       "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_nested_foo_foo"
     );
@@ -81,7 +81,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
   public void testError1() throws Throwable {
     doImport("intellij-integration/src/scala/org/pantsbuild/testproject/error1");
 
-    assertModules(
+    assertSourceModules(
       "intellij-integration_src_scala_org_pantsbuild_testproject_error1_error1"
     );
 
@@ -107,7 +107,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
   public void testWelcomeTest() throws Throwable {
     doImport("examples/tests/scala/org/pantsbuild/example/hello/welcome");
 
-    assertModules(
+    assertSourceModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",

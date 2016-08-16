@@ -43,6 +43,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.*;
@@ -340,6 +341,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
    * because we want to do some assertions on myCompilerTester
    */
   protected List<String> makeModules(final String... moduleNames) throws Exception {
+    //assertCompileModule(moduleNames);
     return compile(getModules(moduleNames));
   }
 
@@ -412,8 +414,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
    * <p/>
    * Use assertGenModules instead.
    */
-  @Override
-  protected void assertModules(String... expectedNames) {
+  protected void assertSourceModules(String... expectedNames) {
+    // sourcesModules means modules that contains at least one content root.
     final Set<Module> sourceModules = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
       .filter(m -> ModuleRootManager.getInstance(m).getContentRoots().length > 0)
       .collect(Collectors.toSet());
@@ -422,7 +424,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       .map(Module::getName)
       .filter(moduleName -> !(moduleName.startsWith(".pants.d") || moduleName.startsWith("3rdparty")))
       .collect(Collectors.toSet());
-    assertEquals(moduleNames, Arrays.stream(expectedNames).collect(Collectors.toSet()));
+    assertEquals(Arrays.stream(expectedNames).collect(Collectors.toSet()), moduleNames);
   }
 
   protected void assertModuleExists(String moduleName) {
@@ -566,5 +568,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     BeforeRunTaskProvider provider = BeforeRunTaskProvider.getProvider(myProject, task.getProviderId());
     assertNotNull(String.format("Cannot find BeforeRunTaskProvider for id='%s'", task.getProviderId()), provider);
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
+  }
+
+  protected void assertCompileAll() {
+    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
+    assertTrue(runner.executeTask(myProject).getFirst());
+  }
+
+  protected String assertCompileModule(final String ... moduleNames) {
+    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
+    Pair<Boolean, String> compileResult = runner.executeTask(getModules(moduleNames));
+    assertTrue("Compile failed", compileResult.getFirst());
+    return compileResult.getSecond();
   }
 }
