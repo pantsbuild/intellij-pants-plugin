@@ -341,7 +341,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
    * because we want to do some assertions on myCompilerTester
    */
   protected List<String> makeModules(final String... moduleNames) throws Exception {
-    //assertCompileModule(moduleNames);
+    //assertPantsCompileModule(moduleNames);
     return compile(getModules(moduleNames));
   }
 
@@ -570,12 +570,14 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
-  protected void assertCompileAll() {
+  protected String assertCompileAll() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    assertTrue(runner.executeTask(myProject).getFirst());
+    Pair<Boolean, String> result = runner.executeTask(myProject);
+    assertTrue(result.getFirst());
+    return result.getSecond();
   }
 
-  protected String assertCompileModule(final String ... moduleNames) {
+  protected String assertPantsCompileModule(final String ... moduleNames) {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
     Pair<Boolean, String> compileResult = runner.executeTask(getModules(moduleNames));
     assertTrue("Compile failed", compileResult.getFirst());

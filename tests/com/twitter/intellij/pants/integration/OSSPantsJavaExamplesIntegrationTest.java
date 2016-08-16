@@ -84,7 +84,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     //makeModules("examples_src_java_org_pantsbuild_example_hello_main_main");
-    assertCompileModule("examples_src_java_org_pantsbuild_example_hello_main_main");
+    assertPantsCompileModule("examples_src_java_org_pantsbuild_example_hello_main_main");
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.greet.Greeting", "examples_src_java_org_pantsbuild_example_hello_greet_greet"
     );

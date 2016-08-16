@@ -53,6 +53,6 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
       "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
       "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
-    makeModules("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertPantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
   }
 }
