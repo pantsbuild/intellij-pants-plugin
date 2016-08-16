@@ -422,7 +422,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       .map(Module::getName)
       .filter(moduleName -> !(moduleName.startsWith(".pants.d") || moduleName.startsWith("3rdparty")))
       .collect(Collectors.toSet());
-    assertEquals(moduleNames, Arrays.stream(expectedNames).collect(Collectors.toSet())));
+    assertEquals(moduleNames, Arrays.stream(expectedNames).collect(Collectors.toSet()));
   }
 
   protected void assertModuleExists(String moduleName) {

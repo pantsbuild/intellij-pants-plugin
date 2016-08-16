@@ -112,7 +112,9 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe"           // transitive dependee
     );
 
-    makeProject();
+    //makeProject();
+    assertCompileAll();
+
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.greet.GreetingTest", "examples_tests_java_org_pantsbuild_example_hello_greet_greet"
     );

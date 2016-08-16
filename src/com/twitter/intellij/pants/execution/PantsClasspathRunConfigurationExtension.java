@@ -89,7 +89,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Runnable() {
         @Override
         public void run() {
-          final VirtualFile classpathDir = PantsUtil.findDistExportClasspathDirectory(module);
+          final VirtualFile classpathDir = PantsUtil.findDistExportClasspathDirectory(module.getProject());
           if (classpathDir == null) {
             return;
           }
@@ -155,7 +155,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   @NotNull
   private static List<String> findPublishedClasspathByTargetId(@NotNull Module module, @NotNull TargetAddressInfo targetAddressInfo) {
-    final VirtualFile classpath = PantsUtil.findDistExportClasspathDirectory(module);
+    final VirtualFile classpath = PantsUtil.findDistExportClasspathDirectory(module.getProject());
     if (classpath == null) {
       return Collections.emptyList();
     }

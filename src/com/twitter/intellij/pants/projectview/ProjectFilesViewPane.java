@@ -18,6 +18,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ToggleAction;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.JDOMExternalizerUtil;
@@ -166,7 +167,7 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     }
   }
 
-  private final class ShowOnlyLoadedFilesAction extends ToggleAction {
+  private final class ShowOnlyLoadedFilesAction extends ToggleAction implements DumbAware {
     private ShowOnlyLoadedFilesAction() {
       super(
         PantsBundle.message("pants.action.show.only.loaded.files"),

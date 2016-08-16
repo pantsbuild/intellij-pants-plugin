@@ -109,6 +109,7 @@ public class PantsUtil {
   /**
    * This aims to prepares for any breakage we might introduce from pants side, in which case we can adjust the version
    * of Pants `idea-plugin` goal to be greater than 0.1.0.
+   *
    * @see <a href="https://github.com/pantsbuild/pants/blob/d31ec5b4b1fb4f91e5beb685539ea14278dc62cf/src/python/pants/backend/project_info/tasks/idea_plugin_gen.py#L28">Pants `idea-plugin` goal version</a>
    */
   private static final String PANTS_IDEA_PLUGIN_VERESION_MIN = "0.0.1";
@@ -237,7 +238,13 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findBuildRoot(@NotNull Project project) {
-    return findBuildRoot(project.getProjectFile());
+    for (Module module : ModuleManager.getInstance(project).getModules()) {
+      VirtualFile buildRoot = findBuildRoot(module);
+      if (buildRoot != null) {
+        return buildRoot;
+      }
+    }
+    return null;
   }
 
   @Nullable
@@ -269,8 +276,8 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static VirtualFile findDistExportClasspathDirectory(@NotNull Module module) {
-    final VirtualFile buildRoot = findBuildRoot(module);
+  public static VirtualFile findDistExportClasspathDirectory(@NotNull Project project) {
+    VirtualFile buildRoot = findBuildRoot(project);
     if (buildRoot == null) {
       return null;
     }
@@ -278,14 +285,8 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static VirtualFile findProjectManifestJar(@NotNull Project myProject) {
-    Module[] modules = ModuleManager.getInstance(myProject).getModules();
-    if (modules.length == 0) {
-      return null;
-    }
-    Module moduleSample = modules[0];
-
-    VirtualFile classpathDir = findDistExportClasspathDirectory(moduleSample);
+  public static VirtualFile findProjectManifestJar(@NotNull Project project) {
+    VirtualFile classpathDir = findDistExportClasspathDirectory(project);
     if (classpathDir == null) {
       return null;
     }
@@ -815,10 +816,17 @@ public class PantsUtil {
    * Use project's module in project to find the `buildRoot`,
    * then use `buildRoot` to find pantsExecutable.
    */
+  @Nullable
   public static VirtualFile findPantsExecutable(@NotNull Project project) {
     Module[] modules = ModuleManager.getInstance(project).getModules();
     if (modules.length == 0) {
       throw new PantsException("No module found in project.");
+    }
+    for (Module module : modules) {
+      VirtualFile[] contentRoots = ModuleRootManager.getInstance(module).getContentRoots();
+      if (contentRoots.length > 0) {
+        return findPantsExecutable(contentRoots[0].getPath());
+      }
     }
     Module moduleSample = modules[0];
     VirtualFile buildRoot = findBuildRoot(moduleSample);
@@ -879,7 +887,7 @@ public class PantsUtil {
      * Run in SYNC in unit test mode, and {@link com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport}
      * is required to be wrapped in WriteAction. Otherwise it will run in async mode.
      */
-    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()){
+    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()) {
       ApplicationManager.getApplication().runWriteAction(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         SaveAndSyncHandler.getInstance().refreshOpenFiles();
