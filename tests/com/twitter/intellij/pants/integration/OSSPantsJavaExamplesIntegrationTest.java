@@ -51,7 +51,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
     assertGenModules(1);
 
-    makeModules("examples_src_java_org_pantsbuild_example_antlr3_antlr3");
+    assertPantsCompileModule("examples_src_java_org_pantsbuild_example_antlr3_antlr3");
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.antlr3.ExampleAntlr3", "examples_src_java_org_pantsbuild_example_antlr3_antlr3"
     );
@@ -66,7 +66,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
     assertGenModules(1);
 
-    makeModules("examples_src_java_org_pantsbuild_example_antlr4_antlr4");
+    assertPantsCompileModule("examples_src_java_org_pantsbuild_example_antlr4_antlr4");
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.antlr4.ExampleAntlr4", "examples_src_java_org_pantsbuild_example_antlr4_antlr4"
     );
