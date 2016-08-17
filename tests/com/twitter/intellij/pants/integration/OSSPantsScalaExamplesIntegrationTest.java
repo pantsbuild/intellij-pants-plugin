@@ -31,7 +31,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe",
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
     );
-    makeModules("examples_src_scala_org_pantsbuild_example_hello_exe_exe");
+    assertPantsCompileModule("examples_src_scala_org_pantsbuild_example_hello_exe_exe");
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.welcome.WelcomeEverybody", "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
@@ -69,7 +69,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
       "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1",
       "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_nested_foo_foo"
     );
-    makeModules("intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1");
+    assertPantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1");
 
     findClassAndAssert("org.pantsbuild.testproject.excludes1.nested.foo.Foo");
 

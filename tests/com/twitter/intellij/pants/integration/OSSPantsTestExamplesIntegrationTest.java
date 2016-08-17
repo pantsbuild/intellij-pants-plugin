@@ -20,8 +20,8 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertSourceModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
 
-    List<String> output = makeModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
-    assertContainsSubstring(output, "compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects");
+    String output = assertPantsCompileModule("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
+    assertTrue(output.contains("compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
     assertSuccessfulJUnitTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
     final OSProcessHandler processHandler = runJUnitTest(
