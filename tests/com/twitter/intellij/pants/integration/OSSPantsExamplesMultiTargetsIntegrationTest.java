@@ -12,6 +12,7 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
     assertProjectName("examples/src/java/org/pantsbuild/example/hello::");
     assertSourceModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",
+      "examples_src_java_org_pantsbuild_example_hello_main_main",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
       "examples_src_java_org_pantsbuild_example_hello_simple_simple",
       "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
@@ -28,11 +29,13 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
 
     assertSourceModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",
+      "examples_src_java_org_pantsbuild_example_hello_main_main",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
       "examples_src_java_org_pantsbuild_example_hello_simple_simple",
       "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
       "examples_src_java_org_pantsbuild_example_hello_module",
       "examples_src_scala_org_pantsbuild_example_hello_module",
+      "examples_src_scala_org_pantsbuild_example_hello_hello",
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe"
     );
