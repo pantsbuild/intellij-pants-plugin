@@ -583,4 +583,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue("Compile failed", compileResult.getFirst());
     return compileResult.getSecond();
   }
+
+  protected String assertPantsCompileModuleFailure(final String ... moduleNames) {
+    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
+    Pair<Boolean, String> compileResult = runner.executeTask(getModules(moduleNames));
+    assertFalse("Compile succeeded, but should fail.", compileResult.getFirst());
+    return compileResult.getSecond();
+  }
 }

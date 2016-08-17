@@ -67,6 +67,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
 
     assertModuleModuleDeps(
       "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1",
+      "___scala-library-synthetic",
       "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_nested_foo_foo"
     );
     assertPantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1");
@@ -84,24 +85,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     assertSourceModules(
       "intellij-integration_src_scala_org_pantsbuild_testproject_error1_error1"
     );
-
-    final List<CompilerMessage> compilerMessages =
-      compileAndGetMessages(getModule("intellij-integration_src_scala_org_pantsbuild_testproject_error1_error1"));
-    final List<String> errorMessages =
-      ContainerUtil.mapNotNull(
-        compilerMessages,
-        new Function<CompilerMessage, String>() {
-          @Override
-          public String fun(CompilerMessage message) {
-            if (message.getCategory() == CompilerMessageCategory.ERROR) {
-              return message.getMessage();
-            }
-            return null;
-          }
-        }
-      );
-    assertNotEmpty(errorMessages);
-    assertContainsElements(errorMessages, "pants: FAILURE");
+    assertPantsCompileModuleFailure("intellij-integration_src_scala_org_pantsbuild_testproject_error1_error1");
   }
 
   public void testWelcomeTest() throws Throwable {
