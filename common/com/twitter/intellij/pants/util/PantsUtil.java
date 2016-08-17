@@ -109,7 +109,6 @@ public class PantsUtil {
   /**
    * This aims to prepares for any breakage we might introduce from pants side, in which case we can adjust the version
    * of Pants `idea-plugin` goal to be greater than 0.1.0.
-   *
    * @see <a href="https://github.com/pantsbuild/pants/blob/d31ec5b4b1fb4f91e5beb685539ea14278dc62cf/src/python/pants/backend/project_info/tasks/idea_plugin_gen.py#L28">Pants `idea-plugin` goal version</a>
    */
   private static final String PANTS_IDEA_PLUGIN_VERESION_MIN = "0.0.1";
@@ -883,22 +882,20 @@ public class PantsUtil {
   }
 
   public static void synchronizeFiles() {
-    /**
-     * Run in SYNC in unit test mode, and {@link com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport}
-     * is required to be wrapped in WriteAction. Otherwise it will run in async mode.
-     */
+    // Run in SYNC in unit test mode, and {@link com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport}
+    // is required to be wrapped in WriteAction. Otherwise it will run in async mode.
     if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()) {
       ApplicationManager.getApplication().runWriteAction(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         SaveAndSyncHandler.getInstance().refreshOpenFiles();
-        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false); /** synchronous */
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false); /* synchronous */
       });
     }
     else {
       ApplicationManager.getApplication().invokeLater(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         SaveAndSyncHandler.getInstance().refreshOpenFiles();
-        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true); /** asynchronous */
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true); /* asynchronous */
       });
     }
   }

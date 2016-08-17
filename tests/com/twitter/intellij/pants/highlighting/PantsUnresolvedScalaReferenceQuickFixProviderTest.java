@@ -33,7 +33,10 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     final AddPantsTargetDependencyFix intention = findIntention(info, AddPantsTargetDependencyFix.class);
     assertNotNull(intention);
 
-    assertModuleModuleDeps("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertModuleModuleDeps(
+      "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
+      "___scala-library-synthetic"
+    );
     assertCompilationFailed("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     /**
@@ -51,6 +54,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
 
     assertModuleModuleDeps(
       "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
+      "___scala-library-synthetic",
       "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
     assertPantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
