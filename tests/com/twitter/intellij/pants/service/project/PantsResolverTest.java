@@ -5,8 +5,6 @@ package com.twitter.intellij.pants.service.project;
 
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
-import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.notification.PantsNotificationWrapper;
 
 public class PantsResolverTest extends PantsResolverTestBase {
   public void testOneCommonRootOwnedBySingleTargetOneNot() {
@@ -121,12 +119,9 @@ public class PantsResolverTest extends PantsResolverTestBase {
     addInfo("a:scala").withLibrary("3rdparty/com/twitter/mycoollibrary:1.2.3");
     addInfo("b:scala").withLibrary("3rdparty/com/twitter/mycoollibrary:1.2.3");
 
-    final DataNode<LibraryDependencyData> aLib = findLibraryDependency("a_scala", "3rdparty/com/twitter/mycoollibrary:1.2.3");
-    assertNotNull(aLib);
-    final DataNode<LibraryDependencyData> bLib = findLibraryDependency("b_scala", "3rdparty/com/twitter/mycoollibrary:1.2.3");
-    assertNotNull(bLib);
-
-    assertSame(aLib.getData().getTarget(), bLib.getData().getTarget());
+    assertDependency("a_scala", "3rdparty_com_twitter_mycoollibrary_1.2.3");
+    assertDependency("b_scala", "3rdparty_com_twitter_mycoollibrary_1.2.3");
+    assertLibrary("3rdparty_com_twitter_mycoollibrary_1.2.3", "3rdparty/com/twitter/mycoollibrary:1.2.3");
   }
 
   public void testJavaScalaCyclic() {
@@ -144,33 +139,18 @@ public class PantsResolverTest extends PantsResolverTestBase {
       withDependency("a:java").
       withDependency("3rdparty/com/twitter/bar:bar");
 
-    assertModulesCreated("a_java_and_scala");
+    assertModulesCreated("a_java_and_scala",
+                         "3rdparty_com_twitter_bar_bar",
+                         "3rdparty_com_twitter_baz_baz");
 
-    assertLibrary("a_java_and_scala", "3rdparty/com/twitter/baz:baz");
-    assertLibrary("a_java_and_scala", "3rdparty/com/twitter/bar:bar");
+    assertDependency("a_java_and_scala", "3rdparty_com_twitter_baz_baz");
+    assertDependency("a_java_and_scala", "3rdparty_com_twitter_bar_bar");
+    assertLibrary("3rdparty_com_twitter_baz_baz", "3rdparty/com/twitter/baz:baz");
+    assertLibrary("3rdparty_com_twitter_bar_bar", "3rdparty/com/twitter/bar:bar");
 
     assertSourceRoot("a_java_and_scala", "src/java/foo/bar");
     assertSourceRoot("a_java_and_scala", "src/java/foo/baz");
     assertSourceRoot("a_java_and_scala", "src/scala/foo/bar");
     assertSourceRoot("a_java_and_scala", "src/scala/foo/baz");
-  }
-
-  public void testLibraryDependingOnSource() {
-    // source:a -> 3rdparty:a -> source:b
-    addInfo("source:a").
-      withRoot("src/java/foo/bar", "com.foo.bar").
-      withLibrary("3rdparty:a");
-
-    addJarLibrary("3rdparty:a")
-      .withDependency("source:b");
-
-    addInfo("source:b").
-      withRoot("src/java/foo/baz", "com.foo.baz");
-
-    assertLibrary("source_a", "3rdparty:a");
-    assertContainsElements(
-      PantsNotificationWrapper.getLog(),
-      PantsBundle.message("pants.warning.library.depends.on.source", "3rdparty:a", "source:b")
-    );
   }
 }

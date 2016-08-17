@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   private Map<String, TargetInfoBuilder> myInfoBuilders = null;
@@ -120,7 +121,8 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
       }
     );
     assertNotNull(
-      String.format("%s doesn't have a dependency %s in list %s", moduleName, dependencyName, actualDependencyNames.toString()), dependencyDataNode
+      String.format("%s doesn't have a dependency %s in list %s", moduleName, dependencyName, actualDependencyNames.toString()),
+      dependencyDataNode
     );
   }
 
@@ -202,24 +204,16 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   @Nullable
   private DataNode<ModuleData> findModule(final String moduleName) {
     final Collection<DataNode<ModuleData>> moduleNodes = ExternalSystemApiUtil.findAll(getProjectNode(), ProjectKeys.MODULE);
-    return ContainerUtil.find(
-      moduleNodes,
-      new Condition<DataNode<ModuleData>>() {
-        @Override
-        public boolean value(DataNode<ModuleData> node) {
-          return StringUtil.equalsIgnoreCase(moduleName, node.getData().getExternalName());
-        }
-      }
-    );
+    return moduleNodes.stream()
+      .filter(node -> StringUtil.equalsIgnoreCase(moduleName, node.getData().getExternalName()))
+      .findFirst()
+      .orElse(null);
   }
 
   public void assertModulesCreated(final String... expectedModules) {
     final Collection<DataNode<ModuleData>> moduleNodes = ExternalSystemApiUtil.findAll(getProjectNode(), ProjectKeys.MODULE);
-    final List<String> actualModules = new ArrayList<String>();
-    for (DataNode<ModuleData> moduleDataDataNode : moduleNodes) {
-      actualModules.add(moduleDataDataNode.getData().getExternalName());
-    }
-    assertEquals(Arrays.asList(expectedModules), actualModules);
+    final Set<String> actualModules = moduleNodes.stream().map(n -> n.getData().getExternalName()).collect(Collectors.toSet());
+    assertEquals(Arrays.stream(expectedModules).collect(Collectors.toSet()), actualModules);
   }
 
   private static interface Builder<T> {
