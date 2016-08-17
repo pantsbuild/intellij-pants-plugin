@@ -50,7 +50,7 @@ public class PantsUnresolvedJavaReferenceQuickFixProviderTest extends PantsHighl
       "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
 
-    makeModules("testprojects_src_java_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertPantsCompileModule("testprojects_src_java_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.testproject.missingdepswhitelist2.MissingDepsWhitelist2", "testprojects_src_java_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2"

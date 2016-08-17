@@ -42,15 +42,17 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
     doImport("testprojects/tests/java/org/pantsbuild/testproject/dummies");
 
-    List<String> output = makeModules("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
+    String output = assertPantsCompileModule("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
     // Make sure only matcher target is compiled
-    assertContainsSubstring(output, "compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher");
+    assertTrue(output.contains("compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher"));
     assertSuccessfulJUnitTest(
-      "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest");
+      "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher",
+      "org.pantsbuild.testproject.matcher.MatcherTest"
+    );
 
     // Make sure only the 2 dummies targets are compiled.
-    assertContainsSubstring(
-      makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), "Compiling 2 targets");
+    String outputB = assertPantsCompileModule("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
+    assertTrue(outputB.contains("Compiling 2 targets"));
 
     // makeProject() will result all 3 targets to be compiled.
     assertContainsSubstring(makeProject(), "Compiling 3 targets");
