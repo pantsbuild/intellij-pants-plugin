@@ -13,6 +13,7 @@ public class OSSPantsFromScriptIntegrationTest extends OSSPantsIntegrationTest {
 
     assertSourceModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",
+      "examples_src_java_org_pantsbuild_example_hello_main_main",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
       "examples_src_java_org_pantsbuild_example_hello_simple_simple",
       "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
