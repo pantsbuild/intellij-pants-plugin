@@ -162,14 +162,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertModuleExists(moduleName, moduleNode);
     final Collection<DataNode<ContentRootData>> contentRoots = ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.CONTENT_ROOT);
-    final List<String> actualRootPaths = ContainerUtil.map(
-      contentRoots, new Function<DataNode<ContentRootData>, String>() {
-        @Override
-        public String fun(DataNode<ContentRootData> node) {
-          return node.getData().getRootPath();
-        }
-      }
-    );
+    final List<String> actualRootPaths = contentRoots.stream().map(s -> s.getData().getRootPath()).collect(Collectors.toList());
     List<String> expected = Arrays.asList(roots);
     Collections.sort(expected);
     Collections.sort(actualRootPaths);
@@ -189,16 +182,11 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   @Nullable
   public DataNode<LibraryDependencyData> findLibraryDependency(String moduleName, final String libraryId) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
-    assertModuleExists(moduleName, moduleNode);
-    return ContainerUtil.find(
-      ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY),
-      new Condition<DataNode<LibraryDependencyData>>() {
-        @Override
-        public boolean value(DataNode<LibraryDependencyData> node) {
-          return StringUtil.equalsIgnoreCase(libraryId, node.getData().getExternalName());
-        }
-      }
-    );
+    return ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY)
+      .stream()
+      .filter(node -> StringUtil.equalsIgnoreCase(libraryId, node.getData().getExternalName()))
+      .findFirst()
+      .orElse(null);
   }
 
   @Nullable
