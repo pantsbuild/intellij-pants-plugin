@@ -394,6 +394,15 @@ public class PantsUtil {
 
   @NotNull
   public static List<String> getNonGenTargetAddresses(@Nullable Module module) {
+    if (module == null) {
+      return Collections.emptyList();
+    }
+    // If a module neither has dependency modules nor content roots,
+    // that means it is an empty module that only has library dependencies.
+    if (ModuleRootManager.getInstance(module).getDependencies().length == 0 &&
+        ModuleRootManager.getInstance(module).getContentRoots().length == 0) {
+      return Collections.emptyList();
+    }
     return getNonGenTargetAddresses(getTargetAddressesFromModule(module));
   }
 
