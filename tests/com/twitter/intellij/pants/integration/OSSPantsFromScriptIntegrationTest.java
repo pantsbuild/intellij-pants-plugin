@@ -23,7 +23,7 @@ public class OSSPantsFromScriptIntegrationTest extends OSSPantsIntegrationTest {
     );
 
     //makeProject();
-    assertCompileAll();
+    assertPantsCompileAll();
 
   }
 }

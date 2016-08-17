@@ -52,9 +52,14 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     // Make sure only the 2 dummies targets are compiled.
     String outputB = assertPantsCompileModule("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
-    assertTrue(outputB.contains("Compiling 2 targets"));
+    assertTrue(outputB.contains("testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target"));
+    assertTrue(outputB.contains("testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target"));
+    assertFalse(outputB.contains("testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher"));
 
     // makeProject() will result all 3 targets to be compiled.
-    assertContainsSubstring(makeProject(), "Compiling 3 targets");
+    String outputC = assertPantsCompileAll();
+    assertTrue(outputC.contains("testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target"));
+    assertTrue(outputC.contains("testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target"));
+    assertTrue(outputC.contains("testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher"));
   }
 }

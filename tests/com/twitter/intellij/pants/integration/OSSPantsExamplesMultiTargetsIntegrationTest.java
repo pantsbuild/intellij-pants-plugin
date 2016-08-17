@@ -37,7 +37,7 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe"
     );
 
-    assertCompileAll();
+    assertPantsCompileAll();
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.welcome.WelcomeEverybody", "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"

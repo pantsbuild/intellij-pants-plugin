@@ -49,7 +49,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
 
     assertSourceModules(moduleName);
     //makeProject();
-    assertCompileAll();
+    assertPantsCompileAll();
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.scala_with_java_sources.GreetEverybody", moduleName
@@ -120,7 +120,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     assertSize(1, testSourceRoots);
     assertTrue(testSourceRoots.iterator().next().getUrl().endsWith("examples/tests/scala"));
 
-    assertCompileAll();
+    assertPantsCompileAll();
 
     findClassAndAssert("org.pantsbuild.example.hello.welcome.WelSpec");
     assertScalaLibrary("examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome");

@@ -570,7 +570,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
-  protected String assertCompileAll() {
+  protected String assertPantsCompileAll() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
     Pair<Boolean, String> result = runner.executeTask(myProject);
     assertTrue(result.getFirst());
