@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
+public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
   public void testClassRunConfiguration() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
@@ -159,13 +159,14 @@ public class OSSPantsExamplesRunConfigurationIntegrationTest extends OSSPantsInt
   @NotNull
   private ExternalSystemRunConfiguration getExternalSystemRunConfiguration(PsiElement psiElement) {
     ConfigurationContext context = createContext(psiElement, new MapDataContext());
-    ConfigurationFromContext myPantsConfigurationFromContext = getPantsConfigurationFromContext(context);
+    ConfigurationFromContext myPantsConfigurationFromContext = getPantsJunitConfigurationFromContext(context);
+    assertNotNull(myPantsConfigurationFromContext);
     return (ExternalSystemRunConfiguration) myPantsConfigurationFromContext.getConfiguration();
   }
 
-  private ConfigurationFromContext getPantsConfigurationFromContext(ConfigurationContext context) {
+  private ConfigurationFromContext getPantsJunitConfigurationFromContext(ConfigurationContext context) {
     for (RunConfigurationProducer producer : RunConfigurationProducer.getProducers(myProject)) {
-      if (producer instanceof PantsTestRunConfigurationProducer) {
+      if (producer instanceof PantsJUnitTestRunConfigurationProducer) {
         return producer.createConfigurationFromContext(context);
       }
     }
