@@ -366,7 +366,8 @@
     <runConfigurationExtension implementation="com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension"/>
     <configurationProducer implementation="com.twitter.intellij.pants.execution.PantsRuntimeConfigurationProducer"/>
     <configurationType implementation="com.twitter.intellij.pants.execution.PantsExternalTaskConfigurationType"/>
-    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsTestRunConfigurationProducer" order="last"/>
+    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsJUnitTestRunConfigurationProducer" />
+    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsPythonTestRunConfigurationProducer" order="last"/>
 
     <!--Listener to be called after resolving projects finishes. -->
     <externalSystemTaskNotificationListener implementation="com.twitter.intellij.pants.service.project.PantsProjectImportNotificationListener"/>
