@@ -397,13 +397,17 @@ public class PantsUtil {
     if (module == null) {
       return Collections.emptyList();
     }
-    // If a module neither has dependency modules nor content roots,
-    // that means it is an empty module that only has library dependencies.
-    if (ModuleRootManager.getInstance(module).getDependencies().length == 0 &&
-        ModuleRootManager.getInstance(module).getContentRoots().length == 0) {
+    if (!isSourceModule(module)) {
       return Collections.emptyList();
     }
     return getNonGenTargetAddresses(getTargetAddressesFromModule(module));
+  }
+
+  public static boolean isSourceModule(@NotNull Module module) {
+    // If a module neither has dependency modules nor content roots,
+    // that means it is an empty module that only has library dependencies.
+    return ModuleRootManager.getInstance(module).getDependencies().length > 0 ||
+           ModuleRootManager.getInstance(module).getContentRoots().length > 0;
   }
 
   @NotNull
@@ -745,10 +749,7 @@ public class PantsUtil {
            // src.python.pants.backend.python.targets.python_target.PythonTarget#_synthetic_resources_target
            // TODO: The long term solution is collect non-synthetic targets at pre-compile stage
            // https://github.com/pantsbuild/intellij-pants-plugin/issues/83
-           address.toLowerCase().endsWith("_synthetic_resources") ||
-           // Adhoc '-synthetic' postfix.
-           // https://github.com/pantsbuild/pants/blob/8fa56a612e66522fee1beca0757517ec19b921ac/src/python/pants/backend/jvm/subsystems/scala_platform.py#L192-L195
-           address.toLowerCase().endsWith("-synthetic") ;
+           address.toLowerCase().endsWith("_synthetic_resources");
   }
 
   public static Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
