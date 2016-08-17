@@ -394,9 +394,6 @@ public class PantsUtil {
 
   @NotNull
   public static List<String> getNonGenTargetAddresses(@Nullable Module module) {
-    if (module == null || ModuleRootManager.getInstance(module).getContentRoots().length == 0) {
-      return Collections.emptyList();
-    }
     return getNonGenTargetAddresses(getTargetAddressesFromModule(module));
   }
 
@@ -739,7 +736,10 @@ public class PantsUtil {
            // src.python.pants.backend.python.targets.python_target.PythonTarget#_synthetic_resources_target
            // TODO: The long term solution is collect non-synthetic targets at pre-compile stage
            // https://github.com/pantsbuild/intellij-pants-plugin/issues/83
-           address.toLowerCase().endsWith("_synthetic_resources");
+           address.toLowerCase().endsWith("_synthetic_resources") ||
+           // Adhoc '-synthetic' postfix.
+           // https://github.com/pantsbuild/pants/blob/8fa56a612e66522fee1beca0757517ec19b921ac/src/python/pants/backend/jvm/subsystems/scala_platform.py#L192-L195
+           address.toLowerCase().endsWith("-synthetic") ;
   }
 
   public static Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
