@@ -32,7 +32,7 @@ public class PantsMetrics {
   private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
   public static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "pants.metrics.report.dir";
   public static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "pants.metrics.import.dir";
-  public static final String SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI = "pants.metrics.enable.in.gui";
+  public static final String SYSTEM_PROPERTY_METRICS_ENABLE = "pants.metrics.enable";
 
   private static volatile ScheduledFuture handle;
   private static volatile int counter = 0;
@@ -195,7 +195,7 @@ public class PantsMetrics {
   }
 
   private static boolean isMetricsEnabled() {
-    String property = System.getProperty(SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI);
+    String property = System.getProperty(SYSTEM_PROPERTY_METRICS_ENABLE);
     return property != null && property.equals("true");
   }
 }
