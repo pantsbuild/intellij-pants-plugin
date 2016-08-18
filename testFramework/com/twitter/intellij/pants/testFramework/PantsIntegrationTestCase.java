@@ -341,7 +341,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
    * because we want to do some assertions on myCompilerTester
    */
   protected List<String> makeModules(final String... moduleNames) throws Exception {
-    //assertPantsCompileModule(moduleNames);
     return compile(getModules(moduleNames));
   }
 

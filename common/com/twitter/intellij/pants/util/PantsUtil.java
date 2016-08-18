@@ -404,8 +404,9 @@ public class PantsUtil {
   }
 
   public static boolean isSourceModule(@NotNull Module module) {
-    // If a module neither has dependency modules nor content roots,
-    // that means it is an empty module that only has library dependencies.
+    // A source module module must either contain content root(s),
+    // or depending on the module(s). Otherwise it can be a gen module
+    // or 3rdparty module placeholder.
     return ModuleRootManager.getInstance(module).getDependencies().length > 0 ||
            ModuleRootManager.getInstance(module).getContentRoots().length > 0;
   }
@@ -892,20 +893,22 @@ public class PantsUtil {
   }
 
   public static void synchronizeFiles() {
-    // Run in SYNC in unit test mode, and {@link com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport}
-    // is required to be wrapped in WriteAction. Otherwise it will run in async mode.
-    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()) {
+    /**
+     * Run in SYNC in unit test mode, and {@link com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport}
+     * is required to be wrapped in WriteAction. Otherwise it will run in async mode.
+     */
+    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()){
       ApplicationManager.getApplication().runWriteAction(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         SaveAndSyncHandler.getInstance().refreshOpenFiles();
-        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false); /* synchronous */
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false); /** synchronous */
       });
     }
     else {
       ApplicationManager.getApplication().invokeLater(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         SaveAndSyncHandler.getInstance().refreshOpenFiles();
-        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true); /* asynchronous */
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true); /** asynchronous */
       });
     }
   }

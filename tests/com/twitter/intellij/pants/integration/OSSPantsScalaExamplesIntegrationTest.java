@@ -48,7 +48,6 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
       "examples_src_java_org_pantsbuild_example_java_sources_java_sources_and_scala_org_pantsbuild_example_scala_with_java_sources_scala_with_java_sources";
 
     assertSourceModules(moduleName);
-    //makeProject();
     assertPantsCompileAll();
 
     assertClassFileInModuleOutput(
