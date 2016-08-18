@@ -145,8 +145,7 @@ public class PantsMetrics {
   }
 
   public static void report() {
-    Map<String, Long> report =
-      timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().elapsed(TimeUnit.SECONDS)));
+    Map<String, Long> report = getCurrentResult();
     System.out.println(report);
     String reportFilePath = getReportFilePath();
     if (reportFilePath == null) {
@@ -159,6 +158,11 @@ public class PantsMetrics {
       e.printStackTrace();
     }
   }
+
+  public static Map<String, Long> getCurrentResult() {
+    return timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().elapsed(TimeUnit.SECONDS)));
+  }
+
 
   @Nullable
   public static String getReportFilePath() {

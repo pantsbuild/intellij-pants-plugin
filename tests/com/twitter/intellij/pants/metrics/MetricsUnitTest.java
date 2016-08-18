@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.metrics;
 import com.twitter.intellij.pants.components.impl.PantsMetrics;
 import junit.framework.TestCase;
 
-import java.io.File;
+import java.util.Map;
 
 public class MetricsUnitTest extends TestCase {
   @Override
@@ -15,7 +15,25 @@ public class MetricsUnitTest extends TestCase {
     PantsMetrics.initialize();
   }
 
-  public void testMetrics() throws Exception {
+  public void testSanity() throws InterruptedException {
+    PantsMetrics.markIndexStart();
+    Thread.sleep(1000);
+    PantsMetrics.markIndexEnd();
+    Map<String, Long> result = PantsMetrics.getCurrentResult();
+    assertTrue(0 == result.get("export_second"));
+    assertTrue(0 == result.get("load_second"));
+    assertTrue(0 < result.get("indexing_second"));
+  }
+
+  /**
+   * This test makes sure that PantsMetrics does not explode when called
+   * from multiple places, in which case it does not provide actual useful information.
+   *
+   * In actual metrics test, these functions are called in order and in sync.
+   *
+   * @throws Exception
+   */
+  public void testMetricsMultipleCalls() throws Exception {
     PantsMetrics.markIndexStart();
     PantsMetrics.markIndexStart();
     PantsMetrics.markExportEnd();
