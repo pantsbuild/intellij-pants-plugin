@@ -405,14 +405,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return modules.toArray(new Module[modules.size()]);
   }
 
-  /**
-   * Same as super method except it doesn't check for gen modules.
-   * It appeared names of gen modules are changing from time to time
-   * and we can't use a deterministic one because we run tests
-   * for different version of pants.
-   * <p/>
-   * Use assertGenModules instead.
-   */
   protected void assertSourceModules(String... expectedNames) {
     // sourcesModules means modules that contains at least one content root.
     final Set<Module> sourceModules = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
