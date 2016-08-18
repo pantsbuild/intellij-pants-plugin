@@ -12,13 +12,13 @@ public class MetricsUnitTest extends OSSPantsIntegrationTest {
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI, "true");
+    System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE, "true");
     PantsMetrics.initialize();
   }
 
   @Override
   public void tearDown() throws Exception {
-    System.clearProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI);
+    System.clearProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE);
     super.tearDown();
   }
 
@@ -37,7 +37,7 @@ public class MetricsUnitTest extends OSSPantsIntegrationTest {
   }
 
   public void testMetricsDisabled() throws Exception {
-    System.clearProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI);
+    System.clearProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE);
     multipleCalls();
   }
 
