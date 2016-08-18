@@ -416,7 +416,8 @@ public class PantsUtil {
     // or depending on the module(s). Otherwise it can be a gen module
     // or 3rdparty module placeholder.
     return ModuleRootManager.getInstance(module).getDependencies().length > 0 ||
-           ModuleRootManager.getInstance(module).getContentRoots().length > 0;
+           ModuleRootManager.getInstance(module).getContentRoots().length > 0 ||
+           ModuleRootManager.getInstance(module).getContentEntries().length > 0;
   }
 
   @NotNull
