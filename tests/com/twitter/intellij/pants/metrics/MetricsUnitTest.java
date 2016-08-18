@@ -16,6 +16,12 @@ public class MetricsUnitTest extends OSSPantsIntegrationTest {
     PantsMetrics.initialize();
   }
 
+  @Override
+  public void tearDown() throws Exception {
+    System.clearProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI);
+    super.tearDown();
+  }
+
   public void testSanity() throws InterruptedException {
     PantsMetrics.markIndexStart();
     Thread.sleep(1000);
@@ -26,20 +32,13 @@ public class MetricsUnitTest extends OSSPantsIntegrationTest {
     assertTrue(0 < result.get("indexing_second"));
   }
 
-
-  public void testMetricsDisabled() throws Exception {
-    System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI, "false");
-    multipleCalls();
-  }
-
   public void testMetricsEnabled() throws Exception {
     multipleCalls();
   }
 
-  @Override
-  public void tearDown() throws Exception {
-    System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI, "false");
-    super.tearDown();
+  public void testMetricsDisabled() throws Exception {
+    System.clearProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI);
+    multipleCalls();
   }
 
   /**
