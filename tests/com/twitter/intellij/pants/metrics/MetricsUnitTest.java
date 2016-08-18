@@ -12,6 +12,7 @@ public class MetricsUnitTest extends OSSPantsIntegrationTest {
   @Override
   public void setUp() throws Exception {
     super.setUp();
+    System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI, "true");
     PantsMetrics.initialize();
   }
 
@@ -25,6 +26,22 @@ public class MetricsUnitTest extends OSSPantsIntegrationTest {
     assertTrue(0 < result.get("indexing_second"));
   }
 
+
+  public void testMetricsDisabled() throws Exception {
+    System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI, "false");
+    multipleCalls();
+  }
+
+  public void testMetricsEnabled() throws Exception {
+    multipleCalls();
+  }
+
+  @Override
+  public void tearDown() throws Exception {
+    System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI, "false");
+    super.tearDown();
+  }
+
   /**
    * This test makes sure that PantsMetrics does not explode when called
    * from multiple places, in which case it does not provide actual useful information.
@@ -33,7 +50,7 @@ public class MetricsUnitTest extends OSSPantsIntegrationTest {
    *
    * @throws Exception
    */
-  public void testMetricsMultipleCalls() throws Exception {
+  private void multipleCalls() throws Exception {
     PantsMetrics.markIndexStart();
     PantsMetrics.markIndexStart();
     PantsMetrics.markExportEnd();

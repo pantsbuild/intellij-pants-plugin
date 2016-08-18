@@ -175,8 +175,7 @@ public class PantsMetrics {
   }
 
   private static void startWatch(Stopwatch stopwatch) {
-    if (!ApplicationManager.getApplication().isUnitTestMode()
-        && !isMetricsEnabledInGui()) {
+    if (!isMetricsEnabled()) {
       return;
     }
     if (stopwatch.isRunning()) {
@@ -187,8 +186,7 @@ public class PantsMetrics {
   }
 
   private static void stopWatch(Stopwatch stopwatch) {
-    if (!ApplicationManager.getApplication().isUnitTestMode()
-        && !isMetricsEnabledInGui()) {
+    if (!isMetricsEnabled()) {
       return;
     }
     if (stopwatch.isRunning()) {
@@ -196,11 +194,8 @@ public class PantsMetrics {
     }
   }
 
-  private static boolean isMetricsEnabledInGui() {
+  private static boolean isMetricsEnabled() {
     String property = System.getProperty(SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI);
-    if (property == null) {
-      return false;
-    }
-    return property.equals("true");
+    return property != null && property.equals("true");
   }
 }
