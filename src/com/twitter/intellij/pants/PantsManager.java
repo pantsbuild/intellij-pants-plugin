@@ -39,6 +39,7 @@ import javax.swing.*;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class PantsManager implements
                           ExternalSystemConfigurableAware,
@@ -160,8 +161,9 @@ public class PantsManager implements
   @NotNull
   @Override
   public String getProjectRepresentationName(@NotNull String targetProjectPath, @Nullable String rootProjectPath) {
-    final PantsTargetAddress address = PantsTargetAddress.fromString(targetProjectPath, false);
-    assert address != null;
+    final Optional<PantsTargetAddress> addressOptional = PantsTargetAddress.fromString(targetProjectPath, false);
+    assert addressOptional.isPresent();
+    final PantsTargetAddress address = addressOptional.get();
     return address.getRelativePath() + ":" + address.getTargetName();
   }
 

@@ -72,6 +72,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -79,6 +80,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Executors;
@@ -90,9 +92,12 @@ import java.util.stream.Stream;
 
 public class PantsUtil {
   public static final Gson gson = new Gson();
-  public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {}.getType();
-  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
-  public static final Type TYPE_MAP_STRING_INTEGER = new TypeToken<Map<String, Integer>>() {}.getType();
+  public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {
+  }.getType();
+  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {
+  }.getType();
+  public static final Type TYPE_MAP_STRING_INTEGER = new TypeToken<Map<String, Integer>>() {
+  }.getType();
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
     new ThreadFactory() {
       @Override
@@ -109,6 +114,7 @@ public class PantsUtil {
   /**
    * This aims to prepares for any breakage we might introduce from pants side, in which case we can adjust the version
    * of Pants `idea-plugin` goal to be greater than 0.1.0.
+   *
    * @see <a href="https://github.com/pantsbuild/pants/blob/d31ec5b4b1fb4f91e5beb685539ea14278dc62cf/src/python/pants/backend/project_info/tasks/idea_plugin_gen.py#L28">Pants `idea-plugin` goal version</a>
    */
   private static final String PANTS_IDEA_PLUGIN_VERESION_MIN = "0.0.1";
@@ -116,19 +122,13 @@ public class PantsUtil {
 
   /**
    * @param vFile a virtual file pointing at either a file or a directory
-   * @return <code>null</code> if `vFile` is not a BUILD file or if it is a directory that
+   * @return <code>Optional.empty()</code> if `vFile` is not a BUILD file or if it is a directory that
    * does not contain one
    * @deprecated {@link #findBUILDFiles(VirtualFile)} should be used instead, as this is likely
    * a sign that you're missing BUILD files
    */
-  @Nullable
-  public static VirtualFile findBUILDFile(@Nullable VirtualFile vFile) {
-    if (vFile == null) {
-      return null;
-    }
-    else {
-      return findBUILDFiles(vFile).stream().findFirst().orElse(null);
-    }
+  public static Optional<VirtualFile> findBUILDFile(@Nullable VirtualFile vFile) {
+    return findBUILDFiles(vFile).stream().findFirst();
   }
 
   /**
@@ -175,139 +175,118 @@ public class PantsUtil {
     return isBUILDFileName(file.getName());
   }
 
-  @Nullable
-  public static String findPantsVersion(@Nullable VirtualFile workingDir) {
-    final VirtualFile pantsIniFile = findPantsIniFile(workingDir);
-    return pantsIniFile == null ? null : findVersionInFile(pantsIniFile);
+  public static Optional<String> findPantsVersion(Optional<VirtualFile> workingDir) {
+    final Optional<VirtualFile> pantsIniFile = findPantsIniFile(workingDir);
+    return pantsIniFile.flatMap(PantsUtil::findVersionInFile);
   }
 
-  @Nullable
-  public static VirtualFile findPantsIniFile(@Nullable VirtualFile workingDir) {
-    return workingDir != null ? workingDir.findChild(PantsConstants.PANTS_INI) : null;
+  public static Optional<VirtualFile> findPantsIniFile(Optional<VirtualFile> workingDir) {
+    return workingDir.map(file -> file.findChild(PantsConstants.PANTS_INI));
   }
 
-  @Nullable
-  private static String findVersionInFile(@NotNull VirtualFile file) {
+  private static Optional<String> findVersionInFile(@NotNull VirtualFile file) {
     try {
       final String fileContent = VfsUtilCore.loadText(file);
       final List<String> matches = StringUtil.findMatches(
         fileContent, Pattern.compile(PANTS_VERSION_REGEXP)
       );
-      return matches.isEmpty() ? null : matches.iterator().next();
+      return matches.isEmpty() ? Optional.empty() : Optional.of(matches.iterator().next());
     }
     catch (IOException e) {
-      return null;
+      return Optional.empty();
     }
   }
 
-  @Nullable
-  public static VirtualFile findFolderWithPex() {
-    return findFolderWithPex(VfsUtil.getUserHomeDir());
+  public static Optional<VirtualFile> findFolderWithPex() {
+    return findFolderWithPex(Optional.ofNullable(VfsUtil.getUserHomeDir()));
   }
 
-  @Nullable
-  public static VirtualFile findFolderWithPex(@Nullable VirtualFile userHomeDir) {
+  public static Optional<VirtualFile> findFolderWithPex(Optional<VirtualFile> userHomeDir) {
     return findFileRelativeToDirectory(PEX_RELATIVE_PATH, userHomeDir);
   }
 
-  @Nullable
-  public static VirtualFile findPexVersionFile(@NotNull VirtualFile folderWithPex, @NotNull String pantsVersion) {
+  public static Optional<VirtualFile> findPexVersionFile(@NotNull VirtualFile folderWithPex, @NotNull String pantsVersion) {
     final String filePrefix = "pants-" + pantsVersion;
-    return ContainerUtil.find(
+    return Optional.ofNullable(ContainerUtil.find(
       folderWithPex.getChildren(), new Condition<VirtualFile>() {
         @Override
         public boolean value(VirtualFile virtualFile) {
           return "pex".equalsIgnoreCase(virtualFile.getExtension()) && virtualFile.getName().startsWith(filePrefix);
         }
       }
-    );
+    ));
   }
 
-  @Nullable
-  public static File findBuildRoot(@NotNull File file) {
-    final File pantsExecutable = findPantsExecutable(file);
-    return pantsExecutable != null ? pantsExecutable.getParentFile() : null;
+  public static Optional<File> findBuildRoot(@NotNull File file) {
+    return findPantsExecutable(Optional.of(file)).map(File::getParentFile);
   }
 
-  @Nullable
-  public static VirtualFile findBuildRoot(@NotNull String filePath) {
-    final VirtualFile pantsExecutable = findPantsExecutable(filePath);
-    return pantsExecutable != null ? pantsExecutable.getParent() : null;
+  public static Optional<VirtualFile> findBuildRoot(@NotNull String filePath) {
+    return findPantsExecutable(filePath).map(VirtualFile::getParent);
   }
 
-  @Nullable
-  public static VirtualFile findBuildRoot(@NotNull Project project) {
+  public static Optional<VirtualFile> findBuildRoot(@NotNull Project project) {
     return findBuildRoot(project.getProjectFile());
   }
 
-  @Nullable
-  public static VirtualFile findBuildRoot(@NotNull PsiFile psiFile) {
+  public static Optional<VirtualFile> findBuildRoot(@NotNull PsiFile psiFile) {
     final VirtualFile virtualFile = psiFile.getOriginalFile().getVirtualFile();
     return virtualFile != null ? findBuildRoot(virtualFile) : findBuildRoot(psiFile.getProject());
   }
 
-  @Nullable
-  public static VirtualFile findBuildRoot(@NotNull Module module) {
+  public static Optional<VirtualFile> findBuildRoot(@NotNull Module module) {
     final VirtualFile moduleFile = module.getModuleFile();
     if (moduleFile != null) {
       return findBuildRoot(moduleFile);
     }
     final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-    for (VirtualFile contentRoot : rootManager.getContentRoots()) {
-      final VirtualFile buildRoot = findBuildRoot(contentRoot);
-      if (buildRoot != null) {
-        return buildRoot;
-      }
-    }
-    return null;
+
+    //  TODO: change flatMap to Optional::stream on JDK update
+    //  (see http://stackoverflow.com/questions/22725537/using-java-8s-optional-with-streamflatmap)
+    return Arrays.stream(rootManager.getContentRoots())
+      .map(PantsUtil::findBuildRoot)
+      .flatMap(file -> file.map(Stream::of).orElseGet(Stream::empty))
+      .findFirst();
   }
 
-  @Nullable
-  public static VirtualFile findBuildRoot(@Nullable VirtualFile file) {
-    final VirtualFile pantsExecutable = findPantsExecutable(file);
-    return pantsExecutable != null ? pantsExecutable.getParent() : null;
+  public static Optional<VirtualFile> findBuildRoot(@Nullable VirtualFile file) {
+    return findPantsExecutable(file).map(VirtualFile::getParent);
   }
 
-  @Nullable
-  public static VirtualFile findDistExportClasspathDirectory(@NotNull Module module) {
-    final VirtualFile buildRoot = findBuildRoot(module);
-    if (buildRoot == null) {
-      return null;
-    }
-    return VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.getPath() + "/dist/export-classpath");
+  public static Optional<VirtualFile> findDistExportClasspathDirectory(@NotNull Module module) {
+    final Optional<VirtualFile> buildRoot = findBuildRoot(module);
+    return buildRoot.flatMap(file -> Optional.ofNullable(VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" +
+                                                                                                                  file.getPath() +
+                                                                                                                  "/dist/export-classpath")));
   }
 
-  @Nullable
-  public static VirtualFile findProjectManifestJar(@NotNull Project myProject) {
+  public static Optional<VirtualFile> findProjectManifestJar(@NotNull Project myProject) {
     Module[] modules = ModuleManager.getInstance(myProject).getModules();
     if (modules.length == 0) {
-      return null;
+      return Optional.empty();
     }
     Module moduleSample = modules[0];
 
-    VirtualFile classpathDir = findDistExportClasspathDirectory(moduleSample);
-    if (classpathDir == null) {
-      return null;
-    }
-    String manifestUrl = classpathDir.getUrl() + "/manifest.jar";
-    VirtualFile manifest = VirtualFileManager.getInstance().refreshAndFindFileByUrl(manifestUrl);
-    if (manifest != null) {
-      return manifest;
-    }
-    return null;
+    Optional<VirtualFile> classpathDir = findDistExportClasspathDirectory(moduleSample);
+    return classpathDir.flatMap(
+      file -> {
+        String manifestUrl = file.getUrl() + "/manifest.jar";
+        VirtualFile manifest = VirtualFileManager.getInstance().refreshAndFindFileByUrl(manifestUrl);
+        return Optional.ofNullable(manifest);
+      });
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull Project project) throws PantsException {
-    VirtualFile pantsExecutable = findPantsExecutable(project);
-    return defaultCommandLine(pantsExecutable.getPath());
+    Optional<VirtualFile> pantsExecutable = findPantsExecutable(project);
+    return defaultCommandLine(
+      pantsExecutable.orElseThrow(
+        () -> new PantsException("Couldn't find pants executable for: " + project.getProjectFilePath())).getPath()
+    );
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
-    final File pantsExecutable = findPantsExecutable(new File(projectPath));
-    if (pantsExecutable == null) {
-      throw new PantsException("Couldn't find pants executable for: " + projectPath);
-    }
-    return defaultCommandLine(pantsExecutable);
+    final Optional<File> pantsExecutable = findPantsExecutable(Optional.of(new File(projectPath)));
+    return defaultCommandLine(pantsExecutable.orElseThrow(() -> new PantsException("Couldn't find pants executable for: " + projectPath)));
   }
 
   @NotNull
@@ -383,12 +362,7 @@ public class PantsUtil {
     }
     return ContainerUtil.mapNotNull(
       hydrateTargetAddresses(targets),
-      new Function<String, PantsTargetAddress>() {
-        @Override
-        public PantsTargetAddress fun(String targetAddress) {
-          return PantsTargetAddress.fromString(targetAddress);
-        }
-      }
+      PantsTargetAddress::fromString
     );
   }
 
@@ -464,16 +438,14 @@ public class PantsUtil {
     return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
   }
 
-  @Nullable
-  public static VirtualFile findBUILDFileForModule(@NotNull Module module) {
-    final String linkedPantsBUILD = getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY);
-    final String linkedPantsBUILDUrl = linkedPantsBUILD != null ? VfsUtil.pathToUrl(linkedPantsBUILD) : null;
-    final VirtualFile virtualFile =
-      linkedPantsBUILDUrl != null ? VirtualFileManager.getInstance().findFileByUrl(linkedPantsBUILDUrl) : null;
-    if (virtualFile == null) {
-      return null;
-    }
-    return isBUILDFile(virtualFile) ? virtualFile : findBUILDFile(virtualFile);
+  public static Optional<VirtualFile> findBUILDFileForModule(@NotNull Module module) {
+
+    final Optional<VirtualFile> virtualFile =
+      getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY)
+        .map(VfsUtil::pathToUrl)
+        .flatMap(s -> Optional.ofNullable(VirtualFileManager.getInstance().findFileByUrl(s)));
+
+    return virtualFile.flatMap(file -> isBUILDFile(file) ? Optional.of(file) : findBUILDFile(virtualFile.orElse(null)));
   }
 
   public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> map, Function<V1, V2> fun) {
@@ -500,21 +472,19 @@ public class PantsUtil {
     return result;
   }
 
-  @Nullable
-  public static String getRelativeProjectPath(@NotNull File projectFile) {
-    final File buildRoot = findBuildRoot(projectFile);
-    return buildRoot == null ? null : getRelativeProjectPath(buildRoot, projectFile);
+  public static Optional<String> getRelativeProjectPath(@NotNull File projectFile) {
+    final Optional<File> buildRoot = findBuildRoot(projectFile);
+    return buildRoot.flatMap(file -> getRelativeProjectPath(file, projectFile));
   }
 
-  @Nullable
-  public static String getRelativeProjectPath(@NotNull File workDirectory, @NotNull String projectPath) {
+  public static Optional<String> getRelativeProjectPath(@NotNull File workDirectory, @NotNull String projectPath) {
     final File projectFile = new File(projectPath);
     return getRelativeProjectPath(workDirectory, projectFile);
   }
 
-  @Nullable
-  public static String getRelativeProjectPath(@NotNull File workDirectory, @NotNull File projectFile) {
-    return FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile());
+  public static Optional<String> getRelativeProjectPath(@NotNull File workDirectory, @NotNull File projectFile) {
+    return Optional
+      .ofNullable(FileUtil.getRelativePath(workDirectory, projectFile.isDirectory() ? projectFile : projectFile.getParentFile()));
   }
 
   public static void refreshAllProjects(@NotNull Project project) {
@@ -529,33 +499,29 @@ public class PantsUtil {
     ExternalSystemUtil.refreshProjects(specBuilder);
   }
 
-  @Nullable
-  public static VirtualFile findFileByAbsoluteOrRelativePath(
+  public static Optional<VirtualFile> findFileByAbsoluteOrRelativePath(
     @NotNull String fileOrDirPath,
     @NotNull Project project
   ) {
     final VirtualFile absoluteVirtualFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(fileOrDirPath));
     if (absoluteVirtualFile != null) {
-      return absoluteVirtualFile;
+      return Optional.of(absoluteVirtualFile);
     }
     return findFileRelativeToBuildRoot(project, fileOrDirPath);
   }
 
-  @Nullable
-  public static VirtualFile findFileRelativeToBuildRoot(@NotNull Project project, @NotNull String fileOrDirPath) {
-    final VirtualFile buildRoot = findBuildRoot(project);
+  public static Optional<VirtualFile> findFileRelativeToBuildRoot(@NotNull Project project, @NotNull String fileOrDirPath) {
+    final Optional<VirtualFile> buildRoot = findBuildRoot(project);
     return findFileRelativeToDirectory(fileOrDirPath, buildRoot);
   }
 
-  @Nullable
-  public static VirtualFile findFileRelativeToBuildRoot(@NotNull PsiFile psiFile, @NotNull String fileOrDirPath) {
-    final VirtualFile buildRoot = findBuildRoot(psiFile);
+  public static Optional<VirtualFile> findFileRelativeToBuildRoot(@NotNull PsiFile psiFile, @NotNull String fileOrDirPath) {
+    final Optional<VirtualFile> buildRoot = findBuildRoot(psiFile);
     return findFileRelativeToDirectory(fileOrDirPath, buildRoot);
   }
 
-  @Nullable
-  private static VirtualFile findFileRelativeToDirectory(@NotNull @Nls String fileOrDirPath, @Nullable VirtualFile directory) {
-    return directory != null ? directory.findFileByRelativePath(fileOrDirPath) : null;
+  private static Optional<VirtualFile> findFileRelativeToDirectory(@NotNull @Nls String fileOrDirPath, Optional<VirtualFile> directory) {
+    return directory.flatMap(file -> Optional.ofNullable(file.findFileByRelativePath(fileOrDirPath)));
   }
 
   /**
@@ -580,9 +546,8 @@ public class PantsUtil {
     }
   }
 
-  @Contract(value = "_, null -> null", pure = true)
-  public static String getPathFromAddress(@NotNull Module module, @Nullable String key) {
-    final String address = key != null ? module.getOptionValue(key) : null;
+  public static Optional<String> getPathFromAddress(@NotNull Module module, @NotNull String key) {
+    final String address = module.getOptionValue(key);
     return PantsTargetAddress.extractPath(address);
   }
 
@@ -769,18 +734,18 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static Sdk getDefaultJavaSdk(@NotNull final String pantsExecutable) {
+  public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable) {
     SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
     if (versionCompare(exportResult.getVersion(), "1.0.7") >= 0) {
       String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
-      boolean strict = Boolean.parseBoolean(PantsOptions.getPantsOptions(pantsExecutable)
-                                              .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
+      boolean strict =
+        PantsOptions.getPantsOptions(pantsExecutable).get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION).isPresent();
       String jdkName = String.format("JDK from pants %s", defaultPlatform);
       String jdkHome = exportResult.getPreferredJvmDistributions().get(defaultPlatform)
         .get(strict ? "strict" : "non_strict");
-      return JavaSdk.getInstance().createJdk(jdkName, jdkHome);
+      return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome));
     }
-    return null;
+    return Optional.empty();
   }
 
   /**
@@ -822,45 +787,43 @@ public class PantsUtil {
    * Use project's module in project to find the `buildRoot`,
    * then use `buildRoot` to find pantsExecutable.
    */
-  public static VirtualFile findPantsExecutable(@NotNull Project project) {
+  public static Optional<VirtualFile> findPantsExecutable(@NotNull Project project) {
     Module[] modules = ModuleManager.getInstance(project).getModules();
     if (modules.length == 0) {
       throw new PantsException("No module found in project.");
     }
     Module moduleSample = modules[0];
-    VirtualFile buildRoot = findBuildRoot(moduleSample);
-    return findPantsExecutable(buildRoot);
+    Optional<VirtualFile> buildRoot = findBuildRoot(moduleSample);
+    return buildRoot.flatMap(PantsUtil::findPantsExecutable);
   }
 
-  @Nullable
-  public static VirtualFile findPantsExecutable(@NotNull String projectPath) {
+  public static Optional<VirtualFile> findPantsExecutable(@NotNull String projectPath) {
     // guard against VirtualFileManager throwing an NPE in tests that don't stand up an IDEA instance
     if (ApplicationManager.getApplication() == null) {
-      return null;
+      return Optional.empty();
     }
     final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     return findPantsExecutable(buildFile);
   }
 
-  @Nullable
-  public static File findPantsExecutable(@Nullable File file) {
-    if (file == null) return null;
-    if (file.isDirectory()) {
-      final File pantsFile = new File(file, PantsConstants.PANTS);
-      if (pantsFile.exists() && !pantsFile.isDirectory()) {
-        return pantsFile;
+  public static Optional<File> findPantsExecutable(Optional<File> file) {
+    return file.flatMap(f -> {
+      if (f.isDirectory()) {
+        final File pantsFile = new File(f, PantsConstants.PANTS);
+        if (pantsFile.exists() && !pantsFile.isDirectory()) {
+          return Optional.of(pantsFile);
+        }
       }
-    }
-    return findPantsExecutable(file.getParentFile());
+      return findPantsExecutable(Optional.ofNullable(f.getParentFile()));
+    });
   }
 
-  @Nullable
-  private static VirtualFile findPantsExecutable(@Nullable VirtualFile file) {
-    if (file == null) return null;
+  private static Optional<VirtualFile> findPantsExecutable(@Nullable VirtualFile file) {
+    if (file == null) return Optional.empty();
     if (file.isDirectory()) {
       final VirtualFile pantsFile = file.findChild(PantsConstants.PANTS);
       if (pantsFile != null && !pantsFile.isDirectory()) {
-        return pantsFile;
+        return Optional.of(pantsFile);
       }
     }
     return findPantsExecutable(file.getParent());
@@ -870,9 +833,9 @@ public class PantsUtil {
     File importPathFile = new File(importPath);
     final String projectDir =
       isBUILDFileName(importPathFile.getName()) ? importPathFile.getParent() : importPathFile.getPath();
-    final String relativeProjectDir = getRelativeProjectPath(new File(projectDir));
+    final Optional<String> relativeProjectDir = getRelativeProjectPath(new File(projectDir));
     // If relativeProjectDir is null, that means the projectDir is already relative.
-    String relativePath = ObjectUtils.notNull(relativeProjectDir, projectDir);
+    String relativePath = relativeProjectDir.orElse(projectDir);
     if (targetNames.isEmpty()) {
       return Collections.singletonList(relativePath + "::");
     }
@@ -886,7 +849,7 @@ public class PantsUtil {
      * Run in SYNC in unit test mode, and {@link com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport}
      * is required to be wrapped in WriteAction. Otherwise it will run in async mode.
      */
-    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()){
+    if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()) {
       ApplicationManager.getApplication().runWriteAction(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         SaveAndSyncHandler.getInstance().refreshOpenFiles();
@@ -910,8 +873,8 @@ public class PantsUtil {
   /**
    * Copy from {@link ExternalSystemExecuteTaskTask#parseCmdParameters} because it is private.
    */
-  public static List<String> parseCmdParameters(@Nullable String cmdArgsLine) {
-    return cmdArgsLine != null ? ParametersListUtil.parse(cmdArgsLine) : ContainerUtil.<String>newArrayList();
+  public static List<String> parseCmdParameters(Optional<String> cmdArgsLine) {
+    return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
   }
 }
 

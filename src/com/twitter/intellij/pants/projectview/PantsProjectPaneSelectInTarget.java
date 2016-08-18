@@ -16,6 +16,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileSystemItem;
 import com.twitter.intellij.pants.util.PantsUtil;
 
+import java.util.Optional;
+
 public class PantsProjectPaneSelectInTarget extends ProjectViewSelectInTarget {
   protected PantsProjectPaneSelectInTarget(Project project) {
     super(project);
@@ -54,9 +56,9 @@ public class PantsProjectPaneSelectInTarget extends ProjectViewSelectInTarget {
       if (projectFileIndex.isInLibraryClasses(vFile) || projectFileIndex.isInLibrarySource(vFile)) {
         return true;
       }
-      final VirtualFile buildRoot = PantsUtil.findBuildRoot(myProject.getBaseDir());
+      final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(myProject.getBaseDir());
 
-      return buildRoot != null && VfsUtil.isAncestor(buildRoot, vFile, false);
+      return buildRoot.isPresent() && VfsUtil.isAncestor(buildRoot.get(), vFile, false);
     }
 
     return false;

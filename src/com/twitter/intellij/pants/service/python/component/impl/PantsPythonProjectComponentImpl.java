@@ -19,6 +19,8 @@ import com.twitter.intellij.pants.service.python.component.PantsPythonProjectCom
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 
 public class PantsPythonProjectComponentImpl extends AbstractProjectComponent implements PantsPythonProjectComponent {
   protected PantsPythonProjectComponentImpl(Project project) {
@@ -43,10 +45,8 @@ public class PantsPythonProjectComponentImpl extends AbstractProjectComponent im
           }
           final String workingDirectory = ((AbstractPythonRunConfiguration)runConfiguration).getWorkingDirectory();
           if (StringUtil.isEmpty(workingDirectory)) {
-            final VirtualFile projectBuildRoot = PantsUtil.findBuildRoot(myProject);
-            if (projectBuildRoot != null) {
-              ((AbstractPythonRunConfiguration)runConfiguration).setWorkingDirectory(projectBuildRoot.getCanonicalPath());
-            }
+            final Optional<VirtualFile> projectBuildRoot = PantsUtil.findBuildRoot(myProject);
+            projectBuildRoot.ifPresent(file -> ((AbstractPythonRunConfiguration)runConfiguration).setWorkingDirectory(file.getCanonicalPath()));
           }
         }
       }

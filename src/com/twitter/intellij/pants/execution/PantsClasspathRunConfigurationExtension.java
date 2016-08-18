@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
   protected static final Logger LOG = Logger.getInstance(PantsClasspathRunConfigurationExtension.class);
@@ -71,17 +72,12 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       classpath.remove(excludedPath);
     }
 
-    PantsOptions pantsOptions = PantsOptions.getPantsOptions(configuration.getProject());
-    if (pantsOptions == null) {
-      throw new ExecutionException("Pants options not found.");
-    }
+    PantsOptions pantsOptions =
+      PantsOptions.getPantsOptions(configuration.getProject()).orElseThrow(() -> new ExecutionException("Pants options not found."));
     if (pantsOptions.supportsManifestJar()) {
-      VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject());
-      if (manifestJar != null) {
-        classpath.add(manifestJar.getPath());
-        return;
-      }
-      throw new ExecutionException("Pants supports manifest jar, but it is not found.");
+      VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject())
+        .orElseThrow(() -> new ExecutionException("Pants supports manifest jar, but it is not found."));
+      classpath.add(manifestJar.getPath());
     }
 
 
@@ -89,24 +85,17 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       new Runnable() {
         @Override
         public void run() {
-          final VirtualFile classpathDir = PantsUtil.findDistExportClasspathDirectory(module);
-          if (classpathDir == null) {
+          final Optional<VirtualFile> classpathDir = PantsUtil.findDistExportClasspathDirectory(module);
+          if (!classpathDir.isPresent()) {
             return;
           }
           // Refresh dist/export-classpath because virtual file system may not have picked up the newly created symlinks.
-          classpathDir.refresh(false, true);
+          classpathDir.get().refresh(false, true);
         }
       }
     );
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(module.getProject());
-    if (pantsExecutable == null) {
-      throw new ExecutionException("Cannot find Pants executable.");
-    }
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
-    if (buildRoot == null) {
-      throw new ExecutionException("Cannot find build root.");
-    }
+    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module).orElseThrow(() -> new ExecutionException("Cannot find build root."));
 
     final List<String> publishedClasspath = ContainerUtil.newArrayList();
     processRuntimeModules(
@@ -144,7 +133,8 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   public static List<String> findPublishedClasspath(@NotNull Module module) {
     final List<String> result = ContainerUtil.newArrayList();
     // This is type for Gson to figure the data type to deserialize
-    final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {}.getType();
+    final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {
+    }.getType();
     Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), type);
     // The new way to find classpath by target id
     for (TargetAddressInfo ta : targetInfoSet) {
@@ -155,16 +145,16 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   @NotNull
   private static List<String> findPublishedClasspathByTargetId(@NotNull Module module, @NotNull TargetAddressInfo targetAddressInfo) {
-    final VirtualFile classpath = PantsUtil.findDistExportClasspathDirectory(module);
-    if (classpath == null) {
+    final Optional<VirtualFile> classpath = PantsUtil.findDistExportClasspathDirectory(module);
+    if (!classpath.isPresent()) {
       return Collections.emptyList();
     }
     // Handle classpath with target.id
     List<String> paths = ContainerUtil.newArrayList();
     int count = 0;
     while (true) {
-      VirtualFile classpathLinkFolder = classpath.findFileByRelativePath(targetAddressInfo.getId() + "-" + count);
-      VirtualFile classpathLinkFile = classpath.findFileByRelativePath(targetAddressInfo.getId() + "-" + count + ".jar");
+      VirtualFile classpathLinkFolder = classpath.get().findFileByRelativePath(targetAddressInfo.getId() + "-" + count);
+      VirtualFile classpathLinkFile = classpath.get().findFileByRelativePath(targetAddressInfo.getId() + "-" + count + ".jar");
       if (classpathLinkFolder != null && classpathLinkFolder.isDirectory()) {
         paths.add(classpathLinkFolder.getPath());
         break;

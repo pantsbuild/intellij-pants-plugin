@@ -3,11 +3,9 @@
 
 package com.twitter.intellij.pants.index;
 
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.indexing.DataIndexer;
 import com.intellij.util.indexing.FileBasedIndex;
 import com.intellij.util.indexing.FileContent;
@@ -22,28 +20,28 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PantsBuildFileIndex extends ScalarIndexExtension<String> {
   public static final ID<String, Void> NAME = ID.create("PantsBuildFileIndex");
 
   public static Collection<String> getFiles(@NotNull PsiFile file) {
-    VirtualFile root = PantsUtil.findBuildRoot(file);
-    Collection<String> keys = FileBasedIndex.getInstance().getAllKeys(NAME, file.getProject());
+    Optional<VirtualFile> root = PantsUtil.findBuildRoot(file);
 
     // We need to make sure that the files really belong to the project.
     // As stated in http://www.jetbrains.org/intellij/sdk/docs/basics/indexing_and_psi_stubs/file_based_indexes.html#accessing-a-file-based-index
     // it "may also contain additional keys not currently found in the project."
-    return ContainerUtil.filter(keys, new Condition<String>() {
-      public boolean value(String key) {
-        if (root == null) {
-          return false;
-        }
-        else {
-          String absolutePath = root.getPath() + File.separatorChar + key + File.separatorChar + "BUILD";
-          return root.getFileSystem().findFileByPath(absolutePath) != null;
-        }
-      }
-    });
+
+    return root
+      .map(r -> FileBasedIndex.getInstance().getAllKeys(NAME, file.getProject()).stream()
+      .filter(key -> {
+        String absolutePath = r.getPath() + File.separatorChar + key + File.separatorChar + "BUILD";
+        return r.getFileSystem().findFileByPath(absolutePath) != null;
+      }))
+      .orElse(Stream.empty())
+      .collect(Collectors.toList());
   }
 
   @NotNull
@@ -94,12 +92,12 @@ public class PantsBuildFileIndex extends ScalarIndexExtension<String> {
       }
 
       final VirtualFile file = inputData.getFile();
-      VirtualFile buildRoot = PantsUtil.findBuildRoot(file);
-      if (buildRoot == null) {
+      Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(file);
+      if (!buildRoot.isPresent()) {
         return Collections.emptyMap();
       }
 
-      String relative = FileUtil.getRelativePath(buildRoot.getPath(), file.getParent().getPath(), File.separatorChar);
+      String relative = FileUtil.getRelativePath(buildRoot.get().getPath(), file.getParent().getPath(), File.separatorChar);
       if (relative == null || relative.isEmpty()) {
         return Collections.emptyMap();
       }
