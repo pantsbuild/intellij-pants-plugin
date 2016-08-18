@@ -32,6 +32,7 @@ public class PantsMetrics {
   private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
   public static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "pants.metrics.report.dir";
   public static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "pants.metrics.import.dir";
+  public static final String SYSTEM_PROPERTY_METRICS_ENABLE = "pants.metrics.enable";
 
   private static volatile ScheduledFuture handle;
   private static volatile int counter = 0;
@@ -120,32 +121,31 @@ public class PantsMetrics {
   }
 
   public static void markResolveStart() {
-    timers.get(METRIC_LOAD).start();
+    startWatch(timers.get(METRIC_LOAD));
   }
 
   public static void markResolveEnd() {
-    timers.get(METRIC_LOAD).stop();
+    stopWatch(timers.get(METRIC_LOAD));
   }
 
   public static void markExportStart() {
-    timers.get(METRIC_EXPORT).start();
+    startWatch(timers.get(METRIC_EXPORT));
   }
 
   public static void markExportEnd() {
-    timers.get(METRIC_EXPORT).stop();
+    stopWatch(timers.get(METRIC_EXPORT));
   }
 
   public static void markIndexStart() {
-    timers.get(METRIC_INDEXING).start();
+    startWatch(timers.get(METRIC_INDEXING));
   }
 
   public static void markIndexEnd() {
-    timers.get(METRIC_INDEXING).stop();
+    stopWatch(timers.get(METRIC_INDEXING));
   }
 
   public static void report() {
-    Map<String, Long> report =
-      timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().elapsed(TimeUnit.SECONDS)));
+    Map<String, Long> report = getCurrentResult();
     System.out.println(report);
     String reportFilePath = getReportFilePath();
     if (reportFilePath == null) {
@@ -159,6 +159,11 @@ public class PantsMetrics {
     }
   }
 
+  public static Map<String, Long> getCurrentResult() {
+    return timers.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().elapsed(TimeUnit.SECONDS)));
+  }
+
+
   @Nullable
   public static String getReportFilePath() {
     String reportDir = getMetricsReportDir();
@@ -166,5 +171,24 @@ public class PantsMetrics {
       return null;
     }
     return getMetricsReportDir() + "/output.json";
+  }
+
+  private static void startWatch(Stopwatch stopwatch) {
+    if (!isMetricsEnabled()) {
+      return;
+    }
+    stopwatch.start();
+  }
+
+  private static void stopWatch(Stopwatch stopwatch) {
+    if (!isMetricsEnabled()) {
+      return;
+    }
+    stopwatch.stop();
+  }
+
+  private static boolean isMetricsEnabled() {
+    String property = System.getProperty(SYSTEM_PROPERTY_METRICS_ENABLE);
+    return property != null && property.equals("true");
   }
 }
