@@ -33,6 +33,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
+import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Condition;
@@ -261,6 +262,13 @@ public class PantsUtil {
     final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
     for (VirtualFile contentRoot : rootManager.getContentRoots()) {
       final VirtualFile buildRoot = findBuildRoot(contentRoot);
+      if (buildRoot != null) {
+        return buildRoot;
+      }
+    }
+    for (ContentEntry contentEntry: rootManager.getContentEntries()) {
+      VirtualFile contentEntryFile = VirtualFileManager.getInstance().refreshAndFindFileByUrl(contentEntry.getUrl());
+      final VirtualFile buildRoot = findBuildRoot(contentEntryFile);
       if (buildRoot != null) {
         return buildRoot;
       }
