@@ -4,17 +4,19 @@
 package com.twitter.intellij.pants.metrics;
 
 import com.twitter.intellij.pants.components.impl.PantsMetrics;
-import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import junit.framework.TestCase;
 
 import java.util.Map;
 
-public class MetricsUnitTest extends OSSPantsIntegrationTest {
+
+public class MetricsUnitTest extends TestCase {
   @Override
   public void setUp() throws Exception {
     super.setUp();
     System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE, "true");
     PantsMetrics.initialize();
   }
+
 
   @Override
   public void tearDown() throws Exception {
@@ -33,23 +35,21 @@ public class MetricsUnitTest extends OSSPantsIntegrationTest {
   }
 
   public void testMetricsEnabled() throws Exception {
-    multipleCalls();
+    try {
+      illegalCalls();
+      fail();
+    }
+    catch (IllegalStateException e) {
+
+    }
   }
 
   public void testMetricsDisabled() throws Exception {
     System.clearProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE);
-    multipleCalls();
+    illegalCalls();
   }
 
-  /**
-   * This test makes sure that PantsMetrics does not explode when called
-   * from multiple places, in which case it does not provide actual useful information.
-   *
-   * In actual metrics test, these functions are called in order and in sync.
-   *
-   * @throws Exception
-   */
-  private void multipleCalls() throws Exception {
+  private void illegalCalls() throws Exception {
     PantsMetrics.markIndexStart();
     PantsMetrics.markIndexStart();
     PantsMetrics.markExportEnd();

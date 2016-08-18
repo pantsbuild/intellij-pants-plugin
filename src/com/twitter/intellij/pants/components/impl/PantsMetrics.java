@@ -132,7 +132,6 @@ public class PantsMetrics {
     startWatch(timers.get(METRIC_EXPORT));
   }
 
-
   public static void markExportEnd() {
     stopWatch(timers.get(METRIC_EXPORT));
   }
@@ -178,10 +177,6 @@ public class PantsMetrics {
     if (!isMetricsEnabled()) {
       return;
     }
-    if (stopwatch.isRunning()) {
-      stopwatch.stop();
-      stopwatch.reset();
-    }
     stopwatch.start();
   }
 
@@ -189,9 +184,7 @@ public class PantsMetrics {
     if (!isMetricsEnabled()) {
       return;
     }
-    if (stopwatch.isRunning()) {
-      stopwatch.stop();
-    }
+    stopwatch.stop();
   }
 
   private static boolean isMetricsEnabled() {
