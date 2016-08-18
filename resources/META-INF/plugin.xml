@@ -7,6 +7,11 @@
   <description>Support for Pants build system</description>
   <change-notes>
     <![CDATA[
+      <p>1.4.5.20160818</p>
+      <ul>
+        <li><a href="https://github.com/pantsbuild/intellij-pants-plugin/releases">Please see release notes.</a></li>
+      </ul>
+
       <p>1.4.5</p>
       <ul>
         <li><a href="https://github.com/pantsbuild/intellij-pants-plugin/releases">Please see release notes.</a></li>
@@ -249,7 +254,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.4.5</version>
+  <version>1.4.5.20160818</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
