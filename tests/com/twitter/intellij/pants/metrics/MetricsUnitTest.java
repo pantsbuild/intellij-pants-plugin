@@ -4,11 +4,11 @@
 package com.twitter.intellij.pants.metrics;
 
 import com.twitter.intellij.pants.components.impl.PantsMetrics;
-import junit.framework.TestCase;
+import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 import java.util.Map;
 
-public class MetricsUnitTest extends TestCase {
+public class MetricsUnitTest extends OSSPantsIntegrationTest {
   @Override
   public void setUp() throws Exception {
     super.setUp();
@@ -45,5 +45,7 @@ public class MetricsUnitTest extends TestCase {
     PantsMetrics.markIndexStart();
     PantsMetrics.markResolveEnd();
     PantsMetrics.markResolveEnd();
+    PantsMetrics.getCurrentResult();
+    PantsMetrics.report();
   }
 }
