@@ -833,14 +833,12 @@ public class PantsUtil {
       throw new PantsException("No module found in project.");
     }
     for (Module module : modules) {
-      VirtualFile[] contentRoots = ModuleRootManager.getInstance(module).getContentRoots();
-      if (contentRoots.length > 0) {
-        return findPantsExecutable(contentRoots[0].getPath());
+      VirtualFile buildRoot = findBuildRoot(module);
+      if (buildRoot != null) {
+        return buildRoot;
       }
     }
-    Module moduleSample = modules[0];
-    VirtualFile buildRoot = findBuildRoot(moduleSample);
-    return findPantsExecutable(buildRoot);
+    return null;
   }
 
   @Nullable
