@@ -21,7 +21,8 @@ fi
 popd
 popd
 
-args="test tests:${TEST_SET:-:} $(append_intellij_jvm_options test-junit) ${ADDITIONAL_ARGS:-$@}"
+args="test tests:${TEST_SET:-:} $(append_intellij_jvm_options test-junit) ${ADDITIONAL_ARGS:-$@} \
+--test-junit-test=com.twitter.intellij.pants.integration.OSSPantsTestExamplesIntegrationTest#testJUnitTests"
 
 echo "Running ./pants $args"
 ./pants $args
