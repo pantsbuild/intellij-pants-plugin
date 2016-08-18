@@ -5,31 +5,24 @@ package com.twitter.intellij.pants.service.project.resolver;
 
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.project.LibraryData;
-import com.intellij.openapi.externalSystem.model.project.LibraryPathType;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.module.ModuleTypeId;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
-import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.service.project.model.SourceRoot;
-import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.Map;
 
 public class PantsCreateModulesExtension implements PantsResolverExtension {
   @Override
@@ -98,21 +91,5 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
     moduleDataNode.createChild(TargetMetadata.KEY, metadata);
 
     return moduleDataNode;
-  }
-
-  private void addPathLoLibrary(
-    @NotNull LibraryData libraryData,
-    @NotNull PantsCompileOptionsExecutor executor,
-    @NotNull LibraryPathType binary,
-    @Nullable String path
-  ) {
-    if (path == null) {
-      return;
-    }
-    path = FileUtil.isAbsolute(path) ? path : executor.getAbsolutePathFromWorkingDir(path);
-
-    if (new File(path).exists()) {
-      libraryData.addPath(binary, path);
-    }
   }
 }
