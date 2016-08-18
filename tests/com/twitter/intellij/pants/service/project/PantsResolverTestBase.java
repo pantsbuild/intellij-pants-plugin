@@ -5,7 +5,11 @@ package com.twitter.intellij.pants.service.project;
 
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.project.*;
+import com.intellij.openapi.externalSystem.model.project.ContentRootData;
+import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
+import com.intellij.openapi.externalSystem.model.project.ModuleDependencyData;
+import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
@@ -14,7 +18,10 @@ import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
-import com.twitter.intellij.pants.service.project.model.*;
+import com.twitter.intellij.pants.service.project.model.LibraryInfo;
+import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.service.project.model.SourceRoot;
+import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -23,7 +30,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
