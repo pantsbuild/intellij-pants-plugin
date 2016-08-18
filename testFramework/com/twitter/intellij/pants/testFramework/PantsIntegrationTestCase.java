@@ -406,7 +406,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void assertSourceModules(String... expectedNames) {
-    // sourcesModules means modules that contains at least one content root.
     final Set<Module> sourceModules = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
       .filter(PantsUtil::isSourceModule)
       .collect(Collectors.toSet());
