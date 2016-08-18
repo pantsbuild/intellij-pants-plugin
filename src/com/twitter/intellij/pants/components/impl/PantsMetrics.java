@@ -120,27 +120,28 @@ public class PantsMetrics {
   }
 
   public static void markResolveStart() {
-    timers.get(METRIC_LOAD).start();
+    forceStart(timers.get(METRIC_LOAD));
   }
 
   public static void markResolveEnd() {
-    timers.get(METRIC_LOAD).stop();
+    forceStop(timers.get(METRIC_LOAD));
   }
 
   public static void markExportStart() {
-    timers.get(METRIC_EXPORT).start();
+    forceStart(timers.get(METRIC_EXPORT));
   }
 
+
   public static void markExportEnd() {
-    timers.get(METRIC_EXPORT).stop();
+    forceStop(timers.get(METRIC_EXPORT));
   }
 
   public static void markIndexStart() {
-    timers.get(METRIC_INDEXING).start();
+    forceStart(timers.get(METRIC_INDEXING));
   }
 
   public static void markIndexEnd() {
-    timers.get(METRIC_INDEXING).stop();
+    forceStop(timers.get(METRIC_INDEXING));
   }
 
   public static void report() {
@@ -166,5 +167,19 @@ public class PantsMetrics {
       return null;
     }
     return getMetricsReportDir() + "/output.json";
+  }
+
+  private static void forceStart(Stopwatch stopwatch) {
+    if (stopwatch.isRunning()) {
+      stopwatch.stop();
+      stopwatch.reset();
+    }
+    stopwatch.start();
+  }
+
+  private static void forceStop(Stopwatch stopwatch) {
+    if (stopwatch.isRunning()) {
+      stopwatch.stop();
+    }
   }
 }
