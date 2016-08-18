@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.settings;
 
 import com.intellij.openapi.externalSystem.model.settings.ExternalSystemExecutionSettings;
-import com.intellij.util.ObjectUtils;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
 import org.jetbrains.annotations.NotNull;
 

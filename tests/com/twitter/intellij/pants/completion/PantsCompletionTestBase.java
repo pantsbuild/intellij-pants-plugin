@@ -11,7 +11,11 @@ import com.intellij.testFramework.UsefulTestCase;
 import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Scanner;
 
 abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTestCase {
   enum CheckType {EQUALS, INCLUDES, EXCLUDES}
@@ -50,7 +54,7 @@ abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTes
     final int count = in.nextInt();
     final CheckType checkType = CheckType.valueOf(in.next());
 
-    final List<String> variants = new ArrayList<String>();
+    final List<String> variants = new ArrayList<>();
     while (in.hasNext()) {
       final String variant = StringUtil.strip(in.next(), CharFilter.NOT_WHITESPACE_FILTER);
       if (variant.length() > 0) {

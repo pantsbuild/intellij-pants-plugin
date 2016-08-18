@@ -11,12 +11,10 @@ import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -24,7 +22,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.*;
+import java.util.Map;
 
 public class PantsCreateModulesExtension implements PantsResolverExtension {
   @Override

@@ -8,17 +8,14 @@ import java.util.Collections
 
 import com.intellij.ProjectTopics
 import com.intellij.ide.plugins.PluginManagerCore
-import com.intellij.ide.util.gotoByName.GotoClassModel2
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.roots.{ModuleRootAdapter, ModuleRootEvent}
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.util.ui.UIUtil
 import com.twitter.intellij.pants.model.PantsTargetAddress
 import com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase
 import com.twitter.intellij.pants.util.PantsUtil
-import scala.collection.JavaConversions._
+import scala.collection.JavaConversions.collectionAsScalaIterable
 
 object PantsPerformanceBenchmark {
   def main(args: Array[String]) {

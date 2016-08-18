@@ -33,8 +33,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.lang.reflect.Type;
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
   protected static final Logger LOG = Logger.getInstance(PantsClasspathRunConfigurationExtension.class);
@@ -172,7 +177,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   @NotNull
   private Map<String, String> findExcludes(@NotNull Module module) {
-    final Map<String, String> result = new HashMap<String, String>();
+    final Map<String, String> result = new HashMap<>();
     processRuntimeModules(
       module,
       new Processor<Module>() {

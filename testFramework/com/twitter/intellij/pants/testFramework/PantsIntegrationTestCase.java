@@ -44,8 +44,16 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.*;
-import com.intellij.psi.*;
+import com.intellij.openapi.vfs.JarFileSystem;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiComment;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiParserFacade;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.testFramework.ThreadTracker;
@@ -66,7 +74,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 
@@ -394,7 +406,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   private Module[] getModules(final String... moduleNames) {
-    final List<Module> modules = new ArrayList<Module>();
+    final List<Module> modules = new ArrayList<>();
     for (String name : moduleNames) {
       modules.add(getModule(name));
     }

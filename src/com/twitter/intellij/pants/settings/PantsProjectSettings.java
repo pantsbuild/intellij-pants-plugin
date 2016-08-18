@@ -8,7 +8,6 @@ import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.List;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {

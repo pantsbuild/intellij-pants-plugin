@@ -11,7 +11,6 @@ import com.intellij.util.IncorrectOperationException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 

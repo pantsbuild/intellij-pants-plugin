@@ -22,7 +22,13 @@ import com.twitter.intellij.pants.util.PantsPsiUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+//import java.util.*;
 
 public class PantsTargetIndex extends ScalarIndexExtension<String> {
   public static final ID<String, Void> NAME = ID.create("PantsTargetIndex");
