@@ -32,6 +32,7 @@ public class PantsMetrics {
   private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
   public static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "pants.metrics.report.dir";
   public static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "pants.metrics.import.dir";
+  public static final String SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI = "pants.metrics.enable.in.gui";
 
   private static volatile ScheduledFuture handle;
   private static volatile int counter = 0;
@@ -120,28 +121,28 @@ public class PantsMetrics {
   }
 
   public static void markResolveStart() {
-    forceStart(timers.get(METRIC_LOAD));
+    startWatch(timers.get(METRIC_LOAD));
   }
 
   public static void markResolveEnd() {
-    forceStop(timers.get(METRIC_LOAD));
+    stopWatch(timers.get(METRIC_LOAD));
   }
 
   public static void markExportStart() {
-    forceStart(timers.get(METRIC_EXPORT));
+    startWatch(timers.get(METRIC_EXPORT));
   }
 
 
   public static void markExportEnd() {
-    forceStop(timers.get(METRIC_EXPORT));
+    stopWatch(timers.get(METRIC_EXPORT));
   }
 
   public static void markIndexStart() {
-    forceStart(timers.get(METRIC_INDEXING));
+    startWatch(timers.get(METRIC_INDEXING));
   }
 
   public static void markIndexEnd() {
-    forceStop(timers.get(METRIC_INDEXING));
+    stopWatch(timers.get(METRIC_INDEXING));
   }
 
   public static void report() {
@@ -173,7 +174,11 @@ public class PantsMetrics {
     return getMetricsReportDir() + "/output.json";
   }
 
-  private static void forceStart(Stopwatch stopwatch) {
+  private static void startWatch(Stopwatch stopwatch) {
+    if (!ApplicationManager.getApplication().isUnitTestMode()
+        && !isMetricsEnabledInGui()) {
+      return;
+    }
     if (stopwatch.isRunning()) {
       stopwatch.stop();
       stopwatch.reset();
@@ -181,9 +186,21 @@ public class PantsMetrics {
     stopwatch.start();
   }
 
-  private static void forceStop(Stopwatch stopwatch) {
+  private static void stopWatch(Stopwatch stopwatch) {
+    if (!ApplicationManager.getApplication().isUnitTestMode()
+        && !isMetricsEnabledInGui()) {
+      return;
+    }
     if (stopwatch.isRunning()) {
       stopwatch.stop();
     }
+  }
+
+  private static boolean isMetricsEnabledInGui() {
+    String property = System.getProperty(SYSTEM_PROPERTY_METRICS_ENABLE_IN_GUI);
+    if (property == null) {
+      return false;
+    }
+    return property.equals("true");
   }
 }
