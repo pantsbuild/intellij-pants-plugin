@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-//import java.util.*;
-
 public class PantsTargetIndex extends ScalarIndexExtension<String> {
   public static final ID<String, Void> NAME = ID.create("PantsTargetIndex");
 
