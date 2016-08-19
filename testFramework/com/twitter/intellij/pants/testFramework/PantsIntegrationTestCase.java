@@ -405,16 +405,16 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return modules.toArray(new Module[modules.size()]);
   }
 
-  protected void assertFirstPartyModules(String... expectedNames) {
+  protected void assertFirstSourcePartyModules(String... expectedNames) {
     final Set<Module> sourceModules = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
       .filter(PantsUtil::isSourceModule)
       .collect(Collectors.toSet());
 
-    final Set<String> firstPartyModuleNames = sourceModules.stream()
+    final Set<String> firstPartySourceModuleNames = sourceModules.stream()
       .map(Module::getName)
       .filter(moduleName -> !moduleName.startsWith(".pants.d") && !moduleName.startsWith("3rdparty"))
       .collect(Collectors.toSet());
-    assertEquals(Arrays.stream(expectedNames).collect(Collectors.toSet()), firstPartyModuleNames);
+    assertEquals(Arrays.stream(expectedNames).collect(Collectors.toSet()), firstPartySourceModuleNames);
   }
 
   protected void assertModuleExists(String moduleName) {

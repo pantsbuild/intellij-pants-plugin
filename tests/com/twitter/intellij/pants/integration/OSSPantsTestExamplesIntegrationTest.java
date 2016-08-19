@@ -16,7 +16,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testJUnitTests() throws Throwable {
     doImport("intellij-integration/tests/java/org/pantsbuild/testprojects");
 
-    assertFirstPartyModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
+    assertFirstSourcePartyModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
 
     String output = assertPantsCompileModule("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
     assertTrue(output.contains("compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
@@ -40,9 +40,16 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
     doImport("testprojects/tests/java/org/pantsbuild/testproject/dummies");
 
+    String passingTarget = "testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target";
+    String failingTarget = "testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target";
+    String matcherTarget = "testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher";
+
     String output = assertPantsCompileModule("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
     // Make sure only matcher target is compiled
-    assertTrue(output.contains("compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher"));
+    assertContainsSubstring(output, matcherTarget);
+    assertNotContainsSubstring(output, passingTarget);
+    assertNotContainsSubstring(output, failingTarget);
+
     assertSuccessfulJUnitTest(
       "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher",
       "org.pantsbuild.testproject.matcher.MatcherTest"
@@ -50,14 +57,16 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     // Make sure only the 2 dummies targets are compiled.
     String outputB = assertPantsCompileModule("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
-    assertTrue(outputB.contains("testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target"));
-    assertTrue(outputB.contains("testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target"));
-    assertFalse(outputB.contains("testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher"));
+    assertContainsSubstring(outputB, passingTarget);
+    assertContainsSubstring(outputB, failingTarget);
+    assertNotContainsSubstring(outputB, matcherTarget);
 
     // makeProject() will result all 3 targets to be compiled.
     String outputC = assertPantsCompileAll();
-    assertTrue(outputC.contains("testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target"));
-    assertTrue(outputC.contains("testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target"));
-    assertTrue(outputC.contains("testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher"));
+    assertContainsSubstring(outputC, passingTarget);
+    assertContainsSubstring(outputC, failingTarget);
+    assertContainsSubstring(outputC, matcherTarget);
   }
+
+
 }
