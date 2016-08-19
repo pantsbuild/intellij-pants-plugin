@@ -52,7 +52,7 @@ public class PantsTargetAddress {
   @NotNull
   public static PantsTargetAddress fromString(@NotNull @NonNls String targetName) {
     final Optional<PantsTargetAddress> result = fromString(targetName, false);
-    assert result != null;
+    assert result.isPresent();
     return result.get();
   }
 

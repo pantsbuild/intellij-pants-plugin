@@ -92,12 +92,9 @@ import java.util.stream.Stream;
 
 public class PantsUtil {
   public static final Gson gson = new Gson();
-  public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {
-  }.getType();
-  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {
-  }.getType();
-  public static final Type TYPE_MAP_STRING_INTEGER = new TypeToken<Map<String, Integer>>() {
-  }.getType();
+  public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {}.getType();
+  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
+  public static final Type TYPE_MAP_STRING_INTEGER = new TypeToken<Map<String, Integer>>() {}.getType();
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
     new ThreadFactory() {
       @Override
@@ -190,7 +187,7 @@ public class PantsUtil {
       final List<String> matches = StringUtil.findMatches(
         fileContent, Pattern.compile(PANTS_VERSION_REGEXP)
       );
-      return matches.isEmpty() ? Optional.empty() : Optional.of(matches.iterator().next());
+      return matches.stream().findFirst();
     }
     catch (IOException e) {
       return Optional.empty();
