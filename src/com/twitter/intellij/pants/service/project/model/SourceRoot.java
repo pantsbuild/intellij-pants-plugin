@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SourceRoot implements Comparable<SourceRoot> {
+  // This is actually content root.
   protected String source_root;
   protected String package_prefix;
 
@@ -66,6 +67,7 @@ public class SourceRoot implements Comparable<SourceRoot> {
   @Override
   public String toString() {
     return "SourceRoot{" +
+           // should be content root
            "source_root='" + source_root + '\'' +
            ", package_prefix='" + package_prefix + '\'' +
            '}';
