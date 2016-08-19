@@ -16,7 +16,9 @@ import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.notification.EventLog;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -36,11 +38,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.containers.ConcurrentList;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
+import io.netty.util.internal.ConcurrentSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
@@ -48,7 +52,9 @@ import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfigurat
 import javax.swing.*;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -61,6 +67,8 @@ import java.util.Set;
 public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
+
+  private static final ConcurrentSet<Process> runningPantsProcesses = new ConcurrentSet<>();
 
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
@@ -213,7 +221,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
     addMessageHandler(processHandler, currentProject);
-    processHandler.runProcess();
+
+    try {
+      runningPantsProcesses.add(process);
+      processHandler.runProcess();
+    }
+    finally {
+      runningPantsProcesses.remove(process);
+    }
 
     final boolean success = process.exitValue() == 0;
     notifyCompileResult(success);
@@ -227,7 +242,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
-        String message = success ? "Pants compile succeeded." : "Pants compile failed.";
+        String message = success ? "Pants compile succeeded." : "Pants compile failed or aborted.";
         NotificationType type = success ? NotificationType.INFORMATION : NotificationType.ERROR;
         Notification start = new Notification(PantsConstants.PANTS, "Compile message", message, type);
         Notifications.Bus.notify(start);
@@ -302,9 +317,24 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return result;
   }
 
-  private void showPantsMakeTaskMessage(String message, NotificationCategory type, Project project) {
+  private static void showPantsMakeTaskMessage(String message, NotificationCategory type, Project project) {
     NotificationData notification =
       new NotificationData(PantsConstants.PANTS, message, type, NotificationSource.TASK_EXECUTION);
     ExternalSystemNotificationManager.getInstance(project).showNotification(PantsConstants.SYSTEM_ID, notification);
+  }
+
+  public static void cancelAllRunningPantsProcesses(@Nullable Project project) {
+    for (Iterator<Process> it = runningPantsProcesses.iterator(); it.hasNext(); ) {
+      Process process = it.next();
+      if (UnixProcessManager.sendSignalToProcessTree(process, UnixProcessManager.SIGTERM)) {
+        it.remove();
+      }
+      else {
+        showPantsMakeTaskMessage(
+          String.format("Failed to cancel pid: %s.", UnixProcessManager.getProcessPid(process)),
+          NotificationCategory.ERROR, project
+        );
+      }
+    }
   }
 }
