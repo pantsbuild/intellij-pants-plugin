@@ -83,6 +83,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (ideProject == null) {
       return;
     }
+    if (ModuleManager.getInstance(ideProject).getModules().length > 0) {
+      return;
+    }
     new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
   }
 
