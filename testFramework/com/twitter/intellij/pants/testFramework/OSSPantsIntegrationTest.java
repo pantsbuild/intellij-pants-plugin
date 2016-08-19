@@ -64,10 +64,6 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     fail(String.format("String '%s' contains unexpected substring '%s'.", s, unexpected));
   }
 
-  private boolean containsSubstring(List<String> stringList, String subString) {
-    return stringList.stream().anyMatch(s -> s.contains(subString));
-  }
-
   private List<BeforeRunTask> getBeforeRunTask(RunConfiguration configuration) {
     RunManagerImpl runManager = (RunManagerImpl) RunManager.getInstance(myProject);
     RunnerAndConfigurationSettingsImpl configurationSettings = new RunnerAndConfigurationSettingsImpl(runManager, configuration, true);
