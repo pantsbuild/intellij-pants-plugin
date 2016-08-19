@@ -208,7 +208,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
-    VirtualFile pantsExe = PantsUtil.findPantsExecutable(getProjectPath());
+    VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject);
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
     commandLine.addParameters(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     commandLine.addParameters("dependencies");

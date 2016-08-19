@@ -94,11 +94,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (existingIdeProject == null) {
       return;
     }
-    String projectFilePath = existingIdeProject.getProjectFilePath();
-    if (projectFilePath == null) {
-      return;
-    }
-    final VirtualFile existingPantsExe = PantsUtil.findPantsExecutable(projectFilePath);
+    final VirtualFile existingPantsExe = PantsUtil.findPantsExecutable(existingIdeProject);
     if (existingPantsExe == null) {
       return;
     }

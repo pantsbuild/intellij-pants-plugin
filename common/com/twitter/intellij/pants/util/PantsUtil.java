@@ -40,6 +40,7 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -852,24 +853,17 @@ public class PantsUtil {
 
   @Nullable
   public static VirtualFile findPantsExecutable(@NotNull String projectPath) {
-    // guard against VirtualFileManager throwing an NPE in tests that don't stand up an IDEA instance
-    if (ApplicationManager.getApplication() == null) {
-      return null;
-    }
-    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
+    final VirtualFile buildFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(projectPath);
     return findPantsExecutable(buildFile);
   }
 
   @Nullable
   public static File findPantsExecutable(@Nullable File file) {
-    if (file == null) return null;
-    if (file.isDirectory()) {
-      final File pantsFile = new File(file, PantsConstants.PANTS);
-      if (pantsFile.exists() && !pantsFile.isDirectory()) {
-        return pantsFile;
-      }
+    VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
+    if (vf == null) {
+      return null;
     }
-    return findPantsExecutable(file.getParentFile());
+    return new File(vf.getPath());
   }
 
   @Nullable
