@@ -37,6 +37,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -175,7 +176,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     VirtualFile executable = PantsUtil.findPantsExecutable(currentProject);
     if (executable == null) {
-      return Pair.create(false, "Pants executable not found.");
+      return Pair.create(false, PantsBundle.message("pants.error.no.pants.executable.by.path", currentProject.getProjectFilePath()));
     }
     String pantsExecutable = executable.getPath();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
