@@ -4,23 +4,23 @@
 package com.twitter.intellij.pants.psi.reference;
 
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.ArrayUtil;
-import com.intellij.util.Function;
-import com.intellij.util.ObjectUtils;
 import com.intellij.util.PathUtil;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PantsVirtualFileReference extends PantsPsiReferenceBase {
   public PantsVirtualFileReference(@NotNull PsiElement element, @NotNull TextRange range, @Nls String text, @Nls String relativePath) {
@@ -31,41 +31,28 @@ public class PantsVirtualFileReference extends PantsPsiReferenceBase {
   @Override
   public Object[] getVariants() {
     final PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
-    final VirtualFile parent = findFile(PathUtil.getParentPath(getRelativePath()));
-    final List<Object> variants = ContainerUtil.map(
-      ContainerUtil.filter(
-        parent != null ? parent.getChildren() : VirtualFile.EMPTY_ARRAY,
-        new Condition<VirtualFile>() {
-          @Override
-          public boolean value(VirtualFile file) {
-            return file.isDirectory();
-          }
-        }
-      ),
-      new Function<VirtualFile, Object>() {
-        @Override
-        public Object fun(VirtualFile file) {
-          final PsiFile psiFile = psiManager.findFile(file);
-          if (psiFile != null) {
-            return LookupElementBuilder.create(psiFile);
-          }
-          else {
-            return LookupElementBuilder.create(file.getPresentableName());
-          }
-        }
-      }
-    );
+    final Optional<VirtualFile> parent = findFile(PathUtil.getParentPath(getRelativePath()));
+    List<LookupElementBuilder> variants =
+      parent.map(
+        file -> Arrays.stream(file.getChildren())
+          .filter(VirtualFile::isDirectory)
+          .map(f -> {
+            final PsiFile psiFile = psiManager.findFile(f);
+            return psiFile == null ? LookupElementBuilder.create(f.getPresentableName()) : LookupElementBuilder.create(psiFile);
+          })
+          .collect(Collectors.toList()))
+        .orElse(Collections.emptyList());
     return ArrayUtil.toObjectArray(variants);
   }
 
   @Nullable
   @Override
   public PsiElement resolve() {
-    VirtualFile virtualFile = findFile();
-    if (virtualFile == null) {
+    Optional<VirtualFile> virtualFile = findFile();
+    if (!virtualFile.isPresent()) {
       return null;
     }
-    VirtualFile buildFileOrDirectory = ObjectUtils.notNull(PantsUtil.findBUILDFile(virtualFile), virtualFile);
+    VirtualFile buildFileOrDirectory = PantsUtil.findBUILDFile(virtualFile.get()).orElse(virtualFile.get());
 
     final PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
     final PsiFile buildFile = psiManager.findFile(buildFileOrDirectory);

@@ -12,6 +12,8 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.util.PantsUtil;
 
+import java.util.Optional;
+
 public class FilePathRelativeToBuiltRootMacro extends Macro {
   /**
    * Have to use one of the names listed in {@link PathMacrosImpl#ourToolsMacros} as a workaround due to
@@ -35,10 +37,10 @@ public class FilePathRelativeToBuiltRootMacro extends Macro {
     if (fileSelected == null) {
       return null;
     }
-    VirtualFile buildRoot = PantsUtil.findBuildRoot(fileSelected);
-    if (buildRoot == null) {
+    Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(fileSelected);
+    if (!buildRoot.isPresent()) {
       return null;
     }
-    return FileUtil.getRelativePath(VfsUtil.virtualToIoFile(buildRoot), VfsUtil.virtualToIoFile(fileSelected));
+    return FileUtil.getRelativePath(VfsUtil.virtualToIoFile(buildRoot.get()), VfsUtil.virtualToIoFile(fileSelected));
   }
 }

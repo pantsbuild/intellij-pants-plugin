@@ -92,7 +92,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     if (settings == null) {
       return null;
     }
-    projectPath = PantsTargetAddress.extractPath(projectPath);
+    projectPath = PantsTargetAddress.extractPath(projectPath).get();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
 
     /**

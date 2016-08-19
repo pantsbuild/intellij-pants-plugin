@@ -65,7 +65,7 @@ public class AddPantsTargetDependencyFix extends PantsQuickFix {
   @Override
   public void invoke(@NotNull Project project, @Nullable Editor editor, @NotNull PsiFile psiFile) throws IncorrectOperationException {
     final Module module = ModuleUtil.findModuleForPsiElement(psiFile);
-    final VirtualFile buildFile = module != null ? PantsUtil.findBUILDFileForModule(module) : null;
+    final VirtualFile buildFile = module != null ? PantsUtil.findBUILDFileForModule(module).orElse(null) : null;
     final PsiFile psiBuildFile = buildFile != null ? PsiManager.getInstance(project).findFile(buildFile) : null;
     if (psiBuildFile != null && StringUtil.isNotEmpty(myAddress.getTargetName())) {
       doInsert(psiBuildFile, myAddress.getTargetName(), myAddressToAdd);

@@ -56,7 +56,7 @@ object PantsPerformanceBenchmark {
   def runBenchmark(path: String, pluginsToDisable: Set[String]): Timings = {
     val address = PantsTargetAddress.fromString(path)
     val buildRoot = PantsUtil.findBuildRoot(new File(address.getPath))
-    val benchmark = new PantsPerformanceBenchmark(buildRoot, pluginsToDisable)
+    val benchmark = new PantsPerformanceBenchmark(buildRoot.get(), pluginsToDisable)
     benchmark.setName("performance benchmark")
     benchmark.setUp()
     try {

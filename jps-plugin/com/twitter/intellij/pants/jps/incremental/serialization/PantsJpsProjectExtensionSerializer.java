@@ -14,6 +14,7 @@ import org.jetbrains.jps.model.JpsProject;
 import org.jetbrains.jps.model.serialization.JpsProjectExtensionSerializer;
 
 import java.io.File;
+import java.util.Optional;
 
 public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSerializer {
 
@@ -38,16 +39,16 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     if (projectSettings == null) {
       return;
     }
-    final String projectPath = JDOMExternalizerUtil.readField(projectSettings, EXTERNAL_PROJECT_PATH);
-    final File pantsExecutable = projectPath != null ? PantsUtil.findPantsExecutable(new File(projectPath)) : null;
-    if (pantsExecutable == null) {
+    final Optional<String> projectPath = Optional.ofNullable(JDOMExternalizerUtil.readField(projectSettings, EXTERNAL_PROJECT_PATH));
+    final Optional<File> pantsExecutable = projectPath.flatMap(path -> PantsUtil.findPantsExecutable(Optional.of(new File(path))));
+    if (!pantsExecutable.isPresent()) {
       return;
     }
 
     final boolean useIdeaProjectJdk = Boolean.valueOf(JDOMExternalizerUtil.readField(componentTag, ENFORCE_JDK, "false"));
 
     final JpsPantsProjectExtension projectExtension =
-      new JpsPantsProjectExtensionImpl(pantsExecutable.getPath(), useIdeaProjectJdk);
+      new JpsPantsProjectExtensionImpl(pantsExecutable.get().getPath(), useIdeaProjectJdk);
 
     project.getContainer().setChild(JpsPantsProjectExtension.ROLE, projectExtension);
   }
