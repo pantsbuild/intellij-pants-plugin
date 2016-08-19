@@ -844,7 +844,7 @@ public class PantsUtil {
     for (Module module : modules) {
       VirtualFile buildRoot = findBuildRoot(module);
       if (buildRoot != null) {
-        return buildRoot;
+        return findPantsExecutable(buildRoot);
       }
     }
     return null;

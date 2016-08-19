@@ -173,7 +173,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return Pair.create(true, null);
     }
 
-    String pantsExecutable = PantsUtil.findPantsExecutable(currentProject).getPath();
+    VirtualFile executable = PantsUtil.findPantsExecutable(currentProject);
+    if (executable == null) {
+      return Pair.create(false, "Pants executable not found.");
+    }
+    String pantsExecutable = executable.getPath();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
 
     showPantsMakeTaskMessage("Checking Pants options...", NotificationCategory.INFO, currentProject);
