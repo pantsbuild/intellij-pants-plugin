@@ -858,7 +858,7 @@ public class PantsUtil {
   }
 
   @Nullable
-  public static File findPantsExecutable(@Nullable File file) {
+  public static File findPantsExecutable(@NotNull File file) {
     VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
     if (vf == null) {
       return null;

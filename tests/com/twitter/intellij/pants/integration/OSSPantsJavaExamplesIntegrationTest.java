@@ -24,7 +24,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testAnnotation() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/annotation/main");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "examples_src_java_org_pantsbuild_example_annotation_example_example",
       "examples_src_java_org_pantsbuild_example_annotation_main_main",
       "examples_src_java_org_pantsbuild_example_annotation_processor_processor"
@@ -45,7 +45,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testAntl3() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/antlr3");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "examples_src_java_org_pantsbuild_example_antlr3_antlr3",
       "examples_src_antlr_org_pantsbuild_example_exp_exp_antlr3"
     );
@@ -60,7 +60,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testAntl4() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/antlr4");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "examples_src_java_org_pantsbuild_example_antlr4_antlr4",
       "examples_src_antlr_org_pantsbuild_example_exp_exp_antlr4"
     );
@@ -75,7 +75,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testHello() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",
       "examples_src_java_org_pantsbuild_example_hello_main_main",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
@@ -96,7 +96,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testHelloWithDependees() throws Throwable {
     doImportWithDependees("examples/src/java/org/pantsbuild/example/hello");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",
       "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
       "examples_src_java_org_pantsbuild_example_hello_module",
@@ -126,7 +126,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     //Checking whether the modules loaded in the project are the same as pants dependencies
     String[] moduleNames = getModulesNamesFromPantsDependencies(projectRelativePath);
     assertTrue(moduleNames.length > 0);
-    assertSourceModules(moduleNames);
+    assertFirstPartyModules(moduleNames);
 
     assertGenModules(1);
 
@@ -139,7 +139,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testProtobuf() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/protobuf/distance");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "examples_src_java_org_pantsbuild_example_protobuf_distance_distance",
       "examples_src_protobuf_org_pantsbuild_example_distance_distance"
     );
@@ -154,7 +154,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testExcludes1() throws Throwable {
     doImport("intellij-integration/src/java/org/pantsbuild/testproject/excludes1");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1"
     );
 
@@ -167,7 +167,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testExcludes2() throws Throwable {
     doImport("intellij-integration/src/java/org/pantsbuild/testproject/excludes2");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2",
       "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_module"
     );
@@ -182,7 +182,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     // test if we handle resources with '.' in path and don't override resources
     doImport("intellij-integration/src/java/org/pantsbuild/testproject/resources1");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "intellij-integration_src_java_org_pantsbuild_testproject_resources1_resources1"
     );
 
@@ -192,7 +192,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testCompileWithProjectJdk() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello/greet");
 
-    assertSourceModules(
+    assertFirstPartyModules(
       "examples_src_java_org_pantsbuild_example_hello_greet_greet"
     );
 

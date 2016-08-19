@@ -7,8 +7,6 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
-import java.util.List;
-
 public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest {
   @Override
   protected String[] getRequiredPluginIds() {
@@ -18,7 +16,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testJUnitTests() throws Throwable {
     doImport("intellij-integration/tests/java/org/pantsbuild/testprojects");
 
-    assertSourceModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
+    assertFirstPartyModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
 
     String output = assertPantsCompileModule("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
     assertTrue(output.contains("compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
