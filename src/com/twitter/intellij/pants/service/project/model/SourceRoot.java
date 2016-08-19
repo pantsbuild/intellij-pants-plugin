@@ -50,7 +50,7 @@ public class SourceRoot implements Comparable<SourceRoot> {
 
     SourceRoot root = (SourceRoot)o;
 
-    if (package_prefix != null ? !package_prefix.equals(root.package_prefix) : root.package_prefix != null) return false;
+    //if (package_prefix != null ? !package_prefix.equals(root.package_prefix) : root.package_prefix != null) return false;
     if (source_root != null ? !source_root.equals(root.source_root) : root.source_root != null) return false;
 
     return true;
