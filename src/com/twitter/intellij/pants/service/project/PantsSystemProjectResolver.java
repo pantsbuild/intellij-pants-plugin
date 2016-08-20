@@ -83,6 +83,12 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (ideProject == null) {
       return;
     }
+    // Disable zooming on subsequent project resolves/refreshes,
+    // i.e. a project that already has existing modules, because it may zoom at a module
+    // that is going to be replaced by the current resolve.
+    if (ModuleManager.getInstance(ideProject).getModules().length > 0) {
+      return;
+    }
     new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
   }
 
