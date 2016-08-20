@@ -46,6 +46,7 @@ public class MetricsIntegrationTest extends OSSPantsIntegrationTest {
 
   @Override
   public void tearDown() throws Exception {
+    System.clearProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE);
     if (tempDir != null) {
       FileUtil.delete(tempDir);
     }
