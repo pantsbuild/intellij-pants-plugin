@@ -19,8 +19,8 @@ public class MetricsIntegrationTest extends OSSPantsIntegrationTest {
 
   @Override
   public void setUp() throws Exception {
-    super.setUp();
     System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE, "true");
+    super.setUp();
     if (PantsMetrics.getMetricsImportDir() == null) {
       PantsMetrics.setMetricsImportDir("examples/src/java/org/pantsbuild/example/hello");
     }
