@@ -37,7 +37,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
       "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
       "___scala-library-synthetic"
     );
-    assertCompilationFailed("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertPantsCompileModuleFailure("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
 
     /**
      * Make sure after the missing dependency is fixed, the module can make successfully.

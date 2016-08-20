@@ -336,62 +336,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     fail("Compilation didn't fail!\n" + messages);
   }
 
-  /**
-   * We don't use com.intellij.openapi.externalSystem.test.ExternalSystemTestCase#compileModules
-   * because we want to do some assertions on myCompilerTester
-   */
-  protected List<String> makeModules(final String... moduleNames) throws Exception {
-    return compile(getModules(moduleNames));
-  }
-
-  protected List<String> makeProject() throws Exception {
-    return assertCompilerMessages(getCompilerTester().make());
-  }
-
-  protected List<String> compile(Module... modules) throws Exception {
-    return assertCompilerMessages(compileAndGetMessages(modules));
-  }
-
-  private List<String> assertCompilerMessages(List<CompilerMessage> messages) {
-    for (CompilerMessage message : messages) {
-      final VirtualFile virtualFile = message.getVirtualFile();
-      final String prettyMessage =
-        virtualFile == null ?
-        message.getMessage() :
-        String.format(
-          "%s at %s:%s", message.getMessage(), virtualFile.getCanonicalPath(), message.getRenderTextPrefix()
-        );
-      switch (message.getCategory()) {
-        case ERROR:
-          // Always show full error messages.
-
-          fail("Compilation failed with error: " + Joiner.on('\n').join(messages));
-          break;
-        case WARNING:
-          System.out.println("Compilation warning: " + prettyMessage);
-          break;
-        case INFORMATION:
-          break;
-        case STATISTICS:
-          break;
-      }
-    }
-    final List<String> rawMessages = ContainerUtil.map(
-      messages,
-      new Function<CompilerMessage, String>() {
-        @Override
-        public String fun(CompilerMessage message) {
-          return message.getMessage();
-        }
-      }
-    );
-
-    final String noChanges = "pants_plugin: " + PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE;
-    final String compiledSuccessfully = "pants: SUCCESS";
-    assertTrue("Compilation wasn't successful!", rawMessages.contains(noChanges) || rawMessages.contains(compiledSuccessfully));
-    return rawMessages;
-  }
-
   protected List<CompilerMessage> compileAndGetMessages(Module... modules) throws Exception {
     final ModuleCompileScope scope = new ModuleCompileScope(myProject, modules, true);
     return getCompilerTester().make(scope);

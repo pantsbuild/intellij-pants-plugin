@@ -30,7 +30,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "examples_src_java_org_pantsbuild_example_annotation_processor_processor"
     );
 
-    makeModules("examples_src_java_org_pantsbuild_example_annotation_main_main");
+    assertPantsCompileModule("examples_src_java_org_pantsbuild_example_annotation_main_main");
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.annotation.main.Main", "examples_src_java_org_pantsbuild_example_annotation_main_main"
     );
@@ -130,7 +130,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertGenModules(1);
 
-    makeModules("examples_src_java_org_pantsbuild_example_jaxb_main_main");
+    assertPantsCompileModule("examples_src_java_org_pantsbuild_example_jaxb_main_main");
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.jaxb.main.ExampleJaxb", "examples_src_java_org_pantsbuild_example_jaxb_main_main"
     );
@@ -145,7 +145,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
     assertGenModules(1);
 
-    makeModules("examples_src_java_org_pantsbuild_example_protobuf_distance_distance");
+    assertPantsCompileModule("examples_src_java_org_pantsbuild_example_protobuf_distance_distance");
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.protobuf.distance.ExampleProtobuf", "examples_src_java_org_pantsbuild_example_protobuf_distance_distance"
     );
@@ -158,7 +158,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1"
     );
 
-    makeModules("intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1");
+    assertPantsCompileModule("intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1");
     assertClassFileInModuleOutput(
       "org.pantsbuild.testproject.excludes1.Foo", "intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1"
     );
@@ -172,7 +172,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_module"
     );
 
-    makeModules("intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2");
+    assertPantsCompileModule("intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2");
     assertClassFileInModuleOutput(
       "org.pantsbuild.testproject.excludes2.foo.Foo", "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2"
     );
@@ -186,7 +186,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "intellij-integration_src_java_org_pantsbuild_testproject_resources1_resources1"
     );
 
-    makeModules("intellij-integration_src_java_org_pantsbuild_testproject_resources1_resources1");
+    assertPantsCompileModule("intellij-integration_src_java_org_pantsbuild_testproject_resources1_resources1");
   }
 
   public void testCompileWithProjectJdk() throws Throwable {
@@ -198,13 +198,12 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     PantsSettings settings = PantsSettings.getInstance(myProject);
     settings.setUseIdeaProjectJdk(true);
-    List<String> output = makeProject();
-    assertTrue(StringUtil.join(output,"\n").contains(PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS));
+    String output = assertPantsCompileAll();
+    assertContainsSubstring(output, PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
 
-    modify("org.pantsbuild.example.hello.greet.Greeting");
     settings.setUseIdeaProjectJdk(false);
-    output = makeProject();
-    assertFalse(StringUtil.join(output,"\n").contains(PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS));
+    String outputB = assertPantsCompileAll();
+    assertNotContainsSubstring(outputB, PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
