@@ -12,16 +12,14 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData
 import com.intellij.openapi.externalSystem.model.{DataNode, ExternalSystemException, ProjectKeys}
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataService
-import com.intellij.openapi.externalSystem.util.{DisposeAwareProjectChange, ExternalSystemApiUtil}
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.impl.libraries.LibraryEx.ModifiableModelEx
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.util.Computable
-import com.intellij.openapi.vfs.VfsUtilCore
-import org.jetbrains.plugins.scala.project._
+import org.jetbrains.plugins.scala.project.{LibraryExt, ScalaLanguageLevel, ScalaLibraryProperties, ScalaLibraryType, Version}
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.asScalaSetConverter
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 
 object PantsScalaDataService {
   val LOG = Logger.getInstance(classOf[PantsScalaDataService])

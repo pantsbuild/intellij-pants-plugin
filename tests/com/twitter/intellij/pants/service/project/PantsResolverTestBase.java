@@ -23,7 +23,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   private Map<String, TargetInfoBuilder> myInfoBuilders = null;
@@ -34,7 +42,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   protected void setUp() throws Exception {
     super.setUp();
     myProjectNode = null;
-    myInfoBuilders = new HashMap<String, TargetInfoBuilder>();
+    myInfoBuilders = new HashMap<>();
   }
 
   @Override
@@ -215,7 +223,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
 
   public void assertModulesCreated(final String... expectedModules) {
     final Collection<DataNode<ModuleData>> moduleNodes = ExternalSystemApiUtil.findAll(getProjectNode(), ProjectKeys.MODULE);
-    final List<String> actualModules = new ArrayList<String>();
+    final List<String> actualModules = new ArrayList<>();
     for (DataNode<ModuleData> moduleDataDataNode : moduleNodes) {
       actualModules.add(moduleDataDataNode.getData().getExternalName());
     }

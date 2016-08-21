@@ -28,7 +28,10 @@ import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class PantsSourceRootsExtension implements PantsResolverExtension {
 
@@ -111,12 +114,7 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
     );
     final List<String> sortedRoots = ContainerUtil.sorted(
       allRoots,
-      new Comparator<String>() {
-        @Override
-        public int compare(String s1, String s2) {
-          return StringUtil.naturalCompare(s1, s2);
-        }
-      }
+      StringUtil::naturalCompare
     );
     final List<String> baseRoots = ContainerUtilRt.newArrayList();
     for (String root : sortedRoots) {

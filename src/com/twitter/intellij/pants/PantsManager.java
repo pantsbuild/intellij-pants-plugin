@@ -23,11 +23,15 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
-import com.intellij.util.ObjectUtils;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.service.project.PantsSystemProjectResolver;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
-import com.twitter.intellij.pants.settings.*;
+import com.twitter.intellij.pants.settings.PantsConfigurable;
+import com.twitter.intellij.pants.settings.PantsExecutionSettings;
+import com.twitter.intellij.pants.settings.PantsLocalSettings;
+import com.twitter.intellij.pants.settings.PantsProjectSettings;
+import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.settings.PantsSettingsListener;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.ExternalSystemIcons;
@@ -35,9 +39,8 @@ import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.Icon;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
