@@ -258,13 +258,6 @@ public class PantsUtil {
       }
     }
     return Optional.empty();
-
-    ////  TODO: change flatMap to Optional::stream on JDK update
-    ////  (see http://stackoverflow.com/questions/22725537/using-java-8s-optional-with-streamflatmap)
-    //return Arrays.stream(rootManager.getContentRoots())
-    //  .map(PantsUtil::findBuildRoot)
-    //  .flatMap(file -> file.map(Stream::of).orElseGet(Stream::empty))
-    //  .findFirst();
   }
 
   public static Optional<VirtualFile> findBuildRoot(@Nullable VirtualFile file) {
@@ -276,7 +269,7 @@ public class PantsUtil {
     if (!buildRoot.isPresent()) {
       return Optional.empty();
     }
-    return Optional.of(
+    return Optional.ofNullable(
       VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.get().getPath() + "/dist/export-classpath")
     );
   }
@@ -831,7 +824,7 @@ public class PantsUtil {
     if (!vf.isPresent()) {
       return Optional.empty();
     }
-    return Optional.of(new File(vf.get().getParent().getPath()));
+    return Optional.of(new File(vf.get().getPath()));
   }
 
   private static Optional<VirtualFile> findPantsExecutable(@Nullable VirtualFile file) {
