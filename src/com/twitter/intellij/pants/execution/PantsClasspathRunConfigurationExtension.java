@@ -149,7 +149,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
 
   @NotNull
   private static List<String> findPublishedClasspathByTargetId(@NotNull Module module, @NotNull TargetAddressInfo targetAddressInfo) {
-    final Optional<VirtualFile> classpath = PantsUtil.findDistExportClasspathDirectory(module);
+    final Optional<VirtualFile> classpath = PantsUtil.findDistExportClasspathDirectory(module.getProject());
     if (!classpath.isPresent()) {
       return Collections.emptyList();
     }

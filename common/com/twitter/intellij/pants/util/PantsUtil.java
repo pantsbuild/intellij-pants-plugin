@@ -74,7 +74,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -217,7 +216,7 @@ public class PantsUtil {
   }
 
   public static Optional<File> findBuildRoot(@NotNull File file) {
-    return findPantsExecutable(Optional.of(file)).map(File::getParentFile);
+    return findPantsExecutable(file).map(File::getParentFile);
   }
 
   public static Optional<VirtualFile> findBuildRoot(@NotNull String filePath) {
@@ -225,16 +224,13 @@ public class PantsUtil {
   }
 
   public static Optional<VirtualFile> findBuildRoot(@NotNull Project project) {
-    return findBuildRoot(project.getProjectFile());
-  @Nullable
-  public static VirtualFile findBuildRoot(@NotNull Project project) {
     for (Module module : ModuleManager.getInstance(project).getModules()) {
-      VirtualFile buildRoot = findBuildRoot(module);
-      if (buildRoot != null) {
+      Optional<VirtualFile> buildRoot = findBuildRoot(module);
+      if (buildRoot.isPresent()) {
         return buildRoot;
       }
     }
-    return null;
+    return Optional.empty();
   }
 
   public static Optional<VirtualFile> findBuildRoot(@NotNull PsiFile psiFile) {
@@ -249,19 +245,19 @@ public class PantsUtil {
     }
     final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
     for (VirtualFile contentRoot : rootManager.getContentRoots()) {
-      final VirtualFile buildRoot = findBuildRoot(contentRoot);
-      if (buildRoot != null) {
+      final Optional<VirtualFile> buildRoot = findBuildRoot(contentRoot);
+      if (buildRoot.isPresent()) {
         return buildRoot;
       }
     }
     for (ContentEntry contentEntry: rootManager.getContentEntries()) {
       VirtualFile contentEntryFile = VirtualFileManager.getInstance().refreshAndFindFileByUrl(contentEntry.getUrl());
-      final VirtualFile buildRoot = findBuildRoot(contentEntryFile);
-      if (buildRoot != null) {
+      final Optional<VirtualFile> buildRoot = findBuildRoot(contentEntryFile);
+      if (buildRoot.isPresent()) {
         return buildRoot;
       }
     }
-    return null;
+    return Optional.empty();
 
     ////  TODO: change flatMap to Optional::stream on JDK update
     ////  (see http://stackoverflow.com/questions/22725537/using-java-8s-optional-with-streamflatmap)
@@ -275,16 +271,17 @@ public class PantsUtil {
     return findPantsExecutable(file).map(VirtualFile::getParent);
   }
 
-  public static VirtualFile findDistExportClasspathDirectory(@NotNull Project project) {
-    VirtualFile buildRoot = findBuildRoot(project);
-    if (buildRoot == null) {
-      return null;
+  public static Optional<VirtualFile> findDistExportClasspathDirectory(@NotNull Project project) {
+    Optional<VirtualFile> buildRoot = findBuildRoot(project);
+    if (!buildRoot.isPresent()) {
+      return Optional.empty();
     }
-    return VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.getPath() + "/dist/export-classpath");
+    return Optional.of(
+      VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.get().getPath() + "/dist/export-classpath")
+    );
   }
 
-  @Nullable
-  public static VirtualFile findProjectManifestJar(@NotNull Project project) {
+  public static Optional<VirtualFile> findProjectManifestJar(@NotNull Project project) {
     Optional<VirtualFile> classpathDir = findDistExportClasspathDirectory(project);
     return classpathDir.flatMap(
       file -> {
@@ -303,7 +300,7 @@ public class PantsUtil {
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
-    final Optional<File> pantsExecutable = findPantsExecutable(Optional.of(new File(projectPath)));
+    final Optional<File> pantsExecutable = findPantsExecutable(new File(projectPath));
     return defaultCommandLine(pantsExecutable.orElseThrow(() -> new PantsException("Couldn't find pants executable for: " + projectPath)));
   }
 
@@ -816,27 +813,25 @@ public class PantsUtil {
       throw new PantsException("No module found in project.");
     }
     for (Module module : modules) {
-      VirtualFile buildRoot = findBuildRoot(module);
-      if (buildRoot != null) {
-        return findPantsExecutable(buildRoot);
+      Optional<VirtualFile> buildRoot = findBuildRoot(module);
+      if (buildRoot.isPresent()) {
+        return findPantsExecutable(buildRoot.get());
       }
     }
-    return null;
+    return Optional.empty();
   }
 
-  @Nullable
-  public static VirtualFile findPantsExecutable(@NotNull String projectPath) {
+  public static Optional<VirtualFile> findPantsExecutable(@NotNull String projectPath) {
     final VirtualFile buildFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(projectPath);
     return findPantsExecutable(buildFile);
   }
 
-  @Nullable
-  public static File findPantsExecutable(@NotNull File file) {
-    VirtualFile vf = findPantsExecutable(LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file));
-    if (vf == null) {
-      return null;
+  public static Optional<File> findPantsExecutable(@NotNull File file) {
+    Optional<VirtualFile> vf = findPantsExecutable(LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file));
+    if (!vf.isPresent()) {
+      return Optional.empty();
     }
-    return new File(vf.getPath());
+    return Optional.of(new File(vf.get().getParent().getPath()));
   }
 
   private static Optional<VirtualFile> findPantsExecutable(@Nullable VirtualFile file) {
