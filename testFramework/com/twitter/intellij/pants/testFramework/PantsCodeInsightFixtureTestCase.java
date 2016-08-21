@@ -26,6 +26,8 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
   private final String myPath;
 
@@ -75,9 +77,10 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
     }
 
     final String testUserHome = VfsUtil.pathToUrl(FileUtil.toSystemIndependentName(PantsTestUtils.BASE_TEST_DATA_PATH + "/userHome"));
-    final VirtualFile folderWithPex = PantsUtil.findFolderWithPex(VirtualFileManager.getInstance().findFileByUrl(testUserHome));
-    assertNotNull("Folder with pex files should be configured", folderWithPex);
-    final VirtualFile[] pexFiles = folderWithPex.getChildren();
+    final Optional<VirtualFile> folderWithPex =
+      PantsUtil.findFolderWithPex(Optional.ofNullable(VirtualFileManager.getInstance().findFileByUrl(testUserHome)));
+    assertTrue("Folder with pex files should be configured", folderWithPex.isPresent());
+    final VirtualFile[] pexFiles = folderWithPex.get().getChildren();
     assertTrue("There should be only one pex file!", pexFiles.length == 1);
 
     ApplicationManager.getApplication().runWriteAction(

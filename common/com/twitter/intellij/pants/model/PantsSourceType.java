@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.model;
 
 import com.intellij.openapi.externalSystem.model.project.ExternalSystemSourceType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public enum PantsSourceType {
   SOURCE(ExternalSystemSourceType.SOURCE),
@@ -29,7 +28,7 @@ public enum PantsSourceType {
     return myExternalType.toString();
   }
 
-  public static boolean isResource(@Nullable PantsSourceType root) {
+  public static boolean isResource(@NotNull PantsSourceType root) {
     return RESOURCE.equals(root) || TEST_RESOURCE.equals(root);
   }
 }

@@ -217,18 +217,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     );
   }
 
-  @Nullable
-  private VirtualFile findClassFile(String className, String moduleName) throws Exception {
-    PantsOptions pantsOptions = PantsOptions.getPantsOptions(myProject);
-    if (pantsOptions == null) {
-      return null;
+  private Optional<VirtualFile> findClassFile(String className, String moduleName) throws Exception {
+    Optional<PantsOptions> pantsOptions = PantsOptions.getPantsOptions(myProject);
+    if (!pantsOptions.isPresent()) {
+      return Optional.empty();
     }
-    if (pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
-      VirtualFile manifestJar = PantsUtil.findProjectManifestJar(myProject);
-      if (manifestJar != null) {
+    if (pantsOptions.get().has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
+      Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
+      if (manifestJar.isPresent()) {
         return manifestJar;
       }
-      return null;
+      return Optional.empty();
     }
 
     ApplicationManager.getApplication().runWriteAction(
@@ -242,8 +241,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     );
 
     final Module module = getModule(moduleName);
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
-    assertNotNull("Can't find working dir for module '" + moduleName + "'!", buildRoot);
+    final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(module);
+    assertTrue("Can't find working dir for module '" + moduleName + "'!", buildRoot.isPresent());
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
     List<String> compilerOutputPaths = ContainerUtil.newArrayList();
 
@@ -261,7 +260,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         }
         final VirtualFile classFile = output.findFileByRelativePath(className.replace('.', '/') + ".class");
         if (classFile != null) {
-          return classFile;
+          return Optional.of(classFile);
         }
       }
       catch (AssertionError assertionError) {
@@ -269,7 +268,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         assertionError.printStackTrace();
       }
     }
-    return null;
+    return Optional.empty();
   }
 
   protected void modify(@NonNls @NotNull String qualifiedName) {
@@ -487,7 +486,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   public JUnitConfiguration generateJUnitConfiguration(String moduleName, String className, @Nullable String vmParams) {
     final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
     final JUnitConfiguration runConfiguration = new JUnitConfiguration("Pants: " + className, myProject, factory);
-    runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).getCanonicalPath());
+    runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
     if (StringUtil.isNotEmpty(vmParams)) {

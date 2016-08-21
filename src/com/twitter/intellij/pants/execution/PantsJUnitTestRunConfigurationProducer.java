@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class PantsJUnitTestRunConfigurationProducer extends PantsTestRunConfigurationProducer {
   @Override
@@ -34,15 +35,16 @@ public class PantsJUnitTestRunConfigurationProducer extends PantsTestRunConfigur
     @NotNull ConfigurationContext context,
     @NotNull Ref<PsiElement> sourceElement
   ) {
-    PantsConfigurationContext processor = PantsConfigurationContext.validatesAndCreate(context);
-    if (processor == null) {
+    Optional<PantsConfigurationContext> contextOptional = PantsConfigurationContext.validatesAndCreate(context);
+    if (!contextOptional.isPresent()) {
       return false;
     }
 
-    final Module module = processor.getModule();
-    final VirtualFile buildRoot = processor.getBuildRoot();
-    final List<String> targets = processor.getTargets();
-    final PsiElement psiLocation = processor.getLocation();
+    PantsConfigurationContext configurationContext = contextOptional.get();
+    final Module module = configurationContext.getModule();
+    final VirtualFile buildRoot = configurationContext.getBuildRoot();
+    final List<String> targets = configurationContext.getTargets();
+    final PsiElement psiLocation = configurationContext.getLocation();
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
     taskSettings.setTaskNames(Collections.singletonList("test"));
 

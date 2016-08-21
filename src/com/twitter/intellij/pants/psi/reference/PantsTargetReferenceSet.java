@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.ObjectUtils;
@@ -40,8 +41,8 @@ public class PantsTargetReferenceSet {
 
   @NotNull
   private List<PsiReference> getFileReferences(@NotNull PyStringLiteralExpression expression) {
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(expression.getContainingFile());
-    if (buildRoot == null) {
+    final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(expression.getContainingFile());
+    if (!buildRoot.isPresent()) {
       return Collections.emptyList();
     }
 

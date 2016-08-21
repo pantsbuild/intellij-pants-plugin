@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigurationProducer {
 
@@ -31,13 +32,14 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
     @NotNull ConfigurationContext context,
     @NotNull Ref<PsiElement> sourceElement
   ) {
-    PantsConfigurationContext processor = PantsConfigurationContext.validatesAndCreate(context);
-    if (processor == null) {
+    Optional<PantsConfigurationContext> contextOptional = PantsConfigurationContext.validatesAndCreate(context);
+    if (!contextOptional.isPresent()) {
       return false;
     }
 
-    final List<String> targets = processor.getTargets();
-    final PsiElement psiLocation = processor.getLocation();
+    PantsConfigurationContext configurationContext = contextOptional.get();
+    final List<String> targets = configurationContext.getTargets();
+    final PsiElement psiLocation = configurationContext.getLocation();
     final ExternalSystemTaskExecutionSettings taskSettings = configuration.getSettings();
     taskSettings.setTaskNames(Collections.singletonList("test"));
 

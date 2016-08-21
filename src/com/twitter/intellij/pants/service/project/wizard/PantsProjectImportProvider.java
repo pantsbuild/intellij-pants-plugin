@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.service.project.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
@@ -54,9 +55,9 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
     ProgressManager.getInstance().run(new Task.Modal(context.getProject(), message, !CAN_BE_CANCELLED) {
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
-        VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(context.getProjectFileDirectory());
-        if (pantsExecutable != null) {
-          isSdkConfigured.set(PantsUtil.supportExportDefaultJavaSdk(pantsExecutable.getPath()));
+        Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(context.getProjectFileDirectory());
+        if (pantsExecutable.isPresent()) {
+          isSdkConfigured.set(PantsUtil.supportExportDefaultJavaSdk(pantsExecutable.get().getPath()));
         }
 
         if (isSdkConfigured.get()) {

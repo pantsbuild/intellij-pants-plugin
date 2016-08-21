@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class PantsTreeStructureProvider implements TreeStructureProvider {
   @NotNull
@@ -39,25 +40,26 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
   ) {
     final Project project = node.getProject();
     if (node instanceof PsiDirectoryNode && project != null) {
-      final Module module = ModuleUtil.findModuleForPsiElement(((PsiDirectoryNode)node).getValue());
-      final String buildPath = module != null ? PantsUtil.getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : null;
-      if (buildPath != null) {
-        final VirtualFile buildFile = PantsUtil.findFileRelativeToBuildRoot(project, buildPath);
+      final Module module = ModuleUtil.findModuleForPsiElement(((PsiDirectoryNode) node).getValue());
+      final Optional<String> buildPath =
+        module != null ? PantsUtil.getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : Optional.empty();
+      if (buildPath.isPresent()) {
+        final Optional<VirtualFile> buildFile = PantsUtil.findFileRelativeToBuildRoot(project, buildPath.get());
 
         boolean isModuleRoot =
-          ArrayUtil.indexOf(ModuleRootManager.getInstance(module).getContentRoots(), ((PsiDirectoryNode)node).getVirtualFile()) >= 0;
-        if (buildFile != null && isModuleRoot) {
+          ArrayUtil.indexOf(ModuleRootManager.getInstance(module).getContentRoots(), ((PsiDirectoryNode) node).getVirtualFile()) >= 0;
+        if (buildFile.isPresent() && isModuleRoot) {
           // Check if there's already a BUILD file in the directory; if so, we don't add another
           final AbstractTreeNode existingBuildFile = ContainerUtil.find(
             collection.iterator(), new Condition<AbstractTreeNode>() {
               @Override
               public boolean value(AbstractTreeNode node) {
-                return node instanceof PsiFileNode && buildFile.equals(((PsiFileNode)node).getVirtualFile());
+                return node instanceof PsiFileNode && buildFile.get().equals(((PsiFileNode) node).getVirtualFile());
               }
             }
           );
           if (existingBuildFile == null) {
-            final PsiFile buildPsiFile = PsiManager.getInstance(project).findFile(buildFile);
+            final PsiFile buildPsiFile = PsiManager.getInstance(project).findFile(buildFile.get());
             final PsiFileNode buildNode = new PsiFileNode(project, buildPsiFile, settings) {
               @Override
               protected void updateImpl(PresentationData data) {
