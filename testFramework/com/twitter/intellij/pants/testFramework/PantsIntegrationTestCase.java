@@ -504,24 +504,21 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
-  protected String assertPantsCompileAll() {
+  protected Pair<Boolean, String> pantsCompileProject() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    Pair<Boolean, String> result = runner.executeTask(myProject);
-    assertTrue(result.getFirst());
-    return result.getSecond();
+    return runner.executeTask(myProject);
   }
 
-  protected String assertPantsCompileModule(final String ... moduleNames) {
-    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    Pair<Boolean, String> compileResult = runner.executeTask(getModules(moduleNames));
+  protected void assertPantsCompileSuccess(final Pair<Boolean, String> compileResult) {
     assertTrue("Compile failed", compileResult.getFirst());
-    return compileResult.getSecond();
   }
 
-  protected String assertPantsCompileModuleFailure(final String ... moduleNames) {
-    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    Pair<Boolean, String> compileResult = runner.executeTask(getModules(moduleNames));
+  protected void assertPantsCompileFailure(final Pair<Boolean, String> compileResult) {
     assertFalse("Compile succeeded, but should fail.", compileResult.getFirst());
-    return compileResult.getSecond();
+  }
+
+  protected Pair<Boolean, String> pantsCompileModule(String... moduleNames) {
+    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
+    return runner.executeTask(getModules(moduleNames));
   }
 }

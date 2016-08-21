@@ -37,7 +37,9 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
       "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
       "___scala-library-synthetic"
     );
-    assertPantsCompileModuleFailure("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertPantsCompileFailure(
+      pantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2")
+    );
 
     /**
      * Make sure after the missing dependency is fixed, the module can make successfully.
@@ -57,6 +59,8 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
       "___scala-library-synthetic",
       "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
-    assertPantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertPantsCompileSuccess(
+      pantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2")
+    );
   }
 }

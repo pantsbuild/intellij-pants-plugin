@@ -27,7 +27,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe",
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
     );
-    assertPantsCompileModule("examples_src_scala_org_pantsbuild_example_hello_exe_exe");
+    assertPantsCompileSuccess(pantsCompileModule("examples_src_scala_org_pantsbuild_example_hello_exe_exe"));
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.welcome.WelcomeEverybody", "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
@@ -44,8 +44,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
       "examples_src_java_org_pantsbuild_example_java_sources_java_sources_and_scala_org_pantsbuild_example_scala_with_java_sources_scala_with_java_sources";
 
     assertFirstSourcePartyModules(moduleName);
-    assertPantsCompileAll();
-
+    assertPantsCompileSuccess(pantsCompileProject());
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.scala_with_java_sources.GreetEverybody", moduleName
     );
@@ -65,7 +64,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
       "___scala-library-synthetic",
       "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_nested_foo_foo"
     );
-    assertPantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1");
+    assertPantsCompileSuccess(pantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1"));
 
     findClassAndAssert("org.pantsbuild.testproject.excludes1.nested.foo.Foo");
 
@@ -80,7 +79,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     assertFirstSourcePartyModules(
       "intellij-integration_src_scala_org_pantsbuild_testproject_error1_error1"
     );
-    assertPantsCompileModuleFailure("intellij-integration_src_scala_org_pantsbuild_testproject_error1_error1");
+    assertPantsCompileFailure(pantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_error1_error1"));
   }
 
   public void testWelcomeTest() throws Throwable {
@@ -99,7 +98,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     assertSize(1, testSourceRoots);
     assertTrue(testSourceRoots.iterator().next().getUrl().endsWith("examples/tests/scala"));
 
-    assertPantsCompileAll();
+    assertPantsCompileSuccess(pantsCompileProject());
 
     findClassAndAssert("org.pantsbuild.example.hello.welcome.WelSpec");
     assertScalaLibrary("examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome");
