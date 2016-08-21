@@ -3,9 +3,6 @@
 
 package com.twitter.intellij.pants.service.project;
 
-import com.intellij.openapi.externalSystem.model.DataNode;
-import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
-
 public class PantsResolverTest extends PantsResolverTestBase {
   public void testOneCommonRootOwnedBySingleTargetOneNot() {
     addInfo("a:java").

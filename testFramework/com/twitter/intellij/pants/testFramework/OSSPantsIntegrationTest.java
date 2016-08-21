@@ -9,7 +9,6 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
 import com.intellij.openapi.util.text.StringUtil;
-import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;

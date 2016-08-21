@@ -17,7 +17,6 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.jps.incremental.ProjectBuildException;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 

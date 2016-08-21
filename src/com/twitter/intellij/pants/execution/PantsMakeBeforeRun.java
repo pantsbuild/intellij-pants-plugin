@@ -49,7 +49,6 @@ import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfigurat
 
 import javax.swing.*;
 import java.util.ArrayList;
-import javax.swing.Icon;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;

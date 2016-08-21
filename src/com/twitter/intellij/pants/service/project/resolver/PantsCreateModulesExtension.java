@@ -11,7 +11,6 @@ import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
