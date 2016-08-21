@@ -36,7 +36,7 @@ public class MetricsUnitTest extends TestCase {
   public void testMetricsEnabled() throws Exception {
     try {
       illegalCalls();
-      fail();
+      fail((String.format("%s should have been thrown.", IllegalStateException.class));
     }
     catch (IllegalStateException e) {
 
