@@ -11,7 +11,8 @@ import com.intellij.util.IncorrectOperationException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public abstract class PantsPsiReferenceBase implements PsiReference {
   private final PsiElement myElement;
@@ -76,13 +77,11 @@ public abstract class PantsPsiReferenceBase implements PsiReference {
     return getElement();
   }
 
-  @Nullable
-  protected VirtualFile findFile() {
+  protected Optional<VirtualFile>findFile() {
     return findFile(myRelativePath);
   }
 
-  @Nullable
-  protected VirtualFile findFile(@NotNull String relativePath) {
+  protected Optional<VirtualFile> findFile(@NotNull String relativePath) {
     return PantsUtil.findFileRelativeToBuildRoot(myElement.getContainingFile(), relativePath);
   }
 }

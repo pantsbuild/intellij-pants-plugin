@@ -18,7 +18,13 @@ import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierExtension {
   public static final String COMMON_SOURCES_TARGET_NAME = "common_sources";
@@ -62,10 +68,10 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     final Factory<List<Pair<String, TargetInfo>>> listFactory = new Factory<List<Pair<String, TargetInfo>>>() {
       @Override
       public List<Pair<String, TargetInfo>> create() {
-        return new ArrayList<Pair<String, TargetInfo>>();
+        return new ArrayList<>();
       }
     };
-    final Map<SourceRoot, List<Pair<String, TargetInfo>>> result = new HashMap<SourceRoot, List<Pair<String, TargetInfo>>>();
+    final Map<SourceRoot, List<Pair<String, TargetInfo>>> result = new HashMap<>();
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String targetName = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
@@ -84,9 +90,9 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
   private String findPantsWorkingDirPath(@NotNull Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets) {
     final Set<Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>>> entries = sourceRoot2Targets.entrySet();
     final String root = entries.iterator().next().getKey().getRawSourceRoot();
-    final VirtualFile dir = entries.isEmpty() || StringUtil.isEmpty(root) ? null : PantsUtil.findBuildRoot(root);
+    final Optional<VirtualFile> dir = entries.isEmpty() || StringUtil.isEmpty(root) ? Optional.empty() : PantsUtil.findBuildRoot(root);
 
-    return dir != null ? dir.getPath() : "_";
+    return dir.map(VirtualFile::getPath).orElse("_");
   }
 
   @NotNull

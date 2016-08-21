@@ -7,29 +7,37 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import junit.framework.TestCase;
 
+import java.util.Optional;
+
 
 public class PantsOptionsTest extends TestCase {
 
   public void testWorkdir() {
     PantsOptions options = new PantsOptions("pants_workdir = /Users/abc/workspace/intellij-pants-plugin/.pants.d (from HARDCODED)");
+    Optional<String> workdirOption = options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR);
+    assertTrue(workdirOption.isPresent());
     assertEquals("/Users/abc/workspace/intellij-pants-plugin/.pants.d",
-                 options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR));
+                 workdirOption.get());
   }
 
   public void testWorkdirWithSpace() {
     PantsOptions options = new PantsOptions("pants_workdir = /Users/abc/workspace/intellij-pants-plugin/.pants.d (from HARDCODED)");
+    Optional<String> spaceOption = options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR);
+    assertTrue(spaceOption.isPresent());
     assertEquals("/Users/abc/workspace/intellij-pants-plugin/.pants.d",
-                 options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR));
+                 spaceOption.get());
   }
 
   public void testInvalidWorkdir() {
     PantsOptions options = new PantsOptions("/Users/abc/workspace/intellij-pants-plugin/.pants.d (from HARDCODED)");
-    assertNull(options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR));
+    assertFalse(options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR).isPresent());
   }
 
   public void testStrictJvmVersion() {
     PantsOptions options = new PantsOptions("test.junit.strict_jvm_version = False (from HARDCODED)");
-    assertEquals("False", options.get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION));
+    Optional<String> strictJvmOption = options.get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION);
+    assertTrue(strictJvmOption.isPresent());
+    assertEquals("False", strictJvmOption.get());
   }
 
   public void testOptionsCache() {

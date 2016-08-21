@@ -12,11 +12,11 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -40,18 +40,12 @@ public class PantsOptions {
     return options.containsKey(optionName);
   }
 
-  @Nullable
-  public String get(String optionName) {
-    return options.get(optionName);
+  public Optional<String> get(String optionName) {
+    return Optional.ofNullable(options.get(optionName));
   }
 
-  @Nullable
-  public static PantsOptions getPantsOptions(final Project myProject) {
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(myProject);
-    if (pantsExecutable == null) {
-      return null;
-    }
-    return getPantsOptions(pantsExecutable.getPath());
+  public static Optional<PantsOptions> getPantsOptions(final Project myProject) {
+    return PantsUtil.findPantsExecutable(myProject).map(file -> getPantsOptions(file.getPath()));
   }
 
   public boolean supportsManifestJar() {

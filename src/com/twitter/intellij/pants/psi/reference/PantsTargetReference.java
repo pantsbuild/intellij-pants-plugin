@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class PantsTargetReference extends PantsPsiReferenceBase {
@@ -34,11 +35,11 @@ public class PantsTargetReference extends PantsPsiReferenceBase {
       return Collections.singleton(getElement().getContainingFile());
     }
 
-    VirtualFile file = findFile();
-    if (file == null) {
+    Optional<VirtualFile> file = findFile();
+    if (!file.isPresent()) {
       return Collections.emptyList();
     }
-    Collection<VirtualFile> buildFiles = PantsUtil.findBUILDFiles(file);
+    Collection<VirtualFile> buildFiles = PantsUtil.findBUILDFiles(file.get());
     final PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
     return buildFiles.stream().map(psiManager::findFile).collect(Collectors.toSet());
   }

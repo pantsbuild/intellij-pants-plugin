@@ -17,6 +17,8 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.jps.incremental.ProjectBuildException;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest {
@@ -214,8 +216,9 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
-    VirtualFile pantsExe = PantsUtil.findPantsExecutable(myProject);
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.getPath());
+    Optional<VirtualFile>  pantsExe = PantsUtil.findPantsExecutable(myProject);
+    assertTrue(pantsExe.isPresent());
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.get().getPath());
     commandLine.addParameters(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     commandLine.addParameters("dependencies");
     commandLine.addParameters(targetName);

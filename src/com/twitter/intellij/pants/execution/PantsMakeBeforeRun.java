@@ -49,9 +49,11 @@ import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfigurat
 
 import javax.swing.*;
 import java.util.ArrayList;
+import javax.swing.Icon;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -78,23 +80,23 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
     RunConfiguration runConfiguration = settings.getConfiguration();
 
-    VirtualFile buildRoot = PantsUtil.findBuildRoot(project);
+    Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(project);
 
     /**
      /**
      * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
      */
     if (runConfiguration instanceof AbstractTestRunConfiguration) {
-      if (buildRoot != null) {
-        ((AbstractTestRunConfiguration) runConfiguration).setWorkingDirectory(buildRoot.getPath());
+      if (buildRoot.isPresent()) {
+        ((AbstractTestRunConfiguration) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
       }
     }
     /**
      * JUnit, Application, etc configuration inherit {@link CommonProgramRunConfigurationParameters}
      */
     else if (runConfiguration instanceof CommonProgramRunConfigurationParameters) {
-      if (buildRoot != null) {
-        ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.getPath());
+      if (buildRoot.isPresent()) {
+        ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
       }
     }
     /**
@@ -185,11 +187,13 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
 
     showPantsMakeTaskMessage("Checking Pants options...", NotificationCategory.INFO, currentProject);
-    PantsOptions pantsOptions = PantsOptions.getPantsOptions(currentProject);
-    if (pantsOptions == null) {
+    Optional<PantsOptions> pantsOptional = PantsOptions.getPantsOptions(currentProject);
+    if (!pantsOptional.isPresent()) {
       showPantsMakeTaskMessage("Pants Options not found.", NotificationCategory.ERROR, currentProject);
       return Pair.create(false, null);
     }
+
+    PantsOptions pantsOptions = pantsOptional.get();
 
     /* Global options section. */
     commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);

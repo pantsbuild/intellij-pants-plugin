@@ -12,7 +12,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ProjectInfo {
   public static ProjectInfo fromJson(@NotNull String data) {
@@ -48,7 +52,7 @@ public class ProjectInfo {
   private static <T> List<Map.Entry<String, T>> getSortedEntries(Map<String, T> map) {
     return ContainerUtil.sorted(
       map.entrySet(),
-      new Comparator<Map.Entry<String, T>>() {
+      new Comparator<Map.Entry<String,T>>() {
         @Override
         public int compare(Map.Entry<String, T> o1, Map.Entry<String, T> o2) {
           return StringUtil.naturalCompare(o1.getKey(), o2.getKey());
@@ -158,7 +162,7 @@ public class ProjectInfo {
    * Helper method to get a distribution by target type.
    */
   public Map<String, Integer> getTargetsDistribution() {
-    final Map<String, Integer> result = new HashMap<String, Integer>();
+    final Map<String, Integer> result = new HashMap<>();
     for (TargetInfo targetInfo : targets.values()) {
       for (TargetAddressInfo addressInfo : targetInfo.getAddressInfos()) {
         final String type = addressInfo.getInternalPantsTargetType();

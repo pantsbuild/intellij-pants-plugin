@@ -11,7 +11,10 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class TargetInfo {
 
@@ -66,7 +69,7 @@ public class TargetInfo {
   }
 
   public void setLibraries(Set<String> libraries) {
-    this.libraries = new TreeSet<String>(libraries);
+    this.libraries = new TreeSet<>(libraries);
   }
 
   @NotNull

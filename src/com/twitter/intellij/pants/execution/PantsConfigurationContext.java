@@ -3,16 +3,15 @@
 
 package com.twitter.intellij.pants.execution;
 
-import com.intellij.execution.PsiLocation;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 public class PantsConfigurationContext {
 
@@ -34,21 +33,20 @@ public class PantsConfigurationContext {
     psiLocation = myPsiLocation;
   }
 
-  @Nullable
-  public static PantsConfigurationContext validatesAndCreate(ConfigurationContext context) {
+  public static Optional<PantsConfigurationContext> validatesAndCreate(ConfigurationContext context) {
     final Module module = context.getModule();
-    if (module == null) return null;
+    if (module == null) return Optional.empty();
 
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
-    if (buildRoot == null) return null;
+    final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(module);
+    if (!buildRoot.isPresent()) return Optional.empty();
 
     final List<String> targets = PantsUtil.getNonGenTargetAddresses(module);
-    if (targets.isEmpty()) return null;
+    if (targets.isEmpty()) return Optional.empty();
 
     final PsiElement psiLocation = context.getPsiLocation();
-    if (psiLocation == null) return null;
+    if (psiLocation == null) return Optional.empty();
 
-    return new PantsConfigurationContext(module, buildRoot, targets, psiLocation);
+    return Optional.of(new PantsConfigurationContext(module, buildRoot.get(), targets, psiLocation));
   }
 
   public Module getModule() {
