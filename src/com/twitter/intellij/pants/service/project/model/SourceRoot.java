@@ -3,28 +3,23 @@
 
 package com.twitter.intellij.pants.service.project.model;
 
+import com.google.common.base.Objects;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SourceRoot implements Comparable<SourceRoot> {
   // This is actually content root.
-  protected String source_root;
-  protected String package_prefix;
+  private String source_root;
+  private String package_prefix;
 
-  public SourceRoot() {
-  }
-
-  public SourceRoot(@NotNull String source_root, @Nullable String package_prefix) {
+  public SourceRoot(@NotNull String source_root, @NotNull String package_prefix) {
     this.source_root = source_root;
     this.package_prefix = package_prefix;
   }
 
   @NotNull
   public String getPackageRoot() {
-    if (package_prefix == null) {
-      return source_root;
-    }
     // source_root might contain '.' in the path.
     final boolean sourceRootMatchesPackage =
       StringUtil.endsWith(StringUtil.replaceChar(source_root, '/', '.'), package_prefix);
@@ -51,26 +46,27 @@ public class SourceRoot implements Comparable<SourceRoot> {
 
     SourceRoot root = (SourceRoot)o;
 
-    //if (package_prefix != null ? !package_prefix.equals(root.package_prefix) : root.package_prefix != null) return false;
-    if (source_root != null ? !source_root.equals(root.source_root) : root.source_root != null) return false;
+    if (!package_prefix.equals(root.package_prefix)) return false;
+    if (!source_root.equals(root.source_root)) return false;
 
     return true;
   }
 
   @Override
   public int hashCode() {
-    int result = source_root != null ? source_root.hashCode() : 0;
-    result = 31 * result + (package_prefix != null ? package_prefix.hashCode() : 0);
-    return result;
+    return Objects.hashCode(
+      source_root,
+      package_prefix
+    );
   }
 
   @Override
   public String toString() {
-    return "SourceRoot{" +
-           // should be content root
-           "source_root='" + source_root + '\'' +
-           ", package_prefix='" + package_prefix + '\'' +
-           '}';
+    return String.format(
+      "SourceRoot{'source_root='%s', package_prefix='%s'}",
+      source_root,
+      package_prefix
+    );
   }
 
   @Override
