@@ -10,10 +10,8 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.util.Consumer;
-import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
@@ -32,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class PantsCompileOptionsExecutor {
   protected static final Logger LOG = Logger.getInstance(PantsCompileOptionsExecutor.class);
@@ -56,7 +55,7 @@ public class PantsCompileOptionsExecutor {
       options = new MyPantsCompileOptions(
         buildFilePath,
         new MyPantsExecutionOptions(
-          Collections.singletonList(PantsUtil.getRelativeProjectPath(new File(buildFilePath)) + ":" + targetName)
+          Collections.singletonList(PantsUtil.getRelativeProjectPath(new File(buildFilePath)).get() + ":" + targetName)
         )
       );
     }
@@ -67,12 +66,12 @@ public class PantsCompileOptionsExecutor {
       options = new MyPantsCompileOptions(externalProjectPath, executionOptions);
     }
 
-    final File buildRoot = PantsUtil.findBuildRoot(new File(options.getExternalProjectPath()));
-    if (buildRoot == null || !buildRoot.exists()) {
+    final Optional<File> buildRoot = PantsUtil.findBuildRoot(new File(options.getExternalProjectPath()));
+    if (!buildRoot.isPresent()|| !buildRoot.get().exists()) {
       throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", options.getExternalProjectPath()));
     }
     return new PantsCompileOptionsExecutor(
-      buildRoot,
+      buildRoot.get(),
       options,
       executionOptions != null && executionOptions.isLibsWithSourcesAndDocs()
     );
@@ -100,7 +99,7 @@ public class PantsCompileOptionsExecutor {
   }
 
   public String getProjectRelativePath() {
-    return PantsUtil.getRelativeProjectPath(getWorkingDir(), getProjectPath());
+    return PantsUtil.getRelativeProjectPath(getWorkingDir(), getProjectPath()).get();
   }
 
   @NotNull
@@ -215,7 +214,7 @@ public class PantsCompileOptionsExecutor {
     }
 
     commandLine.addParameters(getAllTargetAddresses());
-
+    System.out.println(getAllTargetAddresses());
     if (getOptions().isWithDependees()) {
       statusConsumer.consume("Looking for dependents...");
       commandLine.addParameters(loadDependees(getAllTargetAddresses()));

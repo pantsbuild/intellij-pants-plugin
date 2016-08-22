@@ -20,7 +20,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PantsResolver {
   public static final int VERSION = 13;
@@ -84,7 +85,7 @@ public class PantsResolver {
     }
     LOG.debug("Amount of targets after modifiers: " + myProjectInfo.getTargets().size());
 
-    final Map<String, DataNode<ModuleData>> modules = new HashMap<String, DataNode<ModuleData>>();
+    final Map<String, DataNode<ModuleData>> modules = new HashMap<>();
     for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
       resolver.resolve(myProjectInfo, myExecutor, projectInfoDataNode, modules);
     }

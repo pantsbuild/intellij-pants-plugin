@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Optional;
 
 public class PantsTargetAddress {
   private final String myPath;
@@ -32,9 +33,10 @@ public class PantsTargetAddress {
 
   @NotNull
   public String getRelativePath() {
-    final File buildRoot = PantsUtil.findBuildRoot(new File(getPath()));
-    final String relativePath = buildRoot != null ? PantsUtil.getRelativeProjectPath(buildRoot, getPath()) : null;
-    return StringUtil.notNullize(relativePath, getPath());
+    final Optional<File> buildRoot = PantsUtil.findBuildRoot(new File(getPath()));
+    return buildRoot
+      .flatMap(file -> PantsUtil.getRelativeProjectPath(file, getPath()))
+      .orElse(getPath());
   }
 
   @NotNull
@@ -49,9 +51,9 @@ public class PantsTargetAddress {
 
   @NotNull
   public static PantsTargetAddress fromString(@NotNull @NonNls String targetName) {
-    final PantsTargetAddress result = fromString(targetName, false);
-    assert result != null;
-    return result;
+    final Optional<PantsTargetAddress> result = fromString(targetName, false);
+    assert result.isPresent();
+    return result.get();
   }
 
   public boolean isMainTarget() {
@@ -59,26 +61,24 @@ public class PantsTargetAddress {
   }
 
   /**
-   * @param strict - if <code>true</code> the method will return <code>null</code> if there is no <code>:</code> indicating a target name.
+   * @param strict - if <code>true</code> the method will return <code>Optional.empty()</code> if there is no <code>:</code> indicating a target name.
    */
-  @Nullable
-  public static PantsTargetAddress fromString(@NotNull @NonNls String targetPath, boolean strict) {
+  public static Optional<PantsTargetAddress> fromString(@NotNull @NonNls String targetPath, boolean strict) {
     final int index = targetPath.lastIndexOf(':');
     if (index < 0) {
-      return strict ? null : new PantsTargetAddress(targetPath, PathUtil.getFileName(targetPath));
+      return strict ? Optional.empty() : Optional.of(new PantsTargetAddress(targetPath, PathUtil.getFileName(targetPath)));
     } else {
       final String path = targetPath.substring(0, index);
       final String name = targetPath.substring(index + 1);
-      return new PantsTargetAddress(path, StringUtil.isEmpty(name) ? PathUtil.getFileName(path) : name);
+      return Optional.of(new PantsTargetAddress(path, StringUtil.isEmpty(name) ? PathUtil.getFileName(path) : name));
     }
   }
 
-  @Contract(value = "null -> null", pure = true)
-  public static String extractPath(@Nullable String address) {
+  public static Optional<String> extractPath(@Nullable String address) {
     if (StringUtil.isEmpty(address)) {
-      return null;
+      return Optional.empty();
     }
     final int index = address.lastIndexOf(':');
-    return index < 0 ? address : address.substring(0, index);
+    return Optional.of(index < 0 ? address : address.substring(0, index));
   }
 }

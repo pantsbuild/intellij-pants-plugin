@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -50,7 +51,7 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     // Make sure task name is `test` goal.
     assertEquals(Collections.singletonList("test"), esc.getSettings().getTaskNames());
 
-    List<String> configScriptParameters = PantsUtil.parseCmdParameters(esc.getSettings().getScriptParameters());
+    List<String> configScriptParameters = PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getScriptParameters()));
 
     List<String> expectedConfigScriptParameters = Arrays.asList(
       "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
@@ -115,8 +116,8 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
       esc.getSettings().getTaskNames(),
       esc.getSettings().getExternalProjectPath(),
       PantsExecutionSettings.createDefault(),
-      PantsUtil.parseCmdParameters(esc.getSettings().getVmOptions()),
-      PantsUtil.parseCmdParameters(esc.getSettings().getScriptParameters()),
+      PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getVmOptions())),
+      PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getScriptParameters())),
       debuggerSetup
     );
     assertNotNull(commandLine);

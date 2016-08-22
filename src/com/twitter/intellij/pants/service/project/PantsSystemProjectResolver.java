@@ -27,7 +27,6 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -46,6 +45,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -83,6 +83,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (ideProject == null) {
       return;
     }
+    // Disable zooming on subsequent project resolves/refreshes,
+    // i.e. a project that already has existing modules, because it may zoom at a module
+    // that is going to be replaced by the current resolve.
     if (ModuleManager.getInstance(ideProject).getModules().length > 0) {
       return;
     }
@@ -101,12 +104,12 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (projectFilePath == null) {
       return;
     }
-    final VirtualFile existingPantsExe = PantsUtil.findPantsExecutable(projectFilePath);
-    if (existingPantsExe == null) {
+    final Optional<VirtualFile> existingPantsExe = PantsUtil.findPantsExecutable(projectFilePath);
+    final Optional<VirtualFile> newPantsExe = PantsUtil.findPantsExecutable(projectPath);
+    if (!existingPantsExe.isPresent() || !newPantsExe.isPresent()) {
       return;
     }
-    final VirtualFile newPantsExe = PantsUtil.findPantsExecutable(projectPath);
-    if (!existingPantsExe.getCanonicalFile().getPath().equals(newPantsExe.getCanonicalFile().getPath())) {
+    if (!existingPantsExe.get().getCanonicalFile().getPath().equals(newPantsExe.get().getCanonicalFile().getPath())) {
       throw new ExternalSystemException(String.format(
         "Failed to import. Target/Directory to be added uses a different pants executable %s compared to the existing project's %s",
         existingPantsExe, newPantsExe
@@ -130,13 +133,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
 
-    VirtualFile pantsExecutable = PantsUtil.findPantsExecutable(executor.getProjectPath());
-    if (pantsExecutable != null) {
-      Sdk sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.getPath());
-      if (sdk != null) {
-        projectDataNode.createChild(PantsConstants.SDK_KEY, sdk);
-      }
-    }
+    Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(executor.getProjectPath());
+    pantsExecutable
+      .flatMap(file -> PantsUtil.getDefaultJavaSdk(file.getPath()))
+      .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);

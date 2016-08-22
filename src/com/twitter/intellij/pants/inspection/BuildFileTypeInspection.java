@@ -3,7 +3,11 @@
 
 package com.twitter.intellij.pants.inspection;
 
-import com.intellij.codeInspection.*;
+import com.intellij.codeInspection.InspectionManager;
+import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.codeInspection.LocalQuickFix;
+import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.python.PythonFileType;
 import com.twitter.intellij.pants.PantsBundle;

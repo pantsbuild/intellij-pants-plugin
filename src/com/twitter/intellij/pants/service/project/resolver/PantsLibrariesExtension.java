@@ -5,7 +5,12 @@ package com.twitter.intellij.pants.service.project.resolver;
 
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.project.*;
+import com.intellij.openapi.externalSystem.model.project.LibraryData;
+import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
+import com.intellij.openapi.externalSystem.model.project.LibraryLevel;
+import com.intellij.openapi.externalSystem.model.project.LibraryPathType;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
+import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;

@@ -15,9 +15,9 @@ import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class PythonPexResolver implements PantsResolverExtension {
   private static final Logger LOG = Logger.getInstance(PythonPexResolver.class);
@@ -29,12 +29,12 @@ public class PythonPexResolver implements PantsResolverExtension {
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules
   ) {
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(projectDataNode.getData().getLinkedExternalProjectPath());
-    final VirtualFile bootstrappedPants = buildRoot != null ? buildRoot.findChild(PantsConstants.PANTS_PEX) : null;
-    final VirtualFile pexFile = bootstrappedPants != null ? bootstrappedPants : findSpecificPexVersionInHomeDirectory(buildRoot);
-    if (pexFile != null) {
+    final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(projectDataNode.getData().getLinkedExternalProjectPath());
+    final Optional<VirtualFile> bootstrappedPants =  buildRoot.map(file -> file.findChild(PantsConstants.PANTS_PEX));
+    final Optional<VirtualFile> pexFile = bootstrappedPants.flatMap(file -> findSpecificPexVersionInHomeDirectory(buildRoot));
+    if (pexFile.isPresent()) {
       final LibraryData libraryData = new LibraryData(PantsConstants.SYSTEM_ID, PantsConstants.PANTS_LIBRARY_NAME);
-      libraryData.addPath(LibraryPathType.BINARY, pexFile.getPath());
+      libraryData.addPath(LibraryPathType.BINARY, pexFile.get().getPath());
       projectDataNode.createChild(ProjectKeys.LIBRARY, libraryData);
 
       for (DataNode<ModuleData> moduleDataNode : modules.values()) {
@@ -49,24 +49,23 @@ public class PythonPexResolver implements PantsResolverExtension {
     }
   }
 
-  @Nullable
-  private VirtualFile findSpecificPexVersionInHomeDirectory(VirtualFile workingDir) {
-    final String pantsVersion = PantsUtil.findPantsVersion(workingDir);
-    if (pantsVersion == null) {
+  private Optional<VirtualFile> findSpecificPexVersionInHomeDirectory(Optional<VirtualFile> workingDir) {
+    final Optional<String> pantsVersion = PantsUtil.findPantsVersion(workingDir);
+    if (!pantsVersion.isPresent()) {
       LOG.warn(PantsBundle.message("pants.library.no.version"));
-      return null;
+      return Optional.empty();
     }
 
-    final VirtualFile folderWithPex = PantsUtil.findFolderWithPex();
-    if (folderWithPex == null) {
+    final Optional<VirtualFile> folderWithPex = PantsUtil.findFolderWithPex();
+    if (!folderWithPex.isPresent()) {
       LOG.warn(PantsBundle.message("pants.library.no.pex.folder"));
       return null;
     }
 
-    final VirtualFile pexFile = PantsUtil.findPexVersionFile(folderWithPex, pantsVersion);
-    if (pexFile == null) {
+    final Optional<VirtualFile> pexFile = folderWithPex.flatMap(file -> PantsUtil.findPexVersionFile(file, pantsVersion.get()));
+    if (!pexFile.isPresent()) {
       LOG.warn(PantsBundle.message("pants.library.no.pex.file", pantsVersion));
-      return null;
+      return Optional.empty();
     }
     return pexFile;
   }

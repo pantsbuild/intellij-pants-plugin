@@ -44,8 +44,16 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.*;
-import com.intellij.psi.*;
+import com.intellij.openapi.vfs.JarFileSystem;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiComment;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiParserFacade;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.testFramework.ThreadTracker;
@@ -66,7 +74,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 
@@ -217,18 +229,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     );
   }
 
-  @Nullable
-  private VirtualFile findClassFile(String className, String moduleName) throws Exception {
-    PantsOptions pantsOptions = PantsOptions.getPantsOptions(myProject);
-    if (pantsOptions == null) {
-      return null;
+  private Optional<VirtualFile> findClassFile(String className, String moduleName) throws Exception {
+    Optional<PantsOptions> pantsOptions = PantsOptions.getPantsOptions(myProject);
+    if (!pantsOptions.isPresent()) {
+      return Optional.empty();
     }
-    if (pantsOptions.has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
-      VirtualFile manifestJar = PantsUtil.findProjectManifestJar(myProject);
-      if (manifestJar != null) {
+    if (pantsOptions.get().has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
+      Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
+      if (manifestJar.isPresent()) {
         return manifestJar;
       }
-      return null;
+      return Optional.empty();
     }
 
     ApplicationManager.getApplication().runWriteAction(
@@ -242,8 +253,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     );
 
     final Module module = getModule(moduleName);
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module);
-    assertNotNull("Can't find working dir for module '" + moduleName + "'!", buildRoot);
+    final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(module);
+    assertTrue("Can't find working dir for module '" + moduleName + "'!", buildRoot.isPresent());
     assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
     List<String> compilerOutputPaths = ContainerUtil.newArrayList();
 
@@ -261,7 +272,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         }
         final VirtualFile classFile = output.findFileByRelativePath(className.replace('.', '/') + ".class");
         if (classFile != null) {
-          return classFile;
+          return Optional.of(classFile);
         }
       }
       catch (AssertionError assertionError) {
@@ -269,7 +280,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         assertionError.printStackTrace();
       }
     }
-    return null;
+    return Optional.empty();
   }
 
   protected void modify(@NonNls @NotNull String qualifiedName) {
@@ -395,7 +406,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   private Module[] getModules(final String... moduleNames) {
-    final List<Module> modules = new ArrayList<Module>();
+    final List<Module> modules = new ArrayList<>();
     for (String name : moduleNames) {
       modules.add(getModule(name));
     }
@@ -487,7 +498,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   public JUnitConfiguration generateJUnitConfiguration(String moduleName, String className, @Nullable String vmParams) {
     final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
     final JUnitConfiguration runConfiguration = new JUnitConfiguration("Pants: " + className, myProject, factory);
-    runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).getCanonicalPath());
+    runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
     if (StringUtil.isNotEmpty(vmParams)) {
