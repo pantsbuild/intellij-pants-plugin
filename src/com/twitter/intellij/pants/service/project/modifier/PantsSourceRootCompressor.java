@@ -22,22 +22,15 @@ import java.util.stream.Collectors;
 public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtension {
   @Override
   public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
-    //int a = 1;
-    //if (1 + a> 0) {
-    //  return;
-    //}
     for (TargetInfo info : projectInfo.getTargets().values()) {
-      if (!PantsUtil.isResource(info.getSourcesType())) {
         Set<SourceRoot> roots = compressRootsIfPossible(info.getRoots());
         info.setRoots(roots);
-      }
     }
   }
 
   @NotNull
   private Set<SourceRoot> compressRootsIfPossible(@NotNull Set<SourceRoot> roots) {
     final Set<String> packageRoots = roots.stream().map(SourceRoot::getPackageRoot).collect(Collectors.toSet());
-
     if (packageRoots.size() != 1) {
       return roots;
     }
