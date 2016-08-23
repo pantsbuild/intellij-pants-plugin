@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SourceRoot implements Comparable<SourceRoot> {
-  // This is actually content root.
   private String source_root;
   private String package_prefix;
 
@@ -26,7 +25,6 @@ public class SourceRoot implements Comparable<SourceRoot> {
     return sourceRootMatchesPackage ?
            source_root.substring(0, source_root.length() - package_prefix.length()) :
            source_root;
-
   }
 
   @NotNull
