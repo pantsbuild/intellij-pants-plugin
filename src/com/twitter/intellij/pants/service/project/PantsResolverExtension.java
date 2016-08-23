@@ -22,6 +22,7 @@ public interface PantsResolverExtension {
     @NotNull ProjectInfo projectInfo,
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
-    @NotNull Map<String, DataNode<ModuleData>> modules
+    @NotNull Map<String, DataNode<ModuleData>> modules,
+    @NotNull BuildGraph buildGraph
   );
 }

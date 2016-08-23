@@ -15,19 +15,22 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private final boolean myWithDependees;
   private final boolean myLibsWithSourcesAndDocs;
   private final boolean myUseIdeaProjectJdk;
+  private final boolean myEnableIncrementalImport;
   private final List<String> myTargetSpecs;
 
   private static final List<String> DEFAULT_TARGET_SPECS = Collections.emptyList();
   private static final boolean DEFAULT_WITH_DEPENDEES = false;
   private static final boolean DEFAULT_WITH_SOURCES_AND_DOCS = true;
   private static final boolean DEFAULT_USE_IDEA_PROJECT_SDK = false;
+  private static final boolean DEFAULT_ENABE_INCREMENTAL_IMPORT = false;
 
   public static PantsExecutionSettings createDefault() {
     return new PantsExecutionSettings(
       DEFAULT_TARGET_SPECS,
       DEFAULT_WITH_DEPENDEES,
       DEFAULT_WITH_SOURCES_AND_DOCS,
-      DEFAULT_USE_IDEA_PROJECT_SDK
+      DEFAULT_USE_IDEA_PROJECT_SDK,
+      DEFAULT_ENABE_INCREMENTAL_IMPORT
     );
   }
 
@@ -41,12 +44,14 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     List<String> targetSpecs,
     boolean withDependees,
     boolean libsWithSourcesAndDocs,
-    boolean useIdeaProjectJdk
+    boolean useIdeaProjectJdk,
+    boolean isEnableIncrementalImport
   ) {
     myTargetSpecs = targetSpecs;
     myWithDependees = withDependees;
     myLibsWithSourcesAndDocs = libsWithSourcesAndDocs;
     myUseIdeaProjectJdk = useIdeaProjectJdk;
+    myEnableIncrementalImport = isEnableIncrementalImport;
   }
 
   @NotNull
@@ -67,6 +72,10 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     return myUseIdeaProjectJdk;
   }
 
+  public boolean isEnableIncrementalImport() {
+    return myEnableIncrementalImport;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -75,6 +84,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
 
     PantsExecutionSettings settings = (PantsExecutionSettings) o;
     if (myUseIdeaProjectJdk != settings.myUseIdeaProjectJdk) return false;
+    if (myEnableIncrementalImport != settings.myEnableIncrementalImport) return false;
     if (myWithDependees != settings.myWithDependees) return false;
     if (myLibsWithSourcesAndDocs != settings.myLibsWithSourcesAndDocs) return false;
     if (myTargetSpecs != null ? !myTargetSpecs.equals(settings.myTargetSpecs) : settings.myTargetSpecs != null) return false;
@@ -87,7 +97,8 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
       myTargetSpecs,
       myWithDependees,
       myLibsWithSourcesAndDocs,
-      myUseIdeaProjectJdk
+      myUseIdeaProjectJdk,
+      myEnableIncrementalImport
     );
   }
 }

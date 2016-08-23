@@ -37,6 +37,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private CheckBoxList<String> myTargets;
   private JBCheckBox myWithDependeesCheckBox;
   private JBCheckBox myLibsWithSourcesCheckBox;
+  private JBCheckBox myEnableIncrementalImport;
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings, boolean showAdvancedSettings) {
     super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
@@ -57,6 +58,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources.and.docs"));
     myLibsWithSourcesCheckBox.setSelected(false);
     content.add(myLibsWithSourcesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+
+    myEnableIncrementalImport = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
+    myEnableIncrementalImport.setSelected(false);
+    content.add(myEnableIncrementalImport, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
     final JLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
     content.add(targetsLabel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
@@ -139,6 +144,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final List<String> targetNames = new ArrayList<String>();
     settings.setWithDependees(myWithDependeesCheckBox.isSelected());
     settings.setLibsWithSources(myLibsWithSourcesCheckBox.isSelected());
+    settings.setEnableIncrementalImport(myEnableIncrementalImport.isSelected());
     for (int i = 0; i < myTargets.getItemsCount(); i++) {
       String target = myTargets.getItemAt(i);
       if (myTargets.isItemSelected(target)) {

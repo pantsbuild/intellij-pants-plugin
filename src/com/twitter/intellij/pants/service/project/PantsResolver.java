@@ -14,6 +14,7 @@ import com.intellij.openapi.externalSystem.model.project.*;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.*;
+import com.twitter.intellij.pants.ui.PantsIncrementalImportManager;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,20 +65,37 @@ public class PantsResolver {
     }
   }
 
-  public void resolve(@NotNull Consumer<String> statusConsumer, @Nullable ProcessAdapter processAdapter) {
+  public void resolve(
+    boolean isEnableIncrementalImport,
+    @Nullable final String projectId,
+    @NotNull Consumer<String> statusConsumer,
+    @Nullable ProcessAdapter processAdapter
+  ) {
+    String previousPantsExportResult = PantsIncrementalImportManager.getPantsExportResult(projectId);
+    if (isEnableIncrementalImport && previousPantsExportResult != null) {
+      parse(previousPantsExportResult);
+      return;
+    }
+
     try {
-      parse(myExecutor.loadProjectStructure(statusConsumer, processAdapter));
+      String pantsExportResult = myExecutor.loadProjectStructure(statusConsumer, processAdapter);
+      parse(pantsExportResult);
+      if (projectId != null) {
+        PantsIncrementalImportManager.addPantsExportResult(projectId, pantsExportResult);
+      }
     }
-    catch (ExecutionException e) {
+    catch (ExecutionException | IOException e) {
       throw new ExternalSystemException(e);
-    }
-    catch (IOException ioException) {
-      throw new ExternalSystemException(ioException);
     }
   }
 
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (myProjectInfo == null) return;
+
+    BuildGraph buildGraph = null;
+    if (myExecutor.getOptions().isEnableIncrementalImport()) {
+      buildGraph = new BuildGraph(myProjectInfo);
+    }
 
     LOG.debug("Amount of targets before modifiers: " + myProjectInfo.getTargets().size());
     for (PantsProjectInfoModifierExtension modifier : PantsProjectInfoModifierExtension.EP_NAME.getExtensions()) {
@@ -87,7 +105,7 @@ public class PantsResolver {
 
     final Map<String, DataNode<ModuleData>> modules = new HashMap<>();
     for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
-      resolver.resolve(myProjectInfo, myExecutor, projectInfoDataNode, modules);
+      resolver.resolve(myProjectInfo, myExecutor, projectInfoDataNode, modules, buildGraph);
     }
     if (LOG.isDebugEnabled()) {
       final int amountOfModules = PantsUtil.findChildren(projectInfoDataNode, ProjectKeys.MODULE).size();

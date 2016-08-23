@@ -31,6 +31,12 @@ public class TargetAddressInfo {
 
   private boolean is_code_gen;
 
+  public boolean isTargetRoot() {
+    return is_target_root;
+  }
+
+  private boolean is_target_root;
+
   private String id;
 
   public TargetAddressInfo() {

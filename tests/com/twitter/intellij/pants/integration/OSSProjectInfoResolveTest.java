@@ -33,16 +33,18 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     final boolean withDependees = false;
     final boolean libsWithSourcesAndDocs = true;
     final boolean useIdeaProjectJdk = false;
+    final boolean isEnableIncremetalImport = false;
     PantsExecutionSettings settings = new PantsExecutionSettings(
       Collections.singletonList(targetSpec),
       withDependees,
       libsWithSourcesAndDocs,
-      useIdeaProjectJdk
+      useIdeaProjectJdk,
+      isEnableIncremetalImport
     );
 
     final PantsResolver resolver =
       new PantsResolver(PantsCompileOptionsExecutor.create(absoluteProjectPath, settings));
-    resolver.resolve(STRING_CONSUMER, null);
+    resolver.resolve(false, null, STRING_CONSUMER, null);
     final ProjectInfo projectInfo = resolver.getProjectInfo();
     assertNotNull(projectInfo);
     return projectInfo;
