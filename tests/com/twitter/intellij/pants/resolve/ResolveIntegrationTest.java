@@ -6,7 +6,6 @@ package com.twitter.intellij.pants.resolve;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
-import com.intellij.openapi.roots.Synthetic;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
