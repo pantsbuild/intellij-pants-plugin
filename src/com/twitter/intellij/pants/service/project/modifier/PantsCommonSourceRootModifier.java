@@ -47,17 +47,17 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
 
     for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
       final List<Pair<String, TargetInfo>> targetNameAndInfos = entry.getValue();
-      final SourceRoot originalSourceRoot = entry.getKey();
+      final SourceRoot commonSourceRoot = entry.getKey();
       if (targetNameAndInfos.size() <= 1) {
         continue;
       }
 
       final Pair<String, TargetInfo> commonTargetNameAndInfo =
-        createTargetForCommonSourceRoot(pantsWorkingDirPath, targetNameAndInfos, originalSourceRoot);
+        createTargetForCommonSourceRoot(pantsWorkingDirPath, targetNameAndInfos, commonSourceRoot);
 
       projectInfo.addTarget(commonTargetNameAndInfo.getFirst(), commonTargetNameAndInfo.getSecond());
       for (Pair<String, TargetInfo> nameAndInfo : targetNameAndInfos) {
-        nameAndInfo.getSecond().getRoots().remove(originalSourceRoot);
+        nameAndInfo.getSecond().getRoots().remove(commonSourceRoot);
         nameAndInfo.getSecond().addDependency(commonTargetNameAndInfo.getFirst());
       }
     }
@@ -65,12 +65,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
 
   @NotNull
   public Map<SourceRoot, List<Pair<String, TargetInfo>>> getSourceRoot2TargetMapping(@NotNull ProjectInfo projectInfo) {
-    final Factory<List<Pair<String, TargetInfo>>> listFactory = new Factory<List<Pair<String, TargetInfo>>>() {
-      @Override
-      public List<Pair<String, TargetInfo>> create() {
-        return new ArrayList<>();
-      }
-    };
+    final Factory<List<Pair<String, TargetInfo>>> listFactory = ArrayList::new;
     final Map<SourceRoot, List<Pair<String, TargetInfo>>> result = new HashMap<>();
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String targetName = entry.getKey();
