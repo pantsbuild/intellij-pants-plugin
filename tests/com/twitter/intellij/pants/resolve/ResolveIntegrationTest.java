@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 
 public class ResolveIntegrationTest extends OSSPantsIntegrationTest {
   /**
-   * In the test case, `testTarget` and `resourceTarget` have the same content root.
-   * We need to make sure they are modified to be empty, but both depends on the artifical
-   * module created.
+   * In the test case, `testModule` and `resourceModule` have the same content root.
+   * We need to make sure they are modified to have empty content roots, but both
+   * depends on the artificial `commonModule` created.
    */
   public void testTestsResourcesCommonContentRoot() throws Throwable {
     doImport("intellij-integration/extras/");
@@ -61,9 +61,8 @@ public class ResolveIntegrationTest extends OSSPantsIntegrationTest {
   private void assertContainsTestSourceContentEntry(Module module) {
     assertTrue(
       String.format("'%s' does not contain any test source content entry.", module.getName()),
-      //
+      // flatten all source folders in all module's source folder, then check for test source.
       Arrays.stream(ModuleRootManager.getInstance(module).getContentEntries())
-        .filter(Synthetic::isSynthetic)
         .flatMap(contentEntry -> Arrays.stream(contentEntry.getSourceFolders()))
         .anyMatch(SourceFolder::isTestSource)
     );
