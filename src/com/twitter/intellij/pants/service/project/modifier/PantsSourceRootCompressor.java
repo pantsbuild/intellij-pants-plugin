@@ -23,8 +23,7 @@ public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtens
   @Override
   public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
     for (TargetInfo info : projectInfo.getTargets().values()) {
-        Set<SourceRoot> roots = compressRootsIfPossible(info.getRoots());
-        info.setRoots(roots);
+      info.setRoots(compressRootsIfPossible(info.getRoots()));
     }
   }
 

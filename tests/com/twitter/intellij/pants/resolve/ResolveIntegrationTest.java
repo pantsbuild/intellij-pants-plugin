@@ -60,7 +60,7 @@ public class ResolveIntegrationTest extends OSSPantsIntegrationTest {
   private void assertContainsTestSourceContentEntry(Module module) {
     assertTrue(
       String.format("'%s' does not contain any test source content entry.", module.getName()),
-      // flatten all source folders in all module's source folder, then check for test source.
+      // flatten all source folders in all module's content entries, then check for test source.
       Arrays.stream(ModuleRootManager.getInstance(module).getContentEntries())
         .flatMap(contentEntry -> Arrays.stream(contentEntry.getSourceFolders()))
         .anyMatch(SourceFolder::isTestSource)
