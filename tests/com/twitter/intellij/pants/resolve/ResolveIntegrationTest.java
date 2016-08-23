@@ -5,13 +5,14 @@ package com.twitter.intellij.pants.resolve;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.SourceFolder;
+import com.intellij.openapi.roots.Synthetic;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,27 +36,42 @@ public class ResolveIntegrationTest extends OSSPantsIntegrationTest {
       "intellij-integration_extras_module"
     );
 
-    assertDependency(testModuleName, commonModuleName);
-    assertDependency(resourceModuleName, commonModuleName);
-
-    assertEmptyModuleContentRoot(testModuleName);
-    assertEmptyModuleContentRoot(resourceModuleName);
-
+    Module testModule = getModule(testModuleName);
+    Module resourceModule = getModule(resourceModuleName);
     Module commonModule = getModule(commonModuleName);
+
+    assertTrue(ModuleRootManager.getInstance(testModule).isDependsOn(commonModule));
+    assertTrue(ModuleRootManager.getInstance(resourceModule).isDependsOn(commonModule));
+
+    assertEmptyModuleContentRoot(testModule);
+    assertEmptyModuleContentRoot(resourceModule);
+    assertContainsTestSourceContentEntry(commonModule);
+
     String buildRoot = PantsUtil.findBuildRoot(commonModule).get().getPath();
     assertModuleContentRoots(
-      commonModuleName,
+      commonModule,
       buildRoot + "/intellij-integration/extras/src/test/java"
     );
   }
 
-  private void assertEmptyModuleContentRoot(String moduleName) {
-    assertModuleContentRoots(moduleName);
+  private void assertEmptyModuleContentRoot(Module module) {
+    assertModuleContentRoots(module);
   }
 
-  private void assertModuleContentRoots(String moduleName, String... expectedRoots) {
+  private void assertContainsTestSourceContentEntry(Module module) {
+    assertTrue(
+      String.format("'%s' does not contain any test source content entry.", module.getName()),
+      //
+      Arrays.stream(ModuleRootManager.getInstance(module).getContentEntries())
+        .filter(Synthetic::isSynthetic)
+        .flatMap(contentEntry -> Arrays.stream(contentEntry.getSourceFolders()))
+        .anyMatch(SourceFolder::isTestSource)
+    );
+  }
+
+  private void assertModuleContentRoots(Module module, String... expectedRoots) {
     Set<String> actualContentRootPaths =
-      Arrays.stream(ModuleRootManager.getInstance(getModule(moduleName)).getContentRoots())
+      Arrays.stream(ModuleRootManager.getInstance(module).getContentRoots())
         .map(VirtualFile::getPath)
         .map(File::new)
         .map(File::getAbsolutePath)
@@ -67,16 +83,5 @@ public class ResolveIntegrationTest extends OSSPantsIntegrationTest {
       .collect(Collectors.toSet());
 
     assertEquals(expectedContentRootPaths, actualContentRootPaths);
-  }
-
-  private void assertDependency(final String moduleName, final String depModuleName) {
-    Module module = getModule(moduleName);
-    Optional<Module> depModule = Arrays.stream(ModuleRootManager.getInstance(module).getDependencies())
-      .filter(m -> m.getName().equals(depModuleName))
-      .findFirst();
-    assertTrue(
-      String.format("Dependency module '%s' not found under module '%s'", depModuleName, depModuleName),
-      depModule.isPresent()
-    );
   }
 }
