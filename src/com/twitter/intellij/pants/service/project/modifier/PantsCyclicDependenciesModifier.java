@@ -20,7 +20,6 @@ import java.util.Set;
 public class PantsCyclicDependenciesModifier implements PantsProjectInfoModifierExtension {
   @Override
   public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
-
     final Set<Map.Entry<String, TargetInfo>> originalEntries =
       new HashSet<Map.Entry<String, TargetInfo>>(projectInfo.getTargets().entrySet());
     for (Map.Entry<String, TargetInfo> nameAndInfo : originalEntries) {
