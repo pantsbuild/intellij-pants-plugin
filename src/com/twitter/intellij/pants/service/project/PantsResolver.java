@@ -10,10 +10,14 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.project.*;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
+import com.intellij.openapi.externalSystem.model.project.ProjectData;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
+import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.model.SimpleExportResult;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
-import com.twitter.intellij.pants.service.project.model.*;
+import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.ui.PantsIncrementalImportManager;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +27,7 @@ import org.jetbrains.annotations.TestOnly;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class PantsResolver {
   public static final int VERSION = 13;
@@ -92,9 +97,19 @@ public class PantsResolver {
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (myProjectInfo == null) return;
 
-    BuildGraph buildGraph = null;
+    Optional<BuildGraph> buildGraph;
     if (myExecutor.getOptions().isEnableIncrementalImport()) {
-      buildGraph = new BuildGraph(myProjectInfo);
+      Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(projectInfoDataNode.getData().getLinkedExternalProjectPath());
+      SimpleExportResult result = SimpleExportResult.getExportResult(pantsExecutable.get().getPath());
+      if (PantsUtil.versionCompare(result.getVersion(), "1.0.9") < 0) {
+        throw new PantsException(
+          "No target root found for constructing the build graph to support incremental import. " +
+          "Please make sure pants export version is 1.0.9 or above.");
+      }
+      buildGraph = Optional.of(new BuildGraph(myProjectInfo));
+    }
+    else {
+      buildGraph = Optional.empty();
     }
 
     LOG.debug("Amount of targets before modifiers: " + myProjectInfo.getTargets().size());

@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  *  Currently we configure requirements only for default interpreter.
@@ -32,7 +33,7 @@ public class PythonRequirementsResolver implements PantsResolverExtension {
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules,
-    @NotNull BuildGraph buildGraph
+    @NotNull Optional<BuildGraph> buildGraph
   ) {
     final PythonSetup pythonSetup = projectInfo.getPythonSetup();
     if (pythonSetup == null) {

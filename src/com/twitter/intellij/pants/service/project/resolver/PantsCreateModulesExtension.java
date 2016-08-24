@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,31 +45,18 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules,
-    @NotNull BuildGraph buildGraph
+    @NotNull Optional<BuildGraph> buildGraph
   ) {
     Set<TargetInfo> targetInfoWithinLevel = null;
-    if (buildGraph != null) {
-      final int maxDepth = buildGraph.getMaxDepth();
-      ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-        @Override
-        public void run() {
-          String result = Messages.showInputDialog(
-            String.format("Enter the level of transitive dependencies to import min: 0, max: %s", maxDepth),
-            "Incremental Import",
-            null, //icon
-            String.valueOf(maxDepth),  //initial number
-            null  //validator
-          );
-          depthToInclude = result == null ? null : Integer.valueOf(result);
-        }
-      }, ModalityState.NON_MODAL);
-
+    if (buildGraph.isPresent()) {
+      final int maxDepth = buildGraph.get().getMaxDepth();
+      getDepthFromUser(maxDepth);
       if (depthToInclude == null) {
         throw new PantsException("Task cancelled");
       }
       logger.info(String.format("TargetInfo level %s", depthToInclude));
       targetInfoWithinLevel =
-        buildGraph.getNodesByLevel(depthToInclude).stream().map(BuildGraph.Node::getTargetInfo).collect(Collectors.toSet());
+        buildGraph.get().getNodesByLevel(depthToInclude).stream().map(BuildGraph.Node::getTargetInfo).collect(Collectors.toSet());
     }
 
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
@@ -99,6 +87,22 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
         );
       modules.put(targetName, moduleData);
     }
+  }
+
+  private void getDepthFromUser(final int maxDepth) {
+    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+      @Override
+      public void run() {
+        String result = Messages.showInputDialog(
+          String.format("Enter the level of transitive dependencies to import min: 0, max: %s", maxDepth),
+          "Incremental Import",
+          null, //icon
+          String.valueOf(maxDepth),  //initial number
+          null  //validator
+        );
+        depthToInclude = result == null ? null : Integer.valueOf(result);
+      }
+    }, ModalityState.NON_MODAL);
   }
 
   @NotNull

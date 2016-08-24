@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class ScalaSdkResolver implements PantsResolverExtension {
@@ -39,7 +40,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules,
-    @NotNull BuildGraph buildGraph
+    @NotNull Optional<BuildGraph> buildGraph
   ) {
     final Map<String, Set<String>> scalaLibId2Jars = new HashMap<String, Set<String>>();
     for (String libId : ContainerUtil.sorted(projectInfo.getLibraries().keySet())) {

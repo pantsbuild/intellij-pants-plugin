@@ -32,6 +32,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class PantsSourceRootsExtension implements PantsResolverExtension {
@@ -60,7 +61,7 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules,
-    @NotNull BuildGraph buildGraph
+    @NotNull Optional<BuildGraph> buildGraph
   ) {
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
       final String targetAddress = entry.getKey();

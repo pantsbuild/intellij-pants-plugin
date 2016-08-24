@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Optional;
 
 public class PantsLibrariesExtension implements PantsResolverExtension {
   @Override
@@ -33,7 +34,7 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules,
-    @NotNull BuildGraph buildGraph
+    @NotNull Optional<BuildGraph> buildGraph
   ) {
     final Map<String, LibraryData> idToLibraryData = ContainerUtilRt.newHashMap();
 

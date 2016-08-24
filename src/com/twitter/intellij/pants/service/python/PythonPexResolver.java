@@ -29,7 +29,7 @@ public class PythonPexResolver implements PantsResolverExtension {
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules,
-    @NotNull BuildGraph buildGraph
+    @NotNull Optional<BuildGraph> buildGraph
   ) {
     final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(projectDataNode.getData().getLinkedExternalProjectPath());
     final Optional<VirtualFile> bootstrappedPants =  buildRoot.map(file -> file.findChild(PantsConstants.PANTS_PEX));

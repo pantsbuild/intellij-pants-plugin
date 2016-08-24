@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BuildGraph {
-  private Logger logger = Logger.getInstance("#" + BuildGraph.class.getName());
+  private static Logger logger = Logger.getInstance("#" + BuildGraph.class.getName());
   private Set<Node> allNodes = new HashSet<>();
 
   public BuildGraph(ProjectInfo projectInfo) {
@@ -55,7 +55,6 @@ public class BuildGraph {
   public Set<Node> getNodesByLevel(int level) {
     // Holds the current scope of build graph.
     Set<Node> results = getTargetRoots();
-
     for (int i = 0; i < level; i++) {
       Set<Node> dependencies = new HashSet<>();
       for (Node node : results) {
@@ -71,7 +70,8 @@ public class BuildGraph {
   }
 
   private Set<Node> getTargetRoots() {
-    return allNodes.stream().filter(Node::isTargetRoot).collect(Collectors.toSet());
+    Set<Node> targetRoots = allNodes.stream().filter(Node::isTargetRoot).collect(Collectors.toSet());
+    return targetRoots;
   }
 
   @Nullable
