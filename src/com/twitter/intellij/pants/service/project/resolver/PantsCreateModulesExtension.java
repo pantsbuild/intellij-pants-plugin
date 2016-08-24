@@ -25,6 +25,7 @@ import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -94,13 +95,21 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
       @Override
       public void run() {
         String result = Messages.showInputDialog(
-          String.format("Enter the level of transitive dependencies to import min: 0, max: %s", maxDepth),
+          String.format(
+            "Enter the level of transitive dependencies to import min: 0, max: %s.\n" +
+            "0: root level.\n" +
+            "1: up to direct dependency.\n" +
+            "%s: entire build graph", maxDepth, maxDepth
+          ),
           "Incremental Import",
-          null, //icon
+          PantsIcons.Icon, //icon
           String.valueOf(maxDepth),  //initial number
-          null  //validator
+          null //validator per keystroke, not necessary in this case.
         );
         depthToInclude = result == null ? null : Integer.valueOf(result);
+        if (depthToInclude == null || depthToInclude < 0 || depthToInclude > maxDepth) {
+          throw new PantsException("Invalid input");
+        }
       }
     }, ModalityState.NON_MODAL);
   }
