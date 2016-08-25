@@ -97,6 +97,26 @@ public class PantsResolver {
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     if (myProjectInfo == null) return;
 
+
+    LOG.debug("Amount of targets before modifiers: " + myProjectInfo.getTargets().size());
+    for (PantsProjectInfoModifierExtension modifier : PantsProjectInfoModifierExtension.EP_NAME.getExtensions()) {
+      modifier.modify(myProjectInfo, myExecutor, LOG);
+    }
+    LOG.debug("Amount of targets after modifiers: " + myProjectInfo.getTargets().size());
+
+    Optional<BuildGraph> buildGraph = constructBuildGraph(projectInfoDataNode);
+
+    final Map<String, DataNode<ModuleData>> modules = new HashMap<>();
+    for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
+      resolver.resolve(myProjectInfo, myExecutor, projectInfoDataNode, modules, buildGraph);
+    }
+    if (LOG.isDebugEnabled()) {
+      final int amountOfModules = PantsUtil.findChildren(projectInfoDataNode, ProjectKeys.MODULE).size();
+      LOG.debug("Amount of modules created: " + amountOfModules);
+    }
+  }
+
+  private Optional<BuildGraph> constructBuildGraph(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     Optional<BuildGraph> buildGraph;
     if (myExecutor.getOptions().isEnableIncrementalImport()) {
       Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(projectInfoDataNode.getData().getLinkedExternalProjectPath());
@@ -111,20 +131,6 @@ public class PantsResolver {
     else {
       buildGraph = Optional.empty();
     }
-
-    LOG.debug("Amount of targets before modifiers: " + myProjectInfo.getTargets().size());
-    for (PantsProjectInfoModifierExtension modifier : PantsProjectInfoModifierExtension.EP_NAME.getExtensions()) {
-      modifier.modify(myProjectInfo, myExecutor, LOG);
-    }
-    LOG.debug("Amount of targets after modifiers: " + myProjectInfo.getTargets().size());
-
-    final Map<String, DataNode<ModuleData>> modules = new HashMap<>();
-    for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
-      resolver.resolve(myProjectInfo, myExecutor, projectInfoDataNode, modules, buildGraph);
-    }
-    if (LOG.isDebugEnabled()) {
-      final int amountOfModules = PantsUtil.findChildren(projectInfoDataNode, ProjectKeys.MODULE).size();
-      LOG.debug("Amount of modules created: " + amountOfModules);
-    }
+    return buildGraph;
   }
 }

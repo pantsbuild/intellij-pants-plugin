@@ -4,8 +4,6 @@
 package com.twitter.intellij.pants.service.project.modifier;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.util.Function;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;

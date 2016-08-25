@@ -8,10 +8,11 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,18 +22,24 @@ public class BuildGraph {
 
   public BuildGraph(ProjectInfo projectInfo) {
     // add everybody in
-    for (TargetInfo targetinfo : projectInfo.getTargets().values()) {
-      allNodes.add(new Node(targetinfo));
-    }
+    allNodes.addAll(
+      projectInfo
+        .getTargets()
+        .entrySet()
+        .stream()
+        .map(Node::new)
+        .collect(Collectors.toList())
+    );
 
     // then process their relationships, dependencies and dependees
     for (Node node : allNodes) {
       Set<String> deps = node.getTargetInfo().getTargets();
       for (String dep : deps) {
-        Node depNode = getNode(dep);
-        if (depNode != null) {
-          node.addDependency(depNode);
-          depNode.addDepeedee(node);
+        // getNode is currently linear search.
+        Optional<Node> depNode = getNode(dep);
+        if (depNode.isPresent()) {
+          node.addDependency(depNode.get());
+          depNode.get().addDepeedee(node);
         }
         else {
           logger.error(String.format("No build graph node found for %s", dep));
@@ -70,19 +77,23 @@ public class BuildGraph {
   }
 
   private Set<Node> getTargetRoots() {
-    Set<Node> targetRoots = allNodes.stream().filter(Node::isTargetRoot).collect(Collectors.toSet());
-    return targetRoots;
+    return allNodes.stream().filter(Node::isTargetRoot).collect(Collectors.toSet());
   }
 
-  @Nullable
-  private Node getNode(String targetAddress) {
+  private Optional<Node> getNode(String targetAddress) {
     return allNodes.stream()
-      .filter(n -> n.containsTargetAddress(targetAddress)).findFirst().orElse(null);
+      .filter(n -> n.getAddress().equals(targetAddress))
+      .findFirst();
   }
 
   public class Node {
     private TargetInfo myTargetInfo;
 
+    public String getAddress() {
+      return address;
+    }
+
+    private String address; // could be synthetic and tweaked by modifiers.
     public Set<Node> getDependencies() {
       return myDependencies;
     }
@@ -94,8 +105,9 @@ public class BuildGraph {
       return myTargetInfo;
     }
 
-    public Node(TargetInfo targetInfo) {
-      myTargetInfo = targetInfo;
+    public Node(Map.Entry<String, TargetInfo> entrySet) {
+      address = entrySet.getKey();
+      myTargetInfo = entrySet.getValue();
     }
 
     public boolean containsTargetAddress(String targetAddress) {
