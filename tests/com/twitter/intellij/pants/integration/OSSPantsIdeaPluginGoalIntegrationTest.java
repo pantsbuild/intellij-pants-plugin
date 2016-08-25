@@ -63,7 +63,7 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     assertNotNull(files);
     Optional<String> iprFile = Arrays.stream(files)
       .map(File::getPath)
-      .filter(s -> s.contains(ProjectFileType.DOT_DEFAULT_EXTENSION))
+      .filter(s -> s.endsWith(ProjectFileType.DOT_DEFAULT_EXTENSION))
       .findFirst();
     assertTrue(iprFile.isPresent());
 
