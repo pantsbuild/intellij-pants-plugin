@@ -51,13 +51,17 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
     Set<TargetInfo> targetInfoWithinLevel = null;
     if (buildGraph.isPresent()) {
       final int maxDepth = buildGraph.get().getMaxDepth();
-      getDepthFromUser(maxDepth);
+      getDepthToImportFromUser(maxDepth);
       if (depthToInclude == null) {
         throw new PantsException("Task cancelled");
       }
       logger.info(String.format("TargetInfo level %s", depthToInclude));
-      targetInfoWithinLevel =
-        buildGraph.get().getNodesByLevel(depthToInclude).stream().map(BuildGraph.Node::getTargetInfo).collect(Collectors.toSet());
+      targetInfoWithinLevel = buildGraph
+        .get()
+        .getNodesByLevel(depthToInclude)
+        .stream()
+        .map(BuildGraph.Node::getTargetInfo)
+        .collect(Collectors.toSet());
     }
 
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
@@ -78,7 +82,6 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
         LOG.debug("Skipping " + targetName + " because it is a jar");
         continue;
       }
-
       final DataNode<ModuleData> moduleData =
         createModuleData(
           projectDataNode,
@@ -90,7 +93,7 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
     }
   }
 
-  private void getDepthFromUser(final int maxDepth) {
+  private void getDepthToImportFromUser(final int maxDepth) {
     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
       @Override
       public void run() {
