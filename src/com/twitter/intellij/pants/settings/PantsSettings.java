@@ -164,7 +164,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     public void setEnableIncrementalImport(boolean myEnableIncrementalImport) {
       myEnableIncrementalImport = myEnableIncrementalImport;
     }
-    
+
     public void setLinkedExternalProjectsSettings(Set<PantsProjectSettings> settings) {
       myLinkedExternalProjectsSettings = settings;
     }
