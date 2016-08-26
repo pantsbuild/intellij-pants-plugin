@@ -76,10 +76,12 @@ public class PantsResolver {
     @NotNull Consumer<String> statusConsumer,
     @Nullable ProcessAdapter processAdapter
   ) {
-    String previousPantsExportResult = PantsIncrementalImportManager.getPantsExportResult(projectId);
-    if (isEnableIncrementalImport && previousPantsExportResult != null) {
-      parse(previousPantsExportResult);
-      return;
+    if (projectId != null) {
+      String previousPantsExportResult = PantsIncrementalImportManager.getPantsExportResult(projectId);
+      if (isEnableIncrementalImport && previousPantsExportResult != null) {
+        parse(previousPantsExportResult);
+        return;
+      }
     }
 
     try {
