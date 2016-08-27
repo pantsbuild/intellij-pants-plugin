@@ -26,7 +26,7 @@ public class ResolveIntegrationTest extends OSSPantsIntegrationTest {
     doImport("intellij-integration/extras/");
     String testModuleName = "intellij-integration_extras_src_test_java_java";
     String resourceModuleName = "intellij-integration_extras_src_test_java_resources";
-    String commonModuleName = "_intellij-integration_extras_src_test_java__common_sources";
+    String commonModuleName = "intellij-integration_extras_src_test_java_common_sources";
     assertModules(
       testModuleName,
       resourceModuleName,

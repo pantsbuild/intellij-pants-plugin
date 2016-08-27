@@ -6,27 +6,23 @@ package com.twitter.intellij.pants.service.project.modifier;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Factory;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
-import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierExtension {
   public static final String COMMON_SOURCES_TARGET_NAME = "common_sources";
@@ -96,7 +92,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
   @NotNull
   private String createTargetAddressForCommonSource(@NotNull String projectPath, @NotNull SourceRoot originalSourceRoot) {
     final String commonPath = originalSourceRoot.getRawSourceRoot();
-    final String relativePath = commonPath.substring(projectPath.length());
+    final String relativePath = Paths.get(projectPath).relativize(Paths.get(commonPath)).toString();
     return relativePath + ":" + COMMON_SOURCES_TARGET_NAME;
   }
 
