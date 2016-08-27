@@ -45,7 +45,6 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     if (sourceRoot2Targets.isEmpty()) {
       return;
     }
-    final String pantsWorkingDirPath = findPantsWorkingDirPath(sourceRoot2Targets);
 
     for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
       final List<Pair<String, TargetInfo>> targetNameAndInfos = entry.getValue();
@@ -55,7 +54,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
       }
 
       final Pair<String, TargetInfo> commonTargetNameAndInfo =
-        createTargetForCommonSourceRoot(pantsWorkingDirPath, targetNameAndInfos, commonSourceRoot);
+        createTargetForCommonSourceRoot(executor.getWorkingDir().getPath(), targetNameAndInfos, commonSourceRoot);
 
       projectInfo.addTarget(commonTargetNameAndInfo.getFirst(), commonTargetNameAndInfo.getSecond());
       for (Pair<String, TargetInfo> nameAndInfo : targetNameAndInfos) {
@@ -81,21 +80,6 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
       }
     }
     return result;
-  }
-
-  @NotNull
-  private String findPantsWorkingDirPath(@NotNull Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets) {
-    Optional<Optional<VirtualFile>> buildRoot = sourceRoot2Targets.keySet().stream()
-      .map(SourceRoot::getRawSourceRoot)
-      .map(PantsUtil::findBuildRoot)
-      .filter(Optional::isPresent)
-      .findFirst();
-
-    if (buildRoot.isPresent() && buildRoot.get().isPresent()) {
-      return buildRoot.get().get().getPath();
-    }
-
-    throw new PantsException(("Cannot find build root"));
   }
 
   @NotNull
