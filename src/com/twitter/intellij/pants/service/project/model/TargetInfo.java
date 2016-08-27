@@ -137,9 +137,14 @@ public class TargetInfo {
     // the type of common module should be in the order of
     // source -> test source -> resource -> test resources. (like Ranked Value in Pants options)
     // e.g. if source and resources get combined, the common module should be source type.
-    Set<PantsSourceType> allTypes =
-      getAddressInfos().stream().map(s -> PantsUtil.getSourceTypeForTargetType(s.getTargetType())).collect(Collectors.toSet());
-    Optional<PantsSourceType> topRankedType = Arrays.stream(PantsSourceType.values()).filter(allTypes::contains).findFirst();
+    Set<PantsSourceType> allTypes = getAddressInfos().stream()
+      .map(s -> PantsUtil.getSourceTypeForTargetType(s.getTargetType()))
+      .collect(Collectors.toSet());
+
+    Optional<PantsSourceType> topRankedType = Arrays.stream(PantsSourceType.values())
+      .filter(allTypes::contains)
+      .findFirst();
+
     if (topRankedType.isPresent()) {
       return topRankedType.get();
     }
