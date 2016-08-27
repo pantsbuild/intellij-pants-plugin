@@ -50,7 +50,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     // Make sure only the 2 dummies targets are compiled.
     assertContainsSubstring(
-      makeModules("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), "Compiling 2 targets");
+      makeModules("testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), "Compiling 2 targets");
 
     // makeProject() will result all 3 targets to be compiled.
     assertContainsSubstring(makeProject(), "Compiling 3 targets");

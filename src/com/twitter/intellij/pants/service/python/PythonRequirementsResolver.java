@@ -76,7 +76,7 @@ public class PythonRequirementsResolver implements PantsResolverExtension {
       ModuleTypeId.JAVA_MODULE,
       moduleName,
       projectDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
-      new File(executor.getWorkingDir(), moduleName).getAbsolutePath()
+      new File(executor.getBuildRoot(), moduleName).getAbsolutePath()
     );
 
     final DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);

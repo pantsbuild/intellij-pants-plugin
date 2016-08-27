@@ -38,7 +38,7 @@ public class PantsCompileOptionsExecutor {
   private final List<Process> myProcesses = ContainerUtil.createConcurrentList();
 
   private final PantsCompileOptions myOptions;
-  private final File myWorkingDir;
+  private final File myBuildRoot;
   private final boolean myResolveSourcesAndDocsForJars;
 
   @NotNull
@@ -89,22 +89,22 @@ public class PantsCompileOptionsExecutor {
   }
 
   private PantsCompileOptionsExecutor(
-    @NotNull File workingDir,
+    @NotNull File buildRoot,
     @NotNull PantsCompileOptions compilerOptions,
     boolean resolveSourcesAndDocsForJars
   ) {
-    myWorkingDir = workingDir;
+    myBuildRoot = buildRoot;
     myOptions = compilerOptions;
     myResolveSourcesAndDocsForJars = resolveSourcesAndDocsForJars;
   }
 
   public String getProjectRelativePath() {
-    return PantsUtil.getRelativeProjectPath(getWorkingDir(), getProjectPath()).get();
+    return PantsUtil.getRelativeProjectPath(getBuildRoot(), getProjectPath()).get();
   }
 
   @NotNull
-  public File getWorkingDir() {
-    return myWorkingDir;
+  public File getBuildRoot() {
+    return myBuildRoot;
   }
 
   public String getProjectPath() {
@@ -262,7 +262,7 @@ public class PantsCompileOptionsExecutor {
   }
 
   public String getAbsolutePathFromWorkingDir(@NotNull String relativePath) {
-    return new File(getWorkingDir(), relativePath).getPath();
+    return new File(getBuildRoot(), relativePath).getPath();
   }
 
   private static class MyPantsCompileOptions implements PantsCompileOptions {
