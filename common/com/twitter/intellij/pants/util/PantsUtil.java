@@ -33,6 +33,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
+import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Condition;
@@ -238,12 +239,20 @@ public class PantsUtil {
     }
     final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
 
-    //  TODO: change flatMap to Optional::stream on JDK update
-    //  (see http://stackoverflow.com/questions/22725537/using-java-8s-optional-with-streamflatmap)
-    return Arrays.stream(rootManager.getContentRoots())
-      .map(PantsUtil::findBuildRoot)
-      .flatMap(file -> file.map(Stream::of).orElseGet(Stream::empty))
-      .findFirst();
+    for (VirtualFile contentRoot : rootManager.getContentRoots()) {
+      final Optional<VirtualFile> buildRoot = findBuildRoot(contentRoot);
+      if (buildRoot.isPresent()) {
+        return buildRoot;
+      }
+    }
+    for (ContentEntry contentEntry: rootManager.getContentEntries()) {
+      VirtualFile contentEntryFile = VirtualFileManager.getInstance().refreshAndFindFileByUrl(contentEntry.getUrl());
+      final Optional<VirtualFile> buildRoot = findBuildRoot(contentEntryFile);
+      if (buildRoot.isPresent()) {
+        return buildRoot;
+      }
+    }
+    return Optional.empty();
   }
 
   public static Optional<VirtualFile> findBuildRoot(@Nullable VirtualFile file) {
