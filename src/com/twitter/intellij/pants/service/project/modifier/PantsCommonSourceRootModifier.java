@@ -10,6 +10,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierExtension {
   public static final String COMMON_SOURCES_TARGET_NAME = "common_sources";
@@ -83,11 +85,17 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
 
   @NotNull
   private String findPantsWorkingDirPath(@NotNull Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets) {
-    final Set<Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>>> entries = sourceRoot2Targets.entrySet();
-    final String root = entries.iterator().next().getKey().getRawSourceRoot();
-    final Optional<VirtualFile> dir = entries.isEmpty() || StringUtil.isEmpty(root) ? Optional.empty() : PantsUtil.findBuildRoot(root);
+    Optional<Optional<VirtualFile>> buildRoot = sourceRoot2Targets.keySet().stream()
+      .map(SourceRoot::getRawSourceRoot)
+      .map(PantsUtil::findBuildRoot)
+      .filter(Optional::isPresent)
+      .findFirst();
 
-    return dir.map(VirtualFile::getPath).orElse("_");
+    if (buildRoot.isPresent() && buildRoot.get().isPresent()) {
+      return buildRoot.get().get().getPath();
+    }
+
+    throw new PantsException(("Cannot find build root"));
   }
 
   @NotNull
