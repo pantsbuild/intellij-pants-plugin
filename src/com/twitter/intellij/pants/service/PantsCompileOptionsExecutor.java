@@ -81,7 +81,7 @@ public class PantsCompileOptionsExecutor {
   @TestOnly
   public static PantsCompileOptionsExecutor createMock() {
     return new PantsCompileOptionsExecutor(
-      new File(""),
+      new File("/"),
       new MyPantsCompileOptions("", PantsExecutionSettings.createDefault()),
       true
     ) {
