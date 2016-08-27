@@ -26,6 +26,7 @@ junit_tests(
     'com/twitter/intellij/pants/quickfix/*.java',
     'com/twitter/intellij/pants/resolve/*.java',
     'com/twitter/intellij/pants/service/project/*.java',
+    'com/twitter/intellij/pants/service/project/model/*.java',
     'com/twitter/intellij/pants/service/util/*.java',
     'com/twitter/intellij/pants/util/*.java',
   )
