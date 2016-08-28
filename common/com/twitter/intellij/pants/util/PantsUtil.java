@@ -389,10 +389,10 @@ public class PantsUtil {
     // A source module module must either contain content root(s),
     // or depending on the module(s). Otherwise it can be a gen module
     // or 3rdparty module placeholder.
-    ModuleRootManager rootManagerForModule = ModuleRootManager.getInstance(module);
-    return rootManagerForModule.getDependencies().length > 0 ||
-           rootManagerForModule.getContentRoots().length > 0 ||
-           rootManagerForModule.getContentEntries().length > 0;
+    ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+    return moduleRootManager.getDependencies().length > 0 ||
+           moduleRootManager.getContentRoots().length > 0 ||
+           moduleRootManager.getContentEntries().length > 0;
   }
 
   @NotNull
