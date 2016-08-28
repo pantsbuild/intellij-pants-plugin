@@ -128,7 +128,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
       executor.getProjectName(),
-      executor.getWorkingDir().getPath() + "/.idea/pants-projects/" + executor.getProjectRelativePath(),
+      executor.getBuildRoot().getPath() + "/.idea/pants-projects/" + executor.getProjectRelativePath(),
       executor.getProjectPath()
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
@@ -155,8 +155,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
         );
         final DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
         final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, executor.getProjectDir());
-        if (FileUtil.filesEqual(executor.getWorkingDir(), new File(executor.getProjectPath()))) {
-          contentRoot.storePath(ExternalSystemSourceType.EXCLUDED, executor.getWorkingDir().getPath() + "/.idea");
+        if (FileUtil.filesEqual(executor.getBuildRoot(), new File(executor.getProjectPath()))) {
+          contentRoot.storePath(ExternalSystemSourceType.EXCLUDED, executor.getBuildRoot().getPath() + "/.idea");
         }
         moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
       }

@@ -73,7 +73,7 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
       ModuleTypeId.JAVA_MODULE,
       moduleName,
       projectInfoDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
-      new File(executor.getWorkingDir(), targetName).getAbsolutePath()
+      new File(executor.getBuildRoot(), targetName).getAbsolutePath()
     );
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);

@@ -5,16 +5,19 @@ package com.twitter.intellij.pants.service.project.model;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.model.*;
+import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsScalaUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class TargetInfo {
 
@@ -37,7 +40,7 @@ public class TargetInfo {
    */
   protected Set<SourceRoot> roots = Collections.emptySet();
 
-  public TargetInfo(TargetAddressInfo ...addressInfos) {
+  public TargetInfo(TargetAddressInfo... addressInfos) {
     setAddressInfos(ContainerUtil.newHashSet(addressInfos));
   }
 
@@ -130,9 +133,22 @@ public class TargetInfo {
 
   @NotNull
   public PantsSourceType getSourcesType() {
-    // todo: take it smarter
-    final Iterator<TargetAddressInfo> iterator = getAddressInfos().iterator();
-    return iterator.hasNext() ? PantsUtil.getSourceTypeForTargetType(iterator.next().getTargetType()) : PantsSourceType.SOURCE;
+    // In the case where multiple targets get combined into one module,
+    // the type of common module should be in the order of
+    // source -> test source -> resource -> test resources. (like Ranked Value in Pants options)
+    // e.g. if source and resources get combined, the common module should be source type.
+    Set<PantsSourceType> allTypes = getAddressInfos().stream()
+      .map(s -> PantsUtil.getSourceTypeForTargetType(s.getTargetType()))
+      .collect(Collectors.toSet());
+
+    Optional<PantsSourceType> topRankedType = Arrays.stream(PantsSourceType.values())
+      .filter(allTypes::contains)
+      .findFirst();
+
+    if (topRankedType.isPresent()) {
+      return topRankedType.get();
+    }
+    return PantsSourceType.SOURCE;
   }
 
   /**
