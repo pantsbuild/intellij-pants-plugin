@@ -8,6 +8,8 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
+import java.util.Optional;
+
 public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest {
   @Override
   protected String[] getRequiredPluginIds() {
@@ -19,9 +21,10 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertFirstSourcePartyModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
 
-    Pair<Boolean, String> result = pantsCompileModule("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
+    Pair<Boolean, Optional<String>> result = pantsCompileModule("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
     assertPantsCompileSuccess(result);
-    assertTrue(result.getSecond().contains("compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
+    assertTrue(result.getSecond().isPresent());
+    assertTrue(result.getSecond().get().contains("compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
     assertSuccessfulJUnitTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
     final OSProcessHandler processHandler = runJUnitTest(
@@ -46,9 +49,10 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     String failingTarget = "testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target";
     String matcherTarget = "testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher";
 
-    Pair<Boolean, String> result = pantsCompileModule("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
+    Pair<Boolean, Optional<String>> result = pantsCompileModule("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
     assertPantsCompileSuccess(result);
-    String output = result.getSecond();
+    assertTrue(result.getSecond().isPresent());
+    String output = result.getSecond().get();
     // Make sure only matcher target is compiled
     assertContainsSubstring(output, matcherTarget);
     assertNotContainsSubstring(output, passingTarget);
@@ -60,16 +64,16 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     // Make sure only the 2 dummies targets are compiled.
-    Pair<Boolean, String> resultB = pantsCompileModule("testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
-    String outputB = resultB.getSecond();
+    Pair<Boolean, Optional<String>>resultB = pantsCompileModule("testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
+    String outputB = resultB.getSecond().get();
     assertContainsSubstring(outputB, passingTarget);
     assertContainsSubstring(outputB, failingTarget);
     assertNotContainsSubstring(outputB, matcherTarget);
 
     // makeProject() will result all 3 targets to be compiled.
-    Pair<Boolean, String> resultC = pantsCompileProject();
+    Pair<Boolean, Optional<String>> resultC = pantsCompileProject();
     assertPantsCompileSuccess(resultC);
-    String outputC = resultC.getSecond();
+    String outputC = resultC.getSecond().get();
     assertContainsSubstring(outputC, passingTarget);
     assertContainsSubstring(outputC, failingTarget);
     assertContainsSubstring(outputC, matcherTarget);

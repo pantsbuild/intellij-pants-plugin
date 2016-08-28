@@ -204,14 +204,14 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     PantsSettings settings = PantsSettings.getInstance(myProject);
     settings.setUseIdeaProjectJdk(true);
-    Pair<Boolean, String> result = pantsCompileProject();
+    Pair<Boolean, Optional<String>> result = pantsCompileProject();
     assertPantsCompileSuccess(result);
-    assertContainsSubstring(result.getSecond(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
+    assertContainsSubstring(result.getSecond().get(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
 
     settings.setUseIdeaProjectJdk(false);
-    Pair<Boolean, String> resultB = pantsCompileProject();
+    Pair<Boolean, Optional<String>> resultB = pantsCompileProject();
     assertPantsCompileSuccess(result);
-    assertNotContainsSubstring(resultB.getSecond(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
+    assertNotContainsSubstring(resultB.getSecond().get(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {

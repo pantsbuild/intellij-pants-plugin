@@ -512,20 +512,20 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
-  protected Pair<Boolean, String> pantsCompileProject() {
+  protected Pair<Boolean, Optional<String>> pantsCompileProject() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
     return runner.executeTask(myProject);
   }
 
-  protected void assertPantsCompileSuccess(final Pair<Boolean, String> compileResult) {
+  protected void assertPantsCompileSuccess(final Pair<Boolean, Optional<String>> compileResult) {
     assertTrue("Compile failed", compileResult.getFirst());
   }
 
-  protected void assertPantsCompileFailure(final Pair<Boolean, String> compileResult) {
+  protected void assertPantsCompileFailure(final Pair<Boolean, Optional<String>> compileResult) {
     assertFalse("Compile succeeded, but should fail.", compileResult.getFirst());
   }
 
-  protected Pair<Boolean, String> pantsCompileModule(String... moduleNames) {
+  protected Pair<Boolean, Optional<String>> pantsCompileModule(String... moduleNames) {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
     return runner.executeTask(getModules(moduleNames));
   }

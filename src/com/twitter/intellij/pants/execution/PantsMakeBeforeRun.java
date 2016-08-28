@@ -153,22 +153,22 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Project currentProject = configuration.getProject();
     prepareIDE(currentProject);
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
-    Pair<Boolean, String> result = executeTask(currentProject, targetAddressesToCompile, false);
+    Pair<Boolean, Optional<String>> result = executeTask(currentProject, targetAddressesToCompile, false);
     return result.getFirst();
   }
 
-  public Pair<Boolean, String> executeTask(Project project) {
+  public Pair<Boolean, Optional<String>> executeTask(Project project) {
     return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), false);
   }
 
-  public Pair<Boolean, String> executeTask(@NotNull Module [] modules) {
+  public Pair<Boolean, Optional<String>> executeTask(@NotNull Module [] modules) {
     if (modules.length == 0) {
       return Pair.create(false, null);
     }
     return executeTask(modules[0].getProject(), getTargetAddressesToCompile(modules), false);
   }
 
-  public Pair<Boolean, String> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
+  public Pair<Boolean, Optional<String>> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
@@ -179,7 +179,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     if (!pantsExecutable1.isPresent()) {
       return Pair.create(
         false,
-        PantsBundle.message("pants.error.no.pants.executable.by.path", currentProject.getProjectFilePath())
+        Optional.of(
+          PantsBundle.message("pants.error.no.pants.executable.by.path", currentProject.getProjectFilePath())
+        )
       );
     }
     //String pantsExecutable = pantsExecutable1.getPath();
@@ -250,7 +252,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     // Sync files as generated sources may have changed after Pants compile.
     PantsUtil.synchronizeFiles();
     String finalOutString = String.join("", output);
-    Pair<Boolean, String> result = Pair.create(success, finalOutString);
+    Pair<Boolean, Optional<String>> result = Pair.create(success, Optional.of(finalOutString));
     return result;
   }
 
