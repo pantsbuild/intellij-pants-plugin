@@ -386,8 +386,8 @@ public class PantsUtil {
   }
 
   public static boolean isSourceModule(@NotNull Module module) {
-    // A source module module must either contain content root(s),
-    // or depending on the module(s). Otherwise it can be a gen module
+    // A source module must either contain content root(s),
+    // or depending on other module(s). Otherwise it can be a gen module
     // or 3rdparty module placeholder.
     ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
     return moduleRootManager.getDependencies().length > 0 ||
