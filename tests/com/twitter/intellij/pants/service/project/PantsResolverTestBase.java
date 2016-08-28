@@ -241,7 +241,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
       return this;
     }
 
-    public TargetInfoBuilder withRoot(@Nls String rootRelativePath, @Nullable String packagePrefix) {
+    public TargetInfoBuilder withRoot(@Nls String rootRelativePath, @NotNull String packagePrefix) {
       final File root = new File(new File(""), rootRelativePath);
       roots.add(new SourceRoot(root.getAbsolutePath(), packagePrefix));
       return this;

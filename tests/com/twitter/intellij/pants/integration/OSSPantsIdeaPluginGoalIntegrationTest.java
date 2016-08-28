@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.integration;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.ide.highlighter.ProjectFileType;
 import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.ModuleManager;
@@ -20,6 +21,8 @@ import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Optional;
 
 
 public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTest {
@@ -51,9 +54,19 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     );
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertEquals(commandLine.toString() + " failed", 0, cmdOutput.getExitCode());
+    // `outputFile` contains the path to the project directory.
     String projectDir = FileUtil.loadFile(outputFile);
 
-    myProject = ProjectUtil.openProject(projectDir + "/project.ipr", myProject, false);
+    // Search the directory for ipr file.
+    File[] files = new File(projectDir).listFiles();
+    assertNotNull(files);
+    Optional<String> iprFile = Arrays.stream(files)
+      .map(File::getPath)
+      .filter(s -> s.endsWith(ProjectFileType.DOT_DEFAULT_EXTENSION))
+      .findFirst();
+    assertTrue(iprFile.isPresent());
+
+    myProject = ProjectUtil.openProject(iprFile.get(), myProject, false);
     // Invoke post startup activities.
     UIUtil.dispatchAllInvocationEvents();
     /**

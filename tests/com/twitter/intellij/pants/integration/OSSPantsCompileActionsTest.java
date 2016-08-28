@@ -64,8 +64,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
 
   public void testCompileAllTargetsInModuleAction() throws Throwable {
     doImport("testprojects/src/java/org/pantsbuild/testproject/junit");
-    assertModuleExists("_testprojects_src_java_org_pantsbuild_testproject_junit_testscope_common_sources");
-    Module module = getModule("_testprojects_src_java_org_pantsbuild_testproject_junit_testscope_common_sources");
+    Module module = getModule("testprojects_src_java_org_pantsbuild_testproject_junit_testscope_common_sources");
     PantsCompileAllTargetsInModuleAction compileAllTargetsInModuleAction = new PantsCompileAllTargetsInModuleAction(module);
     Set<String> targetAddresses = compileAllTargetsInModuleAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
     Set<String> expectedTargets = new HashSet<>(Arrays.asList(
