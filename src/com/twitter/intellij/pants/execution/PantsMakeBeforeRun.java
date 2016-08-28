@@ -184,7 +184,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         )
       );
     }
-    //String pantsExecutable = pantsExecutable1.getPath();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable1.get().getPath());
 
     showPantsMakeTaskMessage("Checking Pants options...", NotificationCategory.INFO, currentProject);

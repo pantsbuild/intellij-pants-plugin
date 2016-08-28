@@ -15,6 +15,7 @@ import java.util.LinkedList;
  */
 public class PantsNotificationWrapper {
   private static final LinkedList<String> log = new LinkedList<>();
+  private static int LIMIT = 200;
 
   public static LinkedList<String> getLog() {
     return log;
@@ -22,7 +23,7 @@ public class PantsNotificationWrapper {
 
   public static void notify(@NotNull final Notification notification) {
     log.add(notification.getContent());
-    if (log.size() > 200) {
+    if (log.size() > LIMIT) {
       log.removeFirst();
     }
     Notifications.Bus.notify(notification);
