@@ -60,7 +60,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     // Make sure only the 2 dummies targets are compiled.
-    Pair<Boolean, String> resultB = pantsCompileModule("_testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
+    Pair<Boolean, String> resultB = pantsCompileModule("testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
     String outputB = resultB.getSecond();
     assertContainsSubstring(outputB, passingTarget);
     assertContainsSubstring(outputB, failingTarget);
