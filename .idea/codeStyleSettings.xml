@@ -19,8 +19,8 @@
         <option name="FIELD_NAME_PREFIX" value="my" />
         <option name="STATIC_FIELD_NAME_PREFIX" value="our" />
         <option name="PREFER_LONGER_NAMES" value="false" />
-        <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
-        <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+        <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="99" />
+        <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="99" />
         <option name="PACKAGES_TO_USE_IMPORT_ON_DEMAND">
           <value>
             <package name="java.awt" withSubpackages="false" static="false" />

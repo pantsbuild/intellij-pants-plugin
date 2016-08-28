@@ -163,7 +163,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public Pair<Boolean, Optional<String>> executeTask(@NotNull Module [] modules) {
     if (modules.length == 0) {
-      return Pair.create(false, null);
+      return Pair.create(false, Optional.empty());
     }
     return executeTask(modules[0].getProject(), getTargetAddressesToCompile(modules), false);
   }
@@ -172,7 +172,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
-      return Pair.create(true, null);
+      return Pair.create(true, Optional.empty());
     }
 
     Optional<VirtualFile> pantsExecutable1 = PantsUtil.findPantsExecutable(currentProject);
@@ -190,7 +190,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Optional<PantsOptions> pantsOptional = PantsOptions.getPantsOptions(currentProject);
     if (!pantsOptional.isPresent()) {
       showPantsMakeTaskMessage("Pants Options not found.", NotificationCategory.ERROR, currentProject);
-      return Pair.create(false, null);
+      return Pair.create(false, Optional.empty());
     }
 
     PantsOptions pantsOptions = pantsOptional.get();
@@ -215,7 +215,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       }
       catch (Exception e) {
         showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR, currentProject);
-        return Pair.create(false, null);
+        return Pair.create(false, Optional.empty());
       }
     }
 
@@ -231,7 +231,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
     catch (ExecutionException e) {
       showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR, currentProject);
-      return Pair.create(false, null);
+      return Pair.create(false, Optional.empty());
     }
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
