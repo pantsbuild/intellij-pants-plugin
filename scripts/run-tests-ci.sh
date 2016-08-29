@@ -21,6 +21,8 @@ fi
 popd
 popd
 
+cp -rf testData/dummy_repo .cache/
+
 args="test tests:${TEST_SET:-:} $(append_intellij_jvm_options test-junit) ${ADDITIONAL_ARGS:-$@}"
 
 echo "Running ./pants $args"

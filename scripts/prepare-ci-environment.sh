@@ -42,6 +42,7 @@ export SCALA_PLUGIN_MD5="8aad157a73234877dcbd1941eee705ea" #2016.2.0
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
 export OSS_PANTS_HOME="$CWD/.cache/pants"
+export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
 export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
 
 export IDEA_TEST_HOME="$CWD/.pants.d/intellij/plugins-sandbox/test"

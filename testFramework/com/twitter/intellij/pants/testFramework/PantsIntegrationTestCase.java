@@ -143,6 +143,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
   }
 
+  protected void passthruSetUpInWriteAction() throws Exception {
+    super.setUpInWriteAction();
+  }
+
   protected void cleanProjectRoot() throws ExecutionException, IOException {
     final File projectDir = new File(myProjectRoot.getPath());
     assertTrue(projectDir.exists());
