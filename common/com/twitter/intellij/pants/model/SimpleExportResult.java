@@ -94,8 +94,6 @@ public class SimpleExportResult {
     }
     catch (IOException | ExecutionException e) {
       // Fall-through to handle outside the block.
-      int x = 5;
-      System.out.println(e);
     }
     throw new PantsException("Failed:" + commandline.getCommandLineString());
   }
