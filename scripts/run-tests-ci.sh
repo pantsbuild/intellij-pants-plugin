@@ -6,6 +6,9 @@ if [[ $IJ_ULTIMATE == "true" ]]; then
   export TEST_SET='jvm-integration'
 fi
 
+rm -rf .cache/dummy_repo
+cp -r testData/dummy_repo .cache/
+
 rm -rf $IDEA_TEST_HOME
 mkdir -p $IDEA_TEST_HOME
 
@@ -20,9 +23,6 @@ else
 fi
 popd
 popd
-
-rm -rf .cache/dummy_repo
-cp -rf testData/dummy_repo .cache/
 
 args="test tests:${TEST_SET:-:} $(append_intellij_jvm_options test-junit) ${ADDITIONAL_ARGS:-$@}"
 
