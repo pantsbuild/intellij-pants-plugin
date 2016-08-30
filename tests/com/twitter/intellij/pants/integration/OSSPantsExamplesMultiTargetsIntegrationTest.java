@@ -9,7 +9,7 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
   public void testHelloJavaAndScala() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
 
-    assertProjectName("examples/src/java/org/pantsbuild/example/hello::");
+    assertProjectName("pants_examples/src/java/org/pantsbuild/example/hello::");
     assertModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",
       "examples_src_java_org_pantsbuild_example_hello_main_main",
@@ -25,7 +25,7 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
     );
 
     doImport("examples/src/scala/org/pantsbuild/example/hello/BUILD", "hello");
-    assertProjectName("examples/src/scala/org/pantsbuild/example/hello:hello");
+    assertProjectName("pants/examples/src/scala/org/pantsbuild/example/hello:hello");
 
     assertModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",

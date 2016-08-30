@@ -4,7 +4,10 @@
 package com.twitter.intellij.pants.integration;
 
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -22,13 +25,11 @@ import java.util.stream.Collectors;
 
 public class WholeRepoIntegrationTest extends OSSPantsIntegrationTest {
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-    myProjectRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(getProjectFolder());
-    assertNotNull(myProjectRoot);
-  }
-
+  //@Override
+  //public void setUp() throws Exception {
+  //  super.setUp();
+  //}
+  //
   @NotNull
   @Override
   protected File getProjectFolder() {
@@ -40,10 +41,19 @@ public class WholeRepoIntegrationTest extends OSSPantsIntegrationTest {
   @Override
   protected void setUpInWriteAction() throws Exception {
     super.passthruSetUpInWriteAction();
+    myProjectRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(getProjectFolder());
+    assertNotNull(myProjectRoot);
+
+    cleanProjectRoot();
+
+    //final Sdk sdk = JavaAwareProjectJdkTableImpl.getInstanceEx().getInternalJdk();
+    //ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
+
   }
 
-  public void testAbc() {
-    doImport("./");
-    assertProjectName("123");
+  public void testWholeRepo() throws Throwable {
+    //doImport("examples::");
+    doImport("");
+    assertProjectName("dummy_repo/.::");
   }
 }
