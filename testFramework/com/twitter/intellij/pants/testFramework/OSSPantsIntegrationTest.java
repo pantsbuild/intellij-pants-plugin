@@ -9,7 +9,6 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
 import com.intellij.openapi.util.text.StringUtil;
-import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -43,26 +42,25 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
   }
 
   protected void assertContainsSubstring(List<String> stringList, String expected) {
-    if (containsSubstring(stringList, expected)) {
+    assertContainsSubstring(StringUtil.join(stringList, ""), expected);
+  }
+
+  protected void assertContainsSubstring(String s, String expected) {
+    if (s.contains(expected)) {
       return;
     }
-    fail(String.format("String '%s' does not contain expected substring '%s'.", stringList.toString(), expected));
+    fail(String.format("String '%s' does not contain expected substring '%s'.", s, expected));
   }
 
   protected void assertNotContainsSubstring(List<String> stringList, String unexpected) {
-    if (!containsSubstring(stringList, unexpected)) {
+    assertNotContainsSubstring(StringUtil.join(stringList, ""), unexpected);
+  }
+
+  protected void assertNotContainsSubstring(String s, String unexpected) {
+    if (!s.contains(unexpected)) {
       return;
     }
-    fail(String.format("String '%s' contains unexpected substring '%s'.", stringList.toString(), unexpected));
-  }
-
-  private boolean containsSubstring(List<String> stringList, String subString) {
-    return stringList.stream().anyMatch(s -> s.contains(subString));
-  }
-
-  protected void assertCompileAll() {
-    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    assertTrue(runner.executeTask(myProject));
+    fail(String.format("String '%s' contains unexpected substring '%s'.", s, unexpected));
   }
 
   private List<BeforeRunTask> getBeforeRunTask(RunConfiguration configuration) {

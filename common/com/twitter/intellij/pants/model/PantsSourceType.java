@@ -7,6 +7,11 @@ import com.intellij.openapi.externalSystem.model.project.ExternalSystemSourceTyp
 import org.jetbrains.annotations.NotNull;
 
 public enum PantsSourceType {
+  /**
+   * Warning: do not change the order of the type declaration,
+   * because PantsSourceType.values() returns them in order and
+   * is depended on.
+   */
   SOURCE(ExternalSystemSourceType.SOURCE),
   TEST(ExternalSystemSourceType.TEST),
   RESOURCE(ExternalSystemSourceType.RESOURCE),

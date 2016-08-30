@@ -19,6 +19,7 @@ public class MetricsIntegrationTest extends OSSPantsIntegrationTest {
 
   @Override
   public void setUp() throws Exception {
+    System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE, "true");
     super.setUp();
     if (PantsMetrics.getMetricsImportDir() == null) {
       PantsMetrics.setMetricsImportDir("examples/src/java/org/pantsbuild/example/hello");
@@ -33,18 +34,19 @@ public class MetricsIntegrationTest extends OSSPantsIntegrationTest {
     String importDir = PantsMetrics.getMetricsImportDir();
     assertNotNull(importDir);
     doImport(importDir);
-
+    Thread.sleep(1000);
     PantsMetrics.report();
     String reportFilePath = PantsMetrics.getReportFilePath();
     assertNotNull(reportFilePath);
-    Map result = PantsUtil.gson.fromJson(new JsonReader(new FileReader(reportFilePath)), PantsUtil.TYPE_MAP_STRING_INTEGER);
-    assertTrue(0 <= (int) result.get("export_second"));
-    assertTrue(0 <= (int) result.get("load_second"));
-    assertTrue(0 <= (int) result.get("indexing_second"));
+    Map<String, Integer> result = PantsUtil.gson.fromJson(new JsonReader(new FileReader(reportFilePath)), PantsUtil.TYPE_MAP_STRING_INTEGER);
+    assertTrue(0 <= result.get("export_second"));
+    assertTrue(0 <= result.get("load_second"));
+    assertTrue(0 <= result.get("indexing_second"));
   }
 
   @Override
   public void tearDown() throws Exception {
+    System.clearProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE);
     if (tempDir != null) {
       FileUtil.delete(tempDir);
     }

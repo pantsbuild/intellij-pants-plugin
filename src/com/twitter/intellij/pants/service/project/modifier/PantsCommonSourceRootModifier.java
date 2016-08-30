@@ -6,25 +6,22 @@ package com.twitter.intellij.pants.service.project.modifier;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Factory;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
-import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierExtension {
   public static final String COMMON_SOURCES_TARGET_NAME = "common_sources";
@@ -43,7 +40,6 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     if (sourceRoot2Targets.isEmpty()) {
       return;
     }
-    final String pantsWorkingDirPath = findPantsWorkingDirPath(sourceRoot2Targets);
 
     for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
       final List<Pair<String, TargetInfo>> targetNameAndInfos = entry.getValue();
@@ -53,7 +49,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
       }
 
       final Pair<String, TargetInfo> commonTargetNameAndInfo =
-        createTargetForCommonSourceRoot(pantsWorkingDirPath, targetNameAndInfos, commonSourceRoot);
+        createTargetForCommonSourceRoot(executor.getBuildRoot().getPath(), targetNameAndInfos, commonSourceRoot);
 
       projectInfo.addTarget(commonTargetNameAndInfo.getFirst(), commonTargetNameAndInfo.getSecond());
       for (Pair<String, TargetInfo> nameAndInfo : targetNameAndInfos) {
@@ -82,21 +78,12 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
   }
 
   @NotNull
-  private String findPantsWorkingDirPath(@NotNull Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets) {
-    final Set<Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>>> entries = sourceRoot2Targets.entrySet();
-    final String root = entries.iterator().next().getKey().getRawSourceRoot();
-    final Optional<VirtualFile> dir = entries.isEmpty() || StringUtil.isEmpty(root) ? Optional.empty() : PantsUtil.findBuildRoot(root);
-
-    return dir.map(VirtualFile::getPath).orElse("_");
-  }
-
-  @NotNull
   private Pair<String, TargetInfo> createTargetForCommonSourceRoot(
-    @NotNull String path,
+    @NotNull String buildRoot,
     @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
     @NotNull SourceRoot originalSourceRoot
   ) {
-    final String commonTargetAddress = createTargetAddressForCommonSource(path, originalSourceRoot);
+    final String commonTargetAddress = createTargetAddressForCommonSource(buildRoot, originalSourceRoot);
     final TargetInfo commonInfo = createTargetForSourceRootUnioningDeps(targetNameAndInfos, originalSourceRoot);
     return Pair.create(commonTargetAddress, commonInfo);
   }
@@ -104,7 +91,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
   @NotNull
   private String createTargetAddressForCommonSource(@NotNull String projectPath, @NotNull SourceRoot originalSourceRoot) {
     final String commonPath = originalSourceRoot.getRawSourceRoot();
-    final String relativePath = commonPath.substring(projectPath.length());
+    final String relativePath = Paths.get(projectPath).relativize(Paths.get(commonPath)).toString();
     return relativePath + ":" + COMMON_SOURCES_TARGET_NAME;
   }
 
@@ -119,17 +106,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
       commonInfo = commonInfo.union(iterator.next().getSecond());
     }
     // make sure we won't have cyclic deps
-    commonInfo.getTargets().removeAll(
-      ContainerUtil.map(
-        targetNameAndInfos,
-        new Function<Pair<String, TargetInfo>, String>() {
-          @Override
-          public String fun(Pair<String, TargetInfo> info) {
-            return info.getFirst();
-          }
-        }
-      )
-    );
+    commonInfo.getTargets().removeAll(targetNameAndInfos.stream().map(s -> s.getFirst()).collect(Collectors.toSet()));
 
     final Set<SourceRoot> newRoots = ContainerUtil.newHashSet(originalSourceRoot);
     commonInfo.setRoots(newRoots);

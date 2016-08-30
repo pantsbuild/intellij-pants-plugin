@@ -5,7 +5,11 @@ package com.twitter.intellij.pants.service.project;
 
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.project.*;
+import com.intellij.openapi.externalSystem.model.project.ContentRootData;
+import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
+import com.intellij.openapi.externalSystem.model.project.ModuleDependencyData;
+import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
@@ -14,7 +18,10 @@ import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
-import com.twitter.intellij.pants.service.project.model.*;
+import com.twitter.intellij.pants.service.project.model.LibraryInfo;
+import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.service.project.model.SourceRoot;
+import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -23,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   private Map<String, TargetInfoBuilder> myInfoBuilders = null;
@@ -128,7 +135,8 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
       }
     );
     assertNotNull(
-      String.format("%s doesn't have a dependency %s in list %s", moduleName, dependencyName, actualDependencyNames.toString()), dependencyDataNode
+      String.format("%s doesn't have a dependency %s in list %s", moduleName, dependencyName, actualDependencyNames.toString()),
+      dependencyDataNode
     );
   }
 
@@ -168,14 +176,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
     assertModuleExists(moduleName, moduleNode);
     final Collection<DataNode<ContentRootData>> contentRoots = ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.CONTENT_ROOT);
-    final List<String> actualRootPaths = ContainerUtil.map(
-      contentRoots, new Function<DataNode<ContentRootData>, String>() {
-        @Override
-        public String fun(DataNode<ContentRootData> node) {
-          return node.getData().getRootPath();
-        }
-      }
-    );
+    final List<String> actualRootPaths = contentRoots.stream().map(s -> s.getData().getRootPath()).collect(Collectors.toList());
     List<String> expected = Arrays.asList(roots);
     Collections.sort(expected);
     Collections.sort(actualRootPaths);
@@ -195,39 +196,26 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   @Nullable
   public DataNode<LibraryDependencyData> findLibraryDependency(String moduleName, final String libraryId) {
     final DataNode<ModuleData> moduleNode = findModule(moduleName);
-    assertModuleExists(moduleName, moduleNode);
-    return ContainerUtil.find(
-      ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY),
-      new Condition<DataNode<LibraryDependencyData>>() {
-        @Override
-        public boolean value(DataNode<LibraryDependencyData> node) {
-          return StringUtil.equalsIgnoreCase(libraryId, node.getData().getExternalName());
-        }
-      }
-    );
+    return ExternalSystemApiUtil.findAll(moduleNode, ProjectKeys.LIBRARY_DEPENDENCY)
+      .stream()
+      .filter(node -> StringUtil.equalsIgnoreCase(libraryId, node.getData().getExternalName()))
+      .findFirst()
+      .orElse(null);
   }
 
   @Nullable
   private DataNode<ModuleData> findModule(final String moduleName) {
     final Collection<DataNode<ModuleData>> moduleNodes = ExternalSystemApiUtil.findAll(getProjectNode(), ProjectKeys.MODULE);
-    return ContainerUtil.find(
-      moduleNodes,
-      new Condition<DataNode<ModuleData>>() {
-        @Override
-        public boolean value(DataNode<ModuleData> node) {
-          return StringUtil.equalsIgnoreCase(moduleName, node.getData().getExternalName());
-        }
-      }
-    );
+    return moduleNodes.stream()
+      .filter(node -> StringUtil.equalsIgnoreCase(moduleName, node.getData().getExternalName()))
+      .findFirst()
+      .orElse(null);
   }
 
   public void assertModulesCreated(final String... expectedModules) {
     final Collection<DataNode<ModuleData>> moduleNodes = ExternalSystemApiUtil.findAll(getProjectNode(), ProjectKeys.MODULE);
-    final List<String> actualModules = new ArrayList<>();
-    for (DataNode<ModuleData> moduleDataDataNode : moduleNodes) {
-      actualModules.add(moduleDataDataNode.getData().getExternalName());
-    }
-    assertEquals(Arrays.asList(expectedModules), actualModules);
+    final Set<String> actualModules = moduleNodes.stream().map(n -> n.getData().getExternalName()).collect(Collectors.toSet());
+    assertEquals(Arrays.stream(expectedModules).collect(Collectors.toSet()), actualModules);
   }
 
   private static interface Builder<T> {

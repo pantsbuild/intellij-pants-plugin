@@ -78,10 +78,6 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
         LOG.debug("Skipping " + targetName + " because it is empty");
         continue;
       }
-      if (targetInfo.isJarLibrary()) {
-        LOG.debug("Skipping " + targetName + " because it is a jar");
-        continue;
-      }
       final DataNode<ModuleData> moduleData =
         createModuleData(
           projectDataNode,
@@ -132,7 +128,7 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
       ModuleTypeId.JAVA_MODULE,
       moduleName,
       projectInfoDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
-      new File(executor.getWorkingDir(), targetName).getAbsolutePath()
+      new File(executor.getBuildRoot(), targetName).getAbsolutePath()
     );
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);

@@ -33,7 +33,6 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     /**
      * Check whether Pants supports `idea-plugin` goal.
      */
-    PantsUtil.findPantsExecutable(getProjectFolder().getPath());
     final GeneralCommandLine commandLinePantsGoals = PantsUtil.defaultCommandLine(getProjectFolder().getPath());
     commandLinePantsGoals.addParameter("goals");
     final ProcessOutput cmdOutputGoals = PantsUtil.getCmdOutput(commandLinePantsGoals.withWorkDirectory(getProjectFolder()), null);

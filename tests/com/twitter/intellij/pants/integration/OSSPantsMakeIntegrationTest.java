@@ -31,7 +31,7 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
       null
     );
 
-    assertCompileAll();
+    assertPantsCompileSuccess(pantsCompileProject());
     assertSuccessfulJUnitTest(runConfiguration);
   }
 

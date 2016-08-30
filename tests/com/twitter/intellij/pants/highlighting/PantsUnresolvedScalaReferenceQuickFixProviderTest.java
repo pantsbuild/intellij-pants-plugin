@@ -19,7 +19,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
   public void testMissingDepsWhiteList() throws Throwable {
     doImport("intellij-integration/src/scala/org/pantsbuild/testproject/missingdepswhitelist");
 
-    assertModules(
+    assertFirstSourcePartyModules(
       "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist_missingdepswhitelist",
       "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
       "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
@@ -33,8 +33,13 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     final AddPantsTargetDependencyFix intention = findIntention(info, AddPantsTargetDependencyFix.class);
     assertNotNull(intention);
 
-    assertModuleModuleDeps("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
-    assertCompilationFailed("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertModuleModuleDeps(
+      "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
+      "___scala-library-synthetic"
+    );
+    assertPantsCompileFailure(
+      pantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2")
+    );
 
     /**
      * Make sure after the missing dependency is fixed, the module can make successfully.
@@ -51,8 +56,11 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
 
     assertModuleModuleDeps(
       "intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2",
+      "___scala-library-synthetic",
       "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
-    makeModules("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2");
+    assertPantsCompileSuccess(
+      pantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2")
+    );
   }
 }
