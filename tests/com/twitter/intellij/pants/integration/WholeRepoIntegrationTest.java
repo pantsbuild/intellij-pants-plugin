@@ -22,7 +22,7 @@ public class WholeRepoIntegrationTest extends OSSPantsIntegrationTest {
 
   @Override
   protected void setUpInWriteAction() throws Exception {
-    super.passthruSetUpInWriteAction();
+    super.passthroughSetUpInWriteAction();
     myProjectRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(getProjectFolder());
     assertNotNull(myProjectRoot);
   }

@@ -144,7 +144,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
   }
 
-  protected void passthruSetUpInWriteAction() throws Exception {
+  protected void passthroughSetUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
   }
 
