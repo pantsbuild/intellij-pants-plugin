@@ -126,8 +126,7 @@ public class PantsCompileOptionsExecutor {
     List<String> buildRootPrefixedSpecs = myOptions.getTargetSpecs().stream()
       .map(s -> buildRootName + File.separator + s)
       .collect(Collectors.toList());
-    //return String.join("__", buildRootPrefixedSpecs);
-    return "123";
+    return String.join("__", buildRootPrefixedSpecs);
   }
 
   @NotNull
