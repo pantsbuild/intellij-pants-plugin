@@ -25,7 +25,6 @@ public class WholeRepoIntegrationTest extends OSSPantsIntegrationTest {
     super.passthroughSetUpInWriteAction();
     myProjectRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(getProjectFolder());
     assertNotNull(myProjectRoot);
-    cleanProjectRoot();
   }
 
   public void testWholeRepo() throws Throwable {
