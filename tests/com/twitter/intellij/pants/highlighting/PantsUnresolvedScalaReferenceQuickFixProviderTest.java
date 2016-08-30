@@ -16,7 +16,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     return ArrayUtil.append(super.getRequiredPluginIds(), "PythonCore");
   }
 
-  public void testMissingDepsWhiteList() throws Throwable {
+  public void testScalaMissingDepsWhiteList() throws Throwable {
     doImport("intellij-integration/src/scala/org/pantsbuild/testproject/missingdepswhitelist");
 
     assertModules(
