@@ -40,7 +40,7 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
       return;
     }
     final Optional<String> projectPath = Optional.ofNullable(JDOMExternalizerUtil.readField(projectSettings, EXTERNAL_PROJECT_PATH));
-    final Optional<File> pantsExecutable = projectPath.flatMap(path -> PantsUtil.findPantsExecutable(Optional.of(new File(path))));
+    final Optional<File> pantsExecutable = projectPath.flatMap(path -> PantsUtil.findPantsExecutable(new File(path)));
     if (!pantsExecutable.isPresent()) {
       return;
     }

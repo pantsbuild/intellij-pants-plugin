@@ -159,39 +159,15 @@ public class TargetInfo {
   }
 
   public boolean isJarLibrary() {
-    return PantsUtil.forall(
-      getAddressInfos(),
-      new Condition<TargetAddressInfo>() {
-        @Override
-        public boolean value(TargetAddressInfo info) {
-          return info.isJarLibrary();
-        }
-      }
-    );
+    return getAddressInfos().stream().allMatch(TargetAddressInfo::isJarLibrary);
   }
 
   public boolean isScalaTarget() {
-    return ContainerUtil.exists(
-      getAddressInfos(),
-      new Condition<TargetAddressInfo>() {
-        @Override
-        public boolean value(TargetAddressInfo info) {
-          return info.isScala();
-        }
-      }
-    );
+    return getAddressInfos().stream().anyMatch(TargetAddressInfo::isScala);
   }
 
   public boolean isPythonTarget() {
-    return ContainerUtil.exists(
-      getAddressInfos(),
-      new Condition<TargetAddressInfo>() {
-        @Override
-        public boolean value(TargetAddressInfo info) {
-          return info.isPython();
-        }
-      }
-    );
+    return getAddressInfos().stream().anyMatch(TargetAddressInfo::isPython);
   }
 
   public boolean dependOn(@NotNull String targetName) {

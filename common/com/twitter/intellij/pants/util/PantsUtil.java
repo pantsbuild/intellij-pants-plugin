@@ -40,6 +40,7 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -215,7 +216,7 @@ public class PantsUtil {
   }
 
   public static Optional<File> findBuildRoot(@NotNull File file) {
-    return findPantsExecutable(Optional.of(file)).map(File::getParentFile);
+    return findPantsExecutable(file).map(File::getParentFile);
   }
 
   public static Optional<VirtualFile> findBuildRoot(@NotNull String filePath) {
@@ -223,7 +224,13 @@ public class PantsUtil {
   }
 
   public static Optional<VirtualFile> findBuildRoot(@NotNull Project project) {
-    return findBuildRoot(project.getProjectFile());
+    for (Module module : ModuleManager.getInstance(project).getModules()) {
+      Optional<VirtualFile> buildRoot = findBuildRoot(module);
+      if (buildRoot.isPresent()) {
+        return buildRoot;
+      }
+    }
+    return Optional.empty();
   }
 
   public static Optional<VirtualFile> findBuildRoot(@NotNull PsiFile psiFile) {
@@ -237,7 +244,6 @@ public class PantsUtil {
       return findBuildRoot(moduleFile);
     }
     final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-
     for (VirtualFile contentRoot : rootManager.getContentRoots()) {
       final Optional<VirtualFile> buildRoot = findBuildRoot(contentRoot);
       if (buildRoot.isPresent()) {
@@ -258,21 +264,18 @@ public class PantsUtil {
     return findPantsExecutable(file).map(VirtualFile::getParent);
   }
 
-  public static Optional<VirtualFile> findDistExportClasspathDirectory(@NotNull Module module) {
-    final Optional<VirtualFile> buildRoot = findBuildRoot(module);
-    return buildRoot.flatMap(file -> Optional.ofNullable(VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" +
-                                                                                                                  file.getPath() +
-                                                                                                                  "/dist/export-classpath")));
-  }
-
-  public static Optional<VirtualFile> findProjectManifestJar(@NotNull Project myProject) {
-    Module[] modules = ModuleManager.getInstance(myProject).getModules();
-    if (modules.length == 0) {
+  public static Optional<VirtualFile> findDistExportClasspathDirectory(@NotNull Project project) {
+    Optional<VirtualFile> buildRoot = findBuildRoot(project);
+    if (!buildRoot.isPresent()) {
       return Optional.empty();
     }
-    Module moduleSample = modules[0];
+    return Optional.ofNullable(
+      VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.get().getPath() + "/dist/export-classpath")
+    );
+  }
 
-    Optional<VirtualFile> classpathDir = findDistExportClasspathDirectory(moduleSample);
+  public static Optional<VirtualFile> findProjectManifestJar(@NotNull Project project) {
+    Optional<VirtualFile> classpathDir = findDistExportClasspathDirectory(project);
     return classpathDir.flatMap(
       file -> {
         String manifestUrl = file.getUrl() + "/manifest.jar";
@@ -290,7 +293,7 @@ public class PantsUtil {
   }
 
   public static GeneralCommandLine defaultCommandLine(@NotNull String projectPath) throws PantsException {
-    final Optional<File> pantsExecutable = findPantsExecutable(Optional.of(new File(projectPath)));
+    final Optional<File> pantsExecutable = findPantsExecutable(new File(projectPath));
     return defaultCommandLine(pantsExecutable.orElseThrow(() -> new PantsException("Couldn't find pants executable for: " + projectPath)));
   }
 
@@ -373,7 +376,23 @@ public class PantsUtil {
 
   @NotNull
   public static List<String> getNonGenTargetAddresses(@Nullable Module module) {
+    if (module == null) {
+      return Collections.emptyList();
+    }
+    if (!isSourceModule(module)) {
+      return Collections.emptyList();
+    }
     return getNonGenTargetAddresses(getTargetAddressesFromModule(module));
+  }
+
+  public static boolean isSourceModule(@NotNull Module module) {
+    // A source module must either contain content root(s),
+    // or depending on other module(s). Otherwise it can be a gen module
+    // or 3rdparty module placeholder.
+    ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+    return moduleRootManager.getDependencies().length > 0 ||
+           moduleRootManager.getContentRoots().length > 0 ||
+           moduleRootManager.getContentEntries().length > 0;
   }
 
   @NotNull
@@ -621,16 +640,6 @@ public class PantsUtil {
     return name.substring(0, index);
   }
 
-  @Contract(pure = true)
-  public static <T> boolean forall(@NotNull Iterable<T> iterable, @NotNull Condition<T> condition) {
-    for (T value : iterable) {
-      if (!condition.value(value)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   @NotNull
   public static <T> List<T> findChildren(@NotNull DataNode<?> dataNode, @NotNull Key<T> key) {
     return ContainerUtil.mapNotNull(
@@ -797,30 +806,26 @@ public class PantsUtil {
     if (modules.length == 0) {
       throw new PantsException("No module found in project.");
     }
-    Module moduleSample = modules[0];
-    Optional<VirtualFile> buildRoot = findBuildRoot(moduleSample);
-    return buildRoot.flatMap(PantsUtil::findPantsExecutable);
+    for (Module module : modules) {
+      Optional<VirtualFile> buildRoot = findBuildRoot(module);
+      if (buildRoot.isPresent()) {
+        return findPantsExecutable(buildRoot.get());
+      }
+    }
+    return Optional.empty();
   }
 
   public static Optional<VirtualFile> findPantsExecutable(@NotNull String projectPath) {
-    // guard against VirtualFileManager throwing an NPE in tests that don't stand up an IDEA instance
-    if (ApplicationManager.getApplication() == null) {
-      return Optional.empty();
-    }
-    final VirtualFile buildFile = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
+    final VirtualFile buildFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(projectPath);
     return findPantsExecutable(buildFile);
   }
 
-  public static Optional<File> findPantsExecutable(Optional<File> file) {
-    return file.flatMap(f -> {
-      if (f.isDirectory()) {
-        final File pantsFile = new File(f, PantsConstants.PANTS);
-        if (pantsFile.exists() && !pantsFile.isDirectory()) {
-          return Optional.of(pantsFile);
-        }
-      }
-      return findPantsExecutable(Optional.ofNullable(f.getParentFile()));
-    });
+  public static Optional<File> findPantsExecutable(@NotNull File file) {
+    Optional<VirtualFile> vf = findPantsExecutable(LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file));
+    if (!vf.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(new File(vf.get().getPath()));
   }
 
   private static Optional<VirtualFile> findPantsExecutable(@Nullable VirtualFile file) {

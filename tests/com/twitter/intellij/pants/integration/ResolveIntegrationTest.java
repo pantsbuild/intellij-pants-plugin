@@ -27,7 +27,7 @@ public class ResolveIntegrationTest extends OSSPantsIntegrationTest {
     String testModuleName = "intellij-integration_extras_src_test_java_java";
     String resourceModuleName = "intellij-integration_extras_src_test_java_resources";
     String commonModuleName = "intellij-integration_extras_src_test_java_common_sources";
-    assertModules(
+    assertFirstSourcePartyModules(
       testModuleName,
       resourceModuleName,
       commonModuleName,

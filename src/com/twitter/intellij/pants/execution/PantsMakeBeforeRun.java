@@ -34,8 +34,10 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -46,8 +48,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 
 import javax.swing.Icon;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -149,28 +153,44 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Project currentProject = configuration.getProject();
     prepareIDE(currentProject);
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
-    return executeTask(currentProject, targetAddressesToCompile, false);
+    Pair<Boolean, Optional<String>> result = executeTask(currentProject, targetAddressesToCompile, false);
+    return result.getFirst();
   }
 
-  public boolean executeTask(Project project) {
+  public Pair<Boolean, Optional<String>> executeTask(Project project) {
     return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), false);
   }
 
-  public boolean executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
+  public Pair<Boolean, Optional<String>> executeTask(@NotNull Module [] modules) {
+    if (modules.length == 0) {
+      return Pair.create(false, Optional.empty());
+    }
+    return executeTask(modules[0].getProject(), getTargetAddressesToCompile(modules), false);
+  }
+
+  public Pair<Boolean, Optional<String>> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
-      return true;
+      return Pair.create(true, Optional.empty());
     }
 
-    String pantsExecutable = PantsUtil.findPantsExecutable(currentProject).get().getPath();
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable);
+    Optional<VirtualFile> pantsExecutable1 = PantsUtil.findPantsExecutable(currentProject);
+    if (!pantsExecutable1.isPresent()) {
+      return Pair.create(
+        false,
+        Optional.of(
+          PantsBundle.message("pants.error.no.pants.executable.by.path", currentProject.getProjectFilePath())
+        )
+      );
+    }
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable1.get().getPath());
 
     showPantsMakeTaskMessage("Checking Pants options...", NotificationCategory.INFO, currentProject);
     Optional<PantsOptions> pantsOptional = PantsOptions.getPantsOptions(currentProject);
     if (!pantsOptional.isPresent()) {
       showPantsMakeTaskMessage("Pants Options not found.", NotificationCategory.ERROR, currentProject);
-      return false;
+      return Pair.create(false, Optional.empty());
     }
 
     PantsOptions pantsOptions = pantsOptional.get();
@@ -195,7 +215,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       }
       catch (Exception e) {
         showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR, currentProject);
-        return false;
+        return Pair.create(false, Optional.empty());
       }
     }
 
@@ -211,18 +231,28 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
     catch (ExecutionException e) {
       showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR, currentProject);
-      return false;
+      return Pair.create(false, Optional.empty());
     }
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
     addMessageHandler(processHandler, currentProject);
+    final List<String> output = new ArrayList<>();
+    processHandler.addProcessListener(new ProcessAdapter() {
+      @Override
+      public void onTextAvailable(ProcessEvent event, Key outputType) {
+        super.onTextAvailable(event, outputType);
+        output.add(event.getText());
+      }
+    });
     processHandler.runProcess();
 
     final boolean success = process.exitValue() == 0;
     notifyCompileResult(success);
     // Sync files as generated sources may have changed after Pants compile.
     PantsUtil.synchronizeFiles();
-    return success;
+    String finalOutString = String.join("", output);
+    Pair<Boolean, Optional<String>> result = Pair.create(success, Optional.of(finalOutString));
+    return result;
   }
 
   private void notifyCompileResult(final boolean success) {

@@ -12,7 +12,6 @@ import com.intellij.openapi.externalSystem.model.project.LibraryPathType;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
@@ -33,8 +32,6 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
     @NotNull DataNode<ProjectData> projectDataNode,
     @NotNull Map<String, DataNode<ModuleData>> modules
   ) {
-    final Map<String, LibraryData> idToLibraryData = ContainerUtilRt.newHashMap();
-
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
       final TargetInfo targetInfo = entry.getValue();
       if (!targetInfo.isJarLibrary()) {
@@ -60,31 +57,16 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
         }
       }
 
-      idToLibraryData.put(jarTarget, libraryData);
       projectDataNode.createChild(ProjectKeys.LIBRARY, libraryData);
-    }
+      final DataNode<ModuleData> moduleDataNode = modules.get(jarTarget);
 
-    for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
-      final String mainTarget = entry.getKey();
-      final TargetInfo targetInfo = entry.getValue();
-      if (!modules.containsKey(mainTarget)) {
-        continue;
-      }
-      final DataNode<ModuleData> moduleDataNode = modules.get(mainTarget);
-      for (final String depTarget : targetInfo.getTargets()) {
-        final LibraryData libraryData = idToLibraryData.get(depTarget);
-        if (libraryData == null) {
-          continue;
-        }
-
-        final LibraryDependencyData library = new LibraryDependencyData(
-          moduleDataNode.getData(),
-          libraryData,
-          LibraryLevel.PROJECT
-        );
-        library.setExported(true);
-        moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
-      }
+      final LibraryDependencyData library = new LibraryDependencyData(
+        moduleDataNode.getData(),
+        libraryData,
+        LibraryLevel.PROJECT
+      );
+      library.setExported(true);
+      moduleDataNode.createChild(ProjectKeys.LIBRARY_DEPENDENCY, library);
     }
   }
 

@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.testFramework;
 
-import com.google.common.base.Joiner;
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.BeforeRunTaskProvider;
@@ -42,6 +41,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.JarFileSystem;
@@ -49,6 +49,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiComment;
@@ -58,7 +59,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.CompilerTester;
 import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.ArrayUtil;
-import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.components.impl.PantsMetrics;
 import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
@@ -79,8 +79,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * If your integration test modifies any source files
@@ -344,62 +344,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     fail("Compilation didn't fail!\n" + messages);
   }
 
-  /**
-   * We don't use com.intellij.openapi.externalSystem.test.ExternalSystemTestCase#compileModules
-   * because we want to do some assertions on myCompilerTester
-   */
-  protected List<String> makeModules(final String... moduleNames) throws Exception {
-    return compile(getModules(moduleNames));
-  }
-
-  protected List<String> makeProject() throws Exception {
-    return assertCompilerMessages(getCompilerTester().make());
-  }
-
-  protected List<String> compile(Module... modules) throws Exception {
-    return assertCompilerMessages(compileAndGetMessages(modules));
-  }
-
-  private List<String> assertCompilerMessages(List<CompilerMessage> messages) {
-    for (CompilerMessage message : messages) {
-      final VirtualFile virtualFile = message.getVirtualFile();
-      final String prettyMessage =
-        virtualFile == null ?
-        message.getMessage() :
-        String.format(
-          "%s at %s:%s", message.getMessage(), virtualFile.getCanonicalPath(), message.getRenderTextPrefix()
-        );
-      switch (message.getCategory()) {
-        case ERROR:
-          // Always show full error messages.
-
-          fail("Compilation failed with error: " + Joiner.on('\n').join(messages));
-          break;
-        case WARNING:
-          System.out.println("Compilation warning: " + prettyMessage);
-          break;
-        case INFORMATION:
-          break;
-        case STATISTICS:
-          break;
-      }
-    }
-    final List<String> rawMessages = ContainerUtil.map(
-      messages,
-      new Function<CompilerMessage, String>() {
-        @Override
-        public String fun(CompilerMessage message) {
-          return message.getMessage();
-        }
-      }
-    );
-
-    final String noChanges = "pants_plugin: " + PantsConstants.COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE;
-    final String compiledSuccessfully = "pants: SUCCESS";
-    assertTrue("Compilation wasn't successful!", rawMessages.contains(noChanges) || rawMessages.contains(compiledSuccessfully));
-    return rawMessages;
-  }
-
   protected List<CompilerMessage> compileAndGetMessages(Module... modules) throws Exception {
     final ModuleCompileScope scope = new ModuleCompileScope(myProject, modules, true);
     return getCompilerTester().make(scope);
@@ -413,42 +357,22 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return modules.toArray(new Module[modules.size()]);
   }
 
-  /**
-   * Same as super method except it doesn't check for gen modules.
-   * It appeared names of gen modules are changing from time to time
-   * and we can't use a determenistic one because we run tests
-   * for different version of pants.
-   * <p/>
-   * Use assertGenModules instead.
-   */
-  @Override
-  protected void assertModules(String... expectedNames) {
-    final Module[] actual = ModuleManager.getInstance(myProject).getModules();
-    final List<String> moduleNames = ContainerUtil.mapNotNull(
-      actual,
-      new Function<Module, String>() {
-        @Override
-        public String fun(Module module) {
-          final String moduleName = module.getName();
-          return moduleName.startsWith(".pants.d") || moduleName.startsWith("3rdparty") ? null : moduleName;
-        }
-      }
-    );
+  protected void assertFirstSourcePartyModules(String... expectedNames) {
+    final Set<Module> sourceModules = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
+      .filter(PantsUtil::isSourceModule)
+      .collect(Collectors.toSet());
 
-    assertUnorderedElementsAreEqual(moduleNames, expectedNames);
+    final Set<String> firstPartySourceModuleNames = sourceModules.stream()
+      .map(Module::getName)
+      .filter(moduleName -> !moduleName.startsWith(".pants.d") && !moduleName.startsWith("3rdparty"))
+      .collect(Collectors.toSet());
+    assertEquals(Arrays.stream(expectedNames).collect(Collectors.toSet()), firstPartySourceModuleNames);
   }
 
   protected void assertModuleExists(String moduleName) {
-    final List<String> moduleNames = ContainerUtil.mapNotNull(
-      ModuleManager.getInstance(myProject).getModules(),
-      new Function<Module, String>() {
-        @Override
-        public String fun(Module module) {
-          return module.getName();
-        }
-      }
-    );
-
+    final List<String> moduleNames = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
+      .map(Module::getName)
+      .collect(Collectors.toList());
     assertContain(moduleNames, moduleName);
   }
 
@@ -517,7 +441,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       ApplicationManager.getApplication(),
       "BaseDataReader",
       "ProcessWaitFor",
-      "Timer");
+      "Timer"
+    );
     try {
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();
@@ -585,5 +510,23 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     BeforeRunTaskProvider provider = BeforeRunTaskProvider.getProvider(myProject, task.getProviderId());
     assertNotNull(String.format("Cannot find BeforeRunTaskProvider for id='%s'", task.getProviderId()), provider);
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
+  }
+
+  protected Pair<Boolean, Optional<String>> pantsCompileProject() {
+    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
+    return runner.executeTask(myProject);
+  }
+
+  protected void assertPantsCompileSuccess(final Pair<Boolean, Optional<String>> compileResult) {
+    assertTrue("Compile failed", compileResult.getFirst());
+  }
+
+  protected void assertPantsCompileFailure(final Pair<Boolean, Optional<String>> compileResult) {
+    assertFalse("Compile succeeded, but should fail.", compileResult.getFirst());
+  }
+
+  protected Pair<Boolean, Optional<String>> pantsCompileModule(String... moduleNames) {
+    PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
+    return runner.executeTask(getModules(moduleNames));
   }
 }

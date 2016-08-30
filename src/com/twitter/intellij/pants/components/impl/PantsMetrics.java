@@ -145,6 +145,9 @@ public class PantsMetrics {
   }
 
   public static void report() {
+    if (!isMetricsEnabled()) {
+      return;
+    }
     Map<String, Long> report = getCurrentResult();
     System.out.println(report);
     String reportFilePath = getReportFilePath();
