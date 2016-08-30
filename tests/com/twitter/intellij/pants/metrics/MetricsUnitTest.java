@@ -12,8 +12,8 @@ import java.util.Map;
 public class MetricsUnitTest extends TestCase {
   @Override
   public void setUp() throws Exception {
-    super.setUp();
     System.setProperty(PantsMetrics.SYSTEM_PROPERTY_METRICS_ENABLE, "true");
+    super.setUp();
     PantsMetrics.initialize();
   }
 
@@ -36,7 +36,7 @@ public class MetricsUnitTest extends TestCase {
   public void testMetricsEnabled() throws Exception {
     try {
       illegalCalls();
-      fail();
+      fail(String.format("%s should have been thrown.", IllegalStateException.class));
     }
     catch (IllegalStateException e) {
 

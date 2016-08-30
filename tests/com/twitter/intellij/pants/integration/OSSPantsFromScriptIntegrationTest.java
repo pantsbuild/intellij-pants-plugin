@@ -11,7 +11,7 @@ public class OSSPantsFromScriptIntegrationTest extends OSSPantsIntegrationTest {
 
     assertProjectName("pants/intellij-integration/export1.sh::");
 
-    assertModules(
+    assertFirstSourcePartyModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",
       "examples_src_java_org_pantsbuild_example_hello_main_main",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
@@ -23,6 +23,6 @@ public class OSSPantsFromScriptIntegrationTest extends OSSPantsIntegrationTest {
       "export1_module"
     );
 
-    makeProject();
+    assertPantsCompileSuccess(pantsCompileProject());
   }
 }

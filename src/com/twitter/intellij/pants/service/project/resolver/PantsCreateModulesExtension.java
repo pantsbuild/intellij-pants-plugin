@@ -43,10 +43,6 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
         LOG.debug("Skipping " + targetName + " because it is empty");
         continue;
       }
-      if (targetInfo.isJarLibrary()) {
-        LOG.debug("Skipping " + targetName + " because it is a jar");
-        continue;
-      }
       final DataNode<ModuleData> moduleData =
         createModuleData(
           projectDataNode,

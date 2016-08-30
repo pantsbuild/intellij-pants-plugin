@@ -4,10 +4,11 @@
 package com.twitter.intellij.pants.integration;
 
 import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.openapi.util.Pair;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
-import java.util.List;
+import java.util.Optional;
 
 public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest {
   @Override
@@ -18,10 +19,12 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testJUnitTests() throws Throwable {
     doImport("intellij-integration/tests/java/org/pantsbuild/testprojects");
 
-    assertModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
+    assertFirstSourcePartyModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
 
-    List<String> output = makeModules("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
-    assertContainsSubstring(output, "compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects");
+    Pair<Boolean, Optional<String>> result = pantsCompileModule("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
+    assertPantsCompileSuccess(result);
+    assertTrue(result.getSecond().isPresent());
+    assertTrue(result.getSecond().get().contains("compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
     assertSuccessfulJUnitTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
     final OSProcessHandler processHandler = runJUnitTest(
@@ -42,17 +45,37 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
     doImport("testprojects/tests/java/org/pantsbuild/testproject/dummies");
 
-    List<String> output = makeModules("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
+    String passingTarget = "testprojects/tests/java/org/pantsbuild/testproject/dummies:passing_target";
+    String failingTarget = "testprojects/tests/java/org/pantsbuild/testproject/dummies:failing_target";
+    String matcherTarget = "testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher";
+
+    Pair<Boolean, Optional<String>> result = pantsCompileModule("testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher");
+    assertPantsCompileSuccess(result);
+    assertTrue(result.getSecond().isPresent());
+    String output = result.getSecond().get();
     // Make sure only matcher target is compiled
-    assertContainsSubstring(output, "compile testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher");
+    assertContainsSubstring(output, matcherTarget);
+    assertNotContainsSubstring(output, passingTarget);
+    assertNotContainsSubstring(output, failingTarget);
+
     assertSuccessfulJUnitTest(
-      "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest");
+      "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher",
+      "org.pantsbuild.testproject.matcher.MatcherTest"
+    );
 
     // Make sure only the 2 dummies targets are compiled.
-    assertContainsSubstring(
-      makeModules("testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources"), "Compiling 2 targets");
+    Pair<Boolean, Optional<String>>resultB = pantsCompileModule("testprojects_tests_java_org_pantsbuild_testproject_dummies_common_sources");
+    String outputB = resultB.getSecond().get();
+    assertContainsSubstring(outputB, passingTarget);
+    assertContainsSubstring(outputB, failingTarget);
+    assertNotContainsSubstring(outputB, matcherTarget);
 
     // makeProject() will result all 3 targets to be compiled.
-    assertContainsSubstring(makeProject(), "Compiling 3 targets");
+    Pair<Boolean, Optional<String>> resultC = pantsCompileProject();
+    assertPantsCompileSuccess(resultC);
+    String outputC = resultC.getSecond().get();
+    assertContainsSubstring(outputC, passingTarget);
+    assertContainsSubstring(outputC, failingTarget);
+    assertContainsSubstring(outputC, matcherTarget);
   }
 }
