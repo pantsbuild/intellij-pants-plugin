@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.testFramework;
 
+import com.google.common.collect.Sets;
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.BeforeRunTaskProvider;
@@ -369,13 +370,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
     Set<String> expectedModuleNames = Arrays.stream(expectedNames).collect(Collectors.toSet());
 
-    Set<String> inExpectedOnly = expectedModuleNames.stream()
-      .filter(s -> !firstPartySourceModuleNames.contains(s))
-      .collect(Collectors.toSet());
-
-    Set<String> inFirstPartyOnly = firstPartySourceModuleNames.stream()
-      .filter(s -> !expectedModuleNames.contains(s))
-      .collect(Collectors.toSet());
+    Set<String> inExpectedOnly = Sets.difference(expectedModuleNames, firstPartySourceModuleNames);
+    Set<String> inFirstPartyOnly = Sets.difference(firstPartySourceModuleNames, expectedModuleNames);
 
     assertEquals(
       String.format("Only in expected: %s, only in actual: %s", inExpectedOnly, inFirstPartyOnly),
