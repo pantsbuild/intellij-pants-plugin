@@ -223,9 +223,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
-    assertNotNull(
+    assertTrue(
       String.format("Didn't find %s class in %s module's output!", className, moduleName),
-      findClassFile(className, moduleName)
+      findClassFile(className, moduleName).isPresent()
     );
   }
 

@@ -75,13 +75,17 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   public void testHello() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
 
-    assertFirstSourcePartyModules(
-      "examples_src_resources_org_pantsbuild_example_hello_hello",
+    String[] initialModules = {"examples_src_resources_org_pantsbuild_example_hello_hello",
       "examples_src_java_org_pantsbuild_example_hello_main_main",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
       "examples_src_java_org_pantsbuild_example_hello_simple_simple",
       "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
-      "examples_src_java_org_pantsbuild_example_hello_module"
+      "examples_src_java_org_pantsbuild_example_hello_module",
+      "examples_src_java_org_pantsbuild_example_hello_main_readme",
+      "examples_src_java_org_pantsbuild_example_hello_main_common_sources"};
+
+    assertFirstSourcePartyModules(
+      initialModules
     );
 
     assertPantsCompileSuccess(pantsCompileModule("examples_src_java_org_pantsbuild_example_hello_main_main"));

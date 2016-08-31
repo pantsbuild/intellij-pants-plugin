@@ -19,14 +19,14 @@ public class PantsUnsupportedTargetsModifier implements PantsProjectInfoModifier
 
   @Override
   public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
-    final Map<String, TargetInfo> unsupportedTargets = projectInfo.getTargets().entrySet().stream()
-      .filter(entry -> entry.getValue().getAddressInfos().stream()
-        .anyMatch(targetAddressInfo -> {
-          final String type = targetAddressInfo.getInternalPantsTargetType();
-          return !StringUtil.isEmpty(type) &&
-                 !PantsConstants.SUPPORTED_TARGET_TYPES.contains(type);
-        }))
-      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    projectInfo.removeTargets(unsupportedTargets.keySet());
+    //final Map<String, TargetInfo> unsupportedTargets = projectInfo.getTargets().entrySet().stream()
+    //  .filter(entry -> entry.getValue().getAddressInfos().stream()
+    //    .anyMatch(targetAddressInfo -> {
+    //      final String type = targetAddressInfo.getInternalPantsTargetType();
+    //      return !StringUtil.isEmpty(type) &&
+    //             !PantsConstants.SUPPORTED_TARGET_TYPES.contains(type);
+    //    }))
+    //  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    //projectInfo.removeTargets(unsupportedTargets.keySet());
   }
 }
