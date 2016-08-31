@@ -41,8 +41,8 @@ public class PantsUnsupportedTargetsModifier implements PantsProjectInfoModifier
 
   @Override
   public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
-    //final Map<String, TargetInfo> unsupportedTargets =
-    //  PantsUtil.filterByValue(projectInfo.getTargets(), Conditions.not(SUPPORTED_TARGET_TYPES_CONDITION));
-    //projectInfo.removeTargets(unsupportedTargets.keySet());
+    final Map<String, TargetInfo> unsupportedTargets =
+      PantsUtil.filterByValue(projectInfo.getTargets(), Conditions.not(SUPPORTED_TARGET_TYPES_CONDITION));
+    projectInfo.removeTargets(unsupportedTargets.keySet());
   }
 }
