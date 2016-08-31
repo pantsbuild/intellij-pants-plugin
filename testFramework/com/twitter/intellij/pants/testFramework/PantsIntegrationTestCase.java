@@ -366,7 +366,22 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       .map(Module::getName)
       .filter(moduleName -> !moduleName.startsWith(".pants.d") && !moduleName.startsWith("3rdparty"))
       .collect(Collectors.toSet());
-    assertEquals(Arrays.stream(expectedNames).collect(Collectors.toSet()), firstPartySourceModuleNames);
+
+    Set<String> expectedModuleNames = Arrays.stream(expectedNames).collect(Collectors.toSet());
+
+    Set<String> inExpectedOnly = expectedModuleNames.stream()
+      .filter(s -> !firstPartySourceModuleNames.contains(s))
+      .collect(Collectors.toSet());
+
+    Set<String> inFirstPartyOnly = firstPartySourceModuleNames.stream()
+      .filter(s -> !expectedModuleNames.contains(s))
+      .collect(Collectors.toSet());
+
+    assertEquals(
+      String.format("Only in expected: %s, only in actual: %s", inExpectedOnly, inFirstPartyOnly),
+      expectedModuleNames,
+      firstPartySourceModuleNames
+    );
   }
 
   protected void assertModuleExists(String moduleName) {
