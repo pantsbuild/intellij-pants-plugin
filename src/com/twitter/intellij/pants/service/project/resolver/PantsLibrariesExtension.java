@@ -62,6 +62,9 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
 
       projectDataNode.createChild(ProjectKeys.LIBRARY, libraryData);
       final DataNode<ModuleData> moduleDataNode = modules.get(jarTarget);
+      if (moduleDataNode == null) {
+        continue;
+      }
 
       final LibraryDependencyData library = new LibraryDependencyData(
         moduleDataNode.getData(),
