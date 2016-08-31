@@ -61,16 +61,4 @@ public class PantsConstants {
   public static final String ACTION_MAKE_PROJECT_ID = "CompileDirty";
   public static final String ACTION_MAKE_PROJECT_DESCRIPTION = "Make Project";
   public static final String REBUILD_PROJECT_DESCRIPTION = "Rebuild Project";
-
-  public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
-    Arrays.asList(
-      "android_binary", "android_resources", "annotation_processor", "artifact", "artifactory", "bundle", "consume_thrift_libraries",
-      "dependencies", "generated_resources", "hadoop_binary", "heron_binary", "jar", "jar_library", "java_agent", "java_antlr_library",
-      "java_library", "java_protobuf_library", "java_ragel_library", "java_tests", "java_thrift_library",
-      "java_thriftstore_dml_library", "java_wire_library", "jaxb_library", "junit_tests", "jvm_app", "jvm_binary", "resources",
-      "scala_artifact", "scala_jar", "scala_library", "scala_specs", "scala_tests", "scalac_plugin", "storm_binary", "target",
-      "thrift_jar", "python_binary", "python_library", "python_test_suite", "python_tests", "unpacked_jars", "remote_sources"
-      ),
-    CaseInsensitiveStringHashingStrategy.INSTANCE
-  );
 }

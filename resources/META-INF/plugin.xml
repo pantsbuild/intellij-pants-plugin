@@ -84,8 +84,6 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
-    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsUnsupportedTargetsModifier"
-                         id="unsupportedTargetsRemover" order="first"/>
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCyclicDependenciesModifier"
                          id="cyclicDeps" order="after unsupportedTargetsRemover"/>
 
