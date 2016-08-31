@@ -69,7 +69,7 @@ public class PantsConstants {
       "java_library", "java_protobuf_library", "java_ragel_library", "java_tests", "java_thrift_library",
       "java_thriftstore_dml_library", "java_wire_library", "jaxb_library", "junit_tests", "jvm_app", "jvm_binary", "resources",
       "scala_artifact", "scala_jar", "scala_library", "scala_specs", "scala_tests", "scalac_plugin", "storm_binary", "target",
-      "thrift_jar", "python_binary", "python_library", "python_test_suite", "python_tests"
+      "thrift_jar", "python_binary", "python_library", "python_test_suite", "python_tests", "unpacked_jars"
       ),
     CaseInsensitiveStringHashingStrategy.INSTANCE
   );
