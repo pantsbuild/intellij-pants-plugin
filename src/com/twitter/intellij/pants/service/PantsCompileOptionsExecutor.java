@@ -42,15 +42,13 @@ public class PantsCompileOptionsExecutor {
 
   @NotNull
   public static PantsCompileOptionsExecutor create(
-    @NotNull String externalProjectPath,
+    @NotNull String projectRootPath,
     @Nullable PantsExecutionSettings executionOptions
   ) throws ExternalSystemException {
     if (executionOptions == null) {
-
-
-      throw new ExternalSystemException("No execution options for " + externalProjectPath);
+      throw new ExternalSystemException("No execution options for " + projectRootPath);
     }
-    PantsCompileOptions options = new MyPantsCompileOptions(externalProjectPath, executionOptions);
+    PantsCompileOptions options = new MyPantsCompileOptions(projectRootPath, executionOptions);
 
     Optional<File> buildRoot = PantsUtil.findBuildRoot(new File(options.getExternalProjectPath()));
     if (!buildRoot.isPresent() || !buildRoot.get().exists()) {

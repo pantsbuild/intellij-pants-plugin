@@ -28,8 +28,6 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
 
   @NotNull
   private ProjectInfo resolveProjectInfo(@NotNull String targetSpec) {
-    final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), targetSpec);
-
     final boolean withDependees = false;
     final boolean libsWithSourcesAndDocs = true;
     final boolean useIdeaProjectJdk = false;
@@ -43,7 +41,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     );
 
     final PantsResolver resolver =
-      new PantsResolver(PantsCompileOptionsExecutor.create(absoluteProjectPath, settings));
+      new PantsResolver(PantsCompileOptionsExecutor.create(myProjectRoot.getPath(), settings));
     resolver.resolve(false, null, STRING_CONSUMER, null);
     final ProjectInfo projectInfo = resolver.getProjectInfo();
     assertNotNull(projectInfo);
