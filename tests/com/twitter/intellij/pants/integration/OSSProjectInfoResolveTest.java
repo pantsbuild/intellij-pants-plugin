@@ -31,13 +31,13 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     final boolean withDependees = false;
     final boolean libsWithSourcesAndDocs = true;
     final boolean useIdeaProjectJdk = false;
-    final boolean isEnableIncremetalImport = false;
+    final boolean isEnableIncrementalImport = false;
     PantsExecutionSettings settings = new PantsExecutionSettings(
       Collections.singletonList(targetSpec),
       withDependees,
       libsWithSourcesAndDocs,
       useIdeaProjectJdk,
-      isEnableIncremetalImport
+      isEnableIncrementalImport
     );
 
     final PantsResolver resolver =
