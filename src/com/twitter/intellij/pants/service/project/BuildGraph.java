@@ -4,7 +4,9 @@
 package com.twitter.intellij.pants.service.project;
 
 
+import com.google.common.collect.Sets;
 import com.intellij.openapi.diagnostic.Logger;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
@@ -50,8 +52,14 @@ public class BuildGraph {
 
   public int getMaxDepth() {
     int depth = 0;
-    while (getNodesByLevel(depth).size() != allNodes.size()) {
-      depth++;
+    int lastNumber = -1;
+    while (lastNumber < allNodes.size()) {
+      Set<Node> nodesByLevel = getNodesByLevel(depth);
+      if (nodesByLevel.size() == lastNumber && nodesByLevel.size() != allNodes.size()) {
+        Set<Node> orphanNodes = Sets.difference(allNodes, nodesByLevel);
+        throw new PantsException(String.format("Missing link in build graph. Orphan nodes: %s", orphanNodes));
+      }
+      lastNumber = nodesByLevel.size();
     }
     return depth;
   }
@@ -94,6 +102,7 @@ public class BuildGraph {
     }
 
     private String address; // could be synthetic and tweaked by modifiers.
+
     public Set<Node> getDependencies() {
       return myDependencies;
     }
