@@ -10,7 +10,11 @@ jvm_binary(
     ':plugin-resources',
     '3rdparty/intellij:external-system-test-api',
     '3rdparty/intellij:sdk',
-  ]
+  ],
+  deploy_excludes = [
+    exclude('com.intellij.sdk.community', 'slf4j-api'),
+    exclude('com.intellij.sdk.community', 'slf4j-log4j12'),
+  ],
 )
 
 jvm_binary(
@@ -42,5 +46,9 @@ jvm_binary(
     'tests:metrics',
     'jps-plugin',
     'src:pants-intellij-plugin',
-  ]
+  ],
+  deploy_excludes = [
+    exclude('com.intellij.sdk.community', 'slf4j-api'),
+    exclude('com.intellij.sdk.community', 'slf4j-log4j12'),
+  ],
 )
