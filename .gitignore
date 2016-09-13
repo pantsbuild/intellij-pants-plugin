@@ -15,8 +15,9 @@
 /out/
 .pants.run
 /.pants.d/
-/.cache/
+.cache/
 /build-support/*.pex
 /build-support/*.venv
 /build-support/virtualenv-*
 .pants.workdir.file_lock
+.pants.d/
