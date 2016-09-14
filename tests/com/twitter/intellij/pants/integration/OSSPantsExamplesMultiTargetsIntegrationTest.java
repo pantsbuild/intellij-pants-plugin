@@ -10,7 +10,8 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
   public void testHelloJavaAndScala() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
 
-    assertProjectName("examples/src/java/org/pantsbuild/example/hello::");
+    assertProjectName("pants/examples/src/java/org/pantsbuild/example/hello::");
+
     String[] initialModules = {"examples_src_resources_org_pantsbuild_example_hello_hello",
       "examples_src_java_org_pantsbuild_example_hello_main_main",
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
@@ -21,17 +22,17 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
       "examples_src_java_org_pantsbuild_example_hello_main_common_sources"
     };
 
-    assertFirstSourcePartyModules(
-      initialModules
-    );
+    assertFirstSourcePartyModules(initialModules);
 
     assertPantsCompileSuccess(pantsCompileModule("examples_src_java_org_pantsbuild_example_hello_main_main"));
+
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.greet.Greeting", "examples_src_java_org_pantsbuild_example_hello_greet_greet"
     );
 
     doImport("examples/src/scala/org/pantsbuild/example/hello/BUILD", "hello");
-    assertProjectName("examples/src/scala/org/pantsbuild/example/hello:hello");
+
+    assertProjectName("pants/examples/src/scala/org/pantsbuild/example/hello:hello");
 
     String[] additionalModules = {
       "examples_src_scala_org_pantsbuild_example_hello_module",
@@ -40,7 +41,9 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe"
     };
 
-    assertFirstSourcePartyModules((String[]) ArrayUtils.addAll(initialModules, additionalModules));
+    assertFirstSourcePartyModules((String[]) ArrayUtils.
+
+      addAll(initialModules, additionalModules));
 
     assertPantsCompileSuccess(pantsCompileProject());
 

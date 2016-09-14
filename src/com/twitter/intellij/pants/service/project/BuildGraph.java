@@ -52,16 +52,21 @@ public class BuildGraph {
 
   public int getMaxDepth() {
     int depth = 0;
-    int lastNumber = -1;
-    while (lastNumber < allNodes.size()) {
+    int lastNodeCount = -1;
+
+    while (true) {
       Set<Node> nodesByLevel = getNodesByLevel(depth);
-      if (nodesByLevel.size() == lastNumber && nodesByLevel.size() != allNodes.size()) {
+      if (nodesByLevel.size() == lastNodeCount && nodesByLevel.size() != allNodes.size()) {
         Set<Node> orphanNodes = Sets.difference(allNodes, nodesByLevel);
         throw new PantsException(String.format("Missing link in build graph. Orphan nodes: %s", orphanNodes));
       }
-      lastNumber = nodesByLevel.size();
+
+      if (nodesByLevel.size() == allNodes.size()) {
+        return depth;
+      }
+      lastNodeCount = allNodes.size();
+      depth++;
     }
-    return depth;
   }
 
   // level 0 - target roots
@@ -94,6 +99,9 @@ public class BuildGraph {
       .findFirst();
   }
 
+  /**
+   * Node and Module are one to one relationship.
+   */
   public class Node {
     private TargetInfo myTargetInfo;
 
@@ -142,12 +150,13 @@ public class BuildGraph {
 
     @Override
     public String toString() {
-      return super.toString() +
-             " " + String.join(
-        " ",
-        myTargetInfo.getAddressInfos().stream().map(TargetAddressInfo::getTargetAddress).collect(
-          Collectors.toList())
-      );
+      return super.toString() + " " +
+             String.join(
+               " ",
+               myTargetInfo.getAddressInfos().stream()
+                 .map(TargetAddressInfo::getTargetAddress)
+                 .collect(Collectors.toList())
+             );
     }
   }
 }

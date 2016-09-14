@@ -9,7 +9,7 @@ public class OSSPantsFromScriptIntegrationTest extends OSSPantsIntegrationTest {
   public void testScript() throws Throwable {
     doImport("intellij-integration/export1.sh");
 
-    assertProjectName("intellij-integration/export1.sh::");
+    assertProjectName("pants/intellij-integration/export1.sh::");
 
     assertFirstSourcePartyModules(
       "examples_src_resources_org_pantsbuild_example_hello_hello",

@@ -6,6 +6,9 @@ if [[ $IJ_ULTIMATE == "true" ]]; then
   export TEST_SET='jvm-integration'
 fi
 
+rm -rf .cache/dummy_repo
+cp -r testData/dummy_repo .cache/
+
 rm -rf $IDEA_TEST_HOME
 mkdir -p $IDEA_TEST_HOME
 

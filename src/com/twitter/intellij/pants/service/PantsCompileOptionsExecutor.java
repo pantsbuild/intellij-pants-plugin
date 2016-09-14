@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PantsCompileOptionsExecutor {
   protected static final Logger LOG = Logger.getInstance(PantsCompileOptionsExecutor.class);
@@ -105,7 +106,11 @@ public class PantsCompileOptionsExecutor {
   @NotNull
   @Nls
   public String getProjectName() {
-    return String.join("__", myOptions.getTargetSpecs());
+    final String buildRootName = getBuildRoot().getName();
+    List<String> buildRootPrefixedSpecs = myOptions.getTargetSpecs().stream()
+      .map(s -> buildRootName + File.separator + s)
+      .collect(Collectors.toList());
+    return String.join("__", buildRootPrefixedSpecs);
   }
 
   @NotNull
@@ -192,6 +197,7 @@ public class PantsCompileOptionsExecutor {
     throws IOException, ExecutionException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
     commandLine.addParameter("export");
+    commandLine.addParameter("--formatted"); // json outputs in a compact format
     if (myResolveSourcesAndDocsForJars) {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");

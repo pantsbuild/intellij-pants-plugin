@@ -75,6 +75,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -144,6 +145,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
   }
 
+  protected void passthroughSetUpInWriteAction() throws Exception {
+    super.setUpInWriteAction();
+  }
+
   protected void cleanProjectRoot() throws ExecutionException, IOException {
     final File projectDir = new File(myProjectRoot.getPath());
     assertTrue(projectDir.exists());
@@ -201,7 +206,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Override
   protected String getProjectPath() {
-    return super.getProjectPath() + "/" + StringUtil.notNullize(myRelativeProjectPath);
+    return Paths.get(super.getProjectPath(), StringUtil.notNullize(myRelativeProjectPath)).toString();
   }
 
   @NotNull
