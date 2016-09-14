@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PantsResolver {
-  public static final int VERSION = 13;
+  public static final int VERSION = 14;
 
   protected static final Logger LOG = Logger.getInstance(PantsResolver.class);
   protected final PantsCompileOptionsExecutor myExecutor;
