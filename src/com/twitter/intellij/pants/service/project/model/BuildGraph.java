@@ -17,8 +17,26 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BuildGraph {
+  public static final String ERROR_ORPHANED_NODE = "Missing link in build graph. Orphan nodes: %s";
+  public static final String ERROR_NO_TARGET_ROOT =
+    "No target roots found in build graph. Please make sure Pants export version >= 1.0.9";
+
   private static Logger logger = Logger.getInstance("#" + BuildGraph.class.getName());
   private Set<Node> allNodes = new HashSet<>();
+
+  public class OrphanedNodeException extends PantsException {
+
+    public OrphanedNodeException(String message) {
+      super(message);
+    }
+  }
+
+  public class NoTargetRootException extends PantsException {
+
+    public NoTargetRootException(String message) {
+      super(message);
+    }
+  }
 
   public BuildGraph(ProjectInfo projectInfo) {
     // add everybody in
@@ -65,13 +83,13 @@ public class BuildGraph {
       Set<Node> nodesByLevel = getNodesByLevel(depth);
       if (nodesByLevel.size() == lastNodeCount && nodesByLevel.size() != allNodes.size()) {
         Set<Node> orphanNodes = Sets.difference(allNodes, nodesByLevel);
-        throw new PantsException(String.format("Missing link in build graph. Orphan nodes: %s", orphanNodes));
+        throw new OrphanedNodeException(String.format(ERROR_ORPHANED_NODE, orphanNodes));
       }
 
       if (nodesByLevel.size() == allNodes.size()) {
         return depth;
       }
-      lastNodeCount = allNodes.size();
+      lastNodeCount = nodesByLevel.size();
       depth++;
     }
   }
@@ -99,7 +117,7 @@ public class BuildGraph {
   private Set<Node> getTargetRoots() {
     Set<Node> targetRoots = allNodes.stream().filter(Node::isTargetRoot).collect(Collectors.toSet());
     if (targetRoots.isEmpty()) {
-      throw new PantsException("No target roots found in build graph. Please make sure Pants export version >= 1.0.9");
+      throw new NoTargetRootException(ERROR_NO_TARGET_ROOT);
     }
     return targetRoots;
   }
