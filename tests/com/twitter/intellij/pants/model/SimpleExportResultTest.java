@@ -3,9 +3,9 @@
 
 package com.twitter.intellij.pants.model;
 
-import junit.framework.TestCase;
+import com.intellij.testFramework.LightPlatformTestCase;
 
-public class SimpleExportResultTest extends TestCase {
+public class SimpleExportResultTest extends LightPlatformTestCase {
   public void testParseExport_1_0_7() throws Exception {
     final String exportOutput =
       "{\n" +
