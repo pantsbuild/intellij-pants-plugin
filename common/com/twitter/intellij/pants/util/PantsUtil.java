@@ -755,8 +755,9 @@ public class PantsUtil {
     }
 
     String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
-    boolean strict =
-      PantsOptions.getPantsOptions(pantsExecutable).get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION).isPresent();
+    boolean strict = PantsOptions.getPantsOptions(pantsExecutable)
+      .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION)
+      .isPresent();
     String jdkName = String.format("JDK from pants %s", defaultPlatform);
     Optional<String> jdkHome = Optional.ofNullable(
       exportResult.getPreferredJvmDistributions()
