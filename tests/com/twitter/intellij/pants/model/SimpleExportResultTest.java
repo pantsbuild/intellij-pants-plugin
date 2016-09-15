@@ -194,6 +194,8 @@ public class SimpleExportResultTest extends LightPlatformTestCase {
       "    }\n" +
       "}";
     SimpleExportResult exportResult = SimpleExportResult.parse(exportOutput);
+    // (DistributionLocator.cached().version 1.8) does not correspond to any platform
+    // as far as this plugin is concerned.
     assertFalse(exportResult.getJdkHome(STRICT).isPresent());
   }
 }
