@@ -58,6 +58,9 @@ public class PantsConstants {
   public static final String PANTS_CLI_OPTION_PYTEST = "--test-pytest-options";
   public static final String PANTS_CLI_OPTION_JUNIT_TEST = "--test-junit-test";
 
+  public static final String PANTS_EXPORT_KEY_STRICT = "strict";
+  public static final String PANTS_EXPORT_KEY_NON_STRICT = "non_strict";
+
   public static final String ACTION_MAKE_PROJECT_ID = "CompileDirty";
   public static final String ACTION_MAKE_PROJECT_DESCRIPTION = "Make Project";
   public static final String REBUILD_PROJECT_DESCRIPTION = "Rebuild Project";

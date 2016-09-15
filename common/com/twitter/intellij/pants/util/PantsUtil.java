@@ -761,6 +761,9 @@ public class PantsUtil {
       .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION)
       .isPresent();
     Optional<String> jdkHome = exportResult.getJdkHome(strict);
+    if (!jdkHome.isPresent()) {
+      return Optional.empty();
+    }
     return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome.get()));
   }
 
