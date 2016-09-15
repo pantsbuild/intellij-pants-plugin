@@ -749,24 +749,18 @@ public class PantsUtil {
 
   @Nullable
   public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable) {
-    SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
+    final SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
     if (versionCompare(exportResult.getVersion(), "1.0.7") < 0) {
       return Optional.empty();
     }
 
-    String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
+    final String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
+    final String jdkName = String.format("JDK from pants %s", defaultPlatform);
+
     boolean strict = PantsOptions.getPantsOptions(pantsExecutable)
       .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION)
       .isPresent();
-    String jdkName = String.format("JDK from pants %s", defaultPlatform);
-    Optional<String> jdkHome = Optional.ofNullable(
-      exportResult.getPreferredJvmDistributions()
-        .get(defaultPlatform)
-        .get(strict ? "strict" : "non_strict")
-    );
-    if (!jdkHome.isPresent()) {
-      return Optional.empty();
-    }
+    Optional<String> jdkHome = exportResult.getJdkHome(strict);
     return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome.get()));
   }
 

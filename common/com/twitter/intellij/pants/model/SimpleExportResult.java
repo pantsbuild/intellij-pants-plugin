@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -96,6 +97,14 @@ public class SimpleExportResult {
       // Fall-through to handle outside the block.
     }
     throw new PantsException("Failed:" + commandline.getCommandLineString());
+  }
+
+  public Optional<String> getJdkHome(boolean strict) {
+    return Optional.ofNullable(
+      getPreferredJvmDistributions()
+        .get(getJvmPlatforms().getDefaultPlatform())
+        .get(strict ? "strict" : "non_strict")
+    );
   }
 
   @VisibleForTesting
