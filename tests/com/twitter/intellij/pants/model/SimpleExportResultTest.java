@@ -6,7 +6,9 @@ package com.twitter.intellij.pants.model;
 import com.intellij.testFramework.LightPlatformTestCase;
 
 public class SimpleExportResultTest extends LightPlatformTestCase {
+
   private static boolean STRICT = true;
+
   public void testParseExport_1_0_7() throws Exception {
     final String exportOutput =
       "{\n" +
