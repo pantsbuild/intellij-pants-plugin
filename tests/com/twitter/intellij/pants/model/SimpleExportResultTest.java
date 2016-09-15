@@ -147,6 +147,7 @@ public class SimpleExportResultTest extends TestCase {
       "    }\n" +
       "}";
     SimpleExportResult exportResult = SimpleExportResult.parse(exportOutput);
+    // java7 has no strict jdk home path.
     assertFalse(exportResult.getJdkHome(true).isPresent());
   }
 }
