@@ -1,15 +1,13 @@
 // Copyright 2016 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.service.project;
+package com.twitter.intellij.pants.service.project.model;
 
 
 import com.google.common.collect.Sets;
 import com.intellij.openapi.diagnostic.Logger;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
-import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.service.project.model.TargetInfo;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -24,9 +22,18 @@ public class BuildGraph {
 
   public BuildGraph(ProjectInfo projectInfo) {
     // add everybody in
+    Map<String, TargetInfo> targets = projectInfo
+      .getTargets();
+    processTargets(targets);
+  }
+
+  public BuildGraph(Map<String, TargetInfo> targets) {
+    processTargets(targets);
+  }
+
+  private void processTargets(Map<String, TargetInfo> targets) {
     allNodes.addAll(
-      projectInfo
-        .getTargets()
+      targets
         .entrySet()
         .stream()
         .map(Node::new)
@@ -90,7 +97,11 @@ public class BuildGraph {
   }
 
   private Set<Node> getTargetRoots() {
-    return allNodes.stream().filter(Node::isTargetRoot).collect(Collectors.toSet());
+    Set<Node> targetRoots = allNodes.stream().filter(Node::isTargetRoot).collect(Collectors.toSet());
+    if (targetRoots.isEmpty()) {
+      throw new PantsException("No target roots found in build graph. Please make sure Pants export version >= 1.0.9");
+    }
+    return targetRoots;
   }
 
   private Optional<Node> getNode(String targetAddress) {

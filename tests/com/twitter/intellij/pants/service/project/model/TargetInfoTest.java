@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.service.project.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import junit.framework.TestCase;
@@ -43,7 +44,8 @@ public class TargetInfoTest extends TestCase {
     assertEquals(PantsSourceType.SOURCE, info.getSourcesType());
   }
 
-  private TargetInfo createTargetInfoWithTargetAddressInfo(String... types) {
+  @VisibleForTesting
+  public static TargetInfo createTargetInfoWithTargetAddressInfo(String... types) {
     Set<TargetAddressInfo> targetAddressInfoSet = Arrays.stream(types).map(s -> {
       TargetAddressInfo x = new TargetAddressInfo();
       x.setTargetType(s);
