@@ -21,17 +21,19 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This represents information from pants export that is not tied with targets,
  * obtained by running pants export command with no target arguments. Class
  * is in POJO form to facilitate json parsing.
- *
+ * <p>
  * See {@link com.twitter.intellij.pants.service.project.model.ProjectInfo} for
  * target level information from pants export.
  */
 public class SimpleExportResult {
+
   /**
    * Cache of SimpleExportResult mapped from path of Pants executable files.
    */
@@ -96,6 +98,17 @@ public class SimpleExportResult {
       // Fall-through to handle outside the block.
     }
     throw new PantsException("Failed:" + commandline.getCommandLineString());
+  }
+
+  public Optional<String> getJdkHome(boolean strict) {
+    Map<String, String> platformMap = getPreferredJvmDistributions()
+      .get(getJvmPlatforms().getDefaultPlatform());
+
+    if (platformMap == null) {
+      return Optional.empty();
+    }
+
+    return Optional.ofNullable(platformMap.get(strict ? PantsConstants.PANTS_EXPORT_KEY_STRICT : PantsConstants.PANTS_EXPORT_KEY_NON_STRICT));
   }
 
   @VisibleForTesting
