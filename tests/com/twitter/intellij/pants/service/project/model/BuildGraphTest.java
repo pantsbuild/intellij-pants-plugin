@@ -3,11 +3,14 @@
 
 package com.twitter.intellij.pants.service.project.model;
 
+import com.google.common.collect.Sets;
 import com.intellij.util.containers.HashMap;
 import junit.framework.TestCase;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BuildGraphTest extends TestCase {
 
@@ -40,7 +43,25 @@ public class BuildGraphTest extends TestCase {
 
     injectTargetInfo(targets, "c", "source", !IS_TARGET_ROOT, Optional.of("b"));
     // a (root) -> b -> c, level 2
-    assertEquals(2, new BuildGraph(targets).getMaxDepth());
+    BuildGraph graph = new BuildGraph(targets);
+    assertEquals(2, graph.getMaxDepth());
+
+    assertEquals(
+      Sets.newHashSet("a"),
+      getAddressesByLevel(graph, 0)
+    );
+    assertEquals(
+      Sets.newHashSet("a", "b"),
+      getAddressesByLevel(graph, 1)
+    );
+    assertEquals(
+      Sets.newHashSet("a", "b", "c"),
+      getAddressesByLevel(graph, 2)
+    );
+  }
+
+  private Set<String> getAddressesByLevel(BuildGraph graph, int level) {
+    return graph.getNodesByLevel(level).stream().map(BuildGraph.Node::getAddress).collect(Collectors.toSet());
   }
 
   public void test4() throws Exception {
@@ -48,7 +69,12 @@ public class BuildGraphTest extends TestCase {
     injectTargetInfo(targets, "b", "source", IS_TARGET_ROOT, Optional.of("a"));
     injectTargetInfo(targets, "c", "source", !IS_TARGET_ROOT, Optional.of("b"));
     // a (root) -> (root) b -> c, level 1
-    assertEquals(1, new BuildGraph(targets).getMaxDepth());
+    BuildGraph graph = new BuildGraph(targets);
+    assertEquals(1, graph.getMaxDepth());
+    assertEquals(
+      Sets.newHashSet("a", "b"),
+      getAddressesByLevel(graph, 0)
+    );
   }
 
   public void testNoTargetRoot() throws Exception {
@@ -94,6 +120,7 @@ public class BuildGraphTest extends TestCase {
         }
       });
     }
+
     targets.put(targetAddress, source);
   }
 }

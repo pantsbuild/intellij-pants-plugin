@@ -75,6 +75,7 @@ public class BuildGraph {
     }
   }
 
+  // TODO: not the most efficient way to find max depth yet.
   public int getMaxDepth() {
     int depth = 0;
     int lastNodeCount = -1;
