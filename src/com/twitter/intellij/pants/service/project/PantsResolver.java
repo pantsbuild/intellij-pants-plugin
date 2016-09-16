@@ -31,7 +31,11 @@ import java.util.Map;
 import java.util.Optional;
 
 public class PantsResolver {
-  public static final int VERSION = 13;
+  /**
+   * Bump this version if project resolve changes. It will prompt user to refresh.
+   * E.g. more modules are created or their relationship changes.
+   */
+  public static final int VERSION = 14;
 
   protected static final Logger LOG = Logger.getInstance(PantsResolver.class);
   protected final PantsCompileOptionsExecutor myExecutor;
