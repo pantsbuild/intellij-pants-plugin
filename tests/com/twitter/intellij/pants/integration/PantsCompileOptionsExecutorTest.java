@@ -14,6 +14,7 @@ public class PantsCompileOptionsExecutorTest extends OSSPantsIntegrationTest {
 
   public void testProjectName() throws Throwable {
     String deepDir = new String(new char[100]).replace("\0", "dummy/");
+    assertTrue(deepDir.length() > PantsCompileOptionsExecutor.PROJECT_NAME_LIMIT);
 
     PantsExecutionSettings settings = new PantsExecutionSettings(
       Collections.singletonList(deepDir),
