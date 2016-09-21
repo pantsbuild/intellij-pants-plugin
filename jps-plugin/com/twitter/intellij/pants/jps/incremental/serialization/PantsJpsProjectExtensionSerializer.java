@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.jps.incremental.serialization;
 
 import com.intellij.openapi.util.JDOMExternalizerUtil;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
