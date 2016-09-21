@@ -88,32 +88,32 @@ public class PantsBuildTarget extends BuildTarget<PantsSourceRootDescriptor> {
     final IgnoredFileIndex ignoredFileIndex,
     final BuildDataPaths dataPaths
   ) {
-    final Set<PantsSourceRootDescriptor> result = new HashSet<PantsSourceRootDescriptor>();
-    processJavaModuleTargets(
-      model.getProject(),
-      new Processor<ModuleBuildTarget>() {
-        @Override
-        public boolean process(ModuleBuildTarget target) {
-          final JpsPantsModuleExtension moduleExtension = PantsJpsModelSerializerExtension.findPantsModuleExtension(target.getModule());
-          final Set<String> targetAddresses = moduleExtension != null ?
-                                              moduleExtension.getTargetAddresses() : Collections.<String>emptySet();
-          final List<JavaSourceRootDescriptor> descriptors = target.computeRootDescriptors(model, index, ignoredFileIndex, dataPaths);
-          for (JavaSourceRootDescriptor javaSourceRootDescriptor : descriptors) {
-            result.add(
-              new PantsSourceRootDescriptor(
-                PantsBuildTarget.this,
-                targetAddresses,
-                javaSourceRootDescriptor.getRootFile(),
-                javaSourceRootDescriptor.isGenerated(),
-                javaSourceRootDescriptor.getExcludedRoots()
-              )
-            );
-          }
-          return true;
-        }
-      }
-    );
-    return new ArrayList<PantsSourceRootDescriptor>(result);
+    //final Set<PantsSourceRootDescriptor> result = new HashSet<PantsSourceRootDescriptor>();
+    //processJavaModuleTargets(
+    //  model.getProject(),
+    //  new Processor<ModuleBuildTarget>() {
+    //    @Override
+    //    public boolean process(ModuleBuildTarget target) {
+    //      final JpsPantsModuleExtension moduleExtension = PantsJpsModelSerializerExtension.findPantsModuleExtension(target.getModule());
+    //      final Set<String> targetAddresses = moduleExtension != null ?
+    //                                          moduleExtension.getTargetAddresses() : Collections.<String>emptySet();
+    //      final List<JavaSourceRootDescriptor> descriptors = target.computeRootDescriptors(model, index, ignoredFileIndex, dataPaths);
+    //      for (JavaSourceRootDescriptor javaSourceRootDescriptor : descriptors) {
+    //        result.add(
+    //          new PantsSourceRootDescriptor(
+    //            PantsBuildTarget.this,
+    //            targetAddresses,
+    //            javaSourceRootDescriptor.getRootFile(),
+    //            javaSourceRootDescriptor.isGenerated(),
+    //            javaSourceRootDescriptor.getExcludedRoots()
+    //          )
+    //        );
+    //      }
+    //      return true;
+    //    }
+    //  }
+    //);
+    return Collections.emptyList();
   }
 
   @NotNull
