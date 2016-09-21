@@ -8,14 +8,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.cmdline.ClasspathBootstrap;
 
 import java.util.List;
-import java.util.ResourceBundle;
 
 public class PantsBuildProcessParametersProvider extends BuildProcessParametersProvider {
   @NotNull
