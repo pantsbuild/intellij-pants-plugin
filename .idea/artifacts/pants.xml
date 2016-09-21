@@ -12,7 +12,6 @@
         <element id="archive" name="pants-common.jar">
           <element id="module-output" name="common" />
         </element>
-        <element id="library" level="project" name="com.google.code.gson:gson:2.3.1" />
       </element>
     </root>
   </artifact>
