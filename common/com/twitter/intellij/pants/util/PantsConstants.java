@@ -65,6 +65,8 @@ public class PantsConstants {
   public static final String ACTION_MAKE_PROJECT_DESCRIPTION = "Make Project";
   public static final String REBUILD_PROJECT_DESCRIPTION = "Rebuild Project";
 
+  public static final String EXTERNAL_BUILDER_ERROR = "This is a Pants project. Please use PantsCompile under `Edit Configuration`";
+
   public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
     Arrays.asList(
       "android_binary", "android_resources", "annotation_processor", "artifact", "artifactory", "bundle", "consume_thrift_libraries",

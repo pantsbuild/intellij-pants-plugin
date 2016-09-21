@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.integration;
 
 import com.intellij.openapi.compiler.CompilerMessage;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsConstants;
 
 import java.util.List;
 
@@ -22,12 +23,9 @@ public class ExternalBuilderIntegrationTest extends OSSPantsIntegrationTest {
     );
 
     List<CompilerMessage> make = getCompilerTester().make();
-    // Not extracting into PantsBundle because passing SDK classpath
-    // to external builder is tricky. Plus only one error needs to be
-    // tested here.
     assertContainsSubstring(
       make.iterator().next().getMessage(),
-      "This is a Pants project. Please use PantsCompile under `Edit Configuration`"
+      PantsConstants.EXTERNAL_BUILDER_ERROR
     );
   }
 }
