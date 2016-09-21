@@ -3,21 +3,15 @@
 
 package com.twitter.intellij.pants.jps.incremental.model;
 
-import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
-import com.twitter.intellij.pants.jps.util.PantsJpsUtil;
-import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.builders.BuildTargetLoader;
 import org.jetbrains.jps.builders.BuildTargetType;
 import org.jetbrains.jps.builders.impl.BuildTargetRegistryImpl;
 import org.jetbrains.jps.model.JpsModel;
-import org.jetbrains.jps.model.JpsProject;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   public static PantsBuildTargetType INSTANCE = new PantsBuildTargetType();
@@ -38,31 +32,7 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
   @NotNull
   @Override
   public List<PantsBuildTarget> computeAllTargets(@NotNull JpsModel model) {
-    myPantsBuildTarget = createTarget(model);
-    return ContainerUtil.createMaybeSingletonList(myPantsBuildTarget);
-  }
-
-  @Nullable
-  public PantsBuildTarget createTarget(JpsModel model) {
-    final JpsProject jpsProject = model.getProject();
-    final JpsPantsProjectExtension pantsProjectExtension = PantsJpsProjectExtensionSerializer.findPantsProjectExtension(jpsProject);
-
-    final Set<String> allTargetAddresses = new HashSet<String>();
-    final Set<TargetAddressInfo> targetAddressInfoSet = new HashSet<TargetAddressInfo>();
-    for (JpsPantsModuleExtension moduleExtension : PantsJpsUtil.findPantsModules(jpsProject.getModules())) {
-      allTargetAddresses.addAll(moduleExtension.getTargetAddresses());
-      targetAddressInfoSet.addAll(moduleExtension.getTargetAddressInfoSet());
-    }
-
-    return PantsJpsUtil.containsPantsModules(jpsProject.getModules()) ?
-           new PantsBuildTarget(
-             pantsProjectExtension.getPantsExecutablePath(), new HashSet<String>(allTargetAddresses), targetAddressInfoSet) : null;
-  }
-
-  public void addTargetId(@Nullable String targetAddress) {
-    if (myPantsBuildTarget != null && targetAddress != null) {
-      myPantsBuildTarget.addJUnitRunModule(targetAddress);
-    }
+    return Collections.emptyList();
   }
 
   @NotNull
@@ -72,7 +42,6 @@ public class PantsBuildTargetType extends BuildTargetType<PantsBuildTarget> {
       @Nullable
       @Override
       public PantsBuildTarget createTarget(@Nullable String targetAddress) {
-        addTargetId(targetAddress);
         return myPantsBuildTarget;
       }
     };
