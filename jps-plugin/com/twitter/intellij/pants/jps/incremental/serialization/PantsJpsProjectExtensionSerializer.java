@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.jps.incremental.serialization;
 
 import com.intellij.openapi.util.JDOMExternalizerUtil;
-import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +24,7 @@ public class PantsJpsProjectExtensionSerializer extends JpsProjectExtensionSeria
     final Element linkedSettings = JDOMExternalizerUtil.getOption(componentTag, LINKED_PROJECT_SETTINGS);
     final Element projectSettings = linkedSettings != null ? linkedSettings.getChild(PROJECT_SETTINGS) : null;
     if (projectSettings != null) {
-      throw new PantsException("Please use PantsCompile under `Edit Configuration`");
+      throw new PantsException("This is a Pants project. Please use PantsCompile under `Edit Configuration`");
     }
   }
 

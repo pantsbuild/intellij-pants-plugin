@@ -25,6 +25,9 @@ public class ExternalBuilderIntegrationTest extends OSSPantsIntegrationTest {
     // Not extracting into PantsBundle because passing SDK classpath
     // to external builder is tricky. Plus only one error needs to be
     // tested here.
-    assertContainsSubstring(make.iterator().next().getMessage(), "Please use PantsCompile under `Edit Configuration`");
+    assertContainsSubstring(
+      make.iterator().next().getMessage(),
+      "This is a Pants project. Please use PantsCompile under `Edit Configuration`"
+    );
   }
 }
