@@ -19,7 +19,6 @@ import com.twitter.intellij.pants.model.SimpleExportResult;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.BuildGraph;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.ui.PantsIncrementalImportManager;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -76,25 +75,12 @@ public class PantsResolver {
   }
 
   public void resolve(
-    boolean isEnableIncrementalImport,
-    @Nullable final String projectId,
     @NotNull Consumer<String> statusConsumer,
     @Nullable ProcessAdapter processAdapter
   ) {
-    if (projectId != null) {
-      String previousPantsExportResult = PantsIncrementalImportManager.getPantsExportResult(projectId);
-      if (isEnableIncrementalImport && previousPantsExportResult != null) {
-        parse(previousPantsExportResult);
-        return;
-      }
-    }
-
     try {
       String pantsExportResult = myExecutor.loadProjectStructure(statusConsumer, processAdapter);
       parse(pantsExportResult);
-      if (projectId != null) {
-        PantsIncrementalImportManager.addPantsExportResult(projectId, pantsExportResult);
-      }
     }
     catch (ExecutionException | IOException e) {
       throw new ExternalSystemException(e);

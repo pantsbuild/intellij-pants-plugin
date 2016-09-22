@@ -188,8 +188,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   ) {
     final PantsResolver dependenciesResolver = new PantsResolver(executor);
     dependenciesResolver.resolve(
-      isEnableImcrementalImport,
-      id.getIdeProjectId(),
       new Consumer<String>() {
         @Override
         public void consume(String status) {

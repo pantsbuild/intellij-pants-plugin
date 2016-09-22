@@ -42,7 +42,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
 
     final PantsResolver resolver =
       new PantsResolver(PantsCompileOptionsExecutor.create(myProjectRoot.getPath(), settings));
-    resolver.resolve(false, null, STRING_CONSUMER, null);
+    resolver.resolve(STRING_CONSUMER, null);
     final ProjectInfo projectInfo = resolver.getProjectInfo();
     assertNotNull(projectInfo);
     return projectInfo;

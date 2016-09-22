@@ -12,6 +12,5 @@ public class PantsOptionsInvalidationAction extends AnAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
     PantsUtil.invalidatePluginCaches();
-    PantsIncrementalImportManager.clearCache();
   }
 }
