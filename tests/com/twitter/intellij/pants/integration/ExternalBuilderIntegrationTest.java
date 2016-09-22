@@ -19,7 +19,9 @@ public class ExternalBuilderIntegrationTest extends OSSPantsIntegrationTest {
       "examples_src_java_org_pantsbuild_example_hello_greet_greet",
       "examples_src_java_org_pantsbuild_example_hello_simple_simple",
       "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
-      "examples_src_java_org_pantsbuild_example_hello_module"
+      "examples_src_java_org_pantsbuild_example_hello_module",
+      "examples_src_java_org_pantsbuild_example_hello_main_readme",
+      "examples_src_java_org_pantsbuild_example_hello_main_common_sources"
     );
 
     List<CompilerMessage> make = getCompilerTester().make();

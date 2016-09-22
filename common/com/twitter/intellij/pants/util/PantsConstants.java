@@ -7,12 +7,7 @@ import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.util.text.CaseInsensitiveStringHashingStrategy;
-import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
-import java.util.Set;
 
 
 public class PantsConstants {
@@ -28,8 +23,6 @@ public class PantsConstants {
   public static final String PANTS_INI = "pants.ini";
   public static final String PANTS_PEX = "pants.pex";
   public static final String PANTS_LIBRARY_NAME = PANTS_PEX;
-
-  public static final String COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE = "No changes to compile.";
 
   protected static final String BUILD = "BUILD";
   protected static final String THRIFT_EXT = "thrift";
