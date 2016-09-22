@@ -119,7 +119,7 @@ public class PantsResolver {
           "No target root found for constructing the build graph to support incremental import. " +
           "Please make sure pants export version is 1.0.9 or above.");
       }
-      buildGraph = Optional.of(new BuildGraph(myProjectInfo));
+      buildGraph = Optional.of(new BuildGraph(myProjectInfo.getTargets()));
     }
     else {
       buildGraph = Optional.empty();

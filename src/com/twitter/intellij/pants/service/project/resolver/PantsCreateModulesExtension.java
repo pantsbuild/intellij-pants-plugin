@@ -59,7 +59,7 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
       logger.info(String.format("TargetInfo level %s", depthToInclude));
       targetInfoWithinLevel = buildGraph
         .get()
-        .getNodesByLevel(depthToInclude)
+        .getNodesUpToLevel(depthToInclude)
         .stream()
         .map(Node::getTargetInfo)
         .collect(Collectors.toSet());

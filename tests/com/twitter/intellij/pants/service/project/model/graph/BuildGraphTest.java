@@ -63,7 +63,7 @@ public class BuildGraphTest extends TestCase {
   }
 
   private Set<String> getAddressesByLevel(BuildGraph graph, int level) {
-    return graph.getNodesByLevel(level).stream().map(Node::getAddress).collect(Collectors.toSet());
+    return graph.getNodesUpToLevel(level).stream().map(Node::getAddress).collect(Collectors.toSet());
   }
 
   public void test4() throws Exception {

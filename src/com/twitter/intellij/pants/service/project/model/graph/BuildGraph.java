@@ -7,7 +7,6 @@ package com.twitter.intellij.pants.service.project.model.graph;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.diagnostic.Logger;
 import com.twitter.intellij.pants.PantsException;
-import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 
 import java.util.HashSet;
@@ -38,16 +37,7 @@ public class BuildGraph {
     }
   }
 
-  public BuildGraph(ProjectInfo projectInfo) {
-    // add everybody in
-    addTargetsToBuildGraph(projectInfo.getTargets());
-  }
-
   public BuildGraph(Map<String, TargetInfo> targets) {
-    addTargetsToBuildGraph(targets);
-  }
-
-  private void addTargetsToBuildGraph(Map<String, TargetInfo> targets) {
     allNodes.addAll(
       targets
         .entrySet()
@@ -73,30 +63,35 @@ public class BuildGraph {
     }
   }
 
-  // TODO: not the most efficient way to find max depth yet.
+  // FIXME: not the most efficient way to find max depth yet.
   public int getMaxDepth() {
     int depth = 0;
-    int lastNodeCount = -1;
+    Set<Node> results = getTargetRoots();
 
     while (true) {
-      Set<Node> nodesByLevel = getNodesByLevel(depth);
-      if (nodesByLevel.size() == lastNodeCount && nodesByLevel.size() != allNodes.size()) {
-        Set<Node> orphanNodes = Sets.difference(allNodes, nodesByLevel);
-        throw new OrphanedNodeException(String.format(ERROR_ORPHANED_NODE, orphanNodes));
+      Set<Node> dependencies = new HashSet<>();
+      for (Node node : results) {
+        dependencies.addAll(node.getDependencies());
       }
-
-      if (nodesByLevel.size() == allNodes.size()) {
-        return depth;
+      int resultBefore = results.size();
+      results.addAll(dependencies);
+      if (results.size() == resultBefore) {
+        if (results.size() == allNodes.size()){
+          return depth;
+        }
+        else {
+          Set<Node> orphanNodes = Sets.difference(allNodes, results);
+          throw new OrphanedNodeException(String.format(ERROR_ORPHANED_NODE, orphanNodes));
+        }
       }
-      lastNodeCount = nodesByLevel.size();
       depth++;
     }
   }
 
   // level 0 - target roots
-  // level 1 - direct deps
+  // level 1 - target roots + direct deps
   // ...
-  public Set<Node> getNodesByLevel(int level) {
+  public Set<Node> getNodesUpToLevel(int level) {
     // Holds the current scope of build graph.
     Set<Node> results = getTargetRoots();
     for (int i = 0; i < level; i++) {
