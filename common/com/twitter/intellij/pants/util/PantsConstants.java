@@ -64,4 +64,6 @@ public class PantsConstants {
   public static final String ACTION_MAKE_PROJECT_ID = "CompileDirty";
   public static final String ACTION_MAKE_PROJECT_DESCRIPTION = "Make Project";
   public static final String REBUILD_PROJECT_DESCRIPTION = "Rebuild Project";
+
+  public static final String EXTERNAL_BUILDER_ERROR = "This is a Pants project. Please use PantsCompile under `Edit Configuration`";
 }
