@@ -21,7 +21,7 @@ public class BuildGraph {
     "No target roots found in build graph. Please make sure Pants export version >= 1.0.9";
 
   private static Logger logger = Logger.getInstance("#" + BuildGraph.class.getName());
-  private Set<Node> allNodes = new HashSet<>();
+  private Set<BuildGraphNode> allNodes = new HashSet<>();
 
   public class OrphanedNodeException extends PantsException {
 
@@ -42,16 +42,16 @@ public class BuildGraph {
       targets
         .entrySet()
         .stream()
-        .map(Node::new)
+        .map(BuildGraphNode::new)
         .collect(Collectors.toList())
     );
 
     // then process their relationships, dependencies and dependees
-    for (Node node : allNodes) {
+    for (BuildGraphNode node : allNodes) {
       Set<String> deps = node.getTargetInfo().getTargets();
       for (String dep : deps) {
         // FIXME: getNode is currently linear search.
-        Optional<Node> depNode = getNode(dep);
+        Optional<BuildGraphNode> depNode = getNode(dep);
         if (depNode.isPresent()) {
           node.addDependency(depNode.get());
           depNode.get().addDepeedee(node);
@@ -66,11 +66,11 @@ public class BuildGraph {
   // FIXME: not the most efficient way to find max depth yet.
   public int getMaxDepth() {
     int depth = 0;
-    Set<Node> currentNodeSet = getTargetRoots();
+    Set<BuildGraphNode> currentNodeSet = getTargetRoots();
 
     while (true) {
-      Set<Node> dependencyNodes = currentNodeSet.stream()
-        .map(Node::getDependencies)
+      Set<BuildGraphNode> dependencyNodes = currentNodeSet.stream()
+        .map(BuildGraphNode::getDependencies)
         .flatMap(Set::stream)
         .collect(Collectors.toSet());
 
@@ -81,7 +81,7 @@ public class BuildGraph {
           return depth;
         }
         else {
-          Set<Node> orphanNodes = Sets.difference(allNodes, currentNodeSet);
+          Set<BuildGraphNode> orphanNodes = Sets.difference(allNodes, currentNodeSet);
           throw new OrphanedNodeException(String.format(ERROR_ORPHANED_NODE, orphanNodes));
         }
       }
@@ -92,12 +92,12 @@ public class BuildGraph {
   // level 0 - target roots
   // level 1 - target roots + direct deps
   // ...
-  public Set<Node> getNodesUpToLevel(int level) {
+  public Set<BuildGraphNode> getNodesUpToLevel(int level) {
     // Holds the current scope of build graph.
-    Set<Node> results = getTargetRoots();
+    Set<BuildGraphNode> results = getTargetRoots();
     for (int i = 0; i < level; i++) {
-      Set<Node> dependencies = new HashSet<>();
-      for (Node node : results) {
+      Set<BuildGraphNode> dependencies = new HashSet<>();
+      for (BuildGraphNode node : results) {
         dependencies.addAll(node.getDependencies());
       }
       results.addAll(dependencies);
@@ -109,15 +109,15 @@ public class BuildGraph {
     return results;
   }
 
-  private Set<Node> getTargetRoots() {
-    Set<Node> targetRoots = allNodes.stream().filter(Node::isTargetRoot).collect(Collectors.toSet());
+  private Set<BuildGraphNode> getTargetRoots() {
+    Set<BuildGraphNode> targetRoots = allNodes.stream().filter(BuildGraphNode::isTargetRoot).collect(Collectors.toSet());
     if (targetRoots.isEmpty()) {
       throw new NoTargetRootException(ERROR_NO_TARGET_ROOT);
     }
     return targetRoots;
   }
 
-  private Optional<Node> getNode(String targetAddress) {
+  private Optional<BuildGraphNode> getNode(String targetAddress) {
     return allNodes.stream()
       .filter(n -> n.getAddress().equals(targetAddress))
       .findFirst();

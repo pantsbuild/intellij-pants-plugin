@@ -23,7 +23,7 @@ import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.metadata.TargetMetadata;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
-import com.twitter.intellij.pants.service.project.model.graph.Node;
+import com.twitter.intellij.pants.service.project.model.graph.BuildGraphNode;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
@@ -61,7 +61,7 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
         .get()
         .getNodesUpToLevel(depthToInclude)
         .stream()
-        .map(Node::getTargetInfo)
+        .map(BuildGraphNode::getTargetInfo)
         .collect(Collectors.toSet());
     }
 

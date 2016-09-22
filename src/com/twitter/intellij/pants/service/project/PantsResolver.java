@@ -117,7 +117,7 @@ public class PantsResolver {
       if (PantsUtil.versionCompare(result.getVersion(), "1.0.9") < 0) {
         throw new PantsException(
           "No target root found for constructing the build graph to support incremental import. " +
-          "Please make sure pants export version is 1.0.9 or above.");
+          "Please upgrade Pants or disable this feature.");
       }
       buildGraph = Optional.of(new BuildGraph(myProjectInfo.getTargets()));
     }

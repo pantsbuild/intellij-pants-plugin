@@ -13,9 +13,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Node and Module are one to one relationship.
+ * BuildGraphNode and Module are one to one relationship.
  */
-public class Node {
+public class BuildGraphNode {
   private TargetInfo myTargetInfo;
 
   public String getAddress() {
@@ -24,18 +24,18 @@ public class Node {
 
   private String address; // could be synthetic and tweaked by modifiers.
 
-  public Set<Node> getDependencies() {
+  public Set<BuildGraphNode> getDependencies() {
     return myDependencies;
   }
 
-  private Set<Node> myDependencies = new HashSet<>();
-  private Set<Node> myDependees = new HashSet<>();
+  private Set<BuildGraphNode> myDependencies = new HashSet<>();
+  private Set<BuildGraphNode> myDependees = new HashSet<>();
 
   public TargetInfo getTargetInfo() {
     return myTargetInfo;
   }
 
-  public Node(Map.Entry<String, TargetInfo> entrySet) {
+  public BuildGraphNode(Map.Entry<String, TargetInfo> entrySet) {
     address = entrySet.getKey();
     myTargetInfo = entrySet.getValue();
   }
@@ -48,11 +48,11 @@ public class Node {
     return myTargetInfo.getAddressInfos().stream().anyMatch(TargetAddressInfo::isTargetRoot);
   }
 
-  public void addDependency(Node node) {
+  public void addDependency(BuildGraphNode node) {
     myDependencies.add(node);
   }
 
-  public void addDepeedee(Node node) {
+  public void addDepeedee(BuildGraphNode node) {
     myDependees.add(node);
   }
 
