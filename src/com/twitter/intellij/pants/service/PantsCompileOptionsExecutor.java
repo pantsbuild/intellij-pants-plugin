@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 public class PantsCompileOptionsExecutor {
   protected static final Logger LOG = Logger.getInstance(PantsCompileOptionsExecutor.class);
+  public static final int PROJECT_NAME_LIMIT = 200;
 
   private final List<Process> myProcesses = ContainerUtil.createConcurrentList();
 
@@ -110,7 +111,8 @@ public class PantsCompileOptionsExecutor {
     List<String> buildRootPrefixedSpecs = myOptions.getTargetSpecs().stream()
       .map(s -> buildRootName + File.separator + s)
       .collect(Collectors.toList());
-    return String.join("__", buildRootPrefixedSpecs);
+    String candidateName = String.join("__", buildRootPrefixedSpecs).replaceAll(File.separator, ".");
+    return candidateName.substring(0, Math.min(PROJECT_NAME_LIMIT, candidateName.length()));
   }
 
   @NotNull

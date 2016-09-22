@@ -29,6 +29,6 @@ public class WholeRepoIntegrationTest extends OSSPantsIntegrationTest {
 
   public void testWholeRepo() throws Throwable {
     doImport("");
-    assertProjectName("dummy_repo/::");
+    assertProjectName("dummy_repo.::");
   }
 }
