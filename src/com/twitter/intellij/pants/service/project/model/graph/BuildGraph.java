@@ -66,21 +66,22 @@ public class BuildGraph {
   // FIXME: not the most efficient way to find max depth yet.
   public int getMaxDepth() {
     int depth = 0;
-    Set<Node> results = getTargetRoots();
+    Set<Node> currentNodeSet = getTargetRoots();
 
     while (true) {
-      Set<Node> dependencies = new HashSet<>();
-      for (Node node : results) {
-        dependencies.addAll(node.getDependencies());
-      }
-      int resultBefore = results.size();
-      results.addAll(dependencies);
-      if (results.size() == resultBefore) {
-        if (results.size() == allNodes.size()){
+      Set<Node> dependencyNodes = currentNodeSet.stream()
+        .map(Node::getDependencies)
+        .flatMap(Set::stream)
+        .collect(Collectors.toSet());
+
+      int sizeBeforeAdd = currentNodeSet.size();
+      currentNodeSet.addAll(dependencyNodes);
+      if (currentNodeSet.size() == sizeBeforeAdd) {
+        if (currentNodeSet.size() == allNodes.size()) {
           return depth;
         }
         else {
-          Set<Node> orphanNodes = Sets.difference(allNodes, results);
+          Set<Node> orphanNodes = Sets.difference(allNodes, currentNodeSet);
           throw new OrphanedNodeException(String.format(ERROR_ORPHANED_NODE, orphanNodes));
         }
       }
