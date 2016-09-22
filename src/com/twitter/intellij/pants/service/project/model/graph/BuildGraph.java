@@ -1,17 +1,17 @@
 // Copyright 2016 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.service.project.model;
+package com.twitter.intellij.pants.service.project.model.graph;
 
 
 import com.google.common.collect.Sets;
 import com.intellij.openapi.diagnostic.Logger;
 import com.twitter.intellij.pants.PantsException;
-import com.twitter.intellij.pants.model.TargetAddressInfo;
+import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.service.project.model.TargetInfo;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,16 +40,14 @@ public class BuildGraph {
 
   public BuildGraph(ProjectInfo projectInfo) {
     // add everybody in
-    Map<String, TargetInfo> targets = projectInfo
-      .getTargets();
-    processTargets(targets);
+    addTargetsToBuildGraph(projectInfo.getTargets());
   }
 
   public BuildGraph(Map<String, TargetInfo> targets) {
-    processTargets(targets);
+    addTargetsToBuildGraph(targets);
   }
 
-  private void processTargets(Map<String, TargetInfo> targets) {
+  private void addTargetsToBuildGraph(Map<String, TargetInfo> targets) {
     allNodes.addAll(
       targets
         .entrySet()
@@ -62,7 +60,7 @@ public class BuildGraph {
     for (Node node : allNodes) {
       Set<String> deps = node.getTargetInfo().getTargets();
       for (String dep : deps) {
-        // getNode is currently linear search.
+        // FIXME: getNode is currently linear search.
         Optional<Node> depNode = getNode(dep);
         if (depNode.isPresent()) {
           node.addDependency(depNode.get());
@@ -127,66 +125,5 @@ public class BuildGraph {
     return allNodes.stream()
       .filter(n -> n.getAddress().equals(targetAddress))
       .findFirst();
-  }
-
-  /**
-   * Node and Module are one to one relationship.
-   */
-  public class Node {
-    private TargetInfo myTargetInfo;
-
-    public String getAddress() {
-      return address;
-    }
-
-    private String address; // could be synthetic and tweaked by modifiers.
-
-    public Set<Node> getDependencies() {
-      return myDependencies;
-    }
-
-    private Set<Node> myDependencies = new HashSet<>();
-    private Set<Node> myDependees = new HashSet<>();
-
-    public TargetInfo getTargetInfo() {
-      return myTargetInfo;
-    }
-
-    public Node(Map.Entry<String, TargetInfo> entrySet) {
-      address = entrySet.getKey();
-      myTargetInfo = entrySet.getValue();
-    }
-
-    public boolean containsTargetAddress(String targetAddress) {
-      return myTargetInfo.getAddressInfos().stream().anyMatch(s -> s.getTargetAddress().equals(targetAddress));
-    }
-
-    public boolean isTargetRoot() {
-      return myTargetInfo.getAddressInfos().stream().anyMatch(TargetAddressInfo::isTargetRoot);
-    }
-
-    public void addDependency(Node node) {
-      myDependencies.add(node);
-    }
-
-    public void addDepeedee(Node node) {
-      myDependees.add(node);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(myTargetInfo);
-    }
-
-    @Override
-    public String toString() {
-      return super.toString() + " " +
-             String.join(
-               " ",
-               myTargetInfo.getAddressInfos().stream()
-                 .map(TargetAddressInfo::getTargetAddress)
-                 .collect(Collectors.toList())
-             );
-    }
   }
 }

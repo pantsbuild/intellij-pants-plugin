@@ -1,10 +1,12 @@
 // Copyright 2016 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.service.project.model;
+package com.twitter.intellij.pants.service.project.model.graph;
 
 import com.google.common.collect.Sets;
 import com.intellij.util.containers.HashMap;
+import com.twitter.intellij.pants.service.project.model.TargetInfo;
+import com.twitter.intellij.pants.service.project.model.TargetInfoTest;
 import junit.framework.TestCase;
 
 import java.util.Map;
@@ -61,7 +63,7 @@ public class BuildGraphTest extends TestCase {
   }
 
   private Set<String> getAddressesByLevel(BuildGraph graph, int level) {
-    return graph.getNodesByLevel(level).stream().map(BuildGraph.Node::getAddress).collect(Collectors.toSet());
+    return graph.getNodesByLevel(level).stream().map(Node::getAddress).collect(Collectors.toSet());
   }
 
   public void test4() throws Exception {

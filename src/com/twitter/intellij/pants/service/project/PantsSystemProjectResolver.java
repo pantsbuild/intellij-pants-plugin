@@ -180,7 +180,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void resolveUsingPantsGoal(
-    final ExternalSystemTaskId id,
+    @NotNull final ExternalSystemTaskId id,
     @NotNull PantsCompileOptionsExecutor executor,
     final ExternalSystemTaskNotificationListener listener,
     @NotNull DataNode<ProjectData> projectDataNode,
