@@ -96,7 +96,7 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
       public void run() {
         String result = Messages.showInputDialog(
           String.format(
-            "Enter the level of transitive dependencies to import min: 0, max: %s.\n" +
+            "Enter the depth of transitive dependencies to import min: 0, max: %s.\n" +
             "0: root level.\n" +
             "1: up to direct dependency.\n" +
             "%s: entire build graph", maxDepth, maxDepth

@@ -35,9 +35,9 @@ public class BuildGraphNode {
     return myTargetInfo;
   }
 
-  public BuildGraphNode(Map.Entry<String, TargetInfo> entrySet) {
-    address = entrySet.getKey();
-    myTargetInfo = entrySet.getValue();
+  public BuildGraphNode(Map.Entry<String, TargetInfo> entry) {
+    address = entry.getKey();
+    myTargetInfo = entry.getValue();
   }
 
   public boolean containsTargetAddress(String targetAddress) {

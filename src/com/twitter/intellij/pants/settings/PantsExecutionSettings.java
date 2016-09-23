@@ -22,7 +22,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private static final boolean DEFAULT_WITH_DEPENDEES = false;
   private static final boolean DEFAULT_WITH_SOURCES_AND_DOCS = true;
   private static final boolean DEFAULT_USE_IDEA_PROJECT_SDK = false;
-  private static final boolean DEFAULT_ENABE_INCREMENTAL_IMPORT = false;
+  private static final boolean DEFAULT_ENABLE_INCREMENTAL_IMPORT = false;
 
   public static PantsExecutionSettings createDefault() {
     return new PantsExecutionSettings(
@@ -30,7 +30,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
       DEFAULT_WITH_DEPENDEES,
       DEFAULT_WITH_SOURCES_AND_DOCS,
       DEFAULT_USE_IDEA_PROJECT_SDK,
-      DEFAULT_ENABE_INCREMENTAL_IMPORT
+      DEFAULT_ENABLE_INCREMENTAL_IMPORT
     );
   }
 
