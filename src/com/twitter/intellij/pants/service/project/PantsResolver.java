@@ -14,6 +14,7 @@ import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.SimpleExportResult;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
@@ -115,9 +116,7 @@ public class PantsResolver {
       Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(projectInfoDataNode.getData().getLinkedExternalProjectPath());
       SimpleExportResult result = SimpleExportResult.getExportResult(pantsExecutable.get().getPath());
       if (PantsUtil.versionCompare(result.getVersion(), "1.0.9") < 0) {
-        throw new PantsException(
-          "No target root found for constructing the build graph to support incremental import. " +
-          "Please upgrade Pants or disable this feature.");
+        throw new PantsException(PantsBundle.message("pants.resolve.incremental.import.unsupported"));
       }
       buildGraph = Optional.of(new BuildGraph(myProjectInfo.getTargets()));
     }
