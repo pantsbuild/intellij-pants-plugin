@@ -22,13 +22,14 @@ env:
   matrix:
     - IJ_ULTIMATE=false
     - IJ_ULTIMATE=true
-    - PANTS_SHA="release_1.2.0-dev3" TEST_SET=jvm-integration
-    - PANTS_SHA="release_1.2.0-dev2" TEST_SET=jvm-integration
-    - PANTS_SHA="release_1.2.0-dev1" TEST_SET=jvm-integration
-    - PANTS_SHA="release_1.1.0-pre5" TEST_SET=jvm-integration
-    - PANTS_SHA="release_1.1.0-pre4" TEST_SET=jvm-integration
-    - PANTS_SHA="release_1.1.0-pre3" TEST_SET=jvm-integration
-    - PANTS_SHA="release_1.1.0-pre2" TEST_SET=jvm-integration
+    - PANTS_SHA="release_1.2.0-dev11" TEST_SET=jvm-integration
+    - PANTS_SHA="release_1.2.0-dev10" TEST_SET=jvm-integration
+    - PANTS_SHA="release_1.2.0-dev8" TEST_SET=jvm-integration
+    - PANTS_SHA="release_1.2.0-dev6" TEST_SET=jvm-integration
+    - PANTS_SHA="release_1.2.0-dev5" TEST_SET=jvm-integration
+    - PANTS_SHA="release_1.1.0" TEST_SET=jvm-integration
+    - PANTS_SHA="release_1.1.0" TEST_SET=jvm-integration
+    - PANTS_SHA="release_1.0.1" TEST_SET=jvm-integration
 
 script:
   - ./scripts/run-tests-ci.sh
