@@ -224,7 +224,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void assertScalaLibrary(String moduleName) throws Exception {
-    assertModuleLibDep(moduleName, "Pants: org.scala-lang:scala-library:2.10.4");
+    assertModuleLibDep(moduleName, "Pants: org.scala-lang:scala-library:2.10.6");
   }
 
   protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
