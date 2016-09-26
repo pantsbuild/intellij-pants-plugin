@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.testFramework;
 
+import com.google.common.collect.Lists;
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.BeforeRunTaskProvider;
@@ -36,6 +37,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
+import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
@@ -224,7 +226,18 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void assertScalaLibrary(String moduleName) throws Exception {
-    assertModuleLibDep(moduleName, "Pants: org.scala-lang:scala-library:2.10.4");
+    // This is to match scala-platform used in pants repo across different releases,
+    // so we expect at least one of the versions should be found here.
+    ArrayList<String> expectedLibs =
+      Lists.newArrayList("Pants: org.scala-lang:scala-library:2.10.4", "Pants: org.scala-lang:scala-library:2.10.6");
+    for (String libName : expectedLibs) {
+      LibraryOrderEntry libX = ContainerUtil.getFirstItem(this.getModuleLibDeps(moduleName, libName));
+      if (libX != null) {
+        assertModuleLibDep(moduleName, libName);
+        return;
+      }
+    }
+    fail(String.format("Neither library is found for %s", expectedLibs));
   }
 
   protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
