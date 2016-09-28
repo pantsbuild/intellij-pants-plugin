@@ -36,6 +36,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -175,8 +176,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return Pair.create(true, Optional.empty());
     }
 
-    Optional<VirtualFile> pantsExecutable1 = PantsUtil.findPantsExecutable(currentProject);
-    if (!pantsExecutable1.isPresent()) {
+    Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(currentProject);
+    if (!pantsExecutable.isPresent()) {
       return Pair.create(
         false,
         Optional.of(
@@ -184,7 +185,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         )
       );
     }
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable1.get().getPath());
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable.get().getPath());
 
     showPantsMakeTaskMessage("Checking Pants options...", NotificationCategory.INFO, currentProject);
     Optional<PantsOptions> pantsOptional = PantsOptions.getPantsOptions(currentProject);

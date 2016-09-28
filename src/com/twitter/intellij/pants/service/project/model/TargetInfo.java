@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -175,7 +176,12 @@ public class TargetInfo {
   }
 
   public void addDependency(@NotNull String targetName) {
-    getTargets().add(targetName);
+    if (targets.isEmpty()) {
+      targets = new HashSet<>(Collections.singletonList(targetName));
+    }
+    else {
+      targets.add(targetName);
+    }
   }
 
   public boolean removeDependency(@NotNull String targetName) {

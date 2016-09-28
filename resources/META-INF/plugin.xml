@@ -67,6 +67,7 @@
               text="Compile all targets in project">
       </action>
     </group>
+
     <group id="Pants.Compile" text="Pants Compile" description="Pants compilation options" icon="PantsIcons.Icon"
            popup="true" class="com.twitter.intellij.pants.compiler.actions.PantsCompileActionGroup">
       <add-to-group anchor="before" group-id="ProjectViewCompileGroup" relative-to-action="ProjectViewCompileGroup" />
@@ -80,8 +81,6 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
-    <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsUnsupportedTargetsModifier"
-                         id="unsupportedTargetsRemover" order="first"/>
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.project.modifier.PantsCyclicDependenciesModifier"
                          id="cyclicDeps" order="after unsupportedTargetsRemover"/>
 

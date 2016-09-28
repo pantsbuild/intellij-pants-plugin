@@ -13,4 +13,6 @@ public interface PantsExecutionOptions {
   List<String> getTargetSpecs();
 
   boolean isWithDependees();
+
+  boolean isEnableIncrementalImport();
 }

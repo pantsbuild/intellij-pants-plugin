@@ -20,6 +20,8 @@ public class OSSPantsFromScriptIntegrationTest extends OSSPantsIntegrationTest {
       "examples_src_scala_org_pantsbuild_example_hello_hello",
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
       "examples_src_scala_org_pantsbuild_example_hello_exe_exe",
+      "examples_src_java_org_pantsbuild_example_hello_main_readme",
+      "examples_src_java_org_pantsbuild_example_hello_main_common_sources",
       "export1_module"
     );
 

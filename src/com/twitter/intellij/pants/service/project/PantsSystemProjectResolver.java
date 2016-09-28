@@ -72,7 +72,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
-    final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode);
+    final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.isEnableIncrementalImport());
     doViewSwitch(id, projectPath);
     task2executor.remove(id);
     return projectDataNode;
@@ -122,7 +122,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     @NotNull ExternalSystemTaskId id,
     @NotNull final PantsCompileOptionsExecutor executor,
     @NotNull ExternalSystemTaskNotificationListener listener,
-    boolean isPreviewMode
+    boolean isPreviewMode,
+    boolean isEnableImcrementalImport
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     // todo(fkorotkov): add ability to choose a name for a project
     final ProjectData projectData = new ProjectData(
@@ -139,7 +140,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {
-      resolveUsingPantsGoal(id, executor, listener, projectDataNode);
+      resolveUsingPantsGoal(id, executor, listener, projectDataNode, isEnableImcrementalImport);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
         // Add a module with content root as import project directory path.
@@ -179,10 +180,11 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   }
 
   private void resolveUsingPantsGoal(
-    final ExternalSystemTaskId id,
+    @NotNull final ExternalSystemTaskId id,
     @NotNull PantsCompileOptionsExecutor executor,
     final ExternalSystemTaskNotificationListener listener,
-    @NotNull DataNode<ProjectData> projectDataNode
+    @NotNull DataNode<ProjectData> projectDataNode,
+    boolean isEnableImcrementalImport
   ) {
     final PantsResolver dependenciesResolver = new PantsResolver(executor);
     dependenciesResolver.resolve(

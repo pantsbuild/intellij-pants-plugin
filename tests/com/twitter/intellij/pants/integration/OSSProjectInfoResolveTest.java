@@ -28,20 +28,20 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
 
   @NotNull
   private ProjectInfo resolveProjectInfo(@NotNull String targetSpec) {
-    final String absoluteProjectPath = FileUtil.join(myProjectRoot.getPath(), targetSpec);
-
     final boolean withDependees = false;
     final boolean libsWithSourcesAndDocs = true;
     final boolean useIdeaProjectJdk = false;
+    final boolean isEnableIncrementalImport = false;
     PantsExecutionSettings settings = new PantsExecutionSettings(
       Collections.singletonList(targetSpec),
       withDependees,
       libsWithSourcesAndDocs,
-      useIdeaProjectJdk
+      useIdeaProjectJdk,
+      isEnableIncrementalImport
     );
 
     final PantsResolver resolver =
-      new PantsResolver(PantsCompileOptionsExecutor.create(absoluteProjectPath, settings));
+      new PantsResolver(PantsCompileOptionsExecutor.create(myProjectRoot.getPath(), settings));
     resolver.resolve(STRING_CONSUMER, null);
     final ProjectInfo projectInfo = resolver.getProjectInfo();
     assertNotNull(projectInfo);

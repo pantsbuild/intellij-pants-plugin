@@ -9,10 +9,12 @@ import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
+import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.Optional;
 
 public interface PantsResolverExtension {
   Logger LOG = Logger.getInstance(PantsResolverExtension.class);
@@ -22,6 +24,7 @@ public interface PantsResolverExtension {
     @NotNull ProjectInfo projectInfo,
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
-    @NotNull Map<String, DataNode<ModuleData>> modules
+    @NotNull Map<String, DataNode<ModuleData>> modules,
+    @NotNull Optional<BuildGraph> buildGraph
   );
 }

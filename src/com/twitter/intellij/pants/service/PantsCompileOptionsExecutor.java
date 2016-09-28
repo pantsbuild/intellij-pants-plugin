@@ -28,7 +28,6 @@ import org.jetbrains.annotations.TestOnly;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,37 +44,22 @@ public class PantsCompileOptionsExecutor {
 
   @NotNull
   public static PantsCompileOptionsExecutor create(
-    @NotNull String externalProjectPath,
+    @NotNull String projectRootPath,
     @Nullable PantsExecutionSettings executionOptions
   ) throws ExternalSystemException {
-    PantsCompileOptions options;
-    final int targetNameDelimiterIndex = externalProjectPath.indexOf(':');
-    if (targetNameDelimiterIndex > 0) {
-      // normalizing. we don't have per module settings and a linked project path of a module contains target name.
-      final String buildFilePath = externalProjectPath.substring(0, targetNameDelimiterIndex);
-      final String targetName = externalProjectPath.substring(targetNameDelimiterIndex + 1);
-      options = new MyPantsCompileOptions(
-        buildFilePath,
-        new MyPantsExecutionOptions(
-          Collections.singletonList(PantsUtil.getRelativeProjectPath(new File(buildFilePath)).get() + ":" + targetName)
-        )
-      );
+    if (executionOptions == null) {
+      throw new ExternalSystemException("No execution options for " + projectRootPath);
     }
-    else if (executionOptions == null) {
-      throw new ExternalSystemException("No execution options for " + externalProjectPath);
-    }
-    else {
-      options = new MyPantsCompileOptions(externalProjectPath, executionOptions);
-    }
+    PantsCompileOptions options = new MyPantsCompileOptions(projectRootPath, executionOptions);
 
-    final Optional<File> buildRoot = PantsUtil.findBuildRoot(new File(options.getExternalProjectPath()));
+    Optional<File> buildRoot = PantsUtil.findBuildRoot(new File(options.getExternalProjectPath()));
     if (!buildRoot.isPresent() || !buildRoot.get().exists()) {
       throw new ExternalSystemException(PantsBundle.message("pants.error.no.pants.executable.by.path", options.getExternalProjectPath()));
     }
     return new PantsCompileOptionsExecutor(
       buildRoot.get(),
       options,
-      executionOptions != null && executionOptions.isLibsWithSourcesAndDocs()
+      executionOptions.isLibsWithSourcesAndDocs()
     );
   }
 
@@ -215,6 +199,7 @@ public class PantsCompileOptionsExecutor {
     throws IOException, ExecutionException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
     commandLine.addParameter("export");
+    commandLine.addParameter("--formatted"); // json outputs in a compact format
     if (myResolveSourcesAndDocsForJars) {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");
@@ -297,25 +282,9 @@ public class PantsCompileOptionsExecutor {
     public boolean isWithDependees() {
       return myExecutionOptions.isWithDependees();
     }
-  }
 
-  private static class MyPantsExecutionOptions implements PantsExecutionOptions {
-
-    private final List<String> myTargetSpecs;
-
-    private MyPantsExecutionOptions(@NotNull List<String> targetSpecs) {
-      myTargetSpecs = targetSpecs;
-    }
-
-    @NotNull
-    @Override
-    public List<String> getTargetSpecs() {
-      return myTargetSpecs;
-    }
-
-    @Override
-    public boolean isWithDependees() {
-      return false;
+    public boolean isEnableIncrementalImport() {
+      return myExecutionOptions.isEnableIncrementalImport();
     }
   }
 }

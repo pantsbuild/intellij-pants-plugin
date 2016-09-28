@@ -38,8 +38,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     return pantsSettings;
   }
 
+  public static PantsSettings getSystemLevelSettings() {
+    return getInstance(ProjectManager.getInstance().getDefaultProject());
+  }
+
   protected boolean myUseIdeaProjectJdk = false;
   protected boolean myUsePantsMakeBeforeRun = true;
+  // static as being a system level setting
+  protected boolean myEnableIncrementalImport = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
@@ -60,6 +66,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
   public void setUsePantsMakeBeforeRun(boolean usePantsMakeBeforeRun) {
     myUsePantsMakeBeforeRun = usePantsMakeBeforeRun;
+  }
+
+  public boolean isEnableIncrementalImport() {
+    return myEnableIncrementalImport;
+  }
+
+  public void setEnableIncrementalImport(boolean enableIncrementalImport) {
+    myEnableIncrementalImport = enableIncrementalImport;
   }
 
   public int getResolverVersion() {
@@ -85,6 +99,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     setResolverVersion(settings.getResolverVersion());
     setUseIdeaProjectJdk(settings.isUseIdeaProjectJdk());
     setUsePantsMakeBeforeRun(settings.isUsePantsMakeBeforeRun());
+    setEnableIncrementalImport(settings.isEnableIncrementalImport());
   }
 
   @Override
@@ -99,6 +114,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     state.setResolverVersion(getResolverVersion());
     state.setUseIdeaProjectJdk(isUseIdeaProjectJdk());
     state.setUsePantsMakeBeforeRun(isUsePantsMakeBeforeRun());
+    state.setEnableIncrementalImport(isEnableIncrementalImport());
     fillState(state);
     return state;
   }
@@ -109,6 +125,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     setResolverVersion(state.getResolverVersion());
     setUseIdeaProjectJdk(state.isUseIdeaProjectJdk());
     setUsePantsMakeBeforeRun(state.isUsePantsMakeBeforeRun());
+    setEnableIncrementalImport(state.isEnableIncrementalImport());
   }
 
   public static class MyState implements State<PantsProjectSettings> {
@@ -116,6 +133,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     boolean myUseIdeaProjectJdk = false;
     boolean myUsePantsMakeBeforeRun = false;
+    boolean myEnableIncrementalImport = false;
     int myResolverVersion = 0;
 
     @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
@@ -139,6 +157,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
       myUsePantsMakeBeforeRun = usePantsMakeBeforeRun;
     }
 
+    public boolean isEnableIncrementalImport() {
+      return myEnableIncrementalImport;
+    }
+
+    public void setEnableIncrementalImport(boolean myEnableIncrementalImport) {
+      myEnableIncrementalImport = myEnableIncrementalImport;
+    }
+
     public void setLinkedExternalProjectsSettings(Set<PantsProjectSettings> settings) {
       myLinkedExternalProjectsSettings = settings;
     }
@@ -150,5 +176,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     public void setResolverVersion(int resolverVersion) {
       myResolverVersion = resolverVersion;
     }
+
   }
 }

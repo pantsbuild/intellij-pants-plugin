@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.testFramework;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.BeforeRunTaskProvider;
@@ -241,9 +242,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
-    assertNotNull(
+    assertTrue(
       String.format("Didn't find %s class in %s module's output!", className, moduleName),
-      findClassFile(className, moduleName)
+      findClassFile(className, moduleName).isPresent()
     );
   }
 
@@ -384,7 +385,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       .map(Module::getName)
       .filter(moduleName -> !moduleName.startsWith(".pants.d") && !moduleName.startsWith("3rdparty"))
       .collect(Collectors.toSet());
-    assertEquals(Arrays.stream(expectedNames).collect(Collectors.toSet()), firstPartySourceModuleNames);
+
+    Set<String> expectedModuleNames = Arrays.stream(expectedNames).collect(Collectors.toSet());
+
+    Set<String> inExpectedOnly = Sets.difference(expectedModuleNames, firstPartySourceModuleNames);
+    Set<String> inFirstPartyOnly = Sets.difference(firstPartySourceModuleNames, expectedModuleNames);
+
+    assertEquals(
+      String.format("Only in expected: %s, only in actual: %s", inExpectedOnly, inFirstPartyOnly),
+      expectedModuleNames,
+      firstPartySourceModuleNames
+    );
   }
 
   protected void assertModuleExists(String moduleName) {

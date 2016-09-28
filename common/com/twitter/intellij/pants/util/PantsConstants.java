@@ -7,12 +7,7 @@ import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.util.text.CaseInsensitiveStringHashingStrategy;
-import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
-import java.util.Set;
 
 
 public class PantsConstants {
@@ -28,8 +23,6 @@ public class PantsConstants {
   public static final String PANTS_INI = "pants.ini";
   public static final String PANTS_PEX = "pants.pex";
   public static final String PANTS_LIBRARY_NAME = PANTS_PEX;
-
-  public static final String COMPILE_MESSAGE_NO_CHANGES_TO_COMPILE = "No changes to compile.";
 
   protected static final String BUILD = "BUILD";
   protected static final String THRIFT_EXT = "thrift";
@@ -66,16 +59,4 @@ public class PantsConstants {
   public static final String REBUILD_PROJECT_DESCRIPTION = "Rebuild Project";
 
   public static final String EXTERNAL_BUILDER_ERROR = "This is a Pants project. Please use PantsCompile under `Edit Configuration`";
-
-  public static Set<String> SUPPORTED_TARGET_TYPES = new THashSet<String>(
-    Arrays.asList(
-      "android_binary", "android_resources", "annotation_processor", "artifact", "artifactory", "bundle", "consume_thrift_libraries",
-      "dependencies", "generated_resources", "hadoop_binary", "heron_binary", "jar", "jar_library", "java_agent", "java_antlr_library",
-      "java_library", "java_protobuf_library", "java_ragel_library", "java_tests", "java_thrift_library",
-      "java_thriftstore_dml_library", "java_wire_library", "jaxb_library", "junit_tests", "jvm_app", "jvm_binary", "resources",
-      "scala_artifact", "scala_jar", "scala_library", "scala_specs", "scala_tests", "scalac_plugin", "storm_binary", "target",
-      "thrift_jar", "python_binary", "python_library", "python_test_suite", "python_tests"
-      ),
-    CaseInsensitiveStringHashingStrategy.INSTANCE
-  );
 }

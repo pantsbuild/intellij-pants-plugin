@@ -15,6 +15,7 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
+import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
@@ -27,6 +28,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class ScalaSdkResolver implements PantsResolverExtension {
@@ -37,7 +39,8 @@ public class ScalaSdkResolver implements PantsResolverExtension {
     @NotNull ProjectInfo projectInfo,
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
-    @NotNull Map<String, DataNode<ModuleData>> modules
+    @NotNull Map<String, DataNode<ModuleData>> modules,
+    @NotNull Optional<BuildGraph> buildGraph
   ) {
     final Map<String, Set<String>> scalaLibId2Jars = new HashMap<String, Set<String>>();
     for (String libId : ContainerUtil.sorted(projectInfo.getLibraries().keySet())) {

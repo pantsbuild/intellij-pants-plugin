@@ -13,6 +13,7 @@ import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PantsTargetNamesShortenerModifier implements PantsProjectInfoModifierExtension {
 
@@ -20,15 +21,12 @@ public class PantsTargetNamesShortenerModifier implements PantsProjectInfoModifi
 
   @Override
   public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
-    final List<String> longTargetNames = ContainerUtil.findAll(
-      projectInfo.getTargets().keySet(),
-      new Condition<String>() {
-        @Override
-        public boolean value(String targetName) {
-          return targetName.length() > MAX_MODULE_NAME_LENGTH;
-        }
-      }
-    );
+    final List<String> longTargetNames = projectInfo.getTargets()
+      .keySet()
+      .stream()
+      .filter(s -> s.length() > MAX_MODULE_NAME_LENGTH)
+      .collect(Collectors.toList());
+
     for (String targetName : longTargetNames) {
       final String newTargetName = StringUtil.trimMiddle(targetName, MAX_MODULE_NAME_LENGTH);
       log.info(targetName + " is too long! Will replace with " + newTargetName);

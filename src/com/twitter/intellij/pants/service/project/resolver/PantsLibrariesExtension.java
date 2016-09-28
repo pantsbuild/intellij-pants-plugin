@@ -13,6 +13,7 @@ import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.util.io.FileUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
+import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Optional;
 
 public class PantsLibrariesExtension implements PantsResolverExtension {
   @Override
@@ -30,7 +32,8 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
     @NotNull ProjectInfo projectInfo,
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull DataNode<ProjectData> projectDataNode,
-    @NotNull Map<String, DataNode<ModuleData>> modules
+    @NotNull Map<String, DataNode<ModuleData>> modules,
+    @NotNull Optional<BuildGraph> buildGraph
   ) {
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
       final TargetInfo targetInfo = entry.getValue();
@@ -59,6 +62,9 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
 
       projectDataNode.createChild(ProjectKeys.LIBRARY, libraryData);
       final DataNode<ModuleData> moduleDataNode = modules.get(jarTarget);
+      if (moduleDataNode == null) {
+        continue;
+      }
 
       final LibraryDependencyData library = new LibraryDependencyData(
         moduleDataNode.getData(),

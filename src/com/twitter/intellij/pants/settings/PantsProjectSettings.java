@@ -14,7 +14,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
   private boolean myWithDependees;
   private boolean myLibsWithSources;
-
+  private boolean myEnableIncrementalImport;
   /**
    * @param targetSpecs targets explicted listed from `pants idea-plugin` goal.
    * @param externalProjectPath path to the Pants project.
@@ -51,6 +51,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
       ((PantsProjectSettings)receiver).setWithDependees(isWithDependees());
       ((PantsProjectSettings)receiver).setLibsWithSources(isLibsWithSources());
       ((PantsProjectSettings)receiver).setTargetSpecs(getTargetSpecs());
+      ((PantsProjectSettings)receiver).setEnableIncrementalImport(isEnableIncrementalImport());
     }
   }
 
@@ -81,5 +82,13 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
 
   public void setLibsWithSources(boolean libsWithSources) {
     myLibsWithSources = libsWithSources;
+  }
+
+  public boolean isEnableIncrementalImport() {
+    return myEnableIncrementalImport;
+  }
+
+  public void setEnableIncrementalImport(boolean enableIncrementalImport) {
+    myEnableIncrementalImport = enableIncrementalImport;
   }
 }
