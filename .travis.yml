@@ -22,11 +22,11 @@ env:
   matrix:
     - IJ_ULTIMATE=false
     - IJ_ULTIMATE=true
+    - PANTS_SHA="release_1.2.0rc3" TEST_SET=jvm-integration
     - PANTS_SHA="release_1.2.0dev11" TEST_SET=jvm-integration
     - PANTS_SHA="release_1.2.0dev10" TEST_SET=jvm-integration
     - PANTS_SHA="release_1.2.0dev8" TEST_SET=jvm-integration
     - PANTS_SHA="release_1.2.0-dev6" TEST_SET=jvm-integration
-    - PANTS_SHA="release_1.2.0-dev5" TEST_SET=jvm-integration
     - PANTS_SHA="release_1.1.0" TEST_SET=jvm-integration
 
 script:
