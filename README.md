@@ -2,7 +2,7 @@
 
 * The intellij-pants-plugin supports importing, compiling and testing [Pants](http://pantsbuild.github.io/) projects.
 * Scala and Java projects are fully supported. Python projects are not supported but work in terms of code navigation and assistance.
-* As of 5/5/2016, latest version of the plugin supports IntelliJ IDEA 2016.1.1 and up for both Community Edition and Ultimate Edition.
+* As of 11/2/2016, latest version of the plugin supports IntelliJ IDEA 2016.2.1 and up for both Community Edition and Ultimate Edition.
 * The plugin supports up to 10 most recent [Pants releases](https://pantsbuild.github.io/changelog.html).
 
 ## User documentation
@@ -86,4 +86,4 @@ Compilation options can be configured in Preferences -> Build, Execution, Deploy
   You can right click on tests and run tests.
 
 ### Report Bugs
-If you encounter any bug, please check for existing issues or file a new one on [the project page](https://github.com/pantsbuild/intellij-pants-plugin/issues).
+If you encounter a bug, please check for existing issues or file a new one on [the project page](https://github.com/pantsbuild/intellij-pants-plugin/issues).
