@@ -36,7 +36,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
@@ -172,10 +171,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public Pair<Boolean, Optional<String>> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     // If project has not changed since last Compile, return immediately.
-    if (!FileChangeTracker.hasChanged(currentProject)) {
+    if (!FileChangeTracker.shouldRecompile(currentProject, targetAddressesToCompile)) {
       return Pair.create(true, Optional.empty());
     }
-    FileChangeTracker.reset(currentProject);
+    FileChangeTracker.resetWithCompile(currentProject, targetAddressesToCompile);
 
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
@@ -256,7 +255,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     final boolean success = process.exitValue() == 0;
     if (!success) {
-      FileChangeTracker.markProjectDirty(currentProject);
+      FileChangeTracker.markDirty(currentProject);
     }
     notifyCompileResult(success);
     // Sync files as generated sources may have changed after Pants compile.
