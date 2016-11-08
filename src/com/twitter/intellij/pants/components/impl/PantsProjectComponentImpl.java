@@ -44,6 +44,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   @Override
   public void projectClosed() {
     PantsMetrics.report();
+    FileChangeTracker.unregisterProject(myProject);
     super.projectClosed();
   }
 
