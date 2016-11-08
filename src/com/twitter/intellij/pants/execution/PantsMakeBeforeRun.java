@@ -171,10 +171,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   public Pair<Boolean, Optional<String>> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
+    // If project has not changed since last Compile, return immediately.
     if (!FileChangeTracker.hasChanged(currentProject)) {
       return Pair.create(true, Optional.empty());
     }
-
+    FileChangeTracker.reset(currentProject);
 
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
@@ -254,13 +255,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     processHandler.runProcess();
 
     final boolean success = process.exitValue() == 0;
+    if (!success) {
+      FileChangeTracker.markProjectDirty(currentProject);
+    }
     notifyCompileResult(success);
     // Sync files as generated sources may have changed after Pants compile.
     PantsUtil.synchronizeFiles();
     String finalOutString = String.join("", output);
     Pair<Boolean, Optional<String>> result = Pair.create(success, Optional.of(finalOutString));
-
-    FileChangeTracker.reset(currentProject);
     return result;
   }
 
