@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.file;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileCopyEvent;
@@ -14,14 +15,20 @@ import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 public class FileChangeTracker {
   private static FileChangeTracker instance = new FileChangeTracker();
-  private static ConcurrentHashMap<Project, Boolean> projectStates = new ConcurrentHashMap<>();
-  // Maps from project to changed
+
+  // One to one relation between VirtualFileListener and Project,
+  // so whenever a VirtualFileListener is triggered, we know which Project is affected.
   private static ConcurrentHashMap<VirtualFileListener, Project> listenToProjectMap = new ConcurrentHashMap<>();
+
+  // Maps from Project to <isDirty, lastTargetsToCompile>
+  private static ConcurrentHashMap<Project, Pair<Boolean, Set<String>>> projectStates = new ConcurrentHashMap<>();
 
   FileChangeTracker getInstance() {
     return instance;
@@ -32,25 +39,21 @@ public class FileChangeTracker {
     boolean inProject = ProjectRootManager.getInstance(project).getFileIndex().getContentRootForFile(file) != null;
     System.out.println(String.format("Changed: %s. In project: %s", file.getPath(), inProject));
     if (inProject) {
-      markProjectDirty(project);
+      markDirty(project);
     }
   }
 
-  public static void markProjectDirty(@NotNull Project project) {
-    projectStates.put(project, true);
+  public static void markDirty(@NotNull Project project) {
+    projectStates.put(project, Pair.create(true, Collections.emptySet()));
   }
 
-  public static boolean hasChanged(@NotNull Project project) {
-    if (projectStates.containsKey(project)) {
-      return projectStates.get(project);
-    }
-    else {
-      return true;
-    }
+  public static boolean shouldRecompile(@NotNull Project project, @NotNull Set<String> targetsToCompile) {
+    // Recompile if project has changed, or last compile has different set of targets.
+    return !Pair.create(false, targetsToCompile).equals(projectStates.get(project));
   }
 
-  public static void reset(@NotNull Project project) {
-    projectStates.put(project, false);
+  public static void resetWithCompile(@NotNull Project project, @NotNull Set<String> targetsToCompile) {
+    projectStates.put(project, Pair.create(false, targetsToCompile));
     System.out.println("Reset.");
   }
 
