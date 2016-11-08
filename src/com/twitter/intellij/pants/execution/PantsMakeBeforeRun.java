@@ -39,6 +39,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -170,6 +171,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   public Pair<Boolean, Optional<String>> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
+    if (!FileChangeTracker.hasChanged(currentProject)) {
+      return Pair.create(true, Optional.empty());
+    }
+
+
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
@@ -253,6 +259,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     PantsUtil.synchronizeFiles();
     String finalOutString = String.join("", output);
     Pair<Boolean, Optional<String>> result = Pair.create(success, Optional.of(finalOutString));
+
+    FileChangeTracker.reset(currentProject);
     return result;
   }
 
