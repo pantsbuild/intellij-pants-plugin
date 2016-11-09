@@ -31,18 +31,8 @@ import java.util.Set;
 public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings, PantsProjectSettings, PantsSettingsListener>
   implements PersistentStateComponent<PantsSettings.MyState> {
 
-  @NotNull
-  public static PantsSettings defaultSettings() {
-    final PantsSettings pantsSettings = new PantsSettings(ProjectManager.getInstance().getDefaultProject());
-    pantsSettings.setResolverVersion(PantsResolver.VERSION);
-    return pantsSettings;
-  }
-
-  public static PantsSettings getSystemLevelSettings() {
-    return getInstance(ProjectManager.getInstance().getDefaultProject());
-  }
-
   protected boolean myUseIdeaProjectJdk = false;
+
   protected boolean myUsePantsMakeBeforeRun = true;
   // static as being a system level setting
   protected boolean myEnableIncrementalImport = false;
@@ -50,6 +40,23 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
+  }
+
+  @NotNull
+  public static PantsSettings defaultSettings() {
+    final PantsSettings pantsSettings = new PantsSettings(ProjectManager.getInstance().getDefaultProject());
+    pantsSettings.setResolverVersion(PantsResolver.VERSION);
+    return pantsSettings;
+  }
+
+  public static PantsSettings copy(PantsSettings pantsSettings) {
+    PantsSettings settings = defaultSettings();
+    settings.copyFrom(pantsSettings);
+    return settings;
+  }
+
+  public static PantsSettings getSystemLevelSettings() {
+    return getInstance(ProjectManager.getInstance().getDefaultProject());
   }
 
   public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
@@ -161,8 +168,8 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
       return myEnableIncrementalImport;
     }
 
-    public void setEnableIncrementalImport(boolean myEnableIncrementalImport) {
-      myEnableIncrementalImport = myEnableIncrementalImport;
+    public void setEnableIncrementalImport(boolean enableIncrementalImport) {
+      myEnableIncrementalImport = enableIncrementalImport;
     }
 
     public void setLinkedExternalProjectsSettings(Set<PantsProjectSettings> settings) {
@@ -176,6 +183,5 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     public void setResolverVersion(int resolverVersion) {
       myResolverVersion = resolverVersion;
     }
-
   }
 }

@@ -171,10 +171,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public Pair<Boolean, Optional<String>> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     // If project has not changed since last Compile, return immediately.
-    if (!FileChangeTracker.shouldRecompile(currentProject, targetAddressesToCompile)) {
+    if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddressesToCompile)) {
       return Pair.create(true, Optional.empty());
     }
-    FileChangeTracker.resetWithCompile(currentProject, targetAddressesToCompile);
 
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
@@ -254,6 +253,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     processHandler.runProcess();
 
     final boolean success = process.exitValue() == 0;
+    // Mark project dirty if compile failed.
     if (!success) {
       FileChangeTracker.markDirty(currentProject);
     }
