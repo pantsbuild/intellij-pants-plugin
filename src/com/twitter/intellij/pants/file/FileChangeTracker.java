@@ -111,6 +111,7 @@ public class FileChangeTracker {
     Optional<CompileSnapshot> previousSnapshot = pair.getSecond();
     // Recompile if there is no previous record.
     if (!previousSnapshot.isPresent()) {
+      projectStates.put(project, Pair.create(false, Optional.of(snapshot)));
       return true;
     }
     // Recompile if current snapshot is different from previous one.
@@ -184,10 +185,12 @@ public class FileChangeTracker {
 
       @Override
       public void beforeFileDeletion(@NotNull VirtualFileEvent event) {
+        FileChangeTracker.markDirty(event.getFile(), this);
       }
 
       @Override
       public void beforeFileMovement(@NotNull VirtualFileMoveEvent event) {
+        FileChangeTracker.markDirty(event.getFile(), this);
       }
     };
   }

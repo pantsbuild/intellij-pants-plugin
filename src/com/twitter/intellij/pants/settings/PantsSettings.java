@@ -19,6 +19,7 @@ import com.twitter.intellij.pants.service.project.PantsResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Set;
 
 @State(
@@ -32,9 +33,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   implements PersistentStateComponent<PantsSettings.MyState> {
 
   protected boolean myUseIdeaProjectJdk = false;
-
   protected boolean myUsePantsMakeBeforeRun = true;
-  // static as being a system level setting
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
@@ -46,6 +45,20 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     final PantsSettings pantsSettings = new PantsSettings(ProjectManager.getInstance().getDefaultProject());
     pantsSettings.setResolverVersion(PantsResolver.VERSION);
     return pantsSettings;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    PantsSettings other = (PantsSettings) obj;
+    return Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk)
+      && Objects.equals(myUsePantsMakeBeforeRun, other.myUsePantsMakeBeforeRun)
+      && Objects.equals(myResolverVersion, other.myResolverVersion);
   }
 
   public static PantsSettings copy(PantsSettings pantsSettings) {
@@ -132,7 +145,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     boolean myUseIdeaProjectJdk = false;
     boolean myUsePantsMakeBeforeRun = false;
-    boolean myEnableIncrementalImport = false;
     int myResolverVersion = 0;
 
     @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
