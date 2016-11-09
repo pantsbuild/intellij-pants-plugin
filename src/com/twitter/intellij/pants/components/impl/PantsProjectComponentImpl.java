@@ -108,7 +108,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            */
           final List<String> targetSpecs = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
           final PantsProjectSettings pantsProjectSettings =
-            new PantsProjectSettings(targetSpecs, projectPath, false, true);
+            new PantsProjectSettings(targetSpecs, projectPath, false, true, false);
 
           /**
            * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:

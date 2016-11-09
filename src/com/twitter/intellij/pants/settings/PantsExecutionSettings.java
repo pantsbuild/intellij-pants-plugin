@@ -35,23 +35,24 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   }
 
   /**
-   * @param targetSpecs:            targets explicitly listed from `pants idea-plugin` goal.
-   * @param withDependees:          whether depeedees need to be imported. (Untested and probably not working).
-   * @param libsWithSourcesAndDocs: whether to import sources and docs when resolving for jars.
-   * @param useIdeaProjectJdk:      whether explicitly to use the JDK selected in project for Pants compile.
+   * @param targetSpecs:             targets explicitly listed from `pants idea-plugin` goal.
+   * @param withDependees:           whether depeedees need to be imported. (Untested and probably not working).
+   * @param libsWithSourcesAndDocs:  whether to import sources and docs when resolving for jars.
+   * @param useIdeaProjectJdk:       whether explicitly to use the JDK selected in project for Pants compile.
+   * @param enableIncrementalImport: whether incrementally import the project.
    */
   public PantsExecutionSettings(
     List<String> targetSpecs,
     boolean withDependees,
     boolean libsWithSourcesAndDocs,
     boolean useIdeaProjectJdk,
-    boolean isEnableIncrementalImport
+    boolean enableIncrementalImport
   ) {
     myTargetSpecs = targetSpecs;
     myWithDependees = withDependees;
     myLibsWithSourcesAndDocs = libsWithSourcesAndDocs;
     myUseIdeaProjectJdk = useIdeaProjectJdk;
-    myEnableIncrementalImport = isEnableIncrementalImport;
+    myEnableIncrementalImport = enableIncrementalImport;
   }
 
   @NotNull
