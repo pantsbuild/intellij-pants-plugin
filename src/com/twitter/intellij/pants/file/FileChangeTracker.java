@@ -107,14 +107,19 @@ public class FileChangeTracker {
       projectStates.put(project, Pair.create(false, Optional.of(snapshot)));
       return true;
     }
+
+    Optional<CompileSnapshot> previousSnapshot = pair.getSecond();
     // Recompile if there is no previous record.
-    if (!pair.getSecond().isPresent()) {
+    if (!previousSnapshot.isPresent()) {
       return true;
     }
-    boolean return_code = snapshot.equals(pair.getSecond().get());
-
-    projectStates.put(project, Pair.create(false, Optional.of(snapshot)));
-    return return_code;
+    // Recompile if current snapshot is different from previous one.
+    // Then reset snapshot.
+    if (!snapshot.equals(previousSnapshot.get())) {
+      projectStates.put(project, Pair.create(false, Optional.of(snapshot)));
+      return true;
+    }
+    return false;
   }
 
   public static void registerProject(@NotNull Project project) {
