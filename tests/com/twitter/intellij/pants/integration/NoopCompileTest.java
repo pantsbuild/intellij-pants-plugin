@@ -52,7 +52,7 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileNoop(pantsCompileProject());
   }
 
-  public void testTouchFileShouldOp() throws Throwable {
+  public void testEditFileInProjectShouldOp() throws Throwable {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     modify("org.pantsbuild.example.hello.welcome.WelSpec");
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
@@ -68,7 +68,7 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
   }
 
-  public void testAddThenDeleteFileOutsideProjectShouldOp() throws Throwable {
+  public void testAddThenDeleteFileOutsideProjectShouldNoop() throws Throwable {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     // Simulate out of band adding a file outside of IDE
     Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/a.txt");
@@ -82,7 +82,7 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileNoop(pantsCompileProject());
   }
 
-  public void testAddThenDeleteFileShouldNoop() throws Throwable {
+  public void testAddThenDeleteFileInProjectShouldOp() throws Throwable {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     // Simulate out of band adding a file outside of IDE
     Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/tests/scala/org/pantsbuild/example/hello/welcome/a.txt");
