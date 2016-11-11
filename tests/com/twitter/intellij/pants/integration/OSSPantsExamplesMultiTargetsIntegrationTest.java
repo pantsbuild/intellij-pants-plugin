@@ -24,7 +24,7 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
 
     assertFirstSourcePartyModules(initialModules);
 
-    assertPantsCompileSuccess(pantsCompileModule("examples_src_java_org_pantsbuild_example_hello_main_main"));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_hello_main_main"));
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.greet.Greeting", "examples_src_java_org_pantsbuild_example_hello_greet_greet"
@@ -44,7 +44,7 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
 
       addAll(initialModules, additionalModules));
 
-    assertPantsCompileSuccess(pantsCompileProject());
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
 
     assertClassFileInModuleOutput(
       "org.pantsbuild.example.hello.welcome.WelcomeEverybody", "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
