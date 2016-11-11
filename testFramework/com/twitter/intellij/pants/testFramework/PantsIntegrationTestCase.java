@@ -564,7 +564,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   protected void assertPantsCompileNoop(final Pair<Boolean, Optional<String>> compileResult) {
     assertTrue("Compile failed.", compileResult.getFirst());
-    assertTrue("Compile message no found.", compileResult.getSecond().isPresent());
+    assertTrue("Compile message not found.", compileResult.getSecond().isPresent());
     assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.getSecond().get());
   }
 
