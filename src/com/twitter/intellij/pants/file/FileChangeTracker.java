@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.file;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Pair;
@@ -13,7 +14,6 @@ import com.intellij.openapi.vfs.VirtualFileEvent;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
-import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,37 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class FileChangeTracker {
-  /**
-   * `CompileSnapshot` keeps track of `PantsSettings` and set of target addresses used to compile
-   * at a given time.
-   */
-  private static class CompileSnapshot {
-    Set<String> myTargetAddresses;
-    PantsSettings myPantsSettings;
-
-    public boolean isEnableIncrementalImport() {
-      return myPantsSettings.isEnableIncrementalImport();
-    }
-
-    public CompileSnapshot(Set<String> targetAddresses, PantsSettings pantsSettings) {
-      myTargetAddresses = Collections.unmodifiableSet(targetAddresses);
-      myPantsSettings = PantsSettings.copy(pantsSettings);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj == null) {
-        return false;
-      }
-      if (getClass() != obj.getClass()) {
-        return false;
-      }
-      CompileSnapshot other = (CompileSnapshot) obj;
-      return Objects.equals(this.myPantsSettings, other.myPantsSettings)
-             && Objects.equals(this.myTargetAddresses, other.myTargetAddresses);
-    }
-  }
-
+  private static final Logger LOG = Logger.getInstance(FileChangeTracker.class);
 
   private static FileChangeTracker instance = new FileChangeTracker();
 
@@ -73,7 +43,7 @@ public class FileChangeTracker {
   private static void markDirty(@NotNull VirtualFile file, @NotNull VirtualFileListener listener) {
     Project project = listenToProjectMap.get(listener);
     boolean inProject = ProjectRootManager.getInstance(project).getFileIndex().getContentRootForFile(file) != null;
-    System.out.println(String.format("Changed: %s. In project: %s", file.getPath(), inProject));
+    LOG.debug(String.format("Changed: %s. In project: %s", file.getPath(), inProject));
     if (inProject) {
       markDirty(project);
     }
@@ -192,5 +162,32 @@ public class FileChangeTracker {
         FileChangeTracker.markDirty(event.getFile(), this);
       }
     };
+  }
+
+  /**
+   * `CompileSnapshot` keeps track of `PantsSettings` and set of target addresses used to compile
+   * at a given time.
+   */
+  private static class CompileSnapshot {
+    Set<String> myTargetAddresses;
+    PantsSettings myPantsSettings;
+
+    private CompileSnapshot(Set<String> targetAddresses, PantsSettings pantsSettings) {
+      myTargetAddresses = Collections.unmodifiableSet(targetAddresses);
+      myPantsSettings = PantsSettings.copy(pantsSettings);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
+      CompileSnapshot other = (CompileSnapshot) obj;
+      return Objects.equals(this.myPantsSettings, other.myPantsSettings)
+             && Objects.equals(this.myTargetAddresses, other.myTargetAddresses);
+    }
   }
 }

@@ -16,10 +16,10 @@ import java.util.Collections;
 
 public class NoopCompileTest extends OSSPantsIntegrationTest {
 
-  public static final String HELLO_SRC_JAVA_MODULE = "examples_src_java_org_pantsbuild_example_hello_greet_greet";
-  public static final String HELLO_SRC_SCALA_MODULE = "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome";
-  public static final String HELLO_TEST_MODULE = "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome";
-  public static final String HELLO_RESOURCES_MODULE = "examples_src_resources_org_pantsbuild_example_hello_hello";
+  private static final String HELLO_SRC_JAVA_MODULE = "examples_src_java_org_pantsbuild_example_hello_greet_greet";
+  private static final String HELLO_SRC_SCALA_MODULE = "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome";
+  private static final String HELLO_TEST_MODULE = "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome";
+  private static final String HELLO_RESOURCES_MODULE = "examples_src_resources_org_pantsbuild_example_hello_hello";
 
   @Override
   public void setUp() throws Exception {
@@ -58,7 +58,7 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
   }
 
-  public void testAddFileShouldOp() throws Throwable {
+  public void testAddFileInsideProjectShouldOp() throws Throwable {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     // Simulate out of band adding a file outside of IDE
     Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/tests/scala/org/pantsbuild/example/hello/welcome/a.txt");
@@ -68,7 +68,21 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
   }
 
-  public void testAddThenDeleteFileShouldOp() throws Throwable {
+  public void testAddThenDeleteFileOutsideProjectShouldOp() throws Throwable {
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    // Simulate out of band adding a file outside of IDE
+    Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/a.txt");
+    Files.write(newFilePath, Collections.singleton("123"), Charset.defaultCharset());
+    // When user switches back to IntelliJ LocalFileSystem refresh will be called.
+    LocalFileSystem.getInstance().refresh(false);
+    assertPantsCompileNoop(pantsCompileProject());
+
+    Files.delete(newFilePath);
+    LocalFileSystem.getInstance().refresh(false);
+    assertPantsCompileNoop(pantsCompileProject());
+  }
+
+  public void testAddThenDeleteFileShouldNoop() throws Throwable {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     // Simulate out of band adding a file outside of IDE
     Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/tests/scala/org/pantsbuild/example/hello/welcome/a.txt");
