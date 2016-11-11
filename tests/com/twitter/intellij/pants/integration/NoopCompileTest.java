@@ -3,12 +3,15 @@
 
 package com.twitter.intellij.pants.integration;
 
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 
@@ -54,10 +57,23 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
 
   public void testAddFileShouldOp() throws Throwable {
     assertPantsCompileSuccess(pantsCompileProject());
-    modify("org.pantsbuild.example.hello.welcome.WelSpec");
+    // Simulate out of band adding a file outside of IDE
     File newFile = new File(getProjectFolder(), "examples/tests/scala/org/pantsbuild/example/hello/welcome/a.txt");
     Files.write(Paths.get(newFile.getPath()), Collections.singleton("123"), Charset.defaultCharset());
-    UIUtil.dispatchAllInvocationEvents();
+    // When user switches back to IntelliJ LocalFileSystem refresh will be called.
+    LocalFileSystem.getInstance().refresh(false);
+    assertPantsCompileSuccess(pantsCompileProject());
+  }
+
+  public void testAddThenDeleteFileShouldOp() throws Throwable {
+    assertPantsCompileSuccess(pantsCompileProject());
+    // Simulate out of band adding a file outside of IDE
+    Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/tests/scala/org/pantsbuild/example/hello/welcome/a.txt");
+    Files.write(newFilePath, Collections.singleton("123"), Charset.defaultCharset());
+    // When user switches back to IntelliJ LocalFileSystem refresh will be called.
+    LocalFileSystem.getInstance().refresh(false);
+    Files.delete(newFilePath);
+    LocalFileSystem.getInstance().refresh(false);
     assertPantsCompileSuccess(pantsCompileProject());
   }
 }
