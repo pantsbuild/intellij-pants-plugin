@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.integration;
 
+import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 import java.io.File;
@@ -23,7 +24,6 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
       "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome"
     );
-
   }
 
   @Override
@@ -57,6 +57,7 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     modify("org.pantsbuild.example.hello.welcome.WelSpec");
     File newFile = new File(getProjectFolder(), "examples/tests/scala/org/pantsbuild/example/hello/welcome/a.txt");
     Files.write(Paths.get(newFile.getPath()), Collections.singleton("123"), Charset.defaultCharset());
+    UIUtil.dispatchAllInvocationEvents();
     assertPantsCompileSuccess(pantsCompileProject());
   }
 }
