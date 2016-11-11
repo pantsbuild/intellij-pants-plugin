@@ -60,4 +60,6 @@ public class PantsConstants {
   public static final String REBUILD_PROJECT_DESCRIPTION = "Rebuild Project";
 
   public static final String EXTERNAL_BUILDER_ERROR = "This is a Pants project. Please use PantsCompile under `Edit Configuration`";
+
+  public static final String NOOP_COMPILE = "No changes in projects. Noop compile.";
 }

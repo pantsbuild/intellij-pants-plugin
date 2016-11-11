@@ -34,6 +34,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -316,6 +317,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         }
       }
     );
+    FileDocumentManager manager = FileDocumentManager.getInstance();
+    manager.saveAllDocuments();
   }
 
   @NotNull
@@ -548,6 +551,15 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   protected void assertPantsCompileSuccess(final Pair<Boolean, Optional<String>> compileResult) {
     assertTrue("Compile failed", compileResult.getFirst());
+    if (compileResult.getSecond().isPresent()) {
+      assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.getSecond().get()));
+    }
+  }
+
+  protected void assertPantsCompileNoop(final Pair<Boolean, Optional<String>> compileResult) {
+    assertTrue("Compile failed.", compileResult.getFirst());
+    assertTrue("Compile message no found.", compileResult.getSecond().isPresent());
+    assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.getSecond().get());
   }
 
   protected void assertPantsCompileFailure(final Pair<Boolean, Optional<String>> compileResult) {

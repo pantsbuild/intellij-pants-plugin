@@ -172,7 +172,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   public Pair<Boolean, Optional<String>> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     // If project has not changed since last Compile, return immediately.
     if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddressesToCompile)) {
-      return Pair.create(true, Optional.empty());
+      return Pair.create(true, Optional.of(PantsConstants.NOOP_COMPILE));
     }
 
     prepareIDE(currentProject);
