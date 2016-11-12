@@ -40,6 +40,11 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   }
 
   @Override
+  public void disposeComponent() {
+    super.disposeComponent();
+  }
+
+  @Override
   public void projectClosed() {
     PantsMetrics.report();
     super.projectClosed();
