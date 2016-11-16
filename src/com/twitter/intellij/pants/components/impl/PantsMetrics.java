@@ -68,6 +68,9 @@ public class PantsMetrics {
    * @param myProject current Project.
    */
   public static void prepareTimeIndexing(Project myProject) {
+    if (!isMetricsEnabled()) {
+      return;
+    }
     if (ApplicationManager.getApplication().isUnitTestMode()) {
       markIndexStart();
       return;
