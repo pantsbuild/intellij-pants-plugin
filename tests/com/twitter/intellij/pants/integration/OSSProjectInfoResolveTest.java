@@ -14,6 +14,7 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -80,7 +81,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
 
   public void testListTargets() {
     assertEquals(
-      PantsUtil.listAllTargets("examples/src/java/org/pantsbuild/example/hello/main"),
+      PantsUtil.listAllTargets(myProjectRoot.getPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello/main"),
       Arrays.asList(
         "examples/src/java/org/pantsbuild/example/hello/main:main",
         "examples/src/java/org/pantsbuild/example/hello/main:readme",
