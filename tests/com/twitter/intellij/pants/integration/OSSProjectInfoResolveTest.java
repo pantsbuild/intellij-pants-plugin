@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.integration;
 
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolver;
@@ -12,8 +11,10 @@ import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
@@ -75,5 +76,16 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
 
     assertEquals(lib.getJarsWithCustomClassifiers().size(), 1);
     assertPathContainsJar(lib.getJarsWithCustomClassifiers().iterator().next(), "hadoop-common-2.7.1-tests.jar");
+  }
+
+  public void testListTargets() {
+    assertEquals(
+      PantsUtil.listAllTargets("examples/src/java/org/pantsbuild/example/hello/main"),
+      Arrays.asList(
+        "examples/src/java/org/pantsbuild/example/hello/main:main",
+        "examples/src/java/org/pantsbuild/example/hello/main:readme",
+        "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
+      )
+    );
   }
 }
