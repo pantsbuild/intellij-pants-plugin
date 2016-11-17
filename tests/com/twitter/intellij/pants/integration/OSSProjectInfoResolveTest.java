@@ -81,12 +81,12 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
 
   public void testListTargets() {
     assertEquals(
-      PantsUtil.listAllTargets(myProjectRoot.getPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello/main"),
       Arrays.asList(
         "examples/src/java/org/pantsbuild/example/hello/main:main",
         "examples/src/java/org/pantsbuild/example/hello/main:readme",
         "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
-      )
+      ),
+      PantsUtil.listAllTargets(myProjectRoot.getPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello/main")
     );
   }
 }
