@@ -37,7 +37,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private static final Logger LOG = Logger.getInstance(PantsProjectSettingsControl.class);
   private final boolean myShowAdvancedSettings;
 
-  private CheckBoxList<String> myTargets;
+  private CheckBoxList<String> myTargetSpecs;
   private JBCheckBox myWithDependeesCheckBox;
   private JBCheckBox myLibsWithSourcesCheckBox;
   private JBCheckBox myEnableIncrementalImport;
@@ -69,13 +69,13 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final JLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
     content.add(targetsLabel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
-    myTargets = new CheckBoxList<String>();
-    content.add(ScrollPaneFactory.createScrollPane(myTargets), ExternalSystemUiUtil.getFillLineConstraints(0));
+    myTargetSpecs = new CheckBoxList<String>();
+    content.add(ScrollPaneFactory.createScrollPane(myTargetSpecs), ExternalSystemUiUtil.getFillLineConstraints(0));
   }
 
   @Override
   protected boolean isExtraSettingModified() {
-    return !myTargets.getSelectedValuesList().isEmpty();
+    return !myTargetSpecs.getSelectedValuesList().isEmpty();
   }
 
   @Override
@@ -87,17 +87,17 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   }
 
   public void onProjectPathChanged(@NotNull final String projectPath) {
-    myTargets.clear();
+    myTargetSpecs.clear();
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     if (file == null || !PantsUtil.isPantsProjectFile(file)) {
-      myTargets.setEnabled(true);
+      myTargetSpecs.setEnabled(true);
       LOG.warn("Bad project path: " + projectPath);
       return;
     }
 
     if (file.isDirectory()) {
-      myTargets.setEnabled(false);
-      myTargets.setEmptyText(PantsUtil.getRelativeProjectPath(new File(file.getPath())) + "/::");
+      myTargetSpecs.setEnabled(false);
+      myTargetSpecs.setEmptyText(PantsUtil.getRelativeProjectPath(new File(file.getPath())) + "/::");
 
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(true);
@@ -105,8 +105,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myLibsWithSourcesCheckBox.setEnabled(true);
     }
     else if (PantsUtil.isExecutable(file.getPath())) {
-      myTargets.setEnabled(false);
-      myTargets.setEmptyText(file.getName());
+      myTargetSpecs.setEnabled(false);
+      myTargetSpecs.setEmptyText(file.getName());
 
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(false);
@@ -115,8 +115,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myLibsWithSourcesCheckBox.setEnabled(false);
     }
     else {
-      myTargets.setEnabled(true);
-      myTargets.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
+      myTargetSpecs.setEnabled(true);
+      myTargetSpecs.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
 
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(true);
@@ -139,8 +139,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
     UIUtil.invokeLaterIfNeeded(
       () -> {
-        myTargets.clear();
-        targets.forEach(s -> myTargets.addItem(s, s, false));
+        myTargetSpecs.clear();
+        targets.forEach(s -> myTargetSpecs.addItem(s, s, false));
       }
     );
   }
@@ -151,13 +151,12 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     settings.setWithDependees(myWithDependeesCheckBox.isSelected());
     settings.setLibsWithSources(myLibsWithSourcesCheckBox.isSelected());
     settings.setEnableIncrementalImport(myEnableIncrementalImport.isSelected());
-    for (int i = 0; i < myTargets.getItemsCount(); i++) {
-      String target = myTargets.getItemAt(i);
-      if (myTargets.isItemSelected(target)) {
+    for (int i = 0; i < myTargetSpecs.getItemsCount(); i++) {
+      String target = myTargetSpecs.getItemAt(i);
+      if (myTargetSpecs.isItemSelected(target)) {
         targetSpecs.add(target);
       }
     }
-    // Generate target specs based on `projectPath` and a list of selected target names.
     settings.setTargetSpecs(targetSpecs);
   }
 
@@ -174,7 +173,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     if (!PantsUtil.isPantsProjectFile(file)) {
       throw new ConfigurationException(PantsBundle.message("pants.error.not.build.file.path.or.directory"));
     }
-    if (PantsUtil.isBUILDFileName(file.getName()) && myTargets.getSelectedIndices().length == 0) {
+    if (PantsUtil.isBUILDFileName(file.getName()) && myTargetSpecs.getSelectedIndices().length == 0) {
       throw new ConfigurationException(PantsBundle.message("pants.error.no.targets.are.selected"));
     }
     return true;
