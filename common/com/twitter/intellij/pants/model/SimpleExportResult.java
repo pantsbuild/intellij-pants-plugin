@@ -15,7 +15,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
-import com.twitter.intellij.pants.util.Tempfile;
+import com.twitter.intellij.pants.util.TempFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -83,13 +83,13 @@ public class SimpleExportResult {
     }
     final GeneralCommandLine commandline = PantsUtil.defaultCommandLine(pantsExecutable);
     commandline.addParameters("export", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
-    try (Tempfile tempfile = Tempfile.create("pants_export_run", ".out")) {
+    try (TempFile tempFile = TempFile.create("pants_export_run", ".out")) {
       commandline.addParameter(
         String.format("%s=%s", PantsConstants.PANTS_CLI_OPTION_EXPORT_OUTPUT_FILE,
-                      tempfile.getFile().getPath()));
+                      tempFile.getFile().getPath()));
       final ProcessOutput processOutput = PantsUtil.getProcessOutput(commandline, null);
       if (processOutput.checkSuccess(LOG)) {
-        SimpleExportResult result = parse(FileUtil.loadFile(tempfile.getFile()));
+        SimpleExportResult result = parse(FileUtil.loadFile(tempFile.getFile()));
         simpleExportCache.put(pantsExecutableFile, result);
         return result;
       }

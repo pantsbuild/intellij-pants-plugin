@@ -43,6 +43,7 @@ public class PantsConstants {
   public static final Key<Sdk> SDK_KEY = Key.create(Sdk.class, ProjectKeys.PROJECT.getProcessingWeight());
 
   public static final String PANTS_CLI_OPTION_EXPORT_OUTPUT_FILE = "--export-output-file";
+  public static final String PANTS_CLI_OPTION_LIST_OUTPUT_FILE = "--list-output-file";
   public static final String PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR = "--export-classpath-manifest-jar-only";
   public static final String PANTS_CLI_OPTION_NO_COLORS = "--no-colors";
   public static final String PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";

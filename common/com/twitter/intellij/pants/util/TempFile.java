@@ -10,10 +10,10 @@ import java.nio.file.Files;
 /**
  * Wrapper temporary file that is auto closable.
  */
-public class Tempfile implements AutoCloseable {
+public class TempFile implements AutoCloseable {
   private final File file;
 
-  private Tempfile(File file) {
+  private TempFile(File file) {
     this.file = file;
   }
 
@@ -26,7 +26,7 @@ public class Tempfile implements AutoCloseable {
     Files.deleteIfExists(file.toPath());
   }
 
-  public static Tempfile create(String prefix, String suffix) throws IOException {
-    return new Tempfile(File.createTempFile(prefix, suffix));
+  public static TempFile create(String prefix, String suffix) throws IOException {
+    return new TempFile(File.createTempFile(prefix, suffix));
   }
 }
