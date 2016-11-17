@@ -330,11 +330,13 @@ public class PantsUtil {
         String output = FileUtil.loadFile(tempFile.getFile());
         return Arrays.asList(output.split("\n"));
       }
+      else {
+        throw new PantsException("Failed:" + cmd.getCommandLineString());
+      }
     }
     catch (IOException | ExecutionException e) {
       throw new PantsException("Failed:" + cmd.getCommandLineString());
     }
-    return Collections.emptyList();
   }
 
   public static String removeWhitespace(@NotNull String text) {

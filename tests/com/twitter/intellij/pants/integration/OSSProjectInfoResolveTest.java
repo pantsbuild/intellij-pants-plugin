@@ -86,7 +86,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
         "examples/src/java/org/pantsbuild/example/hello/main:readme",
         "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
       ),
-      PantsUtil.listAllTargets(myProjectRoot.getPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello/main")
+      PantsUtil.listAllTargets(myProjectRoot.getPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello/main/BUILD")
     );
   }
 }
