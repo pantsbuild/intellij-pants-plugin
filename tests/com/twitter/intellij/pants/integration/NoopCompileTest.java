@@ -68,6 +68,17 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
   }
 
+  public void testAddThenDeleteFileInsideProjectShouldOp() throws Throwable {
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    // Simulate out of band adding a file outside of IDE
+    Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/tests/scala/org/pantsbuild/example/hello/welcome/a.txt");
+    Files.write(newFilePath, Collections.singleton("123"), Charset.defaultCharset());
+    Files.delete(newFilePath);
+    // When user switches back to IntelliJ LocalFileSystem refresh will be called.
+    LocalFileSystem.getInstance().refresh(false);
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+  }
+
   public void testAddThenDeleteFileOutsideProjectShouldNoop() throws Throwable {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     // Simulate out of band adding a file outside of IDE

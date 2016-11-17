@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-// FIXME: Change in pants.ini is not tracked currently.
+// FIXME: Change in pants.ini, `./pants clean-all` is not tracked currently.
 public class FileChangeTracker {
   private static final Logger LOG = Logger.getInstance(FileChangeTracker.class);
 
