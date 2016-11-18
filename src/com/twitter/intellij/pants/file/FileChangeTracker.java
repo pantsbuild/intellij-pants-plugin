@@ -56,6 +56,8 @@ public class FileChangeTracker {
   /**
    * Determine whether a project should be recompiled given targets to compile and PantsSettings
    * by comparing with the last one.
+   * <p>
+   * Side effect: if the answer is yes (true), it will also reset the project state.
    *
    * @param project:         project under question.
    * @param targetAddresses: target addresses for this compile.
@@ -100,9 +102,9 @@ public class FileChangeTracker {
   }
 
   public static void unregisterProject(@NotNull Project project) {
-    if (projectStates.containsKey(project)) {
-      projectStates.remove(project);
-    }
+    projectStates.remove(project);
+
+    // Remove the listener for the project.
     listenToProjectMap.entrySet().stream()
       .filter(s -> s.getValue() == project)
       .findFirst()
