@@ -509,8 +509,8 @@ public class PantsUtil {
     return result;
   }
 
-  public static Optional<String> getRelativeProjectPath(@NotNull File projectFile) {
-    final Optional<File> buildRoot = findBuildRoot(projectFile);
+  public static Optional<String> getRelativeProjectPath(@NotNull String projectFile) {
+    final Optional<File> buildRoot = findBuildRoot(new File(projectFile));
     return buildRoot.flatMap(file -> getRelativeProjectPath(file, projectFile));
   }
 
@@ -861,7 +861,7 @@ public class PantsUtil {
     File importPathFile = new File(importPath);
     final String projectDir =
       isBUILDFileName(importPathFile.getName()) ? importPathFile.getParent() : importPathFile.getPath();
-    final Optional<String> relativeProjectDir = getRelativeProjectPath(new File(projectDir));
+    final Optional<String> relativeProjectDir = getRelativeProjectPath(projectDir);
     // If relativeProjectDir is null, that means the projectDir is already relative.
     String relativePath = relativeProjectDir.orElse(projectDir);
     if (targetNames.isEmpty()) {

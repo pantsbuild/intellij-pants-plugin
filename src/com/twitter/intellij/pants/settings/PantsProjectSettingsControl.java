@@ -23,6 +23,7 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.StatusText;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -97,7 +98,12 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
     if (file.isDirectory()) {
       myTargetSpecs.setEnabled(false);
-      myTargetSpecs.setEmptyText(PantsUtil.getRelativeProjectPath(new File(file.getPath())) + "/::");
+      String text = PantsUtil.getRelativeProjectPath(file.getPath())
+                      .orElseThrow(() -> new PantsException(String.format(
+                        "Fail to find relative path from %s to build root.", file.getPath()
+                      ))) + "/::";
+      myTargetSpecs.setEmptyText(text);
+      myTargetSpecs.addItem(text, text, true);
 
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(true);
