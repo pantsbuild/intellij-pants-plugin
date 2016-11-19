@@ -94,7 +94,7 @@ public class FileChangeTracker {
   /**
    * Determine whether a project should be recompiled given targets to compile and PantsSettings
    * by comparing with the last one.
-   *
+   * <p>
    * It assumes the compilation is going to work, if not, `markDirty` should be called explicitly upon failure.
    * <p>
    * Side effect: if the answer is yes (true), it will also reset the project state.
