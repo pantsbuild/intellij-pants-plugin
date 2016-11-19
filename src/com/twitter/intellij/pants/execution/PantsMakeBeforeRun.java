@@ -48,7 +48,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 
-import javax.swing.Icon;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -256,6 +256,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     // Mark project dirty if compile failed.
     if (!success) {
       FileChangeTracker.markDirty(currentProject);
+    }
+    else {
+      FileChangeTracker.addManifestJarIntoSnapshot(currentProject);
     }
     notifyCompileResult(success);
     // Sync files as generated sources may have changed after Pants compile.

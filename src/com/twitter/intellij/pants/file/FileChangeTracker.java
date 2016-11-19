@@ -3,6 +3,9 @@
 
 package com.twitter.intellij.pants.file;
 
+import com.google.common.hash.HashCode;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -21,6 +24,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -60,6 +65,32 @@ public class FileChangeTracker {
     projectStates.put(project, Pair.create(true, Optional.empty()));
   }
 
+  public static void addManifestJarIntoSnapshot(@NotNull Project project) {
+    Optional<CompileSnapshot> second = projectStates.get(project).getSecond();
+    if (!second.isPresent()) {
+      return;
+    }
+    Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(project);
+    second.get().setManifestJarHash(fileHash(manifestJar));
+  }
+
+
+  public static Optional<String> fileHash(Optional<VirtualFile> vf) {
+    if (!vf.isPresent()) {
+      return Optional.empty();
+    }
+    HashFunction hf = Hashing.md5();
+    try {
+      byte[] bytes = Files.readAllBytes(Paths.get(vf.get().getPath()));
+      HashCode hash = hf.newHasher().putBytes(bytes).hash();
+      return Optional.of(hash.toString());
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+      return Optional.empty();
+    }
+  }
+
   /**
    * Determine whether a project should be recompiled given targets to compile and PantsSettings
    * by comparing with the last one.
@@ -75,7 +106,7 @@ public class FileChangeTracker {
     PantsSettings settings = PantsSettings.getInstance(project);
 
     Pair<Boolean, Optional<CompileSnapshot>> pair = projectStates.get(project);
-    CompileSnapshot snapshot = new CompileSnapshot(targetAddresses, settings);
+    CompileSnapshot snapshot = new CompileSnapshot(targetAddresses, settings, PantsUtil.findProjectManifestJar(project));
     // there is no previous record.
     if (pair == null) {
       resetProjectState(project, snapshot);
@@ -222,12 +253,19 @@ public class FileChangeTracker {
    */
   private static class CompileSnapshot {
     Set<String> myTargetAddresses;
+    Optional<String> myManifestJarHash;
     PantsSettings myPantsSettings;
 
-    private CompileSnapshot(Set<String> targetAddresses, PantsSettings pantsSettings) {
+    private void setManifestJarHash(Optional<String> manifestJarHash) {
+      myManifestJarHash = manifestJarHash;
+    }
+
+    private CompileSnapshot(Set<String> targetAddresses, PantsSettings pantsSettings, Optional<VirtualFile> manifestJar) {
       myTargetAddresses = Collections.unmodifiableSet(targetAddresses);
       myPantsSettings = PantsSettings.copy(pantsSettings);
+      myManifestJarHash = fileHash(manifestJar);
     }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -239,6 +277,7 @@ public class FileChangeTracker {
       }
       CompileSnapshot other = (CompileSnapshot) obj;
       return Objects.equals(this.myPantsSettings, other.myPantsSettings)
+             && Objects.equals(this.myManifestJarHash, other.myManifestJarHash)
              && Objects.equals(this.myTargetAddresses, other.myTargetAddresses);
     }
   }
