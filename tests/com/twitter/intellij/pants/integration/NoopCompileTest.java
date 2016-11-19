@@ -42,6 +42,7 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     // have to bootstrap again.
     File exampleDir = new File(getProjectFolder(), "examples");
     cmd(exampleDir, "git", "clean", "-fdx");
+    cmd("rm", "-rf", "dist");
     super.tearDown();
   }
 
@@ -93,7 +94,7 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileNoop(pantsCompileProject());
   }
 
-  public void testAddThenDeleteFileInProjectShouldOp() throws Throwable {
+  public void testAddThenDeleteFileInProjectShouldNoop() throws Throwable {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     // Simulate out of band adding a file outside of IDE
     Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/tests/scala/org/pantsbuild/example/hello/welcome/a.txt");
@@ -102,7 +103,7 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     LocalFileSystem.getInstance().refresh(false);
     Files.delete(newFilePath);
     LocalFileSystem.getInstance().refresh(false);
-    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    assertPantsCompileNoop(pantsCompileProject());
   }
 
   public void testCompileDifferentModule() throws Throwable {
