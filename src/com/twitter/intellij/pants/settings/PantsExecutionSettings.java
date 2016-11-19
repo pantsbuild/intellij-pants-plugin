@@ -39,7 +39,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
    * @param withDependees:           whether depeedees need to be imported. (Untested and probably not working).
    * @param libsWithSourcesAndDocs:  whether to import sources and docs when resolving for jars.
    * @param useIdeaProjectJdk:       whether explicitly to use the JDK selected in project for Pants compile.
-   * @param enableIncrementalImport: whether incrementally import the project.
+   * @param enableIncrementalImport: whether to incrementally import the project.
    */
   public PantsExecutionSettings(
     List<String> targetSpecs,
