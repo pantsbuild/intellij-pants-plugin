@@ -44,7 +44,7 @@ public class FileChangeTracker {
   // so whenever a VirtualFileListener is triggered, we know which Project is affected.
   private static ConcurrentHashMap<VirtualFileListener, Project> listenToProjectMap = new ConcurrentHashMap<>();
 
-  // Maps from Project to <isDirty, lastTargetsToCompile>
+  // Maps from Project to <isDirty, lastCompileSnapshot>
   private static ConcurrentHashMap<Project, Pair<Boolean, Optional<CompileSnapshot>>> projectStates = new ConcurrentHashMap<>();
 
   FileChangeTracker getInstance() {
