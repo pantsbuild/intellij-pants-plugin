@@ -133,4 +133,19 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule(HELLO_SRC_JAVA_MODULE));
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule(HELLO_SRC_JAVA_MODULE));
   }
+
+  public void testShouldCompileAfterCleanAll() throws Throwable {
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileNoop(pantsCompileModule(HELLO_SRC_JAVA_MODULE));
+    cmd("./pants", "clean-all");
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(HELLO_SRC_JAVA_MODULE));
+  }
+
+  public void testShouldCompileAfterOutOfBandPantsCLI() throws Throwable {
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileNoop(pantsCompileModule(HELLO_SRC_JAVA_MODULE));
+    cmd("./pants", "export-classpath", "--manifest-jar-only", "examples/tests/java/org/pantsbuild/example/hello/greet");
+    // Recompile because the sha of manifest.jar will change.
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(HELLO_SRC_JAVA_MODULE));
+  }
 }
