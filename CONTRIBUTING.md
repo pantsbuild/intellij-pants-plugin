@@ -84,10 +84,9 @@ test sources, resources, test resources, generated sources, etc).
 * Iterating over the review by making changes then pushing your branch
 
 * Committing your change to master (Committer status required. If you do not have one, please ask one to do so.)
-
-        ** Select 'Squash and merge' on the PR
-        ** Fill out the description accordingly
-        ** Confirm
+  * Select 'Squash and merge' on the PR
+  * Fill out the description accordingly
+  * Confirm
 
 ### IntelliJ project setup:
 
