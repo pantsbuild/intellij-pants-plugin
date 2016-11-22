@@ -79,12 +79,12 @@ test sources, resources, test resources, generated sources, etc).
 
 * Create a new pull request (PR) from your branch on Github, and make sure it passes [Travis CI](https://travis-ci.org/pantsbuild/intellij-pants-plugin/pull_requests)
 
-* Label your PR *reviewable*, and add revieweres to 'Assignee' (If you are unsure who to add, take a look who touched the code last)
+* Label your PR **reviewable**, and add revieweres to 'Assignee' (If you are unsure who to add, take a look who touched the code last)
 
 * Iterating over the review by making changes then pushing your branch
 
 * Committing your change to master (Committer status required. If you are not one, please ask one to do so.)
-  * Select *Squash and merge* on the PR
+  * Select **Squash and merge** on the PR
   * Fill out the description accordingly
   * Confirm
 
