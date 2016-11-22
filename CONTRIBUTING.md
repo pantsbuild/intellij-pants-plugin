@@ -75,22 +75,19 @@ test sources, resources, test resources, generated sources, etc).
 
         git checkout -b $FEATURE_BRANCH
 
-* Push your branch and pass travis ci
+* Push your branch 
 
+* Create a new pull request (PR) on your fork on github against pantsbuild/intellij-pants-plugin and make sure it passes ([travis ci](https://travis-ci.org/pantsbuild/intellij-pants-plugin/pull_requests))
 
-* Post your first review ([setup instructions](http://pantsbuild.github.io/howto_contribute.html#code-review))
+* Label your PR 'reviewable'
 
-        ./rbt post -o -g
+* Iterating over the review by making the change and push your branch
 
-* Iterating over the review
+* Committing your change to master. (Committer status required. If you do not have one, please ask one to do so.)
 
-        ./rbt post -o -r <RB_ID>
-
-* Committing your change to master
-
-        git checkout master
-        git pull
-        ./rbt patch -c <RB_ID>
+        Select 'Squash and merge' on the PR
+        Fill out the description accordingly
+        Confirm
 
 ### IntelliJ project setup:
 
