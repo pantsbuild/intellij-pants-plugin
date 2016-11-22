@@ -77,17 +77,17 @@ test sources, resources, test resources, generated sources, etc).
 
 * Push your branch 
 
-* Create a new pull request (PR) on your fork on github against pantsbuild/intellij-pants-plugin and make sure it passes ([travis ci](https://travis-ci.org/pantsbuild/intellij-pants-plugin/pull_requests))
+* Create a new pull request (PR) from your fork on Github, and make sure it passes [travis ci](https://travis-ci.org/pantsbuild/intellij-pants-plugin/pull_requests)
 
-* Label your PR 'reviewable'
+* Label your PR 'reviewable', and add some folks as revieweres by adding them to 'Assignee'
 
-* Iterating over the review by making the change and push your branch
+* Iterating over the review by making changes then pushing your branch
 
-* Committing your change to master. (Committer status required. If you do not have one, please ask one to do so.)
+* Committing your change to master (Committer status required. If you do not have one, please ask one to do so.)
 
-        Select 'Squash and merge' on the PR
-        Fill out the description accordingly
-        Confirm
+        ** Select 'Squash and merge' on the PR
+        ** Fill out the description accordingly
+        ** Confirm
 
 ### IntelliJ project setup:
 
