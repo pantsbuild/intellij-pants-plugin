@@ -100,9 +100,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
 
     assertPantsCompileSuccess(pantsCompileProject());
 
-    // Temporarily disable the class assertion as it cannot be found in test environment for some reason,
-    // but it is okay in manually GUI testing, which is what matters more.
-    // findClassAndAssert("org.pantsbuild.example.hello.welcome.WelSpec");
+    findClassAndAssert("org.pantsbuild.example.hello.welcome.WelSpec");
     assertScalaLibrary("examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome");
 
     assertClassFileInModuleOutput(
