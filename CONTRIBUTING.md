@@ -109,7 +109,7 @@ test sources, resources, test resources, generated sources, etc).
     * `~/.IdeaIC2016.1/config/plugins/Scala/lib/scala-plugin.jar`
     * `~/.IdeaIC2016.1/config/plugins/Scala/lib/jps/*.jar`
     * `<IDEA_BIN_HOME>/plugins/junit/lib/idea-junit.jar` where `<IDEA_BIN_HOME>` is the path to your Idea binary
-* Set Scala 2.11.6 as your Scala SDK (Gold reference should be [the version used to build Scala plugin](https://github.com/JetBrains/intellij-scala/blob/idea163.x/.idea/artifacts/ScalaPlugins.xml#L41-L42)
+* Set Scala 2.11.6 as your Scala SDK (Gold reference should be [the version used to build Scala plugin](https://github.com/JetBrains/intellij-scala/blob/idea163.x/.idea/artifacts/ScalaPlugins.xml#L41-L42))
 * Make sure that your project is set to configure bytecode compatible with 1.8.  Preferences -> Compiler -> Java Compiler -> Project bytecode version
 * Run plugin configuration 'Pants' to verify your setup. It should launch a separate IntelliJ app.
 
