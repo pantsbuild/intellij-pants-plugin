@@ -301,11 +301,6 @@ public class PantsUtil {
   @NotNull
   public static GeneralCommandLine defaultCommandLine(@NotNull File pantsExecutable) {
     final GeneralCommandLine commandLine = new GeneralCommandLine();
-    boolean runFromSources = Boolean.valueOf(System.getProperty("pants.dev.run"));
-    if (runFromSources) {
-      commandLine.getEnvironment().put("PANTS_DEV", "1");
-    }
-
     final String pantsExecutablePath = StringUtil.notNullize(
       System.getProperty("pants.executable.path"),
       pantsExecutable.getAbsolutePath()
