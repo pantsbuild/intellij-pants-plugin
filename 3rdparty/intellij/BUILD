@@ -179,7 +179,7 @@ jar_library(
         _intellij_plugin_jar(path) for path in _find_jars_for_plugin('Scala',
             'scala-plugin.jar', 'jps/scala-jps-plugin.jar', 'scala-play-2-jps-plugin.jar', 'compiler-settings.jar'
         )
-    ]
+    ] + [jar(org = 'org.scalameta', name = 'trees_2.11', rev = '1.3.0')]
 )
 
 
