@@ -14,6 +14,6 @@ if version is None:
   logging.error("version tag not found in %s".format(PLUGIN_XML))
   exit(1)
 
-version.text += "{}.{}".format(version.text, time.time())
+version.text = "{}.{}".format(version.text, time.time())
 
 tree.write(PLUGIN_XML)
