@@ -29,7 +29,7 @@ def get_head_sha():
 
 if __name__ == "__main__":
 
-  subprocess.check_output('git co {}'.format(PLUGIN_XML), shell=True)
+  subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True)
 
   sha = get_head_sha()
   logger.info('Append git sha {} to plugin version'.format(sha))
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     logger.info(build_cmd)
     subprocess.check_output(build_cmd, shell=True)
   finally:
-    subprocess.check_output('git co {}'.format(PLUGIN_XML), shell=True)
+    subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True)
 
   upload_cmd = 'java -jar scripts/deploy/plugin-repository-rest-client-0.3.SNAPSHOT-all.jar upload ' \
                '-host https://plugins.jetbrains.com/ ' \
