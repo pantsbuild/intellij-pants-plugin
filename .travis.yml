@@ -35,7 +35,6 @@ script:
 deploy:
   provider: script
   script:
-    - source scripts/prepare-ci-environment.sh
-    - scripts/deploy/deploy.py
+    - source scripts/prepare-ci-environment.sh; scripts/deploy/deploy.py
   on:
     all_branches: true
