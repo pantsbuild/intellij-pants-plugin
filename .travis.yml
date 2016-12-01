@@ -28,8 +28,9 @@ env:
     - PANTS_SHA="release_1.2.0" TEST_SET=jvm-integration
     - PANTS_SHA="release_1.1.0" TEST_SET=jvm-integration
 
-# script:
+script:
 #  - ./scripts/run-tests-ci.sh
+  - echo '123'
 
 deploy:
   provider: script
