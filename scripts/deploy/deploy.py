@@ -9,7 +9,8 @@ PLUGIN_JAR = 'dist/intellij-pants-plugin.jar'
 CHANNEL = 'BleedingEdge'
 REPO = 'https://plugins.jetbrains.com/plugin/7412'
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
+logging.basicConfig()
 logger.setLevel(logging.INFO)
 
 
@@ -29,6 +30,7 @@ if __name__ == "__main__":
   subprocess.check_output('git co {}'.format(PLUGIN_XML), shell=True)
 
   sha = get_head_sha()
+  logger.info('Append git sha {} to plugin version'.format(sha))
 
   tree = ET.parse(PLUGIN_XML)
   root = tree.getroot()
@@ -42,10 +44,12 @@ if __name__ == "__main__":
   version.text = "{}.{}".format(version.text, sha)
 
   tree.write(PLUGIN_XML)
+
   try:
     build_cmd = 'rm -rf dist;' \
                 'source scripts/prepare-ci-environment.sh;' \
                 './pants binary scripts/sdk:intellij-pants-plugin-publish'
+    logger.info(build_cmd)
     subprocess.check_output(build_cmd, shell=True)
   finally:
     subprocess.check_output('git co {}'.format(PLUGIN_XML), shell=True)
@@ -65,13 +69,15 @@ if __name__ == "__main__":
 
   logger.info(upload_cmd)
   try:
-    subprocess.check_output(upload_cmd, shell=True)
+    with open(os.devnull, 'w') as devnull:
+      subprocess.check_output(upload_cmd, shell=True, stderr=devnull)
   except subprocess.CalledProcessError as e:
     # Plugin upload will return error even if it succeeds,
     # so the error is meaningless. Need to manually check on the
     # plugin repo.
     try:
-      subprocess.check_output('curl {} | grep {}'.format(REPO, sha), shell=True)
+      with open(os.devnull, 'w') as devnull:
+        subprocess.check_output('curl {} | grep {}'.format(REPO, sha), shell=True, stderr=devnull)
     except subprocess.CalledProcessError as e:
       logger.error("Deploy failed: not available on {}".format(REPO))
     else:
