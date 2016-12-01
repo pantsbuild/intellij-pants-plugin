@@ -51,7 +51,7 @@ if __name__ == "__main__":
       build_cmd = 'rm -rf dist;' \
                   './pants binary scripts/sdk:intellij-pants-plugin-publish'
       logger.info(build_cmd)
-      subprocess.check_output(build_cmd, shell=True)
+      subprocess.check_output(build_cmd, shell=True, stderr=devnull)
     finally:
       # Reset `PLUGIN_XML` since it has been modified.
       subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True, stderr=devnull)
