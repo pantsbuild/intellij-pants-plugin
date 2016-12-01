@@ -9,6 +9,9 @@ PLUGIN_ID = 7412
 PLUGIN_JAR = 'dist/intellij-pants-plugin.jar'
 CHANNEL = 'BleedingEdge'
 if __name__ == "__main__":
+
+  subprocess.check_output('git reset --hard', shell=True)
+
   tree = ET.parse(PLUGIN_XML)
   root = tree.getroot()
 
@@ -25,14 +28,18 @@ if __name__ == "__main__":
                           'source scripts/prepare-ci-environment.sh;'
                           './pants binary scripts/sdk:intellij-pants-plugin-publish', shell=True)
 
-  # upload_cmd = 'java -jar scripts/deploy/plugin-repository-rest-client-0.3.SNAPSHOT-all.jar upload ' \
-  #               '-host https://plugins.jetbrains.com/ ' \
-  #               '-channel {channel} ' \
-  #               '-username {username} ' \
-  #               '-password {password} ' \
-  #               '-plugin {plugin_id} ' \
-  #               '-file {plugin_jar}'.format(channel=CHANNEL, username=os.environ['USERNAME'],
-  #                                           password=os.environ['PASSWORD'], plugin_id=PLUGIN_ID, plugin_jar=PLUGIN_JAR)
-  # logging.info(upload_cmd)
-  # subprocess.check_output(upload_cmd)
-  subprocess.check_output('git reset --hard', shell=True)
+  upload_cmd = 'java -jar scripts/deploy/plugin-repository-rest-client-0.3.SNAPSHOT-all.jar upload ' \
+                '-host https://plugins.jetbrains.com/ ' \
+                '-channel {channel} ' \
+                '-username {username} ' \
+                '-password \'{password}\' ' \
+                '-plugin {plugin_id} ' \
+                '-file {plugin_jar}'.format(channel=CHANNEL, username=os.environ['USERNAME'],
+                                            password=os.environ['PASSWORD'], plugin_id=PLUGIN_ID, plugin_jar=PLUGIN_JAR)
+  logging.info(upload_cmd)
+  try:
+    subprocess.check_output(upload_cmd, shell=True)
+  except subprocess.CalledProcessError as e:
+    pass
+  finally:
+    subprocess.check_output('git reset --hard', shell=True)
