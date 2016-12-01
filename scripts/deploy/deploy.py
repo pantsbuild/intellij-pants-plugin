@@ -68,7 +68,7 @@ if __name__ == "__main__":
             plugin_id=PLUGIN_ID,
             plugin_jar=PLUGIN_JAR)
 
-  logger.info(upload_cmd)
+  logger.info('Uploading...')
   try:
     with open(os.devnull, 'w') as devnull:
       subprocess.check_output(upload_cmd, shell=True, stderr=devnull)
