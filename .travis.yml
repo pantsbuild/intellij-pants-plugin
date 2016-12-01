@@ -30,3 +30,9 @@ env:
 
 script:
   - ./scripts/run-tests-ci.sh
+
+deploy:
+  provider: script
+  script: scripts/deploy/deploy.py
+  on:
+    all_branches: true
