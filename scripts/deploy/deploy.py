@@ -77,8 +77,7 @@ if __name__ == "__main__":
     # so the return code is meaningless. Check the plugin repo
     # explicitly to see if the version is there.
     try:
-      with open(os.devnull, 'w') as devnull:
-        subprocess.check_output('curl {} | grep {}'.format(REPO, sha), shell=True, stderr=devnull)
+      subprocess.check_output('curl {} | grep {}'.format(REPO, sha), shell=True, stderr=devnull)
     except subprocess.CalledProcessError as e:
       logger.error("Deploy failed: not available on {}".format(REPO))
     else:
