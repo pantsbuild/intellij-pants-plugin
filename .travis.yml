@@ -33,4 +33,4 @@ script:
   - echo '123'
 
 after_success:
-  - scripts/deploy/deploy.py
+  - scripts/deploy/deploy.sh

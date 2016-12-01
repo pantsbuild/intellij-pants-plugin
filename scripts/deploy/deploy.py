@@ -49,7 +49,6 @@ if __name__ == "__main__":
 
   try:
     build_cmd = 'rm -rf dist;' \
-                'source scripts/prepare-ci-environment.sh;' \
                 './pants binary scripts/sdk:intellij-pants-plugin-publish'
     logger.info(build_cmd)
     subprocess.check_output(build_cmd, shell=True)
