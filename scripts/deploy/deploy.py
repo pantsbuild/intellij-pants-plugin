@@ -46,31 +46,31 @@ if __name__ == "__main__":
   version.text = "{}.{}".format(version.text, sha)
   tree.write(PLUGIN_XML)
 
-  try:
-    build_cmd = 'rm -rf dist;' \
-                './pants binary scripts/sdk:intellij-pants-plugin-publish'
-    logger.info(build_cmd)
-    subprocess.check_output(build_cmd, shell=True)
-  finally:
-    # Reset `PLUGIN_XML` since it has been modified.
-    subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True)
-
-  upload_cmd = 'java -jar scripts/deploy/plugin-repository-rest-client-0.3.SNAPSHOT-all.jar upload ' \
-               '-host https://plugins.jetbrains.com/ ' \
-               '-channel {channel} ' \
-               '-username {username} ' \
-               '-password \'{password}\' ' \
-               '-plugin {plugin_id} ' \
-               '-file {plugin_jar}' \
-    .format(channel=CHANNEL,
-            username=os.environ['USERNAME'],
-            password=os.environ['PASSWORD'],
-            plugin_id=PLUGIN_ID,
-            plugin_jar=PLUGIN_JAR)
-
-  logger.info('Uploading...')
-
   with open(os.devnull, 'w') as devnull:
+    try:
+      build_cmd = 'rm -rf dist;' \
+                  './pants binary scripts/sdk:intellij-pants-plugin-publish'
+      logger.info(build_cmd)
+      subprocess.check_output(build_cmd, shell=True)
+    finally:
+      # Reset `PLUGIN_XML` since it has been modified.
+      subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True, stderr=devnull)
+
+    upload_cmd = 'java -jar scripts/deploy/plugin-repository-rest-client-0.3.SNAPSHOT-all.jar upload ' \
+                 '-host https://plugins.jetbrains.com/ ' \
+                 '-channel {channel} ' \
+                 '-username {username} ' \
+                 '-password \'{password}\' ' \
+                 '-plugin {plugin_id} ' \
+                 '-file {plugin_jar}' \
+      .format(channel=CHANNEL,
+              username=os.environ['USERNAME'],
+              password=os.environ['PASSWORD'],
+              plugin_id=PLUGIN_ID,
+              plugin_jar=PLUGIN_JAR)
+
+    logger.info('Uploading...')
+
     subprocess.call(upload_cmd, shell=True, stderr=devnull)
 
     # Plugin upload will return error even if it succeeds,
