@@ -7,6 +7,10 @@ PLUGIN_XML = 'resources/META-INF/plugin.xml'
 PLUGIN_ID = 7412
 PLUGIN_JAR = 'dist/intellij-pants-plugin.jar'
 CHANNEL = 'BleedingEdge'
+REPO = 'https://plugins.jetbrains.com/plugin/7412'
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def get_head_sha():
@@ -14,7 +18,7 @@ def get_head_sha():
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
   output, _ = p.communicate()
   if p.returncode != 0:
-    logging.error("{} failed.".format(cmd))
+    logger.error("{} failed.".format(cmd))
     exit(1)
 
   return output.strip()
@@ -32,7 +36,7 @@ if __name__ == "__main__":
   # Find the `version` tag then append the head sha to it.
   version = root.find('version')
   if version is None:
-    logging.error("version tag not found in %s".format(PLUGIN_XML))
+    logger.error("version tag not found in %s".format(PLUGIN_XML))
     exit(1)
 
   version.text = "{}.{}".format(version.text, sha)
@@ -59,11 +63,16 @@ if __name__ == "__main__":
             plugin_id=PLUGIN_ID,
             plugin_jar=PLUGIN_JAR)
 
-  logging.info(upload_cmd)
+  logger.info(upload_cmd)
   try:
     subprocess.check_output(upload_cmd, shell=True)
   except subprocess.CalledProcessError as e:
     # Plugin upload will return error even if it succeeds,
-    # so error is meaningless. Need to manually check on the
+    # so the error is meaningless. Need to manually check on the
     # plugin repo.
-    pass
+    try:
+      subprocess.check_output('curl {} | grep {}'.format(REPO, sha), shell=True)
+    except subprocess.CalledProcessError as e:
+      logger.error("Deploy failed: not available on {}".format(REPO))
+    else:
+      logger.info("Deploy succeeded.")
