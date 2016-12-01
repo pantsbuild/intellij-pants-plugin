@@ -40,11 +40,10 @@ if __name__ == "__main__":
   # Find the `version` tag then append the head sha to it.
   version = root.find('version')
   if version is None:
-    logger.error("version tag not found in %s".format(PLUGIN_XML))
+    logger.error("version tag not found in {}".format(PLUGIN_XML))
     exit(1)
 
   version.text = "{}.{}".format(version.text, sha)
-
   tree.write(PLUGIN_XML)
 
   try:
@@ -53,6 +52,7 @@ if __name__ == "__main__":
     logger.info(build_cmd)
     subprocess.check_output(build_cmd, shell=True)
   finally:
+    # Reset `PLUGIN_XML` since it has been modified.
     subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True)
 
   upload_cmd = 'java -jar scripts/deploy/plugin-repository-rest-client-0.3.SNAPSHOT-all.jar upload ' \
@@ -69,13 +69,13 @@ if __name__ == "__main__":
             plugin_jar=PLUGIN_JAR)
 
   logger.info('Uploading...')
-  try:
-    with open(os.devnull, 'w') as devnull:
-      subprocess.check_output(upload_cmd, shell=True, stderr=devnull)
-  except subprocess.CalledProcessError as e:
+
+  with open(os.devnull, 'w') as devnull:
+    subprocess.call(upload_cmd, shell=True, stderr=devnull)
+
     # Plugin upload will return error even if it succeeds,
-    # so the error is meaningless. Need to manually check on the
-    # plugin repo.
+    # so the return code is meaningless. Check the plugin repo
+    # explicitly to see if the version is there.
     try:
       with open(os.devnull, 'w') as devnull:
         subprocess.check_output('curl {} | grep {}'.format(REPO, sha), shell=True, stderr=devnull)
