@@ -32,9 +32,5 @@ script:
 #  - ./scripts/run-tests-ci.sh
   - echo '123'
 
-deploy:
-  provider: script
-  script:
-    - source scripts/prepare-ci-environment.sh; scripts/deploy/deploy.py
-  on:
-    all_branches: true
+after_success:
+  - scripts/deploy/deploy.py

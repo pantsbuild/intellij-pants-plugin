@@ -48,12 +48,12 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
 
   wget --no-check-certificate -O Scala.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$SCALA_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
   verify_md5 Scala.zip $SCALA_PLUGIN_MD5
-  unzip Scala.zip
+  unzip -q Scala.zip
   rm -f Scala.zip
 
   wget --no-check-certificate  -O python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
   verify_md5 python.zip $PYTHON_PLUGIN_MD5
-  unzip python.zip
+  unzip -q python.zip
   rm -f python.zip
 
   popd
