@@ -75,22 +75,20 @@ test sources, resources, test resources, generated sources, etc).
 
         git checkout -b $FEATURE_BRANCH
 
-* Push your branch and pass travis ci
+* Push your branch
 
+* Create a new pull request (PR) from your branch on Github, and make sure it passes [Travis CI](https://travis-ci.org/pantsbuild/intellij-pants-plugin/pull_requests)
 
-* Post your first review ([setup instructions](http://pantsbuild.github.io/howto_contribute.html#code-review))
+* Label your PR **reviewable**, and add reviewers to 'Assignee' (If you are unsure who to add, take a look who touched the code last)
 
-        ./rbt post -o -g
+* Iterate over the review by making changes then push your branch
 
-* Iterating over the review
+* Commit your change to master (Committer status required. If you are not one, please ask one to do so.)
+  * Select **Squash and merge** on the PR
+  * Fill out the description accordingly
+  * Confirm
 
-        ./rbt post -o -r <RB_ID>
-
-* Committing your change to master
-
-        git checkout master
-        git pull
-        ./rbt patch -c <RB_ID>
+* Once Travis CI build succeeds for the commit, it will automatically deploy the plugin to `BleedingEdge` channel in [the plugin repo](https://plugins.jetbrains.com/plugin/7412)
 
 ### IntelliJ project setup:
 

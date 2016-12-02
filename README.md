@@ -1,15 +1,23 @@
 # intellij-pants-plugin
 
 * The intellij-pants-plugin supports importing, compiling and testing [Pants](http://pantsbuild.github.io/) projects.
-* Scala and Java projects are fully supported. Python projects are not supported but work in terms of code navigation and assistance.
-* As of 11/2/2016, latest version of the plugin supports IntelliJ IDEA 2016.2.1 and up for both Community Edition and Ultimate Edition.
-* The plugin supports up to 10 most recent [Pants releases](https://pantsbuild.github.io/changelog.html).
+* Scala and Java projects are fully supported. Python projects are supported on a best effort basis.
+* As of 12/2/2016, latest version of the plugin supports IntelliJ IDEA 2016.3 and up for both Community Edition and Ultimate Edition.
+* As of 12/2/2016, the plugin supports [1.1.x](https://pantsbuild.github.io/notes-1.1.x.html), [1.2.x](https://pantsbuild.github.io/notes-1.2.x.html), and current master of Pants.
 
 ## User documentation
 
 ### Installing the Plugin
-Please use “Plugins” tab: (Main menu: Settings | Plugins) to install the plugin.
-Find "Pants Support" plugin. Install and Restart IntelliJ.
+Please use `Plugins` tab: (Main menu: Settings | Plugins) to install the plugin.
+Find `Pants Support` plugin. Install and Restart IntelliJ.
+
+### Minimum set of plugins is required to enable `Pants Support` features
+  * Gradle
+  * Groovy
+  * Java Bytecode Decompiler
+  * JUnit
+  * Python Community Edition (if you are importing python projects)
+  * Scala
 
 #### Importing an entire project directory
   * Use Main menu: File -> New -> Project From Existing Sources
