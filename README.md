@@ -11,7 +11,7 @@
 Please use `Plugins` tab: (Main menu: Settings | Plugins) to install the plugin.
 Find `Pants Support` plugin. Install and Restart IntelliJ.
 
-### Minimum set of plugins is required to support `Pants Support` features
+### Minimum set of plugins is required to enable `Pants Support` features
   * Gradle
   * Groovy
   * Java Bytecode Decompiler
