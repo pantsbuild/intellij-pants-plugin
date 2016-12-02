@@ -79,7 +79,7 @@ test sources, resources, test resources, generated sources, etc).
 
 * Create a new pull request (PR) from your branch on Github, and make sure it passes [Travis CI](https://travis-ci.org/pantsbuild/intellij-pants-plugin/pull_requests)
 
-* Label your PR **reviewable**, and add revieweres to 'Assignee' (If you are unsure who to add, take a look who touched the code last)
+* Label your PR **reviewable**, and add reviewers to 'Assignee' (If you are unsure who to add, take a look who touched the code last)
 
 * Iterate over the review by making changes then push your branch
 
