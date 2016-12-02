@@ -16,7 +16,6 @@ Find `Pants Support` plugin. Install and Restart IntelliJ.
   * Groovy
   * Java Bytecode Decompiler
   * JUnit
-  * Pants Support
   * Python Community Edition (if you are importing python projects)
   * Scala
 
