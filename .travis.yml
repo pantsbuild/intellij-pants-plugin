@@ -30,3 +30,6 @@ env:
 
 script:
   - ./scripts/run-tests-ci.sh
+
+after_success:
+  - scripts/deploy/deploy.sh

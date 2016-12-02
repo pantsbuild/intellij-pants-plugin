@@ -12,6 +12,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.pants.d" />
       <excludeFolder url="file://$MODULE_DIR$/.pids" />
       <excludeFolder url="file://$MODULE_DIR$/build-support" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -26,6 +27,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" scope="PROVIDED" name="scala-sdk-2.11.8" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="scala-sdk-2.11.6" level="project" />
   </component>
 </module>

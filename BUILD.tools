@@ -1,0 +1,42 @@
+SCALA_REV='2.11.6'
+
+# scala-compiler needs explicit dependencies on scala-library and scala-reflect (DPB-4447)
+jar_library(name = 'scalac',
+            jars = [
+              jar(org = 'org.scala-lang', name = 'scala-compiler', rev = SCALA_REV),
+            ],
+            dependencies=[
+              ':scala-reflect',
+              ':scala-library',
+            ])
+
+jar_library(name = 'scala-library',
+            jars = [
+              jar(org = 'org.scala-lang', name = 'scala-library', rev = SCALA_REV),
+            ],
+            # Zinc never reports usage of `scala-library`, because it injects it onto the
+            # classpath itself.
+            scope='forced',)
+
+target(name = 'scala-repl',
+       dependencies=[
+         ':scalac',
+         ':scala-reflect',
+         ':scala-library',
+       ])
+
+jar_library(name = 'scala-actors',
+            jars = [
+              jar(org = 'org.scala-lang', name = 'scala-actors', rev = SCALA_REV),
+            ])
+
+jar_library(name = 'scala-reflect',
+            jars = [
+              jar(org = 'org.scala-lang', name = 'scala-reflect', rev = SCALA_REV, intransitive=True),
+            ])
+
+jar_library(name = 'scalap',
+            jars = [
+              jar(org = 'org.scala-lang', name = 'scalap', rev = SCALA_REV),
+            ])
+

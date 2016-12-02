@@ -12,11 +12,11 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.4.9</version>
+  <version>1.5.0</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
-  <idea-version since-build="162.1120" until-build="162.*"/>
+  <idea-version since-build="163.7743.44" until-build="163.*"/>
 
   <!--Scala plugin related extensions-->
   <depends>org.intellij.scala</depends>
