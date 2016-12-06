@@ -36,9 +36,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -170,6 +170,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   public Pair<Boolean, Optional<String>> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
+    // If project has not changed since last Compile, return immediately.
+    if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddressesToCompile)) {
+      return Pair.create(true, Optional.empty());
+    }
+
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
@@ -248,6 +253,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     processHandler.runProcess();
 
     final boolean success = process.exitValue() == 0;
+    // Mark project dirty if compile failed.
+    if (!success) {
+      FileChangeTracker.markDirty(currentProject);
+    }
     notifyCompileResult(success);
     // Sync files as generated sources may have changed after Pants compile.
     PantsUtil.synchronizeFiles();

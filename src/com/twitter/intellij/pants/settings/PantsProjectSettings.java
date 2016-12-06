@@ -25,12 +25,14 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     List<String> targetSpecs,
     String externalProjectPath,
     boolean withDependees,
-    boolean libsWithSources
+    boolean libsWithSources,
+    boolean isEnableIncrementalImport
   ) {
     myTargetSpecs = targetSpecs;
     myWithDependees = withDependees;
     myLibsWithSources = libsWithSources;
     setExternalProjectPath(externalProjectPath);
+    myEnableIncrementalImport = isEnableIncrementalImport;
   }
 
   public PantsProjectSettings() {

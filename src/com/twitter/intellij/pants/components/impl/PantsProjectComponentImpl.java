@@ -17,11 +17,13 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
+import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
@@ -42,6 +44,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   @Override
   public void projectClosed() {
     PantsMetrics.report();
+    FileChangeTracker.unregisterProject(myProject);
     super.projectClosed();
   }
 
@@ -69,6 +72,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
           registerExternalBuilderListener();
           subscribeToRunConfigurationAddition();
+          registerFileListener();
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
             pantsSettings instanceof PantsSettings && ((PantsSettings) pantsSettings).getResolverVersion() != PantsResolver.VERSION;
@@ -104,7 +108,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            */
           final List<String> targetSpecs = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
           final PantsProjectSettings pantsProjectSettings =
-            new PantsProjectSettings(targetSpecs, projectPath, false, true);
+            new PantsProjectSettings(targetSpecs, projectPath, false, true, false);
 
           /**
            * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
@@ -184,5 +188,9 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
       }
     };
     connection.subscribe(BuildManagerListener.TOPIC, buildManagerListener);
+  }
+
+  private void registerFileListener() {
+    FileChangeTracker.registerProject(myProject);
   }
 }
