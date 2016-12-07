@@ -89,8 +89,8 @@ public class PantsResolver {
     @Nullable ProcessAdapter processAdapter
   ) {
     try {
-      List<String> pantsExportResult = myExecutor.loadProjectStructure(statusConsumer, processAdapter);
-      parse(pantsExportResult);
+      List<String> pantsExportResults = myExecutor.loadProjectStructure(statusConsumer, processAdapter);
+      parse(pantsExportResults);
     }
     catch (ExecutionException | IOException e) {
       throw new ExternalSystemException(e);

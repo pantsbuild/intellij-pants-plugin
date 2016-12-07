@@ -166,7 +166,7 @@ public class PantsCompileOptionsExecutor {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
     commandLine.addParameter("minimize");
     commandLine.addParameter("--minimize-output-file=" + outputFile.getPath());
-    commandLine.addParameter("::");
+    commandLine.addParameters(getAllTargetAddresses());
 
     LOG.debug(commandLine.toString());
     final ProcessOutput processOutput = PantsUtil.getCmdOutput(commandLine, processAdapter);
@@ -239,7 +239,7 @@ public class PantsCompileOptionsExecutor {
     @Nullable ProcessAdapter processAdapter
   ) {
     try {
-      final File outputFile = FileUtil.createTempFile("pants_export_" + target.replace('/', '_') + "_run", ".out");
+      final File outputFile = FileUtil.createTempFile("pants_export_run", ".out");
       final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
       commandLine.addParameter("export");
       commandLine.addParameter("--formatted"); // json outputs in a compact format

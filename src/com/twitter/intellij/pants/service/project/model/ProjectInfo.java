@@ -182,10 +182,10 @@ public class ProjectInfo {
   }
 
   public void merge(ProjectInfo projectInfo) {
-    getLibraries().putAll(projectInfo.getLibraries());
-    getTargets().putAll(projectInfo.getTargets());
-    if (getPythonSetup() == null && projectInfo.getPythonSetup() != null) {
-      python_setup = projectInfo.getPythonSetup();
+    libraries.putAll(projectInfo.libraries);
+    targets.putAll(projectInfo.targets);
+    if (python_setup == null && projectInfo.python_setup != null) {
+      python_setup = projectInfo.python_setup;
     }
   }
 }
