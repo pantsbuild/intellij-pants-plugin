@@ -180,4 +180,12 @@ public class ProjectInfo {
            ", targets=" + targets +
            '}';
   }
+
+  public void merge(ProjectInfo projectInfo) {
+    getLibraries().putAll(projectInfo.getLibraries());
+    getTargets().putAll(projectInfo.getTargets());
+    if (getPythonSetup() == null && projectInfo.getPythonSetup() != null) {
+      python_setup = projectInfo.getPythonSetup();
+    }
+  }
 }

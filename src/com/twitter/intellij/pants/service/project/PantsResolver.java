@@ -27,6 +27,7 @@ import org.jetbrains.annotations.TestOnly;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -63,15 +64,23 @@ public class PantsResolver {
     myProjectInfo = projectInfo;
   }
 
-  private void parse(final String output) {
+  private void parse(final List<String> outputs) {
     myProjectInfo = null;
-    if (output.isEmpty()) throw new ExternalSystemException("Not output from pants");
-    try {
-      myProjectInfo = parseProjectInfoFromJSON(output);
-    }
-    catch (JsonSyntaxException e) {
-      LOG.warn("Can't parse output\n" + output, e);
-      throw new ExternalSystemException("Can't parse project structure!");
+    if (outputs.isEmpty()) throw new ExternalSystemException("Not output from pants");
+    for (String output : outputs) {
+      try {
+        if (myProjectInfo == null) {
+          myProjectInfo = parseProjectInfoFromJSON(output);
+        } else {
+          // merge in project info
+          ProjectInfo projectInfo = parseProjectInfoFromJSON(output);
+          myProjectInfo.merge(projectInfo);
+        }
+      }
+      catch (JsonSyntaxException e) {
+        LOG.warn("Can't parse output\n" + output, e);
+        throw new ExternalSystemException("Can't parse project structure!");
+      }
     }
   }
 
@@ -80,7 +89,7 @@ public class PantsResolver {
     @Nullable ProcessAdapter processAdapter
   ) {
     try {
-      String pantsExportResult = myExecutor.loadProjectStructure(statusConsumer, processAdapter);
+      List<String> pantsExportResult = myExecutor.loadProjectStructure(statusConsumer, processAdapter);
       parse(pantsExportResult);
     }
     catch (ExecutionException | IOException e) {
