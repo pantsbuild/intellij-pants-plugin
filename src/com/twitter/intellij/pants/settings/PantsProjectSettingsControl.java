@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JLabel;
 import javax.swing.BorderFactory;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

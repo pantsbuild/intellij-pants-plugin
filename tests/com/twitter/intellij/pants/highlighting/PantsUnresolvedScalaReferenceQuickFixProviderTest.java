@@ -59,7 +59,7 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
       "___scala-library-synthetic",
       "testprojects_src_java_org_pantsbuild_testproject_publish_hello_greet_greet"
     );
-    assertPantsCompileSuccess(
+    assertPantsCompileExecutesAndSucceeds(
       pantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_missingdepswhitelist2_missingdepswhitelist2")
     );
   }

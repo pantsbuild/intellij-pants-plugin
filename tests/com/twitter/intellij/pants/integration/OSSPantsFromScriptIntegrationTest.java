@@ -25,6 +25,6 @@ public class OSSPantsFromScriptIntegrationTest extends OSSPantsIntegrationTest {
       "export1_module"
     );
 
-    assertPantsCompileSuccess(pantsCompileProject());
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
   }
 }

@@ -34,6 +34,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -183,7 +184,13 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
   }
 
-  private void cmd(String... args) throws ExecutionException {
+  protected void cmd(File workDir, String... args) throws ExecutionException {
+    final GeneralCommandLine commandLine = new GeneralCommandLine(args);
+    final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(workDir), null);
+    assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
+  }
+
+   protected void cmd(String... args) throws ExecutionException {
     final GeneralCommandLine commandLine = new GeneralCommandLine(args);
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
@@ -316,6 +323,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         }
       }
     );
+    FileDocumentManager manager = FileDocumentManager.getInstance();
+    manager.saveAllDocuments();
   }
 
   @NotNull
@@ -546,8 +555,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return runner.executeTask(myProject);
   }
 
-  protected void assertPantsCompileSuccess(final Pair<Boolean, Optional<String>> compileResult) {
+  protected void assertPantsCompileExecutesAndSucceeds(final Pair<Boolean, Optional<String>> compileResult) {
     assertTrue("Compile failed", compileResult.getFirst());
+    if (compileResult.getSecond().isPresent()) {
+      assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.getSecond().get()));
+    }
+  }
+
+  protected void assertPantsCompileNoop(final Pair<Boolean, Optional<String>> compileResult) {
+    assertTrue("Compile failed.", compileResult.getFirst());
+    assertTrue("Compile message not found.", compileResult.getSecond().isPresent());
+    assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.getSecond().get());
   }
 
   protected void assertPantsCompileFailure(final Pair<Boolean, Optional<String>> compileResult) {
