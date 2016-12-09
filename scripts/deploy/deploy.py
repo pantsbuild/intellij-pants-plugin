@@ -8,6 +8,8 @@ import xml.etree.ElementTree as ET
 PLUGIN_XML = 'resources/META-INF/plugin.xml'
 PLUGIN_ID = 7412
 PLUGIN_JAR = 'dist/intellij-pants-plugin.jar'
+PACKAGING_DIR = 'intellij-pants-plugin/lib'
+FINAL_ZIP = 'pants.zip'
 CHANNEL = 'BleedingEdge'
 REPO = 'https://plugins.jetbrains.com/plugin/7412'
 
@@ -52,6 +54,10 @@ if __name__ == "__main__":
                   './pants binary scripts/sdk:intellij-pants-plugin-publish'
       logger.info(build_cmd)
       subprocess.check_output(build_cmd, shell=True, stderr=devnull)
+
+      logger.info("Packaging into a zip")
+      packaging_cmd = 'mkdir -p {package}; cp {jar} {package}; zip -r {zip} {package}' \
+        .format(package=PACKAGING_DIR, jar=PLUGIN_JAR, zip=FINAL_ZIP)
     finally:
       # Reset `PLUGIN_XML` since it has been modified.
       subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True, stderr=devnull)
@@ -62,7 +68,7 @@ if __name__ == "__main__":
                  '-username {username} ' \
                  '-password \'{password}\' ' \
                  '-plugin {plugin_id} ' \
-                 '-file {plugin_jar}' \
+                 '-file {FINAL_ZIP}' \
       .format(channel=CHANNEL,
               username=os.environ['USERNAME'],
               password=os.environ['PASSWORD'],
