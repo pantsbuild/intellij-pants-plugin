@@ -58,6 +58,8 @@ if __name__ == "__main__":
       logger.info("Packaging into a zip")
       packaging_cmd = 'mkdir -p {package}; cp {jar} {package}; zip -r {zip} {package}' \
         .format(package=PACKAGING_DIR, jar=PLUGIN_JAR, zip=FINAL_ZIP)
+      subprocess.check_output(packaging_cmd, shell=True, stderr=devnull)
+
     finally:
       # Reset `PLUGIN_XML` since it has been modified.
       subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True, stderr=devnull)
