@@ -9,7 +9,6 @@ PLUGIN_XML = 'resources/META-INF/plugin.xml'
 PLUGIN_ID = 7412
 PLUGIN_JAR = 'dist/intellij-pants-plugin.jar'
 PACKAGING_DIR = 'intellij-pants-plugin/lib'
-FINAL_ZIP = 'pants.zip'
 CHANNEL = 'BleedingEdge'
 REPO = 'https://plugins.jetbrains.com/plugin/7412'
 
@@ -34,6 +33,7 @@ if __name__ == "__main__":
   subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True)
 
   sha = get_head_sha()
+  zip_name = 'pants_{}.zip'.format(sha)
   logger.info('Append git sha {} to plugin version'.format(sha))
 
   tree = ET.parse(PLUGIN_XML)
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
       logger.info("Packaging into a zip")
       packaging_cmd = 'mkdir -p {package}; cp {jar} {package}; zip -r {zip} {package}' \
-        .format(package=PACKAGING_DIR, jar=PLUGIN_JAR, zip=FINAL_ZIP)
+        .format(package=PACKAGING_DIR, jar=PLUGIN_JAR, zip=zip_name)
       subprocess.check_output(packaging_cmd, shell=True, stderr=devnull)
 
     finally:
@@ -75,7 +75,7 @@ if __name__ == "__main__":
               username=os.environ['USERNAME'],
               password=os.environ['PASSWORD'],
               plugin_id=PLUGIN_ID,
-              zip=FINAL_ZIP)
+              zip=zip_name)
 
     logger.info('Uploading...')
 
