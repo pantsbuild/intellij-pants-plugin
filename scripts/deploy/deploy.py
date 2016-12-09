@@ -68,12 +68,12 @@ if __name__ == "__main__":
                  '-username {username} ' \
                  '-password \'{password}\' ' \
                  '-plugin {plugin_id} ' \
-                 '-file {FINAL_ZIP}' \
+                 '-file {zip}' \
       .format(channel=CHANNEL,
               username=os.environ['USERNAME'],
               password=os.environ['PASSWORD'],
               plugin_id=PLUGIN_ID,
-              plugin_jar=PLUGIN_JAR)
+              zip=FINAL_ZIP)
 
     logger.info('Uploading...')
 
