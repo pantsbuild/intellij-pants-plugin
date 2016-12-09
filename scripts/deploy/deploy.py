@@ -33,7 +33,6 @@ if __name__ == "__main__":
   subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True)
 
   sha = get_head_sha()
-  zip_name = 'pants_{}.zip'.format(sha)
   logger.info('Append git sha {} to plugin version'.format(sha))
 
   tree = ET.parse(PLUGIN_XML)
@@ -47,6 +46,8 @@ if __name__ == "__main__":
 
   version.text = "{}.{}".format(version.text, sha)
   tree.write(PLUGIN_XML)
+
+  zip_name = 'pants_{}.zip'.format(version.text)
 
   with open(os.devnull, 'w') as devnull:
     try:
