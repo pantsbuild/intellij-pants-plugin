@@ -8,7 +8,6 @@ import xml.etree.ElementTree as ET
 PLUGIN_XML = 'resources/META-INF/plugin.xml'
 PLUGIN_ID = 7412
 PLUGIN_JAR = 'dist/intellij-pants-plugin.jar'
-PACKAGING_DIR = 'intellij-pants-plugin/lib'
 CHANNEL = 'BleedingEdge'
 REPO = 'https://plugins.jetbrains.com/plugin/7412'
 
@@ -57,8 +56,18 @@ if __name__ == "__main__":
       subprocess.check_output(build_cmd, shell=True, stderr=devnull)
 
       logger.info("Packaging into a zip")
-      packaging_cmd = 'mkdir -p {package}; cp {jar} {package}; zip -r {zip} {package}' \
-        .format(package=PACKAGING_DIR, jar=PLUGIN_JAR, zip=zip_name)
+      # Move the jar under pants/lib, but because there is already `pants` under build root,
+      # we have to create a temp dir, then build the zip there.
+      packaging_cmd = 'mkdir -p tmp &&' \
+                      'mkdir -p tmp/pants/lib && ' \
+                      'cp {jar} tmp/pants/lib && ' \
+                      'pushd tmp && ' \
+                      'zip -r {zip} pants/ &&' \
+                      'popd &&' \
+                      'cp tmp/{zip} {zip} &&' \
+                      'rm -rf tmp' \
+        .format(jar=PLUGIN_JAR, zip=zip_name)
+      logger.info(packaging_cmd)
       subprocess.check_output(packaging_cmd, shell=True, stderr=devnull)
 
     finally:
@@ -83,7 +92,7 @@ if __name__ == "__main__":
     subprocess.call(upload_cmd, shell=True, stderr=devnull)
 
     # Plugin upload will return error even if it succeeds,
-    # so the return code is meaningless. Check the plugin repo
+    # so the return code is meaningless. Hence check the plugin repo
     # explicitly to see if the version is there.
     try:
       subprocess.check_output('curl {} | grep {}'.format(REPO, sha), shell=True, stderr=devnull)
