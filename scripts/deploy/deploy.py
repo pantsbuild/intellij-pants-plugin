@@ -58,12 +58,11 @@ if __name__ == "__main__":
       logger.info("Packaging into a zip")
       # Move the jar under pants/lib, but because there is already `pants` under build root,
       # we have to create a temp dir, then build the zip there.
-      packaging_cmd = 'mkdir -p tmp &&' \
-                      'mkdir -p tmp/pants/lib && ' \
+      packaging_cmd = 'mkdir -p tmp/pants/lib && ' \
                       'cp {jar} tmp/pants/lib && ' \
-                      'pushd tmp && ' \
+                      'cd tmp && ' \
                       'zip -r {zip} pants/ &&' \
-                      'popd &&' \
+                      'cd .. &&' \
                       'cp tmp/{zip} {zip} &&' \
                       'rm -rf tmp' \
         .format(jar=PLUGIN_JAR, zip=zip_name)
