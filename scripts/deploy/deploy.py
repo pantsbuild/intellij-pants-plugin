@@ -46,12 +46,29 @@ if __name__ == "__main__":
   version.text = "{}.{}".format(version.text, sha)
   tree.write(PLUGIN_XML)
 
+  zip_name = 'pants_{}.zip'.format(version.text)
+
   with open(os.devnull, 'w') as devnull:
     try:
       build_cmd = 'rm -rf dist;' \
                   './pants binary scripts/sdk:intellij-pants-plugin-publish'
       logger.info(build_cmd)
       subprocess.check_output(build_cmd, shell=True, stderr=devnull)
+
+      logger.info("Packaging into a zip")
+      # Move the jar under pants/lib, but because there is already `pants` under build root,
+      # we have to create a temp dir, then build the zip there.
+      packaging_cmd = 'mkdir -p tmp/pants/lib && ' \
+                      'cp {jar} tmp/pants/lib && ' \
+                      'cd tmp && ' \
+                      'zip -r {zip} pants/ &&' \
+                      'cd .. &&' \
+                      'cp tmp/{zip} {zip} &&' \
+                      'rm -rf tmp' \
+        .format(jar=PLUGIN_JAR, zip=zip_name)
+      logger.info(packaging_cmd)
+      subprocess.check_output(packaging_cmd, shell=True, stderr=devnull)
+
     finally:
       # Reset `PLUGIN_XML` since it has been modified.
       subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True, stderr=devnull)
@@ -62,19 +79,19 @@ if __name__ == "__main__":
                  '-username {username} ' \
                  '-password \'{password}\' ' \
                  '-plugin {plugin_id} ' \
-                 '-file {plugin_jar}' \
+                 '-file {zip}' \
       .format(channel=CHANNEL,
               username=os.environ['USERNAME'],
               password=os.environ['PASSWORD'],
               plugin_id=PLUGIN_ID,
-              plugin_jar=PLUGIN_JAR)
+              zip=zip_name)
 
     logger.info('Uploading...')
 
     subprocess.call(upload_cmd, shell=True, stderr=devnull)
 
     # Plugin upload will return error even if it succeeds,
-    # so the return code is meaningless. Check the plugin repo
+    # so the return code is meaningless. Hence check the plugin repo
     # explicitly to see if the version is there.
     try:
       subprocess.check_output('curl {} | grep {}'.format(REPO, sha), shell=True, stderr=devnull)
