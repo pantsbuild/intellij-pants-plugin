@@ -6,34 +6,28 @@ package com.twitter.intellij.pants.service.project.resolver;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.ContentRootData;
-import com.intellij.openapi.externalSystem.model.project.ExternalSystemSourceType;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.Function;
-import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
-import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
+import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.util.PantsConstants;
-import com.twitter.intellij.pants.util.PantsUtil;
-import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PantsSourceRootsExtension implements PantsResolverExtension {
 
@@ -106,19 +100,15 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
 
   @NotNull
   private List<String> findBaseRoots(@NotNull final TargetInfo targetInfo, Set<SourceRoot> roots) {
-    final Set<String> allRoots = ContainerUtil.map2Set(
-      roots,
-      new Function<SourceRoot, String>() {
-        @Override
-        public String fun(SourceRoot root) {
-          return getSourceRootRegardingTargetType(targetInfo, root);
-        }
-      }
-    );
+    Set<String> allRoots = roots.stream()
+      .map(root -> getSourceRootRegardingTargetType(targetInfo, root))
+      .collect(Collectors.toSet());
+
     final List<String> sortedRoots = ContainerUtil.sorted(
       allRoots,
       StringUtil::naturalCompare
     );
+
     final List<String> baseRoots = ContainerUtilRt.newArrayList();
     for (String root : sortedRoots) {
       if (!hasAnAncestorRoot(baseRoots, root)) {
@@ -126,70 +116,5 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
       }
     }
     return baseRoots;
-  }
-
-  private void addExcludesToContentRoots(@NotNull final TargetInfo targetInfo, @NotNull List<ContentRootData> remainingContentRoots) {
-    if (doNotSupportPackagePrefixes(targetInfo)) {
-      return; // don't exclude subdirectories of resource sources
-    }
-    for (final ContentRootData contentRoot : remainingContentRoots) {
-      addExcludes(
-        targetInfo,
-        contentRoot,
-        ContainerUtil.findAll(
-          targetInfo.getRoots(),
-          new Condition<SourceRoot>() {
-            @Override
-            public boolean value(SourceRoot root) {
-              return FileUtil.isAncestor(
-                contentRoot.getRootPath(),
-                getSourceRootRegardingTargetType(targetInfo, root),
-                false
-              );
-            }
-          }
-        )
-      );
-    }
-  }
-
-  private void addExcludes(
-    @NotNull TargetInfo targetInfo,
-    @NotNull final ContentRootData contentRoot,
-    @NotNull List<SourceRoot> roots
-  ) {
-    final Set<File> rootFiles = new THashSet<File>(FileUtil.FILE_HASHING_STRATEGY);
-    for (SourceRoot sourceRoot : roots) {
-      rootFiles.add(new File(getSourceRootRegardingTargetType(targetInfo, sourceRoot)));
-    }
-
-    for (File root : rootFiles) {
-      PantsUtil.traverseDirectoriesRecursively(
-        root,
-        new Processor<File>() {
-          @Override
-          public boolean process(final File file) {
-            if (!containsSourceRoot(file)) {
-              contentRoot.storePath(ExternalSystemSourceType.EXCLUDED, file.getAbsolutePath());
-              return false;
-            }
-            return true;
-          }
-
-          /**
-           * Checks if {@code file} contains or is a source root.
-           */
-          private boolean containsSourceRoot(@NotNull File file) {
-            for (File rootFile : rootFiles) {
-              if (FileUtil.isAncestor(file, rootFile, false)) {
-                return true;
-              }
-            }
-
-            return false;
-          }
-        }
-      );
-    }
   }
 }
