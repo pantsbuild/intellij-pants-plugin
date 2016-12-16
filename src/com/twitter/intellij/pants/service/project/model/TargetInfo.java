@@ -152,13 +152,6 @@ public class TargetInfo {
     return PantsSourceType.SOURCE;
   }
 
-  /**
-   * @return true if not an actual target
-   */
-  public boolean isDummy() {
-    return addressInfos.isEmpty();
-  }
-
   public boolean isJarLibrary() {
     return getAddressInfos().stream().allMatch(TargetAddressInfo::isJarLibrary);
   }

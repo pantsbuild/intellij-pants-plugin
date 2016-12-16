@@ -95,20 +95,7 @@ public class TargetAddressInfo {
            getGlobs().hasFileExtension("py");
   }
 
-  public boolean isAnnotationProcessor() {
-    return StringUtil.equals("annotation_processor", getInternalPantsTargetType());
-  }
-
   public boolean isJarLibrary() {
     return StringUtil.equals("jar_library", getInternalPantsTargetType());
-  }
-
-  public String getCanonicalId() {
-    if (getId() != null) {
-      return getId();
-    }
-    else {
-      return PantsUtil.getCanonicalTargetId(targetAddress);
-    }
   }
 }
