@@ -104,7 +104,7 @@ public class TargetInfo {
   }
 
   public boolean isEmpty() {
-    return libraries.isEmpty() && targets.isEmpty() && roots.isEmpty();
+    return libraries.isEmpty() && targets.isEmpty() && roots.isEmpty() && addressInfos.isEmpty();
   }
 
   @Nullable

@@ -27,8 +27,8 @@ public class PythonInfoModifier implements PantsProjectInfoModifierExtension {
     @NotNull PantsCompileOptionsExecutor executor,
     @NotNull Logger log
   ) {
-    TargetInfo sources = null;
-    TargetInfo tests = null;
+    TargetInfo sources = new TargetInfo();
+    TargetInfo tests = new TargetInfo();
     final Set<String> pythonTargetNames = ContainerUtilRt.newHashSet();
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String targetName = entry.getKey();
@@ -38,12 +38,12 @@ public class PythonInfoModifier implements PantsProjectInfoModifierExtension {
       }
       pythonTargetNames.add(targetName);
       if (targetInfo.isTest()) {
-        tests = tests == null ? targetInfo : tests.union(targetInfo);
+        tests = tests.union(targetInfo);
       } else {
-        sources = sources == null ? targetInfo : sources.union(targetInfo);
+        sources = sources.union(targetInfo);
       }
     }
-    if (sources == null) {
+    if (sources.isEmpty()) {
       return;
     }
     projectInfo.removeTargets(pythonTargetNames);
@@ -53,7 +53,7 @@ public class PythonInfoModifier implements PantsProjectInfoModifierExtension {
 
     sources.getTargets().removeAll(pythonTargetNames);
     projectInfo.addTarget("python:src", sources);
-    if (tests != null) {
+    if (!tests.isEmpty()) {
       // make sure src and test don't have common roots
       sources.getRoots().removeAll(tests.getRoots());
       tests.getTargets().removeAll(pythonTargetNames);
