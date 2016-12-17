@@ -8,6 +8,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.components.StoragePathMacros;
+import com.intellij.openapi.components.StorageScheme;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.settings.ExternalSystemSettingsListener;
 import com.intellij.openapi.project.Project;
@@ -21,7 +22,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.Set;
 
-@State(name = "PantsSettings", storages = {@Storage(file = StoragePathMacros.WORKSPACE_FILE)})
+@State(
+  name = "PantsSettings",
+  storages = {
+    @Storage(file = StoragePathMacros.PROJECT_FILE),
+    @Storage(file = StoragePathMacros.PROJECT_CONFIG_DIR + "/pants.xml", scheme = StorageScheme.DIRECTORY_BASED)
+  }
+)
 public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings, PantsProjectSettings, PantsSettingsListener>
   implements PersistentStateComponent<PantsSettings.MyState> {
 
@@ -50,8 +57,8 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     }
     PantsSettings other = (PantsSettings) obj;
     return Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk)
-           && Objects.equals(myUsePantsMakeBeforeRun, other.myUsePantsMakeBeforeRun)
-           && Objects.equals(myResolverVersion, other.myResolverVersion);
+      && Objects.equals(myUsePantsMakeBeforeRun, other.myUsePantsMakeBeforeRun)
+      && Objects.equals(myResolverVersion, other.myResolverVersion);
   }
 
   public static PantsSettings copy(PantsSettings pantsSettings) {
