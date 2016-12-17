@@ -24,12 +24,12 @@ public class TargetInfoDeserializer implements JsonDeserializer<TargetInfo> {
     final List<String> targets = getStringListField(object, "targets");
     final List<String> libraries = getStringListField(object, "libraries");
     final List<String> excludes = getStringListField(object, "excludes");
-    final List<SourceRoot> sourceRoots = getFieldAsList(
+    final List<ContentRoot> contentRoots = getFieldAsList(
       object.getAsJsonArray("roots"),
-      new Function<JsonElement, SourceRoot>() {
+      new Function<JsonElement, ContentRoot>() {
         @Override
-        public SourceRoot fun(JsonElement element) {
-          return context.deserialize(element, SourceRoot.class);
+        public ContentRoot fun(JsonElement element) {
+          return context.deserialize(element, ContentRoot.class);
         }
       }
     );
@@ -39,7 +39,7 @@ public class TargetInfoDeserializer implements JsonDeserializer<TargetInfo> {
       new HashSet<String>(targets),
       new HashSet<String>(libraries),
       new HashSet<String>(excludes),
-      new HashSet<SourceRoot>(sourceRoots)
+      new HashSet<ContentRoot>(contentRoots)
     );
   }
 

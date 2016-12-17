@@ -15,8 +15,8 @@ import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
+import com.twitter.intellij.pants.service.project.model.ContentRoot;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 public class PantsSourceRootsExtension implements PantsResolverExtension {
 
-  private static String getSourceRootRegardingTargetType(@NotNull TargetInfo targetInfo, @NotNull SourceRoot root) {
+  private static String getSourceRootRegardingTargetType(@NotNull TargetInfo targetInfo, @NotNull ContentRoot root) {
     return doNotSupportPackagePrefixes(targetInfo) ? root.getPackageRoot() : root.getRawSourceRoot();
   }
 
@@ -70,7 +70,7 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
   }
 
   private void createContentRoots(@NotNull DataNode<ModuleData> moduleDataNode, @NotNull final TargetInfo targetInfo) {
-    final Set<SourceRoot> roots = targetInfo.getRoots();
+    final Set<ContentRoot> roots = targetInfo.getRoots();
     if (roots.isEmpty()) {
       return;
     }
@@ -79,7 +79,7 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
       final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, baseRoot);
       moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
 
-      for (SourceRoot sourceRoot : roots) {
+      for (ContentRoot sourceRoot : roots) {
         final String sourceRootPathToAdd = getSourceRootRegardingTargetType(targetInfo, sourceRoot);
         if (FileUtil.isAncestor(baseRoot, sourceRootPathToAdd, false)) {
           try {
@@ -99,7 +99,7 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
   }
 
   @NotNull
-  private List<String> findBaseRoots(@NotNull final TargetInfo targetInfo, Set<SourceRoot> roots) {
+  private List<String> findBaseRoots(@NotNull final TargetInfo targetInfo, Set<ContentRoot> roots) {
     Set<String> allRoots = roots.stream()
       .map(root -> getSourceRootRegardingTargetType(targetInfo, root))
       .collect(Collectors.toSet());

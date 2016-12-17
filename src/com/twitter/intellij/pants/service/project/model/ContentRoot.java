@@ -8,11 +8,12 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SourceRoot implements Comparable<SourceRoot> {
+public class ContentRoot implements Comparable<ContentRoot> {
   private String source_root;
   private String package_prefix;
 
-  public SourceRoot(@NotNull String source_root, @NotNull String package_prefix) {
+  // FIXME: Change `source_root` argument to `content_root` once it is corrected in Pants.
+  public ContentRoot(@NotNull String source_root, @NotNull String package_prefix) {
     this.source_root = source_root;
     this.package_prefix = package_prefix;
   }
@@ -42,7 +43,7 @@ public class SourceRoot implements Comparable<SourceRoot> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    SourceRoot root = (SourceRoot)o;
+    ContentRoot root = (ContentRoot)o;
 
     if (!package_prefix.equals(root.package_prefix)) return false;
     if (!source_root.equals(root.source_root)) return false;
@@ -61,14 +62,14 @@ public class SourceRoot implements Comparable<SourceRoot> {
   @Override
   public String toString() {
     return String.format(
-      "SourceRoot{'source_root='%s', package_prefix='%s'}",
+      "ContentRoot{'source_root='%s', package_prefix='%s'}",
       source_root,
       package_prefix
     );
   }
 
   @Override
-  public int compareTo(@NotNull SourceRoot o) {
+  public int compareTo(@NotNull ContentRoot o) {
     return StringUtil.naturalCompare(getRawSourceRoot(), o.getRawSourceRoot());
   }
 }

@@ -18,9 +18,9 @@ import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
+import com.twitter.intellij.pants.service.project.model.ContentRoot;
 import com.twitter.intellij.pants.service.project.model.LibraryInfo;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -227,7 +227,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
     private Set<String> libraries = new HashSet<String>();
     private Set<String> excludes = new HashSet<String>();
     private Set<String> targets = new HashSet<String>();
-    private Set<SourceRoot> roots = new HashSet<SourceRoot>();
+    private Set<ContentRoot> roots = new HashSet<ContentRoot>();
 
     @Override
     public TargetInfo build() {
@@ -243,7 +243,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
 
     public TargetInfoBuilder withRoot(@Nls String rootRelativePath, @NotNull String packagePrefix) {
       final File root = new File(new File(""), rootRelativePath);
-      roots.add(new SourceRoot(root.getAbsolutePath(), packagePrefix));
+      roots.add(new ContentRoot(root.getAbsolutePath(), packagePrefix));
       return this;
     }
 
