@@ -29,14 +29,14 @@ public class PythonInfoModifier implements PantsProjectInfoModifierExtension {
   ) {
     TargetInfo sources = null;
     TargetInfo tests = null;
-    final Set<String> allPythonTargets = ContainerUtilRt.newHashSet();
+    final Set<String> pythonTargetNames = ContainerUtilRt.newHashSet();
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String targetName = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
       if (!targetInfo.isPythonTarget()) {
         continue;
       }
-      allPythonTargets.add(targetName);
+      pythonTargetNames.add(targetName);
       if (targetInfo.isTest()) {
         tests = tests == null ? targetInfo : tests.union(targetInfo);
       } else {
@@ -46,19 +46,19 @@ public class PythonInfoModifier implements PantsProjectInfoModifierExtension {
     if (sources == null) {
       return;
     }
-    projectInfo.removeTargets(allPythonTargets);
-    if (!allPythonTargets.isEmpty() && log.isDebugEnabled()) {
-      log.debug(String.format("Combining %d python targets", allPythonTargets.size()));
+    projectInfo.removeTargets(pythonTargetNames);
+    if (!pythonTargetNames.isEmpty() && log.isDebugEnabled()) {
+      log.debug(String.format("Combining %d python targets", pythonTargetNames.size()));
     }
 
-    sources.getTargets().removeAll(allPythonTargets);
-    projectInfo.getTargets().put("python:src", sources);
+    sources.getTargets().removeAll(pythonTargetNames);
+    projectInfo.addTarget("python:src", sources);
     if (tests != null) {
       // make sure src and test don't have common roots
       sources.getRoots().removeAll(tests.getRoots());
-      tests.getTargets().removeAll(allPythonTargets);
+      tests.getTargets().removeAll(pythonTargetNames);
       tests.getTargets().add("python:src");
-      projectInfo.getTargets().put("python:tests", tests);
+      projectInfo.addTarget("python:tests", tests);
     }
   }
 }
