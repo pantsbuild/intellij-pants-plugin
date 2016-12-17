@@ -79,14 +79,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     return myUseIdeaProjectJdk;
   }
 
-  public boolean isUsePantsMakeBeforeRun() {
-    return myUsePantsMakeBeforeRun;
-  }
-
-  public void setUsePantsMakeBeforeRun(boolean usePantsMakeBeforeRun) {
-    myUsePantsMakeBeforeRun = usePantsMakeBeforeRun;
-  }
-
   public boolean isEnableIncrementalImport() {
     return getLinkedProjectsSettings().stream().anyMatch(PantsProjectSettings::isEnableIncrementalImport);
   }
@@ -117,7 +109,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   protected void copyExtraSettingsFrom(@NotNull PantsSettings settings) {
     setResolverVersion(settings.getResolverVersion());
     setUseIdeaProjectJdk(settings.isUseIdeaProjectJdk());
-    setUsePantsMakeBeforeRun(settings.isUsePantsMakeBeforeRun());
   }
 
   @Override
@@ -131,7 +122,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     final MyState state = new MyState();
     state.setResolverVersion(getResolverVersion());
     state.setUseIdeaProjectJdk(isUseIdeaProjectJdk());
-    state.setUsePantsMakeBeforeRun(isUsePantsMakeBeforeRun());
     fillState(state);
     return state;
   }
@@ -141,14 +131,12 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     super.loadState(state);
     setResolverVersion(state.getResolverVersion());
     setUseIdeaProjectJdk(state.isUseIdeaProjectJdk());
-    setUsePantsMakeBeforeRun(state.isUsePantsMakeBeforeRun());
   }
 
   public static class MyState implements State<PantsProjectSettings> {
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
 
     boolean myUseIdeaProjectJdk = false;
-    boolean myUsePantsMakeBeforeRun = false;
     int myResolverVersion = 0;
 
     @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
@@ -162,14 +150,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     public boolean isUseIdeaProjectJdk() {
       return myUseIdeaProjectJdk;
-    }
-
-    public boolean isUsePantsMakeBeforeRun() {
-      return myUsePantsMakeBeforeRun;
-    }
-
-    public void setUsePantsMakeBeforeRun(boolean usePantsMakeBeforeRun) {
-      myUsePantsMakeBeforeRun = usePantsMakeBeforeRun;
     }
 
     public void setLinkedExternalProjectsSettings(Set<PantsProjectSettings> settings) {
