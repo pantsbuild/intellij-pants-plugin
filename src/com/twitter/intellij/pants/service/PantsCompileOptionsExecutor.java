@@ -28,9 +28,12 @@ import org.jetbrains.annotations.TestOnly;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PantsCompileOptionsExecutor {
   protected static final Logger LOG = Logger.getInstance(PantsCompileOptionsExecutor.class);
@@ -131,15 +134,51 @@ public class PantsCompileOptionsExecutor {
   }
 
   @NotNull
-  public String loadProjectStructure(
+  public List<String> loadProjectStructure(
     @NotNull Consumer<String> statusConsumer,
     @Nullable ProcessAdapter processAdapter
   ) throws IOException, ExecutionException {
     if (PantsUtil.isExecutable(getProjectPath())) {
-      return loadProjectStructureFromScript(getProjectPath(), statusConsumer, processAdapter);
+      return Collections.singletonList(loadProjectStructureFromScript(getProjectPath(), statusConsumer, processAdapter));
     }
     else {
-      return loadProjectStructureFromTargets(statusConsumer, processAdapter);
+      return loadExportDataForProject(statusConsumer, processAdapter);
+    }
+  }
+
+  @NotNull
+  private List<String> loadExportDataForProject(
+    @NotNull Consumer<String> statusConsumer,
+    @Nullable ProcessAdapter processAdapter
+  ) throws IOException, ExecutionException {
+    String[] targets = loadMinimizedTargets(statusConsumer, processAdapter);
+    Stream<String> stream = Arrays.stream(targets).map(target -> getExport(target, processAdapter));
+    return stream.collect(Collectors.toList());
+  }
+
+  @NotNull
+  private String[] loadMinimizedTargets(
+    @NotNull Consumer<String> statusConsumer,
+    @Nullable ProcessAdapter processAdapter
+  ) throws IOException, ExecutionException {
+    statusConsumer.consume("Determining optimal import set...");
+    final File outputFile = FileUtil.createTempFile("pants_minimzie_run", ".out");
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+    commandLine.addParameter("minimize");
+    commandLine.addParameter("--minimize-output-file=" + outputFile.getPath());
+    commandLine.addParameters(getAllTargetAddresses());
+
+    LOG.debug(commandLine.toString());
+    final ProcessOutput processOutput = PantsUtil.getCmdOutput(commandLine, processAdapter);
+
+    if (processOutput.getStdout().contains("no such option")) {
+      throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
+    }
+    if (processOutput.checkSuccess(LOG)) {
+      String output = FileUtil.loadFile(outputFile);
+      return output.split("\n");
+    } else {
+      throw new PantsExecutionException("Failed to update the project!", commandLine.getCommandLineString("pants"), processOutput);
     }
   }
 
@@ -192,6 +231,41 @@ public class PantsCompileOptionsExecutor {
     final ProcessOutput processOutput = PantsUtil.getOutput(process, processAdapter);
     myProcesses.remove(process);
     return processOutput;
+  }
+
+  @NotNull
+  private String getExport(
+    @NotNull String target,
+    @Nullable ProcessAdapter processAdapter
+  ) {
+    try {
+      final File outputFile = FileUtil.createTempFile("pants_export_run", ".out");
+      final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+      commandLine.addParameter("export");
+      commandLine.addParameter("--formatted"); // json outputs in a compact format
+      if (myResolveSourcesAndDocsForJars) {
+        commandLine.addParameter("--export-libraries-sources");
+        commandLine.addParameter("--export-libraries-javadocs");
+      }
+
+      commandLine.addParameters(target);
+
+      commandLine.addParameter("--export-output-file=" + outputFile.getPath());
+      LOG.debug(commandLine.toString());
+      final ProcessOutput processOutput = getProcessOutput(commandLine, processAdapter);
+
+      if (processOutput.getStdout().contains("no such option")) {
+        throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
+      }
+      if (processOutput.checkSuccess(LOG)) {
+        return FileUtil.loadFile(outputFile);
+      } else {
+        throw new PantsExecutionException("Failed to update the project!", commandLine.getCommandLineString("pants"), processOutput);
+      }
+    }
+    catch (IOException | ExecutionException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @NotNull
