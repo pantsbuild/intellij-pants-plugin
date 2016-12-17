@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Objects;
 
 public class PantsOutputMessage {
   private final int myStart;
@@ -71,9 +72,9 @@ public class PantsOutputMessage {
   }
 
   /**
-   * @param line of an output
+   * @param line                 the output
    * @param onlyCompilerMessages will look only for compiler specific message e.g. with a log level
-   * @param checkFileExistence will check if the parsed {@code myFilePath} exists
+   * @param checkFileExistence   will check if the parsed {@code myFilePath} exists
    */
   @Nullable
   public static PantsOutputMessage parseMessage(@NotNull String line, boolean onlyCompilerMessages, boolean checkFileExistence) {
@@ -82,7 +83,8 @@ public class PantsOutputMessage {
     final boolean isWarning = isWarning(line);
     if (isError || isWarning || line.contains("[debug]")) {
       i = line.indexOf(']') + 1;
-    } else if (onlyCompilerMessages) {
+    }
+    else if (onlyCompilerMessages) {
       return null;
     }
     while (i < line.length() && (Character.isSpaceChar(line.charAt(i)) || line.charAt(i) == '\t')) {
@@ -134,7 +136,7 @@ public class PantsOutputMessage {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    PantsOutputMessage message = (PantsOutputMessage)o;
+    PantsOutputMessage message = (PantsOutputMessage) o;
 
     if (myEnd != message.myEnd) return false;
     if (myLineNumber != message.myLineNumber) return false;
@@ -147,11 +149,12 @@ public class PantsOutputMessage {
 
   @Override
   public int hashCode() {
-    int result = myStart;
-    result = 31 * result + myEnd;
-    result = 31 * result + myLineNumber;
-    result = 31 * result + (myFilePath != null ? myFilePath.hashCode() : 0);
-    result = 31 * result + (myLevel != null ? myLevel.hashCode() : 0);
-    return result;
+    return Objects.hash(
+      myStart,
+      myEnd,
+      myLineNumber,
+      myFilePath,
+      myLevel
+    );
   }
 }

@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +67,7 @@ public class ProjectInfo {
   }
 
   public Map<String, LibraryInfo> getLibraries() {
-    return libraries;
+    return Collections.unmodifiableMap(libraries);
   }
 
   public void setLibraries(Map<String, LibraryInfo> libraries) {
@@ -78,7 +79,7 @@ public class ProjectInfo {
   }
 
   public Map<String, TargetInfo> getTargets() {
-    return targets;
+    return Collections.unmodifiableMap(targets);
   }
 
   public void setTargets(Map<String, TargetInfo> targets) {
