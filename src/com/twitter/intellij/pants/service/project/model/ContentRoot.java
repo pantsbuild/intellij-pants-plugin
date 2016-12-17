@@ -8,11 +8,11 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// FIXME: Change `source_root` argument to `content_root` once it is corrected in Pants.
 public class ContentRoot implements Comparable<ContentRoot> {
   private String source_root;
   private String package_prefix;
 
-  // FIXME: Change `source_root` argument to `content_root` once it is corrected in Pants.
   public ContentRoot(@NotNull String source_root, @NotNull String package_prefix) {
     this.source_root = source_root;
     this.package_prefix = package_prefix;
