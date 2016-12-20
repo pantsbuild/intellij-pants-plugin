@@ -28,6 +28,7 @@ import org.jetbrains.annotations.TestOnly;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -205,11 +206,11 @@ public class PantsCompileOptionsExecutor {
       commandLine.addParameter("--export-libraries-javadocs");
     }
 
-    commandLine.addParameters(getAllTargetAddresses());
-    System.out.println(getAllTargetAddresses());
+    commandLine.addParameters(getTargetSpecs());
+    System.out.println(getTargetSpecs());
     if (getOptions().isWithDependees()) {
       statusConsumer.consume("Looking for dependents...");
-      commandLine.addParameters(loadDependees(getAllTargetAddresses()));
+      commandLine.addParameters(loadDependees(getTargetSpecs()));
     }
 
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
@@ -235,9 +236,9 @@ public class PantsCompileOptionsExecutor {
   }
 
   @NotNull
-  private List<String> getAllTargetAddresses() {
+  private List<String> getTargetSpecs() {
     // If project is opened via pants cli, the targets are in specs.
-    return getOptions().getTargetSpecs();
+    return Collections.unmodifiableList(getOptions().getTargetSpecs());
   }
 
   /**

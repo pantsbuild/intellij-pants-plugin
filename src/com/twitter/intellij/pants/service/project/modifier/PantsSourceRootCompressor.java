@@ -7,7 +7,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.service.project.model.SourceRoot;
+import com.twitter.intellij.pants.service.project.model.ContentRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -26,16 +26,16 @@ public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtens
   }
 
   @NotNull
-  private Set<SourceRoot> compressRootsIfPossible(@NotNull Set<SourceRoot> roots) {
-    final Set<String> packageRoots = roots.stream().map(SourceRoot::getPackageRoot).collect(Collectors.toSet());
+  private Set<ContentRoot> compressRootsIfPossible(@NotNull Set<ContentRoot> roots) {
+    final Set<String> packageRoots = roots.stream().map(ContentRoot::getPackageRoot).collect(Collectors.toSet());
     if (packageRoots.size() != 1) {
       return roots;
     }
     final String packageRoot = packageRoots.iterator().next();
-    final Set<File> sourceRoots = roots.stream().map(SourceRoot::getRawSourceRoot).map(File::new).collect(Collectors.toSet());
+    final Set<File> sourceRoots = roots.stream().map(ContentRoot::getRawSourceRoot).map(File::new).collect(Collectors.toSet());
 
     if (folderContainsOnlyRoots(new File(packageRoot), sourceRoots)) {
-      return Collections.singleton(new SourceRoot(packageRoot, ""));
+      return Collections.singleton(new ContentRoot(packageRoot, ""));
     }
     return roots;
   }

@@ -55,7 +55,7 @@ public class PantsOptionsTest extends TestCase {
       PantsOptions.getPantsOptions("some_invalid_pants_path");
       fail(String.format("%s should have been thrown.", PantsException.class));
     }
-    catch (PantsException e) {
+    catch (PantsException ignored) {
 
     }
   }

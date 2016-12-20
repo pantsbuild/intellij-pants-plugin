@@ -9,8 +9,8 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
+import com.twitter.intellij.pants.service.project.model.ContentRoot;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
-import com.twitter.intellij.pants.service.project.model.SourceRoot;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,40 +36,40 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     // - for each target that depends on that root,
     //   we replace the root with a dependency on the new target
 
-    final Map<SourceRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets = getSourceRoot2TargetMapping(projectInfo);
+    final Map<ContentRoot, List<Pair<String, TargetInfo>>> sourceRoot2Targets = getSourceRoot2TargetMapping(projectInfo);
     if (sourceRoot2Targets.isEmpty()) {
       return;
     }
 
-    for (Map.Entry<SourceRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
+    for (Map.Entry<ContentRoot, List<Pair<String, TargetInfo>>> entry : sourceRoot2Targets.entrySet()) {
       final List<Pair<String, TargetInfo>> targetNameAndInfos = entry.getValue();
-      final SourceRoot commonSourceRoot = entry.getKey();
+      final ContentRoot commonContentRoot = entry.getKey();
       if (targetNameAndInfos.size() <= 1) {
         continue;
       }
 
       final Pair<String, TargetInfo> commonTargetNameAndInfo =
-        createTargetForCommonSourceRoot(executor.getBuildRoot().getPath(), targetNameAndInfos, commonSourceRoot);
+        createTargetForCommonSourceRoot(executor.getBuildRoot().getPath(), targetNameAndInfos, commonContentRoot);
 
       projectInfo.addTarget(commonTargetNameAndInfo.getFirst(), commonTargetNameAndInfo.getSecond());
       for (Pair<String, TargetInfo> nameAndInfo : targetNameAndInfos) {
-        nameAndInfo.getSecond().getRoots().remove(commonSourceRoot);
+        nameAndInfo.getSecond().getRoots().remove(commonContentRoot);
         nameAndInfo.getSecond().addDependency(commonTargetNameAndInfo.getFirst());
       }
     }
   }
 
   @NotNull
-  public Map<SourceRoot, List<Pair<String, TargetInfo>>> getSourceRoot2TargetMapping(@NotNull ProjectInfo projectInfo) {
+  public Map<ContentRoot, List<Pair<String, TargetInfo>>> getSourceRoot2TargetMapping(@NotNull ProjectInfo projectInfo) {
     final Factory<List<Pair<String, TargetInfo>>> listFactory = ArrayList::new;
-    final Map<SourceRoot, List<Pair<String, TargetInfo>>> result = new HashMap<>();
+    final Map<ContentRoot, List<Pair<String, TargetInfo>>> result = new HashMap<>();
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getTargets().entrySet()) {
       final String targetName = entry.getKey();
       final TargetInfo targetInfo = entry.getValue();
-      for (SourceRoot sourceRoot : targetInfo.getRoots()) {
+      for (ContentRoot contentRoot : targetInfo.getRoots()) {
         ContainerUtil.getOrCreate(
           result,
-          sourceRoot,
+          contentRoot,
           listFactory
         ).add(Pair.create(targetName, targetInfo));
       }
@@ -81,16 +81,16 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
   private Pair<String, TargetInfo> createTargetForCommonSourceRoot(
     @NotNull String buildRoot,
     @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
-    @NotNull SourceRoot originalSourceRoot
+    @NotNull ContentRoot originalContentRoot
   ) {
-    final String commonTargetAddress = createTargetAddressForCommonSource(buildRoot, originalSourceRoot);
-    final TargetInfo commonInfo = createTargetForSourceRootUnioningDeps(targetNameAndInfos, originalSourceRoot);
+    final String commonTargetAddress = createTargetAddressForCommonSource(buildRoot, originalContentRoot);
+    final TargetInfo commonInfo = createTargetForSourceRootUnioningDeps(targetNameAndInfos, originalContentRoot);
     return Pair.create(commonTargetAddress, commonInfo);
   }
 
   @NotNull
-  private String createTargetAddressForCommonSource(@NotNull String projectPath, @NotNull SourceRoot originalSourceRoot) {
-    final String commonPath = originalSourceRoot.getRawSourceRoot();
+  private String createTargetAddressForCommonSource(@NotNull String projectPath, @NotNull ContentRoot originalContentRoot) {
+    final String commonPath = originalContentRoot.getRawSourceRoot();
     final String relativePath = Paths.get(projectPath).relativize(Paths.get(commonPath)).toString();
     return relativePath + ":" + COMMON_SOURCES_TARGET_NAME;
   }
@@ -98,7 +98,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
   @NotNull
   private TargetInfo createTargetForSourceRootUnioningDeps(
     @NotNull List<Pair<String, TargetInfo>> targetNameAndInfos,
-    @NotNull SourceRoot originalSourceRoot
+    @NotNull ContentRoot originalContentRoot
   ) {
     final Iterator<Pair<String, TargetInfo>> iterator = targetNameAndInfos.iterator();
     TargetInfo commonInfo = iterator.next().getSecond();
@@ -108,7 +108,7 @@ public class PantsCommonSourceRootModifier implements PantsProjectInfoModifierEx
     // make sure we won't have cyclic deps
     commonInfo.getTargets().removeAll(targetNameAndInfos.stream().map(s -> s.getFirst()).collect(Collectors.toSet()));
 
-    final Set<SourceRoot> newRoots = ContainerUtil.newHashSet(originalSourceRoot);
+    final Set<ContentRoot> newRoots = ContainerUtil.newHashSet(originalContentRoot);
     commonInfo.setRoots(newRoots);
     return commonInfo;
   }

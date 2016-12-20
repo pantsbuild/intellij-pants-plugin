@@ -8,6 +8,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.FileWriter;
@@ -117,7 +118,7 @@ public class PantsMetrics {
     indexThreadPool = Executors.newSingleThreadScheduledExecutor(
       new ThreadFactory() {
         @Override
-        public Thread newThread(Runnable r) {
+        public Thread newThread(@NotNull Runnable r) {
           return new Thread(r, "Pants-Plugin-Metrics-Pool");
         }
       });

@@ -5,6 +5,8 @@ package com.twitter.intellij.pants.service.project.model;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 public class PythonInterpreterInfo {
   @NotNull
   private String binary;
@@ -42,8 +44,9 @@ public class PythonInterpreterInfo {
 
   @Override
   public int hashCode() {
-    int result = binary.hashCode();
-    result = 31 * result + chroot.hashCode();
-    return result;
+    return Objects.hash(
+      binary,
+      chroot
+    );
   }
 }

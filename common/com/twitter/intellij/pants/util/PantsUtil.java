@@ -100,7 +100,7 @@ public class PantsUtil {
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
     new ThreadFactory() {
       @Override
-      public Thread newThread(Runnable r) {
+      public Thread newThread(@NotNull Runnable r) {
         return new Thread(r, "Pants-Plugin-Pool");
       }
     });

@@ -57,8 +57,8 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     }
     PantsSettings other = (PantsSettings) obj;
     return Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk)
-      && Objects.equals(myUsePantsMakeBeforeRun, other.myUsePantsMakeBeforeRun)
-      && Objects.equals(myResolverVersion, other.myResolverVersion);
+           && Objects.equals(myUsePantsMakeBeforeRun, other.myUsePantsMakeBeforeRun)
+           && Objects.equals(myResolverVersion, other.myResolverVersion);
   }
 
   public static PantsSettings copy(PantsSettings pantsSettings) {

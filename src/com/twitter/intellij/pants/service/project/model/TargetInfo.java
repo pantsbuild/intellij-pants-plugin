@@ -39,7 +39,7 @@ public class TargetInfo {
   /**
    * List of source roots.
    */
-  protected Set<SourceRoot> roots = Collections.emptySet();
+  protected Set<ContentRoot> roots = Collections.emptySet();
 
   public TargetInfo(TargetAddressInfo... addressInfos) {
     setAddressInfos(ContainerUtil.newHashSet(addressInfos));
@@ -50,7 +50,7 @@ public class TargetInfo {
     Set<String> targets,
     Set<String> libraries,
     Set<String> excludes,
-    Set<SourceRoot> roots
+    Set<ContentRoot> roots
   ) {
     setAddressInfos(addressInfos);
     setLibraries(libraries);
@@ -95,16 +95,16 @@ public class TargetInfo {
   }
 
   @NotNull
-  public Set<SourceRoot> getRoots() {
+  public Set<ContentRoot> getRoots() {
     return roots;
   }
 
-  public void setRoots(Set<SourceRoot> roots) {
-    this.roots = new TreeSet<SourceRoot>(roots);
+  public void setRoots(Set<ContentRoot> roots) {
+    this.roots = new TreeSet<ContentRoot>(roots);
   }
 
   public boolean isEmpty() {
-    return libraries.isEmpty() && targets.isEmpty() && roots.isEmpty();
+    return libraries.isEmpty() && targets.isEmpty() && roots.isEmpty() && addressInfos.isEmpty();
   }
 
   @Nullable
@@ -150,13 +150,6 @@ public class TargetInfo {
       return topRankedType.get();
     }
     return PantsSourceType.SOURCE;
-  }
-
-  /**
-   * @return true if not an actual target
-   */
-  public boolean isDummy() {
-    return addressInfos.isEmpty();
   }
 
   public boolean isJarLibrary() {
