@@ -8,7 +8,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsProjectExtensionSerializer;
+import com.twitter.intellij.pants.jps.incremental.serialization.PantsJpsModelSerializerExtension;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.cmdline.ClasspathBootstrap;
@@ -28,8 +28,8 @@ public class PantsBuildProcessParametersProvider extends BuildProcessParametersP
     classpath.add(ClasspathBootstrap.getResourcePath(ExternalSystemException.class));
 
     if (ApplicationManager.getApplication().isUnitTestMode()) {
-      classpath.add(ClasspathBootstrap.getResourcePath(PantsJpsProjectExtensionSerializer.class));
       classpath.add(ClasspathBootstrap.getResourcePath(PantsUtil.class));
+      classpath.add(ClasspathBootstrap.getResourcePath(PantsJpsModelSerializerExtension.class));
       classpath.addAll(StringUtil.split(StringUtil.notNullize(System.getProperty("pants.jps.plugin.classpath")), ":"));
     }
 

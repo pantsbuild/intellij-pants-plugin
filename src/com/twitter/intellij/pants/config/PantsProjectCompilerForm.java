@@ -8,7 +8,6 @@ import javax.swing.*;
 public class PantsProjectCompilerForm {
   private JPanel myMainPanel;
   private JCheckBox myUseIdeaProjectJdkCheckBox;
-  private JCheckBox myUsePantsMakeBeforeRun;
 
   public PantsProjectCompilerForm() {
   }
@@ -23,13 +22,5 @@ public class PantsProjectCompilerForm {
 
   public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
     myUseIdeaProjectJdkCheckBox.setSelected(useIdeaProjectJdk);
-  }
-
-  public boolean isUsePantsMakeBeforeRun() {
-    return myUsePantsMakeBeforeRun.isSelected();
-  }
-
-  public void setUsePantsMakeBeforeRun(boolean usePantsMakeBeforeRun) {
-    myUsePantsMakeBeforeRun.setSelected(usePantsMakeBeforeRun);
   }
 }
