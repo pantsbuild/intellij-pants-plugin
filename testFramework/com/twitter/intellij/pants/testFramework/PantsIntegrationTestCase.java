@@ -64,7 +64,7 @@ import com.intellij.testFramework.CompilerTester;
 import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.components.impl.PantsMetrics;
+import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.model.PantsOptions;
