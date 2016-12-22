@@ -34,6 +34,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
@@ -72,7 +73,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
-    final DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.isEnableIncrementalImport());
+    final DataNode<ProjectData> projectDataNode =
+      resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.isEnableIncrementalImport());
     doViewSwitch(id, projectPath);
     task2executor.remove(id);
     return projectDataNode;
@@ -140,6 +142,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {
+      for (PantsExternalMetricsListener x : PantsExternalMetricsListener.EP_NAME.getExtensions()) {
+        x.logIncrementalImport(isEnableImcrementalImport);
+      }
       resolveUsingPantsGoal(id, executor, listener, projectDataNode, isEnableImcrementalImport);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
