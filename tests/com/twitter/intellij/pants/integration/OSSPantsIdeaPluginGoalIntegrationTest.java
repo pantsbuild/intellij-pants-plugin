@@ -94,7 +94,7 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
    */
   @Override
   public void tearDown() throws Exception {
-    PlatformTestCase.closeAndDisposeProjectAndCheckThatNoOpenProjects(myProject, new ArrayList<Throwable>());
+    PlatformTestCase.closeAndDisposeProjectAndCheckThatNoOpenProjects(myProject);
     cleanProjectRoot();
   }
 }
