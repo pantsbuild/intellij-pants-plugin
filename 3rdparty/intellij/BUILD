@@ -191,3 +191,35 @@ jar_library(
         )
     ]
 )
+
+
+jar_library(
+    name = 'gradle-plugin',
+    dependencies = [':groovy-plugin'],
+    jars = [
+        _intellij_plugin_jar(path) for path in _find_all_jars(
+            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'gradle', 'lib')
+        )
+    ]
+)
+
+
+jar_library(
+    name = 'groovy-plugin',
+    dependencies = [':properties-plugin'],
+    jars = [
+        _intellij_plugin_jar(path) for path in _find_all_jars(
+            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'Groovy', 'lib')
+        )
+    ]
+)
+
+
+jar_library(
+    name = 'properties-plugin',
+    jars = [
+        _intellij_plugin_jar(path) for path in _find_all_jars(
+            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'properties', 'lib')
+        )
+    ]
+)

@@ -123,7 +123,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected String[] getRequiredPluginIds() {
-    return new String[]{"org.intellij.scala", PantsConstants.PLUGIN_ID, "org.jetbrains.plugins.gradle"};
+    return new String[]{
+      "org.intellij.scala",
+      "org.jetbrains.plugins.gradle",
+      PantsConstants.PLUGIN_ID
+    };
   }
 
   @Override
@@ -190,7 +194,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
   }
 
-   protected void cmd(String... args) throws ExecutionException {
+  protected void cmd(String... args) throws ExecutionException {
     final GeneralCommandLine commandLine = new GeneralCommandLine(args);
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
