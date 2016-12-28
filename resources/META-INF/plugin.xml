@@ -20,6 +20,7 @@
 
   <!--Scala plugin related extensions-->
   <depends>org.intellij.scala</depends>
+  <depends>org.jetbrains.plugins.gradle</depends>
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
     <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaSdkResolver"/>
   </extensions>
