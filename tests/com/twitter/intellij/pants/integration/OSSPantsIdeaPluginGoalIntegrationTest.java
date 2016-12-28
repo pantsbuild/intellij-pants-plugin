@@ -14,6 +14,7 @@ import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.testFramework.PlatformTestCase;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -92,6 +93,12 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
    */
   @Override
   public void tearDown() throws Exception {
+    try {
+      PlatformTestCase.closeAndDisposeProjectAndCheckThatNoOpenProjects(myProject);
+    }
+    catch (IllegalStateException ignored) {
+
+    }
     cleanProjectRoot();
   }
 }
