@@ -34,7 +34,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
-import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
@@ -142,9 +142,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {
-      for (PantsExternalMetricsListener x : PantsExternalMetricsListener.EP_NAME.getExtensions()) {
-        x.logIncrementalImport(isEnableImcrementalImport);
-      }
+      PantsExternalMetricsListenerManager.getInstance().logIncrementalImport(isEnableImcrementalImport);
       resolveUsingPantsGoal(id, executor, listener, projectDataNode, isEnableImcrementalImport);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {

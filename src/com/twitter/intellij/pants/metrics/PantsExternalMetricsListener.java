@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.metrics;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
-import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 
 /**
  * This class keeps track of the metrics globally.
@@ -12,8 +11,8 @@ import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtens
  */
 public interface PantsExternalMetricsListener {
 
-  enum TestRunner {
-    PANTS, JUNIT, SCALA
+  public enum TestRunnerType {
+    PANTS_RUNNER, JUNIT_RUNNER, SCALA_RUNNER
   }
 
   ExtensionPointName<PantsExternalMetricsListener>
@@ -29,5 +28,5 @@ public interface PantsExternalMetricsListener {
    */
   void logGUIImport(boolean isGUI);
 
-  void logTestRunner(TestRunner runner);
+  void logTestRunner(TestRunnerType runner);
 }

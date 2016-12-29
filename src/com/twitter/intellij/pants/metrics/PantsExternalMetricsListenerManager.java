@@ -14,10 +14,6 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
 
   private static PantsExternalMetricsListenerManager instance = new PantsExternalMetricsListenerManager();
 
-  public enum TestRunnerType {
-    PANTS_RUNNER, JUNIT_RUNNER, SCALA_RUNNER
-  }
-
   private static ExtensionPointName<PantsExternalMetricsListener>
     EP_NAME = ExtensionPointName.create("com.intellij.plugins.pants.pantsExternalMetricsListener");
 
@@ -36,15 +32,15 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
   }
 
   @Override
-  public void logTestRunner(PantsExternalMetricsListener.TestRunner runner) {
+  public void logTestRunner(PantsExternalMetricsListener.TestRunnerType runner) {
     Arrays.stream(EP_NAME.getExtensions()).forEach(s -> s.logTestRunner(runner));
   }
 
   public void logTestRunner(RunConfiguration runConfiguration) {
     PantsUtil.RunConfigurationDecider.decideAndDo(
       runConfiguration,
-      () -> Arrays.stream(EP_NAME.getExtensions()).forEach(s -> s.logTestRunner(PantsExternalMetricsListener.TestRunner.SCALA)),
-      () -> Arrays.stream(EP_NAME.getExtensions()).forEach(s -> s.logTestRunner(PantsExternalMetricsListener.TestRunner.JUNIT))
+      () -> Arrays.stream(EP_NAME.getExtensions()).forEach(s -> s.logTestRunner(TestRunnerType.SCALA_RUNNER)),
+      () -> Arrays.stream(EP_NAME.getExtensions()).forEach(s -> s.logTestRunner(TestRunnerType.JUNIT_RUNNER))
     );
   }
 }

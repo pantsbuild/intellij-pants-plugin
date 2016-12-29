@@ -48,7 +48,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     @Nullable String debuggerSetup,
     @NotNull final ExternalSystemTaskNotificationListener listener
   ) throws ExternalSystemException {
-    PantsExternalMetricsListenerManager.getInstance().logTestRunner(PantsExternalMetricsListener.TestRunner.PANTS);
+    PantsExternalMetricsListenerManager.getInstance().logTestRunner(PantsExternalMetricsListener.TestRunnerType.PANTS_RUNNER);
     final GeneralCommandLine commandLine = constructCommandLine(taskNames, projectPath, settings, vmOptions, scriptParameters, debuggerSetup);
     if (commandLine == null) return;
 

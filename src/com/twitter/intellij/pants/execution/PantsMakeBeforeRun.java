@@ -48,7 +48,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 
-import javax.swing.Icon;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -92,7 +92,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
             .setWorkingDirectory(file.getPath()));
           replaceTask(runManagerImpl, runConfiguration);
         }
-      }, new Runnable() {
+      },
+      new Runnable() {
         @Override
         public void run() {
           buildRoot.ifPresent(
