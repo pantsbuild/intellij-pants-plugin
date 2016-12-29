@@ -68,8 +68,6 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
       "org.pantsbuild.example.hello.welcome.WelSpec",
       null
     );
-    //RunManagerImpl runManagerImpl = (RunManagerImpl) RunManager.getInstance(myProject);
-    //runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.emptyList(), true);
     try {
       runWithConfiguration(runConfiguration);
     }
