@@ -17,6 +17,8 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -46,6 +48,7 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     @Nullable String debuggerSetup,
     @NotNull final ExternalSystemTaskNotificationListener listener
   ) throws ExternalSystemException {
+    PantsExternalMetricsListenerManager.getInstance().logTestRunner(PantsExternalMetricsListener.TestRunner.PANTS);
     final GeneralCommandLine commandLine = constructCommandLine(taskNames, projectPath, settings, vmOptions, scriptParameters, debuggerSetup);
     if (commandLine == null) return;
 

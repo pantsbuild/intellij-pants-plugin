@@ -82,34 +82,33 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(project);
 
-    /**
-     /**
-     * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
-     */
-    if (runConfiguration instanceof AbstractTestRunConfiguration) {
-      if (buildRoot.isPresent()) {
-        ((AbstractTestRunConfiguration) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
-      }
-    }
-    /**
-     * JUnit, Application, etc configuration inherit {@link CommonProgramRunConfigurationParameters}
-     */
-    else if (runConfiguration instanceof CommonProgramRunConfigurationParameters) {
-      if (buildRoot.isPresent()) {
-        ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
-      }
-    }
-    /**
-     * If neither applies (e.g. Pants or pytest configuration), do not continue.
-     */
-    else {
-      return;
-    }
 
-    /**
-     * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.
-     * Therefore we want to overwrite it with {@link PantsMakeBeforeRun}.
-     */
+    PantsUtil.RunConfigurationDecider.decideAndDo(
+      runConfiguration,
+      new Runnable() {
+        @Override
+        public void run() {
+          buildRoot.ifPresent(file -> ((AbstractTestRunConfiguration) runConfiguration)
+            .setWorkingDirectory(file.getPath()));
+          replaceTask(runManagerImpl, runConfiguration);
+        }
+      }, new Runnable() {
+        @Override
+        public void run() {
+          buildRoot.ifPresent(
+            file -> ((CommonProgramRunConfigurationParameters) runConfiguration)
+              .setWorkingDirectory(file.getPath()));
+          replaceTask(runManagerImpl, runConfiguration);
+        }
+      }
+    );
+  }
+
+  /**
+   * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.
+   * Therefore we want to overwrite it with {@link PantsMakeBeforeRun}.
+   */
+  private static void replaceTask(RunManagerImpl runManagerImpl, RunConfiguration runConfiguration) {
     BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
     pantsMakeTask.setEnabled(true);
     runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask), false);
@@ -162,7 +161,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), false);
   }
 
-  public Pair<Boolean, Optional<String>> executeTask(@NotNull Module [] modules) {
+  public Pair<Boolean, Optional<String>> executeTask(@NotNull Module[] modules) {
     if (modules.length == 0) {
       return Pair.create(false, Optional.empty());
     }
