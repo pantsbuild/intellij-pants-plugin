@@ -476,10 +476,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   /**
    * TODO: ScalaTestRunConfiguration setting may not be fully correct yet. Currently this can only be used to invoke scala runner,
    * but the run itself may not succeed.
-   * @param moduleName
-   * @param className
-   * @param vmParams
-   * @return
    */
   @NotNull
   protected ScalaTestRunConfiguration generateScalaRunConfiguration(String moduleName, String className, @Nullable String vmParams) {
