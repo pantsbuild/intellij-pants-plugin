@@ -3,9 +3,10 @@
 
 package com.twitter.intellij.pants.metrics;
 
+import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.extensions.ExtensionPointName;
-import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 
 import java.util.Arrays;
 
@@ -37,10 +38,18 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
   }
 
   public void logTestRunner(RunConfiguration runConfiguration) {
-    PantsUtil.RunConfigurationDecider.decideAndDo(
-      runConfiguration,
-      () -> Arrays.stream(EP_NAME.getExtensions()).forEach(s -> s.logTestRunner(TestRunnerType.SCALA_RUNNER)),
-      () -> Arrays.stream(EP_NAME.getExtensions()).forEach(s -> s.logTestRunner(TestRunnerType.JUNIT_RUNNER))
-    );
+    /**
+     /**
+     * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
+     */
+    if (runConfiguration instanceof AbstractTestRunConfiguration) {
+      Arrays.stream(EP_NAME.getExtensions()).forEach(s -> s.logTestRunner(TestRunnerType.SCALA_RUNNER));
+    }
+    /**
+     * JUnit, Application, etc configuration inherit {@link CommonProgramRunConfigurationParameters}
+     */
+    else if (runConfiguration instanceof CommonProgramRunConfigurationParameters) {
+      Arrays.stream(EP_NAME.getExtensions()).forEach(s -> s.logTestRunner(TestRunnerType.JUNIT_RUNNER));
+    }
   }
 }

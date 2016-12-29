@@ -902,27 +902,5 @@ public class PantsUtil {
   public static List<String> parseCmdParameters(Optional<String> cmdArgsLine) {
     return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
   }
-
-  public static class RunConfigurationDecider {
-    public static void decideAndDo(
-      RunConfiguration runConfiguration,
-      Runnable scalaRunnable,
-      Runnable javaRunnable
-    ) {
-      /**
-       /**
-       * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
-       */
-      if (runConfiguration instanceof AbstractTestRunConfiguration) {
-        scalaRunnable.run();
-      }
-      /**
-       * JUnit, Application, etc configuration inherit {@link CommonProgramRunConfigurationParameters}
-       */
-      else if (runConfiguration instanceof CommonProgramRunConfigurationParameters) {
-        javaRunnable.run();
-      }
-    }
-  }
 }
 
