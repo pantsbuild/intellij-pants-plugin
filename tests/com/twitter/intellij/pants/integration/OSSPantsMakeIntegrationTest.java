@@ -17,7 +17,7 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
       "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest", null);
 
     assertAndRunPantsMake(runConfiguration);
-    assertSuccessfulJUnitTest(runConfiguration);
+    assertSuccessfulTest(runConfiguration);
   }
 
   public void testCompileAll() throws Throwable {
@@ -32,7 +32,7 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
     );
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-    assertSuccessfulJUnitTest(runConfiguration);
+    assertSuccessfulTest(runConfiguration);
   }
 
 }

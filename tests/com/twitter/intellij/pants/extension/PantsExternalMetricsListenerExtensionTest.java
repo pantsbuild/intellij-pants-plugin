@@ -3,27 +3,20 @@
 
 package com.twitter.intellij.pants.extension;
 
-import com.intellij.ExtensionPoints;
-import com.intellij.core.CoreApplicationEnvironment;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.openapi.extensions.Extensions;
-import com.intellij.openapi.extensions.PluginId;
-import com.intellij.openapi.extensions.impl.ExtensionsAreaImpl;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
-import com.twitter.intellij.pants.util.PantsConstants;
-import org.picocontainer.defaults.DefaultPicoContainer;
+import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import junit.framework.AssertionFailedError;
+import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
-import java.util.ArrayList;
-import java.util.List;
+public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrationTest {
 
-public class PantsExternalMetricsListenerExtensionTest extends LightCodeInsightFixtureTestCase {
+  private PantsExternalMetricsListener.TestRunnerType lastRun;
 
-  public class DummyMetricsListener implements PantsExternalMetricsListener{
+
+  public class DummyMetricsListener implements PantsExternalMetricsListener {
 
     @Override
     public void logIncrementalImport(boolean isIncremental) {
@@ -37,22 +30,52 @@ public class PantsExternalMetricsListenerExtensionTest extends LightCodeInsightF
 
     @Override
     public void logTestRunner(TestRunnerType runner) {
-      System.out.println("hehe");
-
+      lastRun = runner;
     }
   }
 
+
   @Override
-  protected void setUp() throws Exception {
+  public void setUp() throws Exception {
     super.setUp();
+    // Register `DummyMetricsListener` as one of the extension points of PantsExternalMetricsListener
     Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(new DummyMetricsListener());
   }
 
   public void testLogTestRunner() {
-    //PantsExternalMetricsListener[] extensions = PantsExternalMetricsListener.EP_NAME.getExtensions();
-    //System.out.println(extensions);
-    //System.out.println(extensions.length);
-    //int x = 5;
     PantsExternalMetricsListenerManager.getInstance().logTestRunner(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER);
+  }
+
+  public void testJUnitRunner() throws Throwable {
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
+
+    JUnitConfiguration runConfiguration = generateJUnitConfiguration(
+      "testprojects_tests_java_org_pantsbuild_testproject_annotation_annotation",
+      "org.pantsbuild.testproject.annotation.AnnotationTest",
+      null
+    );
+
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    assertSuccessfulTest(runConfiguration);
+    assertEquals(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER, lastRun);
+  }
+
+  public void testScalaRunnerMetrics() {
+    doImport("examples/tests/scala/org/pantsbuild/example/hello");
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    ScalaTestRunConfiguration runConfiguration = generateScalaRunConfiguration(
+      "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome",
+      "org.pantsbuild.example.hello.welcome.WelSpec",
+      null
+    );
+    //RunManagerImpl runManagerImpl = (RunManagerImpl) RunManager.getInstance(myProject);
+    //runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.emptyList(), true);
+    try {
+      runWithConfiguration(runConfiguration);
+    }
+    catch (AssertionFailedError ignored) {
+
+    }
+    assertEquals(PantsExternalMetricsListener.TestRunnerType.SCALA_RUNNER, lastRun);
   }
 }

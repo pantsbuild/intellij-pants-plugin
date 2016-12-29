@@ -12,7 +12,6 @@ import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
-import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.execution.junit.JUnitConfigurationType;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.openapi.util.Factory;
@@ -28,9 +27,9 @@ public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfig
   private boolean mySingleton;
   private String myFolderName;
 
-  private final JUnitConfiguration myRunConfiguration;
+  private final RunConfiguration myRunConfiguration;
 
-  public PantsJUnitRunnerAndConfigurationSettings(JUnitConfiguration configuration) {
+  public PantsJUnitRunnerAndConfigurationSettings(RunConfiguration configuration) {
     myRunConfiguration = configuration;
   }
 

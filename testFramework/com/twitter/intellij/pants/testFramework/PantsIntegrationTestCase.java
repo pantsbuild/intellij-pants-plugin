@@ -14,6 +14,7 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.junit.JUnitConfiguration;
@@ -75,6 +76,8 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestConfigurationType;
+import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -428,22 +431,22 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertSize(count, genModules);
   }
 
-  public void assertSuccessfulJUnitTest(String moduleName, String className) {
+  public void assertSuccessfulTest(String moduleName, String className) {
     final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
     assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
   }
 
-  public void assertSuccessfulJUnitTest(JUnitConfiguration configuration) {
-    final OSProcessHandler handler = runJUnitWithConfiguration(configuration);
+  public void assertSuccessfulTest(RunConfiguration configuration) {
+    final OSProcessHandler handler = runWithConfiguration(configuration);
     assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
   }
 
   public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) {
-    return runJUnitWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
+    return runWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
   }
 
   @NotNull
-  private OSProcessHandler runJUnitWithConfiguration(JUnitConfiguration configuration) {
+  protected OSProcessHandler runWithConfiguration(RunConfiguration configuration) {
     final PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
       new PantsJUnitRunnerAndConfigurationSettings(configuration);
     final ExecutionEnvironmentBuilder environmentBuilder =
@@ -457,7 +460,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @NotNull
-  public JUnitConfiguration generateJUnitConfiguration(String moduleName, String className, @Nullable String vmParams) {
+  protected JUnitConfiguration generateJUnitConfiguration(String moduleName, String className, @Nullable String vmParams) {
     final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
     final JUnitConfiguration runConfiguration = new JUnitConfiguration("Pants: " + className, myProject, factory);
     runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
@@ -467,6 +470,25 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       runConfiguration.setVMParameters(vmParams);
     }
     runConfiguration.setMainClass(findClassAndAssert(className));
+    return runConfiguration;
+  }
+
+  /**
+   * TODO: ScalaTestRunConfiguration setting may not be fully correct yet. Currently this can only be used to invoke scala runner,
+   * but the run itself may not succeed.
+   * @param moduleName
+   * @param className
+   * @param vmParams
+   * @return
+   */
+  @NotNull
+  protected ScalaTestRunConfiguration generateScalaRunConfiguration(String moduleName, String className, @Nullable String vmParams) {
+    final ConfigurationFactory factory = ScalaTestConfigurationType.CONFIGURATION_TYPE_EP.getExtensions()[0].getConfigurationFactories()[0];
+    final ScalaTestRunConfiguration runConfiguration = new ScalaTestRunConfiguration(myProject, factory, className);
+    runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
+    runConfiguration.setModule(getModule(moduleName));
+    runConfiguration.setName(className);
+    runConfiguration.setTestClassPath(className);
     return runConfiguration;
   }
 
