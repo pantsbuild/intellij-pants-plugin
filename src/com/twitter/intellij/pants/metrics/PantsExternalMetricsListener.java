@@ -21,12 +21,12 @@ public interface PantsExternalMetricsListener {
   /**
    * @param isIncremental true if it is incremental import, otherwise it is the full graph import.
    */
-  void logIncrementalImport(boolean isIncremental);
+  void logIncrementalImport(boolean isIncremental) throws Throwable;
 
   /**
    * @param isGUI: true if it is GUI import, otherwise it is triggered from command line.
    */
-  void logGUIImport(boolean isGUI);
+  void logGUIImport(boolean isGUI) throws Throwable;
 
-  void logTestRunner(TestRunnerType runner);
+  void logTestRunner(TestRunnerType runner) throws Throwable;
 }

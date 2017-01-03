@@ -15,8 +15,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
   private PantsExternalMetricsListener.TestRunnerType lastRun;
 
-
-  public class DummyMetricsListener implements PantsExternalMetricsListener {
+  public class TestMetricsListener implements PantsExternalMetricsListener {
 
     @Override
     public void logIncrementalImport(boolean isIncremental) {
@@ -38,12 +37,8 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    // Register `DummyMetricsListener` as one of the extension points of PantsExternalMetricsListener
-    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(new DummyMetricsListener());
-  }
-
-  public void testLogTestRunner() {
-    PantsExternalMetricsListenerManager.getInstance().logTestRunner(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER);
+    // Register `TestMetricsListener` as one of the extension points of PantsExternalMetricsListener
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(new TestMetricsListener());
   }
 
   public void testJUnitRunner() throws Throwable {
@@ -75,5 +70,36 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
     }
     assertEquals(PantsExternalMetricsListener.TestRunnerType.SCALA_RUNNER, lastRun);
+  }
+
+  public void testJUnitRunnerError() throws Throwable {
+
+    class ErrorMetricsListener implements PantsExternalMetricsListener {
+
+      public boolean called = false;
+
+      @Override
+      public void logIncrementalImport(boolean isIncremental) throws Throwable {
+
+      }
+
+      @Override
+      public void logGUIImport(boolean isGUI) throws Throwable {
+
+      }
+
+      @Override
+      public void logTestRunner(TestRunnerType runner) throws Throwable {
+        called = true;
+        throw new Exception("metrics error");
+      }
+    }
+
+    ErrorMetricsListener errorListenerExtension = new ErrorMetricsListener();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(errorListenerExtension);
+
+    // Make sure the exception will not cause the main thread to fail.
+    PantsExternalMetricsListenerManager.getInstance().logTestRunner(PantsExternalMetricsListener.TestRunnerType.PANTS_RUNNER);
+    assertTrue(String.format("%s has not been called", ErrorMetricsListener.class), errorListenerExtension.called);
   }
 }

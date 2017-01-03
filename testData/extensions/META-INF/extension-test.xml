@@ -1,8 +1,0 @@
-<!-- Copyright 2016 Pants project contributors (see CONTRIBUTORS.md). -->
-<!-- Licensed under the Apache License, Version 2.0 (see LICENSE). -->
-
-<idea-plugin version="2">
-  <extensions defaultExtensionNs="com.intellij.plugins.pants">
-    <pantsExternalMetricsListener implementation="com.twitter.intellij.pants.extension.PantsExternalMetricsListenerExtensionTest.DummyMetricsListener"/>
-  </extensions>
-</idea-plugin>
