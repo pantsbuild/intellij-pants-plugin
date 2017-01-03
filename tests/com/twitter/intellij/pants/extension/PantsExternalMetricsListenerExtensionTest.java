@@ -100,6 +100,6 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
     // Make sure the exception will not cause the main thread to fail.
     PantsExternalMetricsListenerManager.getInstance().logTestRunner(PantsExternalMetricsListener.TestRunnerType.PANTS_RUNNER);
-    assertTrue(String.format("%s has not been called", ErrorMetricsListener.class), errorListenerExtension.called);
+    assertTrue(String.format("%s was not called.", ErrorMetricsListener.class), errorListenerExtension.called);
   }
 }
