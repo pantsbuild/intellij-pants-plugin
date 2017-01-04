@@ -162,7 +162,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return executeTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), false);
   }
 
-  public Pair<Boolean, Optional<String>> executeTask(@NotNull Module [] modules) {
+  public Pair<Boolean, Optional<String>> executeTask(@NotNull Module[] modules) {
     if (modules.length == 0) {
       return Pair.create(false, Optional.empty());
     }

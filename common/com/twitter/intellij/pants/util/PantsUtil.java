@@ -5,8 +5,10 @@ package com.twitter.intellij.pants.util;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
@@ -69,6 +71,7 @@ import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
 import org.jetbrains.jps.model.library.impl.sdk.JpsSdkImpl;
 import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
+import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 
 import java.io.File;
 import java.io.IOException;

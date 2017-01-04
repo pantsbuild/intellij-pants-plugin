@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListenerAdapter;
 import com.intellij.openapi.project.Project;
-import com.twitter.intellij.pants.components.impl.PantsMetrics;
+import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 

@@ -23,6 +23,8 @@ import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.file.FileChangeTracker;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
+import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
@@ -96,6 +98,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
          * 3. Explicitly call {@link PantsUtil#refreshAllProjects}.
          */
         private void convertToPantsProject() {
+          PantsExternalMetricsListenerManager.getInstance().logGUIImport(false);
           String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
           String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
           if (serializedTargets == null || projectPath == null) {

@@ -78,6 +78,7 @@
   <extensionPoints>
     <extensionPoint name="projectResolver" interface="com.twitter.intellij.pants.service.project.PantsResolverExtension"/>
     <extensionPoint name="projectInfoModifier" interface="com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension"/>
+    <extensionPoint name="pantsExternalMetricsListener" interface="com.twitter.intellij.pants.metrics.PantsExternalMetricsListener"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij.plugins.pants">

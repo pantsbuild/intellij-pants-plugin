@@ -8,22 +8,18 @@ import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
 import com.intellij.execution.configurations.*;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.roots.OrderEnumerator;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.model.PantsOptions;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -77,61 +73,12 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       classpath.remove(excludedPath);
     }
 
-    PantsOptions pantsOptions =
-      PantsOptions.getPantsOptions(configuration.getProject()).orElseThrow(() -> new ExecutionException("Pants options not found."));
-    if (pantsOptions.supportsManifestJar()) {
-      VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject())
-        .orElseThrow(() -> new ExecutionException("Pants supports manifest jar, but it is not found."));
-      classpath.add(manifestJar.getPath());
-    }
+    VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject())
+      .orElseThrow(() -> new ExecutionException("Pants supports manifest jar, but it is not found."));
+    classpath.add(manifestJar.getPath());
 
 
-    ApplicationManager.getApplication().runWriteAction(
-      new Runnable() {
-        @Override
-        public void run() {
-          final Optional<VirtualFile> classpathDir = PantsUtil.findDistExportClasspathDirectory(module.getProject());
-          if (!classpathDir.isPresent()) {
-            return;
-          }
-          // Refresh dist/export-classpath because virtual file system may not have picked up the newly created symlinks.
-          classpathDir.get().refresh(false, true);
-        }
-      }
-    );
-
-    final VirtualFile buildRoot = PantsUtil.findBuildRoot(module).orElseThrow(() -> new ExecutionException("Cannot find build root."));
-
-    final List<String> publishedClasspath = ContainerUtil.newArrayList();
-    processRuntimeModules(
-      module,
-      new Processor<Module>() {
-        @Override
-        public boolean process(Module module) {
-          publishedClasspath.addAll(findPublishedClasspath(module));
-          return true;
-        }
-      }
-    );
-
-    // if current version of Pants supports export-classpath
-    if (!publishedClasspath.isEmpty()) {
-      // remove IJ compiler outputs to reduce amount of arguments.
-      final List<String> toRemove = ContainerUtil.findAll(
-        classpath.getPathList(),
-        new Condition<String>() {
-          @Override
-          public boolean value(String classpathEntry) {
-            final VirtualFile entry = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(classpathEntry));
-            return entry != null && VfsUtil.isAncestor(buildRoot, entry, false);
-          }
-        }
-      );
-      for (String pathToRemove : toRemove) {
-        classpath.remove(pathToRemove);
-      }
-      classpath.addAll(publishedClasspath);
-    }
+    PantsExternalMetricsListenerManager.getInstance().logTestRunner(configuration);
   }
 
   @NotNull

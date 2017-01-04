@@ -25,6 +25,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.twitter.intellij.pants.components.PantsInitComponent;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModuleAction;
+import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.ui.PantsOverrideAction;
 import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
