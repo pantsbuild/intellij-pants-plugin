@@ -28,5 +28,10 @@ public interface PantsExternalMetricsListener {
    */
   void logGUIImport(boolean isGUI) throws Throwable;
 
+  /**
+   * Log the type of test runner invoked by user.
+   * @param runner TestRunnerType
+   * @throws Throwable
+   */
   void logTestRunner(TestRunnerType runner) throws Throwable;
 }
