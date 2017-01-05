@@ -68,6 +68,7 @@ if __name__ == "__main__":
         .format(jar=PLUGIN_JAR, zip=zip_name)
       logger.info(packaging_cmd)
       subprocess.check_output(packaging_cmd, shell=True, stderr=devnull)
+      logger.info('{} built successfully'.format(zip_name))
 
     finally:
       # Reset `PLUGIN_XML` since it has been modified.
