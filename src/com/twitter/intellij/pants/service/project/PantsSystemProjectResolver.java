@@ -142,7 +142,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {
-      PantsExternalMetricsListenerManager.getInstance().logIncrementalImport(isEnableImcrementalImport);
+      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(isEnableImcrementalImport);
       resolveUsingPantsGoal(id, executor, listener, projectDataNode, isEnableImcrementalImport);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
