@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 
 PLUGIN_XML = 'resources/META-INF/plugin.xml'
 PLUGIN_ID = 7412
-PLUGIN_JAR = 'dist/intellij-pants-plugin.jar'
+PLUGIN_JAR = 'dist/intellij-pants-plugin-publish.jar'
 CHANNEL = 'BleedingEdge'
 REPO = 'https://plugins.jetbrains.com/plugin/7412'
 
