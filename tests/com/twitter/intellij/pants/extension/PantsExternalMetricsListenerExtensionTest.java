@@ -112,4 +112,42 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     PantsExternalMetricsListenerManager.getInstance().logTestRunner(PantsExternalMetricsListener.TestRunnerType.PANTS_RUNNER);
     assertTrue(String.format("%s was not called.", ErrorMetricsListener.class), errorListenerExtension.called);
   }
+
+  public void testNoopMetrics() throws Throwable {
+    class NoopMetricsListner implements PantsExternalMetricsListener {
+
+      private boolean lastWasNoop;
+
+      @Override
+      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
+
+      }
+
+      @Override
+      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
+        lastWasNoop = isNoop;
+      }
+
+      @Override
+      public void logIsGUIImport(boolean isGUI) throws Throwable {
+
+      }
+
+      @Override
+      public void logTestRunner(TestRunnerType runner) throws Throwable {
+      }
+    }
+
+    NoopMetricsListner listener = new NoopMetricsListner();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+
+    doImport("examples/tests/scala/org/pantsbuild/example/hello/welcome");
+    // The first compile has to execute.
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    assertFalse("Last compile should not be noop, it was.", listener.lastWasNoop);
+
+    // Second compile without any change should be lastWasNoop.
+    assertPantsCompileNoop(pantsCompileProject());
+    assertTrue("Last compile should be noop, but was not.", listener.lastWasNoop);
+  }
 }

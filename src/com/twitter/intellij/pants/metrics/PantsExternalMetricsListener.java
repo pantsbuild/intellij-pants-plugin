@@ -30,7 +30,7 @@ public interface PantsExternalMetricsListener {
   void logIsIncrementalImport(boolean isIncremental) throws Throwable;
 
   /**
-   * Log a particular build invocation is a noop or not.
+   * Log whether a particular build invocation is a noop or not.
    */
   void logIsPantsNoopCompile(boolean isNoop) throws Throwable;
 
