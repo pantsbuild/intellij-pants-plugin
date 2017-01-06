@@ -27,6 +27,18 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
   }
 
   @Override
+  public void logIsGUIImport(boolean isGUI) {
+    Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
+      try {
+        s.logIsGUIImport(isGUI);
+      }
+      catch (Throwable t) {
+        LOG.info(t);
+      }
+    });
+  }
+
+  @Override
   public void logIsIncrementalImport(boolean isIncremental) {
     Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
       try {
@@ -39,10 +51,10 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
   }
 
   @Override
-  public void logIsGUIImport(boolean isGUI) {
+  public void logIsPantsNoopCompile(boolean isNoop) {
     Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
       try {
-        s.logIsGUIImport(isGUI);
+        s.logIsPantsNoopCompile(isNoop);
       }
       catch (Throwable t) {
         LOG.info(t);

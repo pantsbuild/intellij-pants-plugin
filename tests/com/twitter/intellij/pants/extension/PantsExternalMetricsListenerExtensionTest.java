@@ -23,6 +23,11 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     }
 
     @Override
+    public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
+
+    }
+
+    @Override
     public void logIsGUIImport(boolean isGUI) {
 
     }
@@ -80,6 +85,11 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
       @Override
       public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
+
+      }
+
+      @Override
+      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
 
       }
 

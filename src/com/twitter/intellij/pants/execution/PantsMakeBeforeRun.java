@@ -39,6 +39,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -169,9 +170,17 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return executeTask(modules[0].getProject(), getTargetAddressesToCompile(modules), false);
   }
 
+  /**
+   * @param currentProject:           current project
+   * @param targetAddressesToCompile: set of target addresses to compile
+   * @param useCleanAll:              whether to use clean-all first in Pants
+   * @return whether the execution is successful, additional message along with the execution
+   * in a Pair object.
+   */
   public Pair<Boolean, Optional<String>> executeTask(Project currentProject, Set<String> targetAddressesToCompile, boolean useCleanAll) {
     // If project has not changed since last Compile, return immediately.
     if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddressesToCompile)) {
+      PantsExternalMetricsListenerManager.getInstance().logIsPantsNoopCompile(true);
       return Pair.create(true, Optional.of(PantsConstants.NOOP_COMPILE));
     }
 
