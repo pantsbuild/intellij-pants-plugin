@@ -18,12 +18,12 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
   public class TestMetricsListener implements PantsExternalMetricsListener {
 
     @Override
-    public void logIncrementalImport(boolean isIncremental) {
+    public void logIsIncrementalImport(boolean isIncremental) {
 
     }
 
     @Override
-    public void logGUIImport(boolean isGUI) {
+    public void logIsGUIImport(boolean isGUI) {
 
     }
 
@@ -79,12 +79,12 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
       public boolean called = false;
 
       @Override
-      public void logIncrementalImport(boolean isIncremental) throws Throwable {
+      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
 
       }
 
       @Override
-      public void logGUIImport(boolean isGUI) throws Throwable {
+      public void logIsGUIImport(boolean isGUI) throws Throwable {
 
       }
 

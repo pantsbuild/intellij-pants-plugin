@@ -6,12 +6,12 @@ package com.twitter.intellij.pants.metrics;
 import com.intellij.openapi.extensions.ExtensionPointName;
 
 /**
- * This class keeps track of the metrics globally.
- * TODO: keep the metrics per project.
+ * This is the listener interface for related events happened in this plugin.
+ * Other plugins can subscribe this interface via extension point system.
  */
 public interface PantsExternalMetricsListener {
 
-  public enum TestRunnerType {
+  enum TestRunnerType {
     PANTS_RUNNER, JUNIT_RUNNER, SCALA_RUNNER
   }
 
@@ -19,14 +19,20 @@ public interface PantsExternalMetricsListener {
     EP_NAME = ExtensionPointName.create("com.intellij.plugins.pants.pantsExternalMetricsListener");
 
   /**
-   * @param isIncremental true if it is incremental import, otherwise it is the full graph import.
+   * @param isIncremental true if it is incremental import, i.e. subgraph of a project,
+   *                      otherwise it is the full graph import.
    */
-  void logIncrementalImport(boolean isIncremental) throws Throwable;
+  void logIsIncrementalImport(boolean isIncremental) throws Throwable;
 
   /**
    * @param isGUI: true if it is GUI import, otherwise it is triggered from command line.
    */
-  void logGUIImport(boolean isGUI) throws Throwable;
+  void logIsGUIImport(boolean isGUI) throws Throwable;
 
+  /**
+   * Log the type of test runner invoked by user.
+   *
+   * @param runner TestRunnerType
+   */
   void logTestRunner(TestRunnerType runner) throws Throwable;
 }

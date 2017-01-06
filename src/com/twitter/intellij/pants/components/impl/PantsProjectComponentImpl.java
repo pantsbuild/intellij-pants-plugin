@@ -98,7 +98,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
          * 3. Explicitly call {@link PantsUtil#refreshAllProjects}.
          */
         private void convertToPantsProject() {
-          PantsExternalMetricsListenerManager.getInstance().logGUIImport(false);
+          PantsExternalMetricsListenerManager.getInstance().logIsGUIImport(false);
           String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
           String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
           if (serializedTargets == null || projectPath == null) {
