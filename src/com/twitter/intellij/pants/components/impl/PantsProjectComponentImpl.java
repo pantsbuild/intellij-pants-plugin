@@ -21,6 +21,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
+import com.twitter.intellij.pants.execution.PantsConsoleManager;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
@@ -46,6 +47,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   public void projectClosed() {
     PantsMetrics.report();
     FileChangeTracker.unregisterProject(myProject);
+    PantsConsoleManager.unregisterConsole(myProject);
     super.projectClosed();
   }
 
@@ -87,6 +89,10 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             if (answer == Messages.YES) {
               PantsUtil.refreshAllProjects(myProject);
             }
+          }
+
+          if (PantsUtil.isPantsProject(myProject)) {
+            PantsConsoleManager.registerConsole(myProject);
           }
         }
 
