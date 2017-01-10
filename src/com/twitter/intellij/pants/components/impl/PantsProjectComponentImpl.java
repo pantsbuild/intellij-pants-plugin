@@ -55,6 +55,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   public void projectOpened() {
     PantsMetrics.initialize();
     PantsConsoleManager.registerConsole(myProject);
+    //PantsConsoleManager.registerConsole(myProject);
     super.projectOpened();
     if (myProject.isDefault()) {
       return;

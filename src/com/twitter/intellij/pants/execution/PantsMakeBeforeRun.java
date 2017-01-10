@@ -76,6 +76,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
   public static final String ERROR_TAG = "[error]";
+  public static final Set<String> KNOWN_EXT_LIST = ContainerUtil.newHashSet(".java", ".scala");
+
 
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
@@ -303,7 +305,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
         executionConsole.getComponent().setVisible(true);
         executionConsole.clear();
-        ToolWindowManager.getInstance(project).getToolWindow(PantsConstants.PANTS).show(null);
+        ToolWindowManager.getInstance(project).getToolWindow("PantsConsole").show(null);
         /* Force cached changes to disk. */
         FileDocumentManager.getInstance().saveAllDocuments();
         project.save();
@@ -336,7 +338,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return result;
   }
 
-  public static final Set<String> KNOWN_EXT_LIST = ContainerUtil.newHashSet(".java", ".scala");
 
   private void showPantsMakeTaskMessage(String message, ConsoleViewContentType type, Project project) {
     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
@@ -435,8 +436,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
   }
 
-
-  protected static Optional<ParseResult> parseErrorLocation(String line, String ext, String tag) {
+  /**
+   * This function parses a
+   * @param line
+   * @param ext
+   * @param tag
+   * @return
+   */
+  public static Optional<ParseResult> parseErrorLocation(String line, String ext, String tag) {
     // "                       [error] /Users/yic/workspace/pants_ij/examples/tests/java/org/pantsbuild/example/hello/greet/GreetingTest.java:24:1: ')' expected"
     if (!line.contains(ext) || !line.contains(tag)) {
       return Optional.empty();

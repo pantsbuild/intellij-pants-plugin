@@ -19,16 +19,20 @@ public class PantsConsoleManager {
   private static ConcurrentHashMap<Project, ConsoleView> mapper = new ConcurrentHashMap<>();
 
   public static void registerConsole(Project project) {
-    ConsoleView executionConsole = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-    mapper.put(project, executionConsole);
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-      @Override
-      public void run() {
-        ToolWindow window = ToolWindowManager.getInstance(project)
-          .registerToolWindow(PantsConstants.PANTS, true, ToolWindowAnchor.BOTTOM, project);
-        window.getComponent().add(executionConsole.getComponent());
-      }
-    });
+    //ConsoleView executionConsole = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+    //mapper.put(project, executionConsole);
+    //ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+    //  @Override
+    //  public void run() {
+    //    ToolWindow window = ToolWindowManager.getInstance(project)
+    //      .getToolWindow("PantsConsole");
+    //    //window.getComponent().add(executionConsole.getComponent());
+    //  }
+    //});
+  }
+
+  public static void registerConsole(Project project, ConsoleView console) {
+    mapper.put(project, console);
   }
 
   public static ConsoleView getConsole(Project project) {
