@@ -11,8 +11,6 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
-import com.intellij.execution.filters.BrowserHyperlinkInfo;
-import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
@@ -202,6 +200,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     PantsOptions pantsOptions = pantsOptional.get();
 
+    /* Global options section. */
+    commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
+
     if (useCleanAll) {
       commandLine.addParameter("clean-all");
       if (pantsOptions.supportsAsyncCleanAll()) {
@@ -331,7 +332,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         /* Clear message window. */
         ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
         executionConsole.print(message, type);
-        executionConsole.printHyperlink("hello", new BrowserHyperlinkInfo("https://twitter.com"));
       }
     }, ModalityState.NON_MODAL);
   }
