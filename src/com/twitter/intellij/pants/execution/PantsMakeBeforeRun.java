@@ -39,6 +39,7 @@ import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;

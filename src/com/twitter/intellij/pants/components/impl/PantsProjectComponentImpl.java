@@ -21,7 +21,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
-import com.twitter.intellij.pants.execution.PantsConsoleManager;
+import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
