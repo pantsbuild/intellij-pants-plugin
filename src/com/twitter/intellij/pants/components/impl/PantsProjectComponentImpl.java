@@ -21,7 +21,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
-import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
@@ -29,6 +28,7 @@ import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
@@ -54,6 +54,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   @Override
   public void projectOpened() {
     PantsMetrics.initialize();
+    PantsConsoleManager.registerConsole(myProject);
     super.projectOpened();
     if (myProject.isDefault()) {
       return;
@@ -76,6 +77,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           registerExternalBuilderListener();
           subscribeToRunConfigurationAddition();
           registerFileListener();
+
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
             pantsSettings instanceof PantsSettings && ((PantsSettings) pantsSettings).getResolverVersion() != PantsResolver.VERSION;
@@ -89,10 +91,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             if (answer == Messages.YES) {
               PantsUtil.refreshAllProjects(myProject);
             }
-          }
-
-          if (PantsUtil.isPantsProject(myProject)) {
-            PantsConsoleManager.registerConsole(myProject);
           }
         }
 

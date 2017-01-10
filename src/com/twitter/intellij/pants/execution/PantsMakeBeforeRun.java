@@ -75,6 +75,7 @@ import java.util.Set;
 public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
+  public static final String ERROR_TAG = "[error]";
 
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
@@ -343,58 +344,58 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       public void run() {
         /* Clear message window. */
         ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
-        executionConsole.addMessageFilter(new Filter() {
+        Filter filter = new Filter() {
           @Nullable
           @Override
           public Result applyFilter(String line, int entireLength) {
-            String errorTag = "[error]";
-            if (line.contains(errorTag)) {
-              for (String ext : KNOWN_EXT_LIST) {
-                Optional<ParseResult> result = parseErrorLocation(line, ext);
-                if (result.isPresent()) {
-                  OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
-                    project,
-                    result.get().file,
-                    result.get().lineNumber - 1, // index to line, 0 indexed
-                    result.get().columnNumber - 1 // index to column, 0 indexed
-                  );
-                  int startHyperlink = entireLength - line.length() + line.indexOf(errorTag);
-                  return new Filter.Result(
-                    startHyperlink, entireLength, linkInfo,
-                    TextAttributes.fromFlyweight(
-                      AttributesFlyweight
-                        .create(
-                          JBColor.RED,
-                          JBColor.WHITE,
-                          10,
-                          JBColor.BLUE,
-                          EffectType.BOLD_DOTTED_LINE,
-                          JBColor.BLACK
-                        ))
-                  );
-                }
+
+            for (String ext : KNOWN_EXT_LIST) {
+              Optional<ParseResult> result = parseErrorLocation(line, ext, ERROR_TAG);
+              if (result.isPresent() && result.get().getVirtualFile() != null) {
+
+                OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
+                  project,
+                  result.get().getVirtualFile(),
+                  result.get().lineNumber - 1, // line number needs to be 0 indexed
+                  result.get().columnNumber - 1 // column number needs to be 0 indexed
+                );
+                int startHyperlink = entireLength - line.length() + line.indexOf(ERROR_TAG);
+                return new Result(
+                  startHyperlink, entireLength, linkInfo,
+                  TextAttributes.fromFlyweight(
+                    AttributesFlyweight
+                      .create(
+                        JBColor.RED,
+                        JBColor.WHITE,
+                        10,
+                        JBColor.RED,
+                        EffectType.BOLD_LINE_UNDERSCORE,
+                        JBColor.BLACK
+                      ))
+                );
               }
             }
             return null;
           }
-        });
+        };
+        executionConsole.addMessageFilter(filter);
         executionConsole.print(message, type);
       }
     }, ModalityState.NON_MODAL);
   }
 
   /**
-   * Return file, line number, column number
+   * Return filePath, line number, column number
    */
 
   static class ParseResult {
-    VirtualFile file;
+    String filePath;
     int lineNumber;
     int columnNumber;
     String essencePortion;
 
-    ParseResult(VirtualFile vf, int lineNumber, int columnNumber) {
-      file = vf;
+    ParseResult(String filePath, int lineNumber, int columnNumber) {
+      this.filePath = filePath;
       this.lineNumber = lineNumber;
       this.columnNumber = columnNumber;
     }
@@ -408,39 +409,54 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         return false;
       }
       ParseResult other = (ParseResult) obj;
-      return Objects.equals(file, other.file)
+      return Objects.equals(filePath, other.filePath)
              && Objects.equals(lineNumber, other.lineNumber)
              && Objects.equals(columnNumber, other.columnNumber);
     }
+
+    public String getFilePath() {
+      return filePath;
+    }
+
+    public VirtualFile getVirtualFile() {
+      return VirtualFileManager.getInstance().findFileByUrl("file://" + filePath);
+    }
+
+    public int getLineNumber() {
+      return lineNumber;
+    }
+
+    public int getColumnNumber() {
+      return columnNumber;
+    }
+
+    public String getEssencePortion() {
+      return essencePortion;
+    }
   }
 
-  private static Optional<ParseResult> parseErrorLocation(String line, String ext) {
+
+  protected static Optional<ParseResult> parseErrorLocation(String line, String ext, String tag) {
     // "                       [error] /Users/yic/workspace/pants_ij/examples/tests/java/org/pantsbuild/example/hello/greet/GreetingTest.java:24:1: ')' expected"
-    if (!line.contains(ext)) {
+    if (!line.contains(ext) || !line.contains(tag)) {
       return Optional.empty();
     }
 
-    for (String p : line.split(" ")) {
-      if (p.contains(ext)) {
-        String[] essences = p.split(":");
-        // file:lineNumber:columnNumber
-        if (essences.length == 3) {
-          String filePath = essences[0];
-          try {
-            int lineNumber = Integer.valueOf(essences[1]);
-            int columnNumber = Integer.valueOf(essences[2]);
-            VirtualFile vf = VirtualFileManager.getInstance().findFileByUrl("file://" + filePath);
-            if (vf == null) {
-              return Optional.empty();
-            }
-            return Optional.of(new ParseResult(vf, lineNumber, columnNumber));
-          }
-          catch (NumberFormatException e) {
-            return Optional.empty();
-          }
-        }
-      }
+
+    String[] splitByColon = line.split(":");
+    if (splitByColon.length < 3) {
+      return Optional.empty();
     }
-    return Optional.empty();
+
+    // filePath path is between tag and first colon
+    String filePath = splitByColon[0].substring(splitByColon[0].indexOf(tag) + tag.length()).trim();
+    try {
+      int lineNumber = Integer.valueOf(splitByColon[1]);
+      int columnNumber = Integer.valueOf(splitByColon[2]);
+      return Optional.of(new ParseResult(filePath, lineNumber, columnNumber));
+    }
+    catch (NumberFormatException e) {
+      return Optional.empty();
+    }
   }
 }
