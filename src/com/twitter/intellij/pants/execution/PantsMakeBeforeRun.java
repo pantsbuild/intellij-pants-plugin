@@ -11,6 +11,8 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
+import com.intellij.execution.filters.Filter;
+import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
@@ -25,6 +27,9 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.editor.markup.AttributesFlyweight;
+import com.intellij.openapi.editor.markup.EffectType;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTask;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -34,7 +39,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.JBColor;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -52,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -240,16 +249,17 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
-    ConsoleView executionConsole = PantsConsoleManager.getConsole(currentProject);
+    //ConsoleView executionConsole = PantsConsoleManager.getConsole(currentProject);
     //executionConsole.getComponent().setVisible(true);
     //executionConsole.clear();
-    executionConsole.attachToProcess(processHandler);
+    //executionConsole.attachToProcess(processHandler);
 
     final List<String> output = new ArrayList<>();
     processHandler.addProcessListener(new ProcessAdapter() {
       @Override
       public void onTextAvailable(ProcessEvent event, Key outputType) {
-        super.onTextAvailable(event, outputType);
+        //super.onTextAvailable(event, outputType);
+        showPantsMakeTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, currentProject);
         output.add(event.getText());
       }
     });
@@ -325,14 +335,112 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return result;
   }
 
+  public static final Set<String> KNOWN_EXT_LIST = ContainerUtil.newHashSet(".java", ".scala");
+
   private void showPantsMakeTaskMessage(String message, ConsoleViewContentType type, Project project) {
     ApplicationManager.getApplication().invokeAndWait(new Runnable() {
       @Override
       public void run() {
         /* Clear message window. */
         ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
+        executionConsole.addMessageFilter(new Filter() {
+          @Nullable
+          @Override
+          public Result applyFilter(String line, int entireLength) {
+            String errorTag = "[error]";
+            if (line.contains(errorTag)) {
+              for (String ext : KNOWN_EXT_LIST) {
+                Optional<ParseResult> result = parseErrorLocation(line, ext);
+                if (result.isPresent()) {
+                  OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
+                    project,
+                    result.get().file,
+                    result.get().lineNumber - 1, // index to line, 0 indexed
+                    result.get().columnNumber - 1 // index to column, 0 indexed
+                  );
+                  int startHyperlink = entireLength - line.length() + line.indexOf(errorTag);
+                  return new Filter.Result(
+                    startHyperlink, entireLength, linkInfo,
+                    TextAttributes.fromFlyweight(
+                      AttributesFlyweight
+                        .create(
+                          JBColor.RED,
+                          JBColor.WHITE,
+                          10,
+                          JBColor.BLUE,
+                          EffectType.BOLD_DOTTED_LINE,
+                          JBColor.BLACK
+                        ))
+                  );
+                }
+              }
+            }
+            return null;
+          }
+        });
         executionConsole.print(message, type);
       }
     }, ModalityState.NON_MODAL);
+  }
+
+  /**
+   * Return file, line number, column number
+   */
+
+  static class ParseResult {
+    VirtualFile file;
+    int lineNumber;
+    int columnNumber;
+    String essencePortion;
+
+    ParseResult(VirtualFile vf, int lineNumber, int columnNumber) {
+      file = vf;
+      this.lineNumber = lineNumber;
+      this.columnNumber = columnNumber;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
+      ParseResult other = (ParseResult) obj;
+      return Objects.equals(file, other.file)
+             && Objects.equals(lineNumber, other.lineNumber)
+             && Objects.equals(columnNumber, other.columnNumber);
+    }
+  }
+
+  private static Optional<ParseResult> parseErrorLocation(String line, String ext) {
+    // "                       [error] /Users/yic/workspace/pants_ij/examples/tests/java/org/pantsbuild/example/hello/greet/GreetingTest.java:24:1: ')' expected"
+    if (!line.contains(ext)) {
+      return Optional.empty();
+    }
+
+    for (String p : line.split(" ")) {
+      if (p.contains(ext)) {
+        String[] essences = p.split(":");
+        // file:lineNumber:columnNumber
+        if (essences.length == 3) {
+          String filePath = essences[0];
+          try {
+            int lineNumber = Integer.valueOf(essences[1]);
+            int columnNumber = Integer.valueOf(essences[2]);
+            VirtualFile vf = VirtualFileManager.getInstance().findFileByUrl("file://" + filePath);
+            if (vf == null) {
+              return Optional.empty();
+            }
+            return Optional.of(new ParseResult(vf, lineNumber, columnNumber));
+          }
+          catch (NumberFormatException e) {
+            return Optional.empty();
+          }
+        }
+      }
+    }
+    return Optional.empty();
   }
 }
