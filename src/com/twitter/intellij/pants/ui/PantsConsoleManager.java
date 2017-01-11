@@ -47,11 +47,15 @@ public class PantsConsoleManager {
   }
 
   public static void unregisterConsole(Project project) {
+    ConsoleView console = mapper.get(project);
+    if (console != null) {
+      console.dispose();
+    }
     mapper.remove(project);
   }
 
   /**
-   * TestOnly because IntelliJ {@link com.intellij.testFramework.LightPlatformTestCase} is not tearing down properly.
+   * TestOnly because some test library is not tearing down properly.
    */
   @TestOnly
   public static void disposeAll() {
