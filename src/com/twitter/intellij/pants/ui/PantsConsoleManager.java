@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.ui;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -28,9 +29,9 @@ public class PantsConsoleManager {
         true
       );
     ConsoleView console = getOrMakeNewConsole(project);
+    Disposer.register(project, console);
     TabbedContentImpl content = new TabbedContentImpl(console.getComponent(), "", true, "");
     window.getContentManager().addContent(content);
-    //window.getComponent().add(console.getComponent());
   }
 
   public static ConsoleView getOrMakeNewConsole(Project project) {
@@ -44,10 +45,6 @@ public class PantsConsoleManager {
   }
 
   public static void unregisterConsole(Project project) {
-    ConsoleView console = mapper.get(project);
-    if (console != null) {
-      console.dispose();
-    }
     mapper.remove(project);
   }
 }
