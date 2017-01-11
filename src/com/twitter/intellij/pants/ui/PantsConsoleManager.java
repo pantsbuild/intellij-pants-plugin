@@ -12,7 +12,9 @@ import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.impl.TabbedContentImpl;
 import com.twitter.intellij.pants.util.PantsConstants;
+import org.jetbrains.annotations.TestOnly;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -46,5 +48,15 @@ public class PantsConsoleManager {
 
   public static void unregisterConsole(Project project) {
     mapper.remove(project);
+  }
+
+  /**
+   * TestOnly because IntelliJ {@link com.intellij.testFramework.LightPlatformTestCase} is not tearing down properly.
+   */
+  @TestOnly
+  public static void disposeAll() {
+    for (Map.Entry<Project, ConsoleView> entrySet : mapper.entrySet()) {
+      entrySet.getValue().dispose();
+    }
   }
 }
