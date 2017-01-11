@@ -36,6 +36,13 @@ public class PantsConsoleManager {
     window.getContentManager().addContent(content);
   }
 
+  /**
+   * Creates a `ConsoleView` for the current project, and register it under `PantsConsole` tool window,
+   * or just retrieve one if there is already one registered.
+   *
+   * @param project current project
+   * @return Pants ConsoleView for the project
+   */
   public static ConsoleView getOrMakeNewConsole(Project project) {
     ConsoleView console = mapper.get(project);
     if (console != null) {
@@ -46,6 +53,11 @@ public class PantsConsoleManager {
     return newConsole;
   }
 
+  /**
+   * Close the console for a project.
+   *
+   * @param project current project
+   */
   public static void unregisterConsole(Project project) {
     ConsoleView console = mapper.get(project);
     if (console != null) {

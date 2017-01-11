@@ -77,7 +77,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           registerExternalBuilderListener();
           subscribeToRunConfigurationAddition();
           registerFileListener();
-
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
             pantsSettings instanceof PantsSettings && ((PantsSettings) pantsSettings).getResolverVersion() != PantsResolver.VERSION;
