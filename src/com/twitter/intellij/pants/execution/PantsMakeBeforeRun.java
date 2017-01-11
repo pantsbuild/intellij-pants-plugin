@@ -372,9 +372,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   /**
-   * Return filePath, line number, column number
+   * Encapsulate the result of parsed data.
    */
-
   static class ParseResult {
     String filePath;
     int lineNumber;
