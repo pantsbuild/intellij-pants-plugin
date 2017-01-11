@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class PantsConstants {
   public static final String PANTS = "pants";
-  public static final String PLUGIN = "pants_plugin";
   public static final String PANTS_CONSOLE_NAME = "PantsConsole";
   public static final String PLUGIN_ID = "com.intellij.plugins.pants";
 
