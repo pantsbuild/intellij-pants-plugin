@@ -17,7 +17,6 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
@@ -56,7 +55,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   public void projectOpened() {
     PantsMetrics.initialize();
     PantsConsoleManager.registerConsole(myProject);
-    //PantsConsoleManager.registerConsole(myProject);
     super.projectOpened();
     if (myProject.isDefault()) {
       return;

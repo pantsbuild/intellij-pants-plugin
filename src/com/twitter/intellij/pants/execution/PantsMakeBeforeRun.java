@@ -252,16 +252,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
-    //ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(currentProject);
-    //executionConsole.getComponent().setVisible(true);
-    //executionConsole.clear();
-    //executionConsole.attachToProcess(processHandler);
-
     final List<String> output = new ArrayList<>();
     processHandler.addProcessListener(new ProcessAdapter() {
       @Override
       public void onTextAvailable(ProcessEvent event, Key outputType) {
-        //super.onTextAvailable(event, outputType);
+        super.onTextAvailable(event, outputType);
         showPantsMakeTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, currentProject);
         output.add(event.getText());
       }
@@ -340,45 +335,41 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
 
   private void showPantsMakeTaskMessage(String message, ConsoleViewContentType type, Project project) {
+    ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
+    // Create a filter that monitors console outputs, and turns them into a hyperlink if applicable.
+    Filter filter = new Filter() {
+      @Nullable
+      @Override
+      public Result applyFilter(String line, int entireLength) {
+        // Scan for any tag related to known file extensions.
+        for (String ext : KNOWN_EXT_LIST) {
+          Optional<ParseResult> result = parseErrorLocation(line, ext, ERROR_TAG);
+          result.ifPresent(s-> {});
+          if (result.isPresent() && result.get().getVirtualFile() != null) {
+
+            OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
+              project,
+              result.get().getVirtualFile(),
+              result.get().lineNumber - 1, // line number needs to be 0 indexed
+              result.get().columnNumber - 1 // column number needs to be 0 indexed
+            );
+            int startHyperlink = entireLength - line.length() + line.indexOf(ERROR_TAG);
+
+            return new Result(
+              startHyperlink,
+              entireLength,
+              linkInfo,
+              null // TextAttributes, going with default hence null
+            );
+          }
+        }
+        return null;
+      }
+    };
+
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
-        /* Clear message window. */
-        ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
-        Filter filter = new Filter() {
-          @Nullable
-          @Override
-          public Result applyFilter(String line, int entireLength) {
-
-            for (String ext : KNOWN_EXT_LIST) {
-              Optional<ParseResult> result = parseErrorLocation(line, ext, ERROR_TAG);
-              if (result.isPresent() && result.get().getVirtualFile() != null) {
-
-                OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
-                  project,
-                  result.get().getVirtualFile(),
-                  result.get().lineNumber - 1, // line number needs to be 0 indexed
-                  result.get().columnNumber - 1 // column number needs to be 0 indexed
-                );
-                int startHyperlink = entireLength - line.length() + line.indexOf(ERROR_TAG);
-                return new Result(
-                  startHyperlink, entireLength, linkInfo,
-                  TextAttributes.fromFlyweight(
-                    AttributesFlyweight
-                      .create(
-                        JBColor.RED,
-                        JBColor.WHITE,
-                        10,
-                        JBColor.RED,
-                        EffectType.BOLD_LINE_UNDERSCORE,
-                        JBColor.BLACK
-                      ))
-                );
-              }
-            }
-            return null;
-          }
-        };
         executionConsole.addMessageFilter(filter);
         executionConsole.print(message, type);
       }
@@ -393,7 +384,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     String filePath;
     int lineNumber;
     int columnNumber;
-    String essencePortion;
 
     ParseResult(String filePath, int lineNumber, int columnNumber) {
       this.filePath = filePath;
@@ -430,35 +420,34 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     public int getColumnNumber() {
       return columnNumber;
     }
-
-    public String getEssencePortion() {
-      return essencePortion;
-    }
   }
 
   /**
-   * This function parses a
-   * @param line
-   * @param ext
-   * @param tag
-   * @return
+   * This function parses a string against known file extension and tag,
+   * and returns (Path to mentioned file, line number, column number)
+   * encapsulated in
+   *
+   * @param line original Pants output
+   * @param ext  known file extension. e.g. ".java", ".scala"
+   * @param tag  known tag. e.g. [error]
+   * @return `ParseResult`
    */
   public static Optional<ParseResult> parseErrorLocation(String line, String ext, String tag) {
-    // "                       [error] /Users/yic/workspace/pants_ij/examples/tests/java/org/pantsbuild/example/hello/greet/GreetingTest.java:24:1: ')' expected"
     if (!line.contains(ext) || !line.contains(tag)) {
       return Optional.empty();
     }
-
 
     String[] splitByColon = line.split(":");
     if (splitByColon.length < 3) {
       return Optional.empty();
     }
 
-    // filePath path is between tag and first colon
-    String filePath = splitByColon[0].substring(splitByColon[0].indexOf(tag) + tag.length()).trim();
     try {
+      // filePath path is between tag and first colon
+      String filePath = splitByColon[0].substring(splitByColon[0].indexOf(tag) + tag.length()).trim();
+      // line number is between first and second colon
       int lineNumber = Integer.valueOf(splitByColon[1]);
+      // column number is between second and thrid colon
       int columnNumber = Integer.valueOf(splitByColon[2]);
       return Optional.of(new ParseResult(filePath, lineNumber, columnNumber));
     }
