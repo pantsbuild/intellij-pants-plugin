@@ -340,12 +340,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         // Scan for any tag related to known file extensions.
         for (String ext : KNOWN_EXT_LIST) {
           Optional<ParseResult> result = parseErrorLocation(line, ext, ERROR_TAG);
-          result.ifPresent(s-> {});
-          if (result.isPresent() && result.get().getVirtualFile() != null) {
+          if (result.isPresent() && result.get().getVirtualFile().isPresent()) {
 
             OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
               project,
-              result.get().getVirtualFile(),
+              result.get().getVirtualFile().get(),
               result.get().lineNumber - 1, // line number needs to be 0 indexed
               result.get().columnNumber - 1 // column number needs to be 0 indexed
             );
@@ -405,8 +404,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return filePath;
     }
 
-    public VirtualFile getVirtualFile() {
-      return VirtualFileManager.getInstance().findFileByUrl("file://" + filePath);
+    public Optional<VirtualFile> getVirtualFile() {
+      return Optional.ofNullable(VirtualFileManager.getInstance().findFileByUrl("file://" + filePath));
     }
 
     public int getLineNumber() {
@@ -419,14 +418,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   /**
-   * This function parses a string against known file extension and tag,
+   * This function parses Pants output against known file extension and tag,
    * and returns (Path to mentioned file, line number, column number)
-   * encapsulated in
+   * encapsulated in `ParseResult` object.
    *
    * @param line original Pants output
    * @param ext  known file extension. e.g. ".java", ".scala"
    * @param tag  known tag. e.g. [error]
-   * @return `ParseResult`
+   * @return `ParseResult` instance
    */
   public static Optional<ParseResult> parseErrorLocation(String line, String ext, String tag) {
     if (!line.contains(ext) || !line.contains(tag)) {
