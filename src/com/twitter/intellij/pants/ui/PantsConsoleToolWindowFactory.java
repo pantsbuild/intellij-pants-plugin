@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.ui;
 
-import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.DumbAware;
@@ -18,13 +17,9 @@ public class PantsConsoleToolWindowFactory implements ToolWindowFactory, DumbAwa
   public void createToolWindowContent(
     @NotNull Project project, @NotNull ToolWindow toolWindow
   ) {
-    ConsoleView console = PantsConsoleManager.getConsole(project);
-    if (console != null) {
-      return;
-    }
-    ConsoleView executionConsole = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-    PantsConsoleManager.registerConsole(project, executionConsole);
-    toolWindow.getComponent().add(executionConsole.getComponent());
-    executionConsole.print("Welcome to Pants project!", ConsoleViewContentType.SYSTEM_OUTPUT);
+    ConsoleView console = PantsConsoleManager.getOrMakeNewConsole(project);
+    toolWindow.getComponent().removeAll();
+    toolWindow.getComponent().add(console.getComponent());
+    console.print("Welcome to Pants project!", ConsoleViewContentType.SYSTEM_OUTPUT);
   }
 }

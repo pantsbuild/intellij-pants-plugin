@@ -252,7 +252,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
-    //ConsoleView executionConsole = PantsConsoleManager.getConsole(currentProject);
+    //ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(currentProject);
     //executionConsole.getComponent().setVisible(true);
     //executionConsole.clear();
     //executionConsole.attachToProcess(processHandler);
@@ -302,10 +302,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       @Override
       public void run() {
         /* Clear message window. */
-        ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
+        ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
         executionConsole.getComponent().setVisible(true);
         executionConsole.clear();
-        ToolWindowManager.getInstance(project).getToolWindow("PantsConsole").show(null);
+        ToolWindowManager.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
         /* Force cached changes to disk. */
         FileDocumentManager.getInstance().saveAllDocuments();
         project.save();
@@ -344,7 +344,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       @Override
       public void run() {
         /* Clear message window. */
-        ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
+        ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
         Filter filter = new Filter() {
           @Nullable
           @Override
