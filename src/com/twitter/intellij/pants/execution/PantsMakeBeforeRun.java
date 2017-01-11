@@ -340,7 +340,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
 
   private void showPantsMakeTaskMessage(String message, ConsoleViewContentType type, Project project) {
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+    ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
         /* Clear message window. */
