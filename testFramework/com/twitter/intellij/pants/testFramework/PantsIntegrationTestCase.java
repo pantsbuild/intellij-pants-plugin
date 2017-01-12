@@ -65,9 +65,9 @@ import com.intellij.testFramework.CompilerTester;
 import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
+import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -193,7 +193,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
   }
 
-   protected void cmd(String... args) throws ExecutionException {
+  protected void cmd(String... args) throws ExecutionException {
     final GeneralCommandLine commandLine = new GeneralCommandLine(args);
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
@@ -240,7 +240,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     // This is to match scala-platform used in pants repo across different releases,
     // so we expect at least one of the versions should be found here.
     ArrayList<String> expectedLibs =
-      Lists.newArrayList("Pants: org.scala-lang:scala-library:2.10.6", "Pants: org.scala-lang:scala-library:2.11.8");
+      Lists.newArrayList(
+        "Pants: org.scala-lang:scala-library:2.10.4",
+        "Pants: org.scala-lang:scala-library:2.10.6",
+        "Pants: org.scala-lang:scala-library:2.11.8"
+      );
     for (String libName : expectedLibs) {
       LibraryOrderEntry libX = ContainerUtil.getFirstItem(this.getModuleLibDeps(moduleName, libName));
       if (libX != null) {
@@ -248,7 +252,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         return;
       }
     }
-    fail(String.format("Neither library is found for %s", expectedLibs));
+    fail(String.format("None of %s is found for module %s.", expectedLibs, moduleName));
   }
 
   protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
