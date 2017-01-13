@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 
 PLUGIN_XML = 'resources/META-INF/plugin.xml'
 PLUGIN_ID = 7412
-PLUGIN_JAR = 'dist/intellij-pants-plugin.jar'
+PLUGIN_JAR = 'dist/intellij-pants-plugin-publish.jar'
 CHANNEL = 'BleedingEdge'
 REPO = 'https://plugins.jetbrains.com/plugin/7412'
 
@@ -68,6 +68,7 @@ if __name__ == "__main__":
         .format(jar=PLUGIN_JAR, zip=zip_name)
       logger.info(packaging_cmd)
       subprocess.check_output(packaging_cmd, shell=True, stderr=devnull)
+      logger.info('{} built successfully'.format(zip_name))
 
     finally:
       # Reset `PLUGIN_XML` since it has been modified.
