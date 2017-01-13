@@ -28,6 +28,7 @@ import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
@@ -46,12 +47,14 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   public void projectClosed() {
     PantsMetrics.report();
     FileChangeTracker.unregisterProject(myProject);
+    PantsConsoleManager.unregisterConsole(myProject);
     super.projectClosed();
   }
 
   @Override
   public void projectOpened() {
     PantsMetrics.initialize();
+    PantsConsoleManager.registerConsole(myProject);
     super.projectOpened();
     if (myProject.isDefault()) {
       return;
