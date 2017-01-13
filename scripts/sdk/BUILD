@@ -55,7 +55,7 @@ jvm_binary(
 
 jvm_binary(
   name='intellij-pants-plugin-publish',
-  basename='intellij-pants-plugin',
+  basename='intellij-pants-plugin-publish',
   dependencies=[
     'common',
     'jps-plugin',

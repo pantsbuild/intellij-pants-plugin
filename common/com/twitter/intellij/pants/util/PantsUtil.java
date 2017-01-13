@@ -169,7 +169,7 @@ public class PantsUtil {
    */
   public static boolean isPantsProjectFile(VirtualFile file) {
     if (file.isDirectory()) {
-      return findPantsExecutable(file) != null;
+      return findPantsExecutable(file).isPresent();
     }
     return isBUILDFileName(file.getName());
   }
