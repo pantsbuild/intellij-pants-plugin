@@ -8,7 +8,7 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class PantsUtilTest extends OSSPantsIntegrationTest {
 
-  public void testIsPantsProject() {
+  public void testIsPantsProjectFile() {
     // Current project path should be under a Pants repo.
     assertTrue(PantsUtil.isPantsProjectFile(LocalFileSystem.getInstance().findFileByPath(getProjectPath())));
     // File system root should not.
