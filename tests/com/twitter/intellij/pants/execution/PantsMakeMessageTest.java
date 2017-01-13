@@ -12,7 +12,7 @@ import java.util.Optional;
 
 import static com.twitter.intellij.pants.execution.PantsMakeBeforeRun.ERROR_TAG;
 
-// Need Integration test framework because LocalFileSystem needs to be initialized.
+// Need to extned `OSSPantsIntegrationTest` because LocalFileSystem needs to be initialized.
 public class PantsMakeMessageTest extends OSSPantsIntegrationTest {
 
 
@@ -20,7 +20,7 @@ public class PantsMakeMessageTest extends OSSPantsIntegrationTest {
 
     try (TempFile tempFile = TempFile.create("pants_export_run", ".out")) {
 
-      Optional<PantsMakeBeforeRun.ParseResult> result = PantsMakeBeforeRun.parseErrorLocation(
+      Optional<PantsMakeBeforeRun.ParseResult> result = PantsMakeBeforeRun.ParseResult.parseErrorLocation(
         "                       [error] " + tempFile.getFile().getAbsolutePath() + ":23:1: cannot find symbol",
         ERROR_TAG
       );
@@ -42,7 +42,7 @@ public class PantsMakeMessageTest extends OSSPantsIntegrationTest {
 
     try (TempFile filePathWithSpace = TempFile.create("pants_exp  ort_run", ".out")) {
 
-      Optional<PantsMakeBeforeRun.ParseResult> result = PantsMakeBeforeRun.parseErrorLocation(
+      Optional<PantsMakeBeforeRun.ParseResult> result = PantsMakeBeforeRun.ParseResult.parseErrorLocation(
         "                       [error] " + filePathWithSpace.getFile().getAbsolutePath() + ":23:1: cannot find symbol",
         ERROR_TAG
       );
@@ -62,18 +62,27 @@ public class PantsMakeMessageTest extends OSSPantsIntegrationTest {
 
 
   public void testErrorMessageWithInvalidFilePath() {
-    Optional<PantsMakeBeforeRun.ParseResult> result = PantsMakeBeforeRun.parseErrorLocation(
+    Optional<PantsMakeBeforeRun.ParseResult> result = PantsMakeBeforeRun.ParseResult.parseErrorLocation(
       "                       [error] /non/existent/file/path:23:1: cannot find symbol",
       ERROR_TAG
     );
     assertFalse(result.isPresent());
   }
 
-  public void testErrorMessageWithNoLocation() {
-    Optional<PantsMakeBeforeRun.ParseResult> result = PantsMakeBeforeRun.parseErrorLocation(
+  public void testErrorMessageWithNoFilePath() {
+    Optional<PantsMakeBeforeRun.ParseResult> result = PantsMakeBeforeRun.ParseResult.parseErrorLocation(
       "                       [error]     String greeting = Greeting.greetFromRXesource(\"org/pantsbuild/example/hello/world.txt\");\n",
       ERROR_TAG
     );
     assertFalse(result.isPresent());
   }
+
+  public void testErrorMessageWithTwoColons() {
+    Optional<PantsMakeBeforeRun.ParseResult> result = PantsMakeBeforeRun.ParseResult.parseErrorLocation(
+      "[error]         Assert.assertEquals(\"0:00:00.000\", ManagementUtils.getAverageAge(d0));",
+      ERROR_TAG
+    );
+    assertFalse(result.isPresent());
+  }
 }
+

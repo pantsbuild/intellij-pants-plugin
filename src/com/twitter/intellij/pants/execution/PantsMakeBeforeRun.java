@@ -335,7 +335,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       @Nullable
       @Override
       public Result applyFilter(String line, int entireLength) {
-        Optional<ParseResult> result = parseErrorLocation(line, ERROR_TAG);
+        Optional<ParseResult> result = ParseResult.parseErrorLocation(line, ERROR_TAG);
         if (result.isPresent()) {
 
           OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
@@ -374,7 +374,45 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     int lineNumber;
     int columnNumber;
 
-    ParseResult(VirtualFile file, int lineNumber, int columnNumber) {
+
+    /**
+     * This function parses Pants output against known file and tag,
+     * and returns (file, line number, column number)
+     * encapsulated in `ParseResult` object.
+     *
+     * @param line original Pants output
+     * @param tag  known tag. e.g. [error]
+     * @return `ParseResult` instance
+     */
+    public static Optional<ParseResult> parseErrorLocation(String line, String tag) {
+      if (!line.contains(tag)) {
+        return Optional.empty();
+      }
+
+      String[] splitByColon = line.split(":");
+      if (splitByColon.length < 3) {
+        return Optional.empty();
+      }
+
+      try {
+        // filePath path is between tag and first colon
+        String filePath = splitByColon[0].substring(splitByColon[0].indexOf(tag) + tag.length()).trim();
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath);
+        if (virtualFile == null) {
+          return Optional.empty();
+        }
+        // line number is between first and second colon
+        int lineNumber = Integer.valueOf(splitByColon[1]);
+        // column number is between second and third colon
+        int columnNumber = Integer.valueOf(splitByColon[2]);
+        return Optional.of(new ParseResult(virtualFile, lineNumber, columnNumber));
+      }
+      catch (NumberFormatException e) {
+        return Optional.empty();
+      }
+    }
+
+    private ParseResult(VirtualFile file, int lineNumber, int columnNumber) {
       this.file = file;
       this.lineNumber = lineNumber;
       this.columnNumber = columnNumber;
@@ -404,43 +442,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     public int getColumnNumber() {
       return columnNumber;
-    }
-  }
-
-  /**
-   * This function parses Pants output against known file extension and tag,
-   * and returns (Path to mentioned file, line number, column number)
-   * encapsulated in `ParseResult` object.
-   *
-   * @param line original Pants output
-   * @param tag  known tag. e.g. [error]
-   * @return `ParseResult` instance
-   */
-  public static Optional<ParseResult> parseErrorLocation(String line, String tag) {
-    if (!line.contains(tag)) {
-      return Optional.empty();
-    }
-
-    String[] splitByColon = line.split(":");
-    if (splitByColon.length < 3) {
-      return Optional.empty();
-    }
-
-    try {
-      // filePath path is between tag and first colon
-      String filePath = splitByColon[0].substring(splitByColon[0].indexOf(tag) + tag.length()).trim();
-      VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath);
-      if (virtualFile == null) {
-        return Optional.empty();
-      }
-      // line number is between first and second colon
-      int lineNumber = Integer.valueOf(splitByColon[1]);
-      // column number is between second and third colon
-      int columnNumber = Integer.valueOf(splitByColon[2]);
-      return Optional.of(new ParseResult(virtualFile, lineNumber, columnNumber));
-    }
-    catch (NumberFormatException e) {
-      return Optional.empty();
     }
   }
 }
