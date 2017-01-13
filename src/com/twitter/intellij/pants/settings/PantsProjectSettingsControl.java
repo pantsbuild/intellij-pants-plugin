@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.settings;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.service.settings.ExternalSystemSettingsControlCustomizer;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
@@ -23,24 +22,27 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.StatusText;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.JLabel;
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
-  private static final Logger LOG = Logger.getInstance(PantsProjectSettingsControl.class);
   private final boolean myShowAdvancedSettings;
 
   private CheckBoxList<String> myTargetSpecs;
   private JBCheckBox myWithDependeesCheckBox;
   private JBCheckBox myLibsWithSourcesCheckBox;
   private JBCheckBox myEnableIncrementalImport;
+
+  private Set<String> errors = new HashSet<>();
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings, boolean showAdvancedSettings) {
     super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
@@ -88,21 +90,25 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   public void onProjectPathChanged(@NotNull final String projectPath) {
     myTargetSpecs.clear();
+    errors.clear();
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     if (file == null || !PantsUtil.isPantsProjectFile(file)) {
       myTargetSpecs.setEnabled(true);
-      LOG.warn("Bad project path: " + projectPath);
+      errors.add(String.format("Pants project not found given project path: %s", projectPath));
       return;
     }
 
     if (file.isDirectory()) {
       myTargetSpecs.setEnabled(false);
-      String text = PantsUtil.getRelativeProjectPath(file.getPath())
-                      .orElseThrow(() -> new PantsException(String.format(
-                        "Fail to find relative path from %s to build root.", file.getPath()
-                      ))) + "/::";
-      myTargetSpecs.setEmptyText(text);
-      myTargetSpecs.addItem(text, text, true);
+      Optional<String> relativeProjectPath = PantsUtil.getRelativeProjectPath(file.getPath());
+      if (!relativeProjectPath.isPresent()) {
+        errors.add(String.format("Fail to find relative path from %s to build root.", file.getPath()));
+        return;
+      }
+      String spec = relativeProjectPath.get() + "/::";
+
+      myTargetSpecs.setEmptyText(spec);
+      myTargetSpecs.addItem(spec, spec, true);
 
       myWithDependeesCheckBox.setSelected(false);
       myWithDependeesCheckBox.setEnabled(true);
@@ -180,6 +186,11 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     }
     if (PantsUtil.isBUILDFileName(file.getName()) && myTargetSpecs.getSelectedIndices().length == 0) {
       throw new ConfigurationException(PantsBundle.message("pants.error.no.targets.are.selected"));
+    }
+    if (!errors.isEmpty()) {
+      String errorMessage = String.join("\n", errors);
+      errors.clear();
+      throw new ConfigurationException(errorMessage);
     }
     return true;
   }
