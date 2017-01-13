@@ -35,10 +35,9 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -72,7 +71,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
   public static final String ERROR_TAG = "[error]";
-  public static final Set<String> KNOWN_EXT_LIST = ContainerUtil.newHashSet(".java", ".scala");
 
 
   public PantsMakeBeforeRun(@NotNull Project project) {
@@ -337,26 +335,23 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       @Nullable
       @Override
       public Result applyFilter(String line, int entireLength) {
-        // Scan for any tag related to known file extensions.
-        for (String ext : KNOWN_EXT_LIST) {
-          Optional<ParseResult> result = parseErrorLocation(line, ext, ERROR_TAG);
-          if (result.isPresent() && result.get().getVirtualFile().isPresent()) {
+        Optional<ParseResult> result = parseErrorLocation(line, ERROR_TAG);
+        if (result.isPresent()) {
 
-            OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
-              project,
-              result.get().getVirtualFile().get(),
-              result.get().lineNumber - 1, // line number needs to be 0 indexed
-              result.get().columnNumber - 1 // column number needs to be 0 indexed
-            );
-            int startHyperlink = entireLength - line.length() + line.indexOf(ERROR_TAG);
+          OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
+            project,
+            result.get().getFile(),
+            result.get().lineNumber - 1, // line number needs to be 0 indexed
+            result.get().columnNumber - 1 // column number needs to be 0 indexed
+          );
+          int startHyperlink = entireLength - line.length() + line.indexOf(ERROR_TAG);
 
-            return new Result(
-              startHyperlink,
-              entireLength,
-              linkInfo,
-              null // TextAttributes, going with default hence null
-            );
-          }
+          return new Result(
+            startHyperlink,
+            entireLength,
+            linkInfo,
+            null // TextAttributes, going with default hence null
+          );
         }
         return null;
       }
@@ -375,12 +370,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    * Encapsulate the result of parsed data.
    */
   static class ParseResult {
-    String filePath;
+    VirtualFile file;
     int lineNumber;
     int columnNumber;
 
-    ParseResult(String filePath, int lineNumber, int columnNumber) {
-      this.filePath = filePath;
+    ParseResult(VirtualFile file, int lineNumber, int columnNumber) {
+      this.file = file;
       this.lineNumber = lineNumber;
       this.columnNumber = columnNumber;
     }
@@ -394,17 +389,13 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         return false;
       }
       ParseResult other = (ParseResult) obj;
-      return Objects.equals(filePath, other.filePath)
+      return Objects.equals(file, other.file)
              && Objects.equals(lineNumber, other.lineNumber)
              && Objects.equals(columnNumber, other.columnNumber);
     }
 
-    public String getFilePath() {
-      return filePath;
-    }
-
-    public Optional<VirtualFile> getVirtualFile() {
-      return Optional.ofNullable(VirtualFileManager.getInstance().findFileByUrl("file://" + filePath));
+    public VirtualFile getFile() {
+      return file;
     }
 
     public int getLineNumber() {
@@ -422,12 +413,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    * encapsulated in `ParseResult` object.
    *
    * @param line original Pants output
-   * @param ext  known file extension. e.g. ".java", ".scala"
    * @param tag  known tag. e.g. [error]
    * @return `ParseResult` instance
    */
-  public static Optional<ParseResult> parseErrorLocation(String line, String ext, String tag) {
-    if (!line.contains(ext) || !line.contains(tag)) {
+  public static Optional<ParseResult> parseErrorLocation(String line, String tag) {
+    if (!line.contains(tag)) {
       return Optional.empty();
     }
 
@@ -439,11 +429,15 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     try {
       // filePath path is between tag and first colon
       String filePath = splitByColon[0].substring(splitByColon[0].indexOf(tag) + tag.length()).trim();
+      VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath);
+      if (virtualFile == null) {
+        return Optional.empty();
+      }
       // line number is between first and second colon
       int lineNumber = Integer.valueOf(splitByColon[1]);
-      // column number is between second and thrid colon
+      // column number is between second and third colon
       int columnNumber = Integer.valueOf(splitByColon[2]);
-      return Optional.of(new ParseResult(filePath, lineNumber, columnNumber));
+      return Optional.of(new ParseResult(virtualFile, lineNumber, columnNumber));
     }
     catch (NumberFormatException e) {
       return Optional.empty();
