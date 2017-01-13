@@ -341,8 +341,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
           OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
             project,
             result.get().getFile(),
-            result.get().lineNumber - 1, // line number needs to be 0 indexed
-            result.get().columnNumber - 1 // column number needs to be 0 indexed
+            result.get().getLineNumber() - 1, // line number needs to be 0 indexed
+            result.get().getColumnNumber() - 1 // column number needs to be 0 indexed
           );
           int startHyperlink = entireLength - line.length() + line.indexOf(ERROR_TAG);
 
@@ -370,9 +370,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    * Encapsulate the result of parsed data.
    */
   static class ParseResult {
-    VirtualFile file;
-    int lineNumber;
-    int columnNumber;
+    private VirtualFile file;
+    private int lineNumber;
+    private int columnNumber;
 
 
     /**
