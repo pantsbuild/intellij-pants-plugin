@@ -378,7 +378,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     /**
      * This function parses Pants output against known file and tag,
      * and returns (file, line number, column number)
-     * encapsulated in `ParseResult` object.
+     * encapsulated in `ParseResult` object if the output contains valid information.
      *
      * @param line original Pants output
      * @param tag  known tag. e.g. [error]
