@@ -80,19 +80,23 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileNoop(pantsCompileProject());
   }
 
-  public void testAddThenDeleteFileOutsideProjectShouldNoop() throws Throwable {
-    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-    // Simulate out of band adding a file outside of IDE
-    Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/a.txt");
-    Files.write(newFilePath, Collections.singleton("123"), Charset.defaultCharset());
-    // When user switches back to IntelliJ LocalFileSystem refresh will be called.
-    LocalFileSystem.getInstance().refresh(false);
-    assertPantsCompileNoop(pantsCompileProject());
-
-    Files.delete(newFilePath);
-    LocalFileSystem.getInstance().refresh(false);
-    assertPantsCompileNoop(pantsCompileProject());
-  }
+  /**
+   * NOTE: Disabled because it is flaky.
+   * Also either behavior is okay in this case, although preferably noop.
+   */
+  //public void testAddThenDeleteFileOutsideProjectShouldNoop() throws Throwable {
+  //  assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+  //  // Simulate out of band adding a file outside of IDE
+  //  Path newFilePath = Paths.get(getProjectFolder().getPath(), "examples/a.txt");
+  //  Files.write(newFilePath, Collections.singleton("123"), Charset.defaultCharset());
+  //  // When user switches back to IntelliJ LocalFileSystem refresh will be called.
+  //  LocalFileSystem.getInstance().refresh(false);
+  //  assertPantsCompileNoop(pantsCompileProject());
+  //
+  //  Files.delete(newFilePath);
+  //  LocalFileSystem.getInstance().refresh(false);
+  //  assertPantsCompileNoop(pantsCompileProject());
+  //}
 
   public void testAddThenDeleteFileInProjectShouldOp() throws Throwable {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
