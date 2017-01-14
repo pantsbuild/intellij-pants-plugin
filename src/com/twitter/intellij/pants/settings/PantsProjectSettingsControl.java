@@ -103,10 +103,6 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void resetExtraSettings(boolean isDefaultModuleCreation) {
-    //final String externalProjectPath = getInitialSettings().getExternalProjectPath();
-    //if (!StringUtil.isEmpty(externalProjectPath)) {
-    //  onProjectPathChanged(externalProjectPath);
-    //}
   }
 
   public void onProjectPathChanged(@NotNull final String projectPath) {
