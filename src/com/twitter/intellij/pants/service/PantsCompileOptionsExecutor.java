@@ -213,23 +213,6 @@ public class PantsCompileOptionsExecutor {
     return commandLine;
   }
 
-  private List<String> loadDependees(List<String> addresses) throws IOException, ExecutionException {
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
-    commandLine.addParameter("dependees");
-    commandLine.addParameter("--transitive");
-    commandLine.addParameters(addresses);
-
-    final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
-    commandLine.addParameter("--dependees-output-file=" + outputFile.getPath());
-
-    final ProcessOutput output = getProcessOutput(commandLine, null);
-    if (!output.checkSuccess(LOG)) {
-      throw new ExternalSystemException("Failed to find dependents!\n" + output.getStderr());
-    }
-
-    return FileUtil.loadLines(outputFile);
-  }
-
   @NotNull
   private List<String> getTargetSpecs() {
     // If project is opened via pants cli, the targets are in specs.
