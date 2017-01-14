@@ -36,7 +36,6 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     final boolean isEnableIncrementalImport = false;
     PantsExecutionSettings settings = new PantsExecutionSettings(
       Collections.singletonList(targetSpec),
-      withDependees,
       libsWithSourcesAndDocs,
       useIdeaProjectJdk,
       isEnableIncrementalImport

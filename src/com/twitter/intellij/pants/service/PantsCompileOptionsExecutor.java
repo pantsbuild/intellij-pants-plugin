@@ -208,11 +208,6 @@ public class PantsCompileOptionsExecutor {
 
     commandLine.addParameters(getTargetSpecs());
     System.out.println(getTargetSpecs());
-    if (getOptions().isWithDependees()) {
-      statusConsumer.consume("Looking for dependents...");
-      commandLine.addParameters(loadDependees(getTargetSpecs()));
-    }
-
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
     LOG.debug(commandLine.toString());
     return commandLine;
@@ -277,11 +272,6 @@ public class PantsCompileOptionsExecutor {
     @NotNull
     public List<String> getTargetSpecs() {
       return myExecutionOptions.getTargetSpecs();
-    }
-
-    @Override
-    public boolean isWithDependees() {
-      return myExecutionOptions.isWithDependees();
     }
 
     public boolean isEnableIncrementalImport() {

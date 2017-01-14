@@ -342,11 +342,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return classes[0];
   }
 
-  protected void doImportWithDependees(@NotNull String projectFolderPathToImport) {
-    myProjectSettings.setWithDependees(true);
-    doImport(projectFolderPathToImport);
-  }
-
   protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {
     System.out.println("Import: " + projectFolderPathToImport);
     myRelativeProjectPath = projectFolderPathToImport;

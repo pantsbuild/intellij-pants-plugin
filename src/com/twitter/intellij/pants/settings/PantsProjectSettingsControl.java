@@ -37,7 +37,6 @@ import java.util.Set;
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
 
   private CheckBoxList<String> myTargetSpecsBox;
-  private JBCheckBox myWithDependeesCheckBox;
   private JBCheckBox myLibsWithSourcesCheckBox;
   private JBCheckBox myEnableIncrementalImportCheckBox;
 
@@ -49,11 +48,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myTargetSpecsBox = new CheckBoxList<>();
     settings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
 
-    myWithDependeesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.dependents"));
     myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources.and.docs"));
     myEnableIncrementalImportCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
 
-    myWithDependeesCheckBox.setSelected(settings.isWithDependees());
     myLibsWithSourcesCheckBox.setSelected(settings.isLibsWithSources());
     myEnableIncrementalImportCheckBox.setSelected(settings.isEnableIncrementalImport());
   }
@@ -73,13 +70,24 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     content.add(ScrollPaneFactory.createScrollPane(myTargetSpecsBox), ExternalSystemUiUtil.getFillLineConstraints(0));
   }
 
+  // It is silly `CheckBoxList` does not provide an iterator.
+  private List<String> getSelectedTargetSpecs() {
+    List<String> selectedSpecs = new ArrayList<>();
+    for (int i = 0; i < myTargetSpecsBox.getItemsCount(); i++) {
+      if (myTargetSpecsBox.isItemSelected(i)) {
+        selectedSpecs.add(myTargetSpecsBox.getItemAt(i));
+      }
+    }
+    return selectedSpecs;
+  }
+
   @Override
   protected boolean isExtraSettingModified() {
 
     PantsProjectSettings newSettings = new PantsProjectSettings(
-      getInitialSettings().getTargetSpecs(), // target spec is greyed out, so it's safe to assume they are still the same.
+      getSelectedTargetSpecs(),
+      // target spec is greyed out, so it's safe to assume they are still the same.
       getInitialSettings().getExternalProjectPath(), // ditto.
-      myWithDependeesCheckBox.isSelected(),
       myLibsWithSourcesCheckBox.isSelected(),
       myEnableIncrementalImportCheckBox.isSelected()
     );
@@ -117,17 +125,11 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myTargetSpecsBox.setEmptyText(spec);
       myTargetSpecsBox.addItem(spec, spec, true);
 
-      myWithDependeesCheckBox.setSelected(false);
-      myWithDependeesCheckBox.setEnabled(true);
-
       myLibsWithSourcesCheckBox.setEnabled(true);
     }
     else if (PantsUtil.isExecutable(file.getPath())) {
       myTargetSpecsBox.setEnabled(false);
       myTargetSpecsBox.setEmptyText(file.getName());
-
-      myWithDependeesCheckBox.setSelected(false);
-      myWithDependeesCheckBox.setEnabled(false);
 
       myLibsWithSourcesCheckBox.setSelected(false);
       myLibsWithSourcesCheckBox.setEnabled(false);
@@ -135,10 +137,6 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     else {
       myTargetSpecsBox.setEnabled(true);
       myTargetSpecsBox.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
-
-      myWithDependeesCheckBox.setSelected(false);
-      myWithDependeesCheckBox.setEnabled(true);
-
       myLibsWithSourcesCheckBox.setEnabled(true);
 
       ProgressManager.getInstance().run(new Task.Modal(getProject(), PantsBundle.message("pants.getting.target.list"), false) {
@@ -166,7 +164,6 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
     final List<String> targetSpecs = new ArrayList<>();
-    settings.setWithDependees(myWithDependeesCheckBox.isSelected());
     settings.setLibsWithSources(myLibsWithSourcesCheckBox.isSelected());
     settings.setEnableIncrementalImport(myEnableIncrementalImportCheckBox.isSelected());
     for (int i = 0; i < myTargetSpecsBox.getItemsCount(); i++) {
