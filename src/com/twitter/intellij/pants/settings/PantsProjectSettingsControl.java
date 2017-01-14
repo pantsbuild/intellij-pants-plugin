@@ -26,6 +26,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,9 +74,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   // It is silly `CheckBoxList` does not provide an iterator.
   private List<String> getSelectedTargetSpecs() {
     List<String> selectedSpecs = new ArrayList<>();
-    for (int i = 0; i < myTargetSpecsBox.getItemsCount(); i++) {
-      if (myTargetSpecsBox.isItemSelected(i)) {
-        selectedSpecs.add(myTargetSpecsBox.getItemAt(i));
+    for (int i = 0; i < myTargetSpecsBox.getModel().getSize(); i++) {
+      JCheckBox checkBox = (JCheckBox) myTargetSpecsBox.getModel().getElementAt(i);
+      if (checkBox.isSelected()) {
+        selectedSpecs.add(checkBox.getText());
       }
     }
     return selectedSpecs;
@@ -97,10 +99,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void resetExtraSettings(boolean isDefaultModuleCreation) {
-    final String externalProjectPath = getInitialSettings().getExternalProjectPath();
-    if (!StringUtil.isEmpty(externalProjectPath)) {
-      onProjectPathChanged(externalProjectPath);
-    }
+    //final String externalProjectPath = getInitialSettings().getExternalProjectPath();
+    //if (!StringUtil.isEmpty(externalProjectPath)) {
+    //  onProjectPathChanged(externalProjectPath);
+    //}
   }
 
   public void onProjectPathChanged(@NotNull final String projectPath) {
