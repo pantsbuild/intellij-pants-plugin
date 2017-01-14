@@ -43,6 +43,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   private Set<String> errors = new HashSet<>();
 
+  private String lastPath = "";
+
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
     super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
@@ -106,6 +108,13 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   }
 
   public void onProjectPathChanged(@NotNull final String projectPath) {
+    if (lastPath.equals(projectPath)) {
+      lastPath = projectPath;
+      return;
+    }
+    else {
+      lastPath = projectPath;
+    }
     myTargetSpecsBox.clear();
     errors.clear();
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
