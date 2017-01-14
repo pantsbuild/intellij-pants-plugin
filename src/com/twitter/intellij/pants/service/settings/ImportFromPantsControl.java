@@ -36,7 +36,7 @@ public class ImportFromPantsControl
   @NotNull
   @Override
   protected ExternalSystemSettingsControl<PantsProjectSettings> createProjectSettingsControl(@NotNull PantsProjectSettings settings) {
-    return new PantsProjectSettingsControl(settings, false);
+    return new PantsProjectSettingsControl(settings);
   }
 
   @Nullable

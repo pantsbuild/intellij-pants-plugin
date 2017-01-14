@@ -9,6 +9,7 @@ import com.twitter.intellij.pants.model.PantsCompileOptions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
@@ -36,6 +37,22 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   }
 
   public PantsProjectSettings() {
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!super.equals(obj)) {
+      return false;
+    }
+
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    PantsProjectSettings other = (PantsProjectSettings) obj;
+    return Objects.equals(myWithDependees, other.myWithDependees)
+           && Objects.equals(myLibsWithSources, other.myLibsWithSources)
+           && Objects.equals(myEnableIncrementalImport, other.myEnableIncrementalImport)
+           && Objects.equals(myTargetSpecs, other.myTargetSpecs);
   }
 
   @NotNull
