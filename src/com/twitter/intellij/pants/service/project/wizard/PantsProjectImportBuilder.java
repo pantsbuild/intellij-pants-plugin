@@ -15,7 +15,7 @@ import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.service.settings.ImportFromPantsControl;
+import com.twitter.intellij.pants.settings.ImportFromPantsControl;
 import com.twitter.intellij.pants.util.PantsConstants;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;

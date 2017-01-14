@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.settings;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.service.settings.ExternalSystemSettingsControlCustomizer;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
@@ -11,7 +12,6 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -37,7 +37,9 @@ import java.util.Set;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
 
-  private CheckBoxList<String> myTargetSpecsBox;
+  @VisibleForTesting
+  protected CheckBoxList<String> myTargetSpecsBox;
+
   private JBCheckBox myLibsWithSourcesCheckBox;
   private JBCheckBox myEnableIncrementalImportCheckBox;
 
