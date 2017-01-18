@@ -19,15 +19,15 @@ import com.intellij.ui.CheckBoxList;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.StatusText;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,41 +38,42 @@ import java.util.Set;
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
 
   @VisibleForTesting
-  protected CheckBoxList<String> myTargetSpecsBox;
+  protected CheckBoxList<String> myTargetSpecsBox = new CheckBoxList<>();
 
-  private JBCheckBox myLibsWithSourcesCheckBox;
-  private JBCheckBox myEnableIncrementalImportCheckBox;
+  private JBCheckBox myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources.and.docs"));
+  private JBCheckBox myEnableIncrementalImportCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
 
   private Set<String> errors = new HashSet<>();
 
+  // Key to keep track whether target specs are requested for the same project path.
   private String lastPath = "";
+
+  private PantsProjectSettings mySettings;
 
 
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
     super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
-    myTargetSpecsBox = new CheckBoxList<>();
-    settings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
-
-    myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources.and.docs"));
-    myEnableIncrementalImportCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
-
-    myLibsWithSourcesCheckBox.setSelected(settings.isLibsWithSources());
-    myEnableIncrementalImportCheckBox.setSelected(settings.isEnableIncrementalImport());
+    mySettings = settings;
   }
 
   @Override
   protected void fillExtraControls(@NotNull PaintAwarePanel content, int indentLevel) {
-    final JLabel hintLabel = new JBLabel(PantsBundle.message("pants.settings.text.path.hint"));
-    hintLabel.setBorder(BorderFactory.createTitledBorder(PantsBundle.message("pants.settings.text.hint")));
-    content.add(hintLabel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
-    content.add(myLibsWithSourcesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
-    content.add(myEnableIncrementalImportCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+    myLibsWithSourcesCheckBox.setSelected(mySettings.isLibsWithSources());
+    myEnableIncrementalImportCheckBox.setSelected(mySettings.isEnableIncrementalImport());
 
-    final JLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
-    content.add(targetsLabel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+    GridBag lineConstraints = ExternalSystemUiUtil.getFillLineConstraints(indentLevel);
 
-    content.add(ScrollPaneFactory.createScrollPane(myTargetSpecsBox), ExternalSystemUiUtil.getFillLineConstraints(0));
+    content.add(myLibsWithSourcesCheckBox, lineConstraints);
+    content.add(myEnableIncrementalImportCheckBox, lineConstraints);
+
+    mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
+
+    final JBLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
+    content.add(targetsLabel, lineConstraints);
+
+    JScrollPane pane = ScrollPaneFactory.createScrollPane(myTargetSpecsBox);
+    content.add(pane, lineConstraints);
   }
 
   // It is silly `CheckBoxList` does not provide an iterator.
@@ -92,8 +93,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
     PantsProjectSettings newSettings = new PantsProjectSettings(
       getSelectedTargetSpecs(),
-      // target spec is greyed out, so it's safe to assume they are still the same.
-      getInitialSettings().getExternalProjectPath(), // ditto.
+      // Project path is not visible to user, so it will stay the same.
+      getInitialSettings().getExternalProjectPath(),
       myLibsWithSourcesCheckBox.isSelected(),
       myEnableIncrementalImportCheckBox.isSelected()
     );
