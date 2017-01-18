@@ -133,7 +133,7 @@ public class PantsManager implements
           return new PantsExecutionSettings(
             pantsProjectSettings.getTargetSpecs(),
             pantsProjectSettings.isLibsWithSources(),
-            PantsSettings.getInstance(ideProject).isUseIdeaProjectJdk(),
+            pantsProjectSettings.isUseIdeaProjectJdk(),
             pantsProjectSettings.isEnableIncrementalImport()
           );
         }

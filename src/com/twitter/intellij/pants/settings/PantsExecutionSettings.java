@@ -32,9 +32,9 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   }
 
   /**
-   * @param targetSpecs :             targets explicitly listed from `pants idea-plugin` goal.
-   * @param libsWithSourcesAndDocs :  whether to import sources and docs when resolving for jars.
-   * @param useIdeaProjectJdk :       whether to explicitly use the JDK selected in project for Pants compile.
+   * @param targetSpecs             :             targets explicitly listed from `pants idea-plugin` goal.
+   * @param libsWithSourcesAndDocs  :  whether to import sources and docs when resolving for jars.
+   * @param useIdeaProjectJdk       :       whether to explicitly use the JDK selected in project for Pants compile.
    * @param enableIncrementalImport : whether to incrementally import the project.
    */
   public PantsExecutionSettings(
@@ -73,11 +73,10 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     if (!super.equals(o)) return false;
 
     PantsExecutionSettings settings = (PantsExecutionSettings) o;
-    if (myUseIdeaProjectJdk != settings.myUseIdeaProjectJdk) return false;
-    if (myEnableIncrementalImport != settings.myEnableIncrementalImport) return false;
-    if (myLibsWithSourcesAndDocs != settings.myLibsWithSourcesAndDocs) return false;
-    if (myTargetSpecs != null ? !myTargetSpecs.equals(settings.myTargetSpecs) : settings.myTargetSpecs != null) return false;
-    return true;
+    return Objects.equals(myUseIdeaProjectJdk, settings.myUseIdeaProjectJdk) &&
+           Objects.equals(myEnableIncrementalImport, settings.myEnableIncrementalImport) &&
+           Objects.equals(myLibsWithSourcesAndDocs, settings.myLibsWithSourcesAndDocs) &&
+           Objects.equals(myTargetSpecs, settings.myTargetSpecs);
   }
 
   @Override

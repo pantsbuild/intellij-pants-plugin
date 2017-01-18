@@ -42,6 +42,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   private JBCheckBox myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources.and.docs"));
   private JBCheckBox myEnableIncrementalImportCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
+  private JBCheckBox myUseIdeaProjectJdkCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.jdk.enforcement"));
 
   private Set<String> errors = new HashSet<>();
 
@@ -61,11 +62,13 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
     myLibsWithSourcesCheckBox.setSelected(mySettings.isLibsWithSources());
     myEnableIncrementalImportCheckBox.setSelected(mySettings.isEnableIncrementalImport());
+    myUseIdeaProjectJdkCheckBox.setSelected(mySettings.isUseIdeaProjectJdk());
 
     GridBag lineConstraints = ExternalSystemUiUtil.getFillLineConstraints(indentLevel);
 
     content.add(myLibsWithSourcesCheckBox, lineConstraints);
     content.add(myEnableIncrementalImportCheckBox, lineConstraints);
+    content.add(myUseIdeaProjectJdkCheckBox, lineConstraints);
 
     mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
 
@@ -96,7 +99,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       // Project path is not visible to user, so it will stay the same.
       getInitialSettings().getExternalProjectPath(),
       myLibsWithSourcesCheckBox.isSelected(),
-      myEnableIncrementalImportCheckBox.isSelected()
+      myEnableIncrementalImportCheckBox.isSelected(),
+      myUseIdeaProjectJdkCheckBox.isSelected()
     );
 
     return !newSettings.equals(getInitialSettings());
@@ -173,9 +177,11 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
-    final List<String> targetSpecs = new ArrayList<>();
     settings.setLibsWithSources(myLibsWithSourcesCheckBox.isSelected());
     settings.setEnableIncrementalImport(myEnableIncrementalImportCheckBox.isSelected());
+    settings.setUseIdeaProjectJdk(myUseIdeaProjectJdkCheckBox.isSelected());
+
+    final List<String> targetSpecs = new ArrayList<>();
     for (int i = 0; i < myTargetSpecsBox.getItemsCount(); i++) {
       String target = myTargetSpecsBox.getItemAt(i);
       if (myTargetSpecsBox.isItemSelected(target)) {
