@@ -30,13 +30,11 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
 
   @NotNull
   private ProjectInfo resolveProjectInfo(@NotNull String targetSpec) {
-    final boolean withDependees = false;
     final boolean libsWithSourcesAndDocs = true;
     final boolean useIdeaProjectJdk = false;
     final boolean isEnableIncrementalImport = false;
     PantsExecutionSettings settings = new PantsExecutionSettings(
       Collections.singletonList(targetSpec),
-      withDependees,
       libsWithSourcesAndDocs,
       useIdeaProjectJdk,
       isEnableIncrementalImport

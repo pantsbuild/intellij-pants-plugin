@@ -99,34 +99,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
   }
 
-  public void testHelloWithDependees() throws Throwable {
-    doImportWithDependees("examples/src/java/org/pantsbuild/example/hello");
-
-    assertFirstSourcePartyModules(
-      "examples_src_resources_org_pantsbuild_example_hello_hello",
-      "examples_src_java_org_pantsbuild_example_hello_main_main",
-      "examples_src_java_org_pantsbuild_example_hello_greet_greet",
-      "examples_src_java_org_pantsbuild_example_hello_simple_simple",
-      "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
-      "examples_src_java_org_pantsbuild_example_hello_module",
-      "examples_src_java_org_pantsbuild_example_hello_main_readme",
-      "examples_src_java_org_pantsbuild_example_hello_main_common_sources",
-      "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",  // direct dependee
-      "examples_tests_java_org_pantsbuild_example_hello_greet_greet",     // direct dependee
-      "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome",// transitive dependee
-      "examples_src_scala_org_pantsbuild_example_jvm-run-example-lib",    // transitive dependee
-      "examples_src_scala_org_pantsbuild_example_hello_hello",            // transitive dependee
-      "examples_src_scala_org_pantsbuild_example_jvm-run-example",        // transitive dependee
-      "examples_src_scala_org_pantsbuild_example_hello_exe_exe"           // transitive dependee
-    );
-
-    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.hello.greet.GreetingTest", "examples_tests_java_org_pantsbuild_example_hello_greet_greet"
-    );
-  }
-
   public void testJaxb() throws Throwable {
     String projectRelativePath = "examples/src/java/org/pantsbuild/example/jaxb/main";
     doImport(projectRelativePath);

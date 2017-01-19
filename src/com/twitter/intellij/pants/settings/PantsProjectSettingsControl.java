@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.settings;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.service.settings.ExternalSystemSettingsControlCustomizer;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
@@ -11,22 +12,22 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.CheckBoxList;
-import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.StatusText;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -35,71 +36,99 @@ import java.util.Optional;
 import java.util.Set;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
-  private final boolean myShowAdvancedSettings;
 
-  private CheckBoxList<String> myTargetSpecs;
-  private JBCheckBox myWithDependeesCheckBox;
-  private JBCheckBox myLibsWithSourcesCheckBox;
-  private JBCheckBox myEnableIncrementalImport;
+  @VisibleForTesting
+  protected CheckBoxList<String> myTargetSpecsBox = new CheckBoxList<>();
 
-  private Set<String> errors = new HashSet<>();
+  private JBCheckBox myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources.and.docs"));
+  private JBCheckBox myEnableIncrementalImportCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
+  private JBCheckBox myUseIdeaProjectJdkCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.jdk.enforcement"));
 
-  public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings, boolean showAdvancedSettings) {
+  @VisibleForTesting
+  protected Set<String> errors = new HashSet<>();
+
+  // Key to keep track whether target specs are requested for the same project path.
+  private String lastPath = "";
+
+  private PantsProjectSettings mySettings;
+
+  public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
     super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
-    myShowAdvancedSettings = showAdvancedSettings;
+    mySettings = settings;
   }
 
   @Override
   protected void fillExtraControls(@NotNull PaintAwarePanel content, int indentLevel) {
-    final JLabel hintLabel = new JBLabel(PantsBundle.message("pants.settings.text.path.hint"));
-    hintLabel.setBorder(BorderFactory.createTitledBorder(PantsBundle.message("pants.settings.text.hint")));
-    content.add(hintLabel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
 
-    myWithDependeesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.dependents"));
-    if (myShowAdvancedSettings) {
-      content.add(myWithDependeesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+    myLibsWithSourcesCheckBox.setSelected(mySettings.isLibsWithSources());
+    myEnableIncrementalImportCheckBox.setSelected(mySettings.isEnableIncrementalImport());
+    myUseIdeaProjectJdkCheckBox.setSelected(mySettings.isUseIdeaProjectJdk());
+
+    mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
+
+    List<JComponent> boxes = ContainerUtil.newArrayList(
+      myLibsWithSourcesCheckBox,
+      myEnableIncrementalImportCheckBox,
+      myUseIdeaProjectJdkCheckBox,
+      new JBLabel(PantsBundle.message("pants.settings.text.targets")),
+      myTargetSpecsBox
+    );
+
+    GridBag lineConstraints = ExternalSystemUiUtil.getFillLineConstraints(indentLevel);
+
+    for (JComponent component : boxes) {
+      content.add(component, lineConstraints);
     }
+  }
 
-    myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources.and.docs"));
-    myLibsWithSourcesCheckBox.setSelected(false);
-    content.add(myLibsWithSourcesCheckBox, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
-
-    myEnableIncrementalImport = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
-    myEnableIncrementalImport.setSelected(false);
-    content.add(myEnableIncrementalImport, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
-
-    final JLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
-    content.add(targetsLabel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
-
-    myTargetSpecs = new CheckBoxList<String>();
-    content.add(ScrollPaneFactory.createScrollPane(myTargetSpecs), ExternalSystemUiUtil.getFillLineConstraints(0));
+  // It is silly `CheckBoxList` does not provide an iterator.
+  private List<String> getSelectedTargetSpecsFromBoxes() {
+    List<String> selectedSpecs = new ArrayList<>();
+    for (int i = 0; i < myTargetSpecsBox.getModel().getSize(); i++) {
+      JCheckBox checkBox = (JCheckBox) myTargetSpecsBox.getModel().getElementAt(i);
+      if (checkBox.isSelected()) {
+        selectedSpecs.add(checkBox.getText());
+      }
+    }
+    return selectedSpecs;
   }
 
   @Override
   protected boolean isExtraSettingModified() {
-    return !myTargetSpecs.getSelectedValuesList().isEmpty();
+
+    PantsProjectSettings newSettings = new PantsProjectSettings(
+      getSelectedTargetSpecsFromBoxes(),
+      // Project path is not visible to user, so it will stay the same.
+      getInitialSettings().getExternalProjectPath(),
+      myLibsWithSourcesCheckBox.isSelected(),
+      myEnableIncrementalImportCheckBox.isSelected(),
+      myUseIdeaProjectJdkCheckBox.isSelected()
+    );
+
+    return !newSettings.equals(getInitialSettings());
   }
 
   @Override
   protected void resetExtraSettings(boolean isDefaultModuleCreation) {
-    final String externalProjectPath = getInitialSettings().getExternalProjectPath();
-    if (!StringUtil.isEmpty(externalProjectPath)) {
-      onProjectPathChanged(externalProjectPath);
-    }
   }
 
   public void onProjectPathChanged(@NotNull final String projectPath) {
-    myTargetSpecs.clear();
+    if (lastPath.equals(projectPath)) {
+      return;
+    }
+
+    lastPath = projectPath;
+    myTargetSpecsBox.clear();
     errors.clear();
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     if (file == null || !PantsUtil.isPantsProjectFile(file)) {
-      myTargetSpecs.setEnabled(true);
+      myTargetSpecsBox.setEnabled(true);
       errors.add(String.format("Pants project not found given project path: %s", projectPath));
       return;
     }
 
     if (file.isDirectory()) {
-      myTargetSpecs.setEnabled(false);
+      myTargetSpecsBox.setEnabled(false);
       Optional<String> relativeProjectPath = PantsUtil.getRelativeProjectPath(file.getPath());
       if (!relativeProjectPath.isPresent()) {
         errors.add(String.format("Fail to find relative path from %s to build root.", file.getPath()));
@@ -107,31 +136,21 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       }
       String spec = relativeProjectPath.get() + "/::";
 
-      myTargetSpecs.setEmptyText(spec);
-      myTargetSpecs.addItem(spec, spec, true);
-
-      myWithDependeesCheckBox.setSelected(false);
-      myWithDependeesCheckBox.setEnabled(true);
+      myTargetSpecsBox.setEmptyText(spec);
+      myTargetSpecsBox.addItem(spec, spec, true);
 
       myLibsWithSourcesCheckBox.setEnabled(true);
     }
     else if (PantsUtil.isExecutable(file.getPath())) {
-      myTargetSpecs.setEnabled(false);
-      myTargetSpecs.setEmptyText(file.getName());
-
-      myWithDependeesCheckBox.setSelected(false);
-      myWithDependeesCheckBox.setEnabled(false);
+      myTargetSpecsBox.setEnabled(false);
+      myTargetSpecsBox.setEmptyText(file.getName());
 
       myLibsWithSourcesCheckBox.setSelected(false);
       myLibsWithSourcesCheckBox.setEnabled(false);
     }
     else {
-      myTargetSpecs.setEnabled(true);
-      myTargetSpecs.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
-
-      myWithDependeesCheckBox.setSelected(false);
-      myWithDependeesCheckBox.setEnabled(true);
-
+      myTargetSpecsBox.setEnabled(true);
+      myTargetSpecsBox.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
       myLibsWithSourcesCheckBox.setEnabled(true);
 
       ProgressManager.getInstance().run(new Task.Modal(getProject(), PantsBundle.message("pants.getting.target.list"), false) {
@@ -150,25 +169,18 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
     UIUtil.invokeLaterIfNeeded(
       () -> {
-        myTargetSpecs.clear();
-        targets.forEach(s -> myTargetSpecs.addItem(s, s, false));
+        myTargetSpecsBox.clear();
+        targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
       }
     );
   }
 
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
-    final List<String> targetSpecs = new ArrayList<>();
-    settings.setWithDependees(myWithDependeesCheckBox.isSelected());
     settings.setLibsWithSources(myLibsWithSourcesCheckBox.isSelected());
-    settings.setEnableIncrementalImport(myEnableIncrementalImport.isSelected());
-    for (int i = 0; i < myTargetSpecs.getItemsCount(); i++) {
-      String target = myTargetSpecs.getItemAt(i);
-      if (myTargetSpecs.isItemSelected(target)) {
-        targetSpecs.add(target);
-      }
-    }
-    settings.setTargetSpecs(targetSpecs);
+    settings.setEnableIncrementalImport(myEnableIncrementalImportCheckBox.isSelected());
+    settings.setUseIdeaProjectJdk(myUseIdeaProjectJdkCheckBox.isSelected());
+    settings.setTargetSpecs(getSelectedTargetSpecsFromBoxes());
   }
 
   @Override
@@ -184,7 +196,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     if (!PantsUtil.isPantsProjectFile(file)) {
       throw new ConfigurationException(PantsBundle.message("pants.error.not.build.file.path.or.directory"));
     }
-    if (PantsUtil.isBUILDFileName(file.getName()) && myTargetSpecs.getSelectedIndices().length == 0) {
+    if (PantsUtil.isBUILDFileName(file.getName()) && myTargetSpecsBox.getSelectedIndices().length == 0) {
       throw new ConfigurationException(PantsBundle.message("pants.error.no.targets.are.selected"));
     }
     if (!errors.isEmpty()) {

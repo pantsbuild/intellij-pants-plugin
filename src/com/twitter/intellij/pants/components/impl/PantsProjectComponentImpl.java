@@ -112,8 +112,11 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            * Generate the import spec for the next refresh.
            */
           final List<String> targetSpecs = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
+          boolean loadLibsAndSources = true;
+          boolean enableIncrementalImport = false;
+          boolean useIdeaProjectJdk = false;
           final PantsProjectSettings pantsProjectSettings =
-            new PantsProjectSettings(targetSpecs, projectPath, false, true, false);
+            new PantsProjectSettings(targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk);
 
           /**
            * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
