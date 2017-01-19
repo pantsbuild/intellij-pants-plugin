@@ -9,37 +9,70 @@ import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 import java.io.File;
+import java.util.stream.Collectors;
 
 public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
-  public void testDirectory() {
-    ImportFromPantsControl importControl = new ImportFromPantsControl();
-    importControl.onLinkedProjectPathChange(getProjectPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello");
-    importControl.getProjectSettingsControl().apply(importControl.getProjectSettings());
-    CheckBoxList<String> checkBoxList = ((PantsProjectSettingsControl) importControl.getProjectSettingsControl()).myTargetSpecsBox;
+
+  private ImportFromPantsControl myFromPantsControl;
+
+  @Override
+  protected void setUpInWriteAction() throws Exception {
+    super.setUpInWriteAction();
+    myFromPantsControl = new ImportFromPantsControl();
+  }
+
+  /**
+   * @return the GUI component to select target specs.
+   */
+  private CheckBoxList<String> getTargetSpecCheckBoxList() {
+    return ((PantsProjectSettingsControl) myFromPantsControl.getProjectSettingsControl()).myTargetSpecsBox;
+  }
+
+  /**
+   * `ImportFromPantsControl` holds of the project setting instance unrelated to the GUI states.
+   * In order to update the project setting, an explicit call is needed to apply the current GUI
+   * states onto the project setting instance.
+   */
+  private void updateSettingsBasedOnGuiStates() {
+    myFromPantsControl.getProjectSettingsControl().apply(myFromPantsControl.getProjectSettings());
+  }
+
+  private void assertPantsProjectNotFound() {
+    assertContainsSubstring(
+      ((PantsProjectSettingsControl) myFromPantsControl.getProjectSettingsControl()).errors.stream().collect(Collectors.toList()),
+      "Pants project not found given project path"
+    );
+  }
+
+  public void testDirectoryAsImportProjectPath() {
+    myFromPantsControl.onLinkedProjectPathChange(getProjectPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello");
+    updateSettingsBasedOnGuiStates();
+
+    CheckBoxList<String> checkBoxList = getTargetSpecCheckBoxList();
     assertFalse("Check box list should be disabled, but it not.", checkBoxList.isEnabled());
 
     assertEquals(
       ContainerUtil.newArrayList("examples/src/java/org/pantsbuild/example/hello/::"),
-      importControl.getProjectSettings().getTargetSpecs()
+      myFromPantsControl.getProjectSettings().getTargetSpecs()
     );
   }
 
-  public void testBuildFile() {
-    ImportFromPantsControl importControl = new ImportFromPantsControl();
-    importControl.onLinkedProjectPathChange(
+  public void testBuildFileAsImportProjectPath() {
+    myFromPantsControl.onLinkedProjectPathChange(
       getProjectPath() + File.separator +
       "examples/src/java/org/pantsbuild/example/hello/main/BUILD"
     );
-    // Dip the project setting into the GUI states.
-    importControl.getProjectSettingsControl().apply(importControl.getProjectSettings());
+
+    updateSettingsBasedOnGuiStates();
 
     // Checkbox is made, but it none of the targets should be selected.
     assertEquals(
+      "None of the target specs should be selected, but some are.",
       ContainerUtil.emptyList(),
-      importControl.getProjectSettings().getTargetSpecs()
+      myFromPantsControl.getProjectSettings().getTargetSpecs()
     );
 
-    CheckBoxList<String> checkBoxList = ((PantsProjectSettingsControl) importControl.getProjectSettingsControl()).myTargetSpecsBox;
+    CheckBoxList<String> checkBoxList = getTargetSpecCheckBoxList();
 
     assertTrue("Check box list should be enabled, but it not.", checkBoxList.isEnabled());
 
@@ -49,8 +82,7 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
       checkBoxList.setItemSelected(target, true);
     }
 
-    // Dip the project setting into the GUI states.
-    importControl.getProjectSettingsControl().apply(importControl.getProjectSettings());
+    updateSettingsBasedOnGuiStates();
 
     // Now project setting should contain all the targets in the BUILD file.
     assertEquals(
@@ -59,7 +91,27 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
         "examples/src/java/org/pantsbuild/example/hello/main:readme",
         "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
       ),
-      importControl.getProjectSettings().getTargetSpecs()
+      myFromPantsControl.getProjectSettings().getTargetSpecs()
     );
+  }
+
+
+  public void testNonexistentFileAsImportProjectPath() {
+    myFromPantsControl.onLinkedProjectPathChange(
+      getProjectPath() + File.separator +
+      "some/invalid/path"
+    );
+
+    assertPantsProjectNotFound();
+  }
+
+
+  /**
+   * The path exists, but is not related to Pants.
+   */
+  public void testNonPantsProjectFileOrDirectoryAsImportProjectPath() {
+    myFromPantsControl.onLinkedProjectPathChange("/");
+
+    assertPantsProjectNotFound();
   }
 }

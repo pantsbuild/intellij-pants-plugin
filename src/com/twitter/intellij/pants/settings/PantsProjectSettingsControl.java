@@ -44,7 +44,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private JBCheckBox myEnableIncrementalImportCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
   private JBCheckBox myUseIdeaProjectJdkCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.jdk.enforcement"));
 
-  private Set<String> errors = new HashSet<>();
+  @VisibleForTesting
+  protected Set<String> errors = new HashSet<>();
 
   // Key to keep track whether target specs are requested for the same project path.
   private String lastPath = "";
@@ -112,12 +113,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   public void onProjectPathChanged(@NotNull final String projectPath) {
     if (lastPath.equals(projectPath)) {
-      lastPath = projectPath;
       return;
     }
-    else {
-      lastPath = projectPath;
-    }
+
+    lastPath = projectPath;
     myTargetSpecsBox.clear();
     errors.clear();
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
