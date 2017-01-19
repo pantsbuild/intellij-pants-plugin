@@ -16,9 +16,9 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.CheckBoxList;
-import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.StatusText;
 import com.intellij.util.ui.UIUtil;
@@ -27,7 +27,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JCheckBox;
-import javax.swing.JScrollPane;
+import javax.swing.JComponent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -52,7 +52,6 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   private PantsProjectSettings mySettings;
 
-
   public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
     super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
     mySettings = settings;
@@ -65,23 +64,25 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myEnableIncrementalImportCheckBox.setSelected(mySettings.isEnableIncrementalImport());
     myUseIdeaProjectJdkCheckBox.setSelected(mySettings.isUseIdeaProjectJdk());
 
-    GridBag lineConstraints = ExternalSystemUiUtil.getFillLineConstraints(indentLevel);
-
-    content.add(myLibsWithSourcesCheckBox, lineConstraints);
-    content.add(myEnableIncrementalImportCheckBox, lineConstraints);
-    content.add(myUseIdeaProjectJdkCheckBox, lineConstraints);
-
     mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
 
-    final JBLabel targetsLabel = new JBLabel(PantsBundle.message("pants.settings.text.targets"));
-    content.add(targetsLabel, lineConstraints);
+    List<JComponent> boxes = ContainerUtil.newArrayList(
+      myLibsWithSourcesCheckBox,
+      myEnableIncrementalImportCheckBox,
+      myUseIdeaProjectJdkCheckBox,
+      new JBLabel(PantsBundle.message("pants.settings.text.targets")),
+      myTargetSpecsBox
+    );
 
-    JScrollPane pane = ScrollPaneFactory.createScrollPane(myTargetSpecsBox);
-    content.add(pane, lineConstraints);
+    GridBag lineConstraints = ExternalSystemUiUtil.getFillLineConstraints(indentLevel);
+
+    for (JComponent component : boxes) {
+      content.add(component, lineConstraints);
+    }
   }
 
   // It is silly `CheckBoxList` does not provide an iterator.
-  private List<String> getSelectedTargetSpecs() {
+  private List<String> getSelectedTargetSpecsFromBoxes() {
     List<String> selectedSpecs = new ArrayList<>();
     for (int i = 0; i < myTargetSpecsBox.getModel().getSize(); i++) {
       JCheckBox checkBox = (JCheckBox) myTargetSpecsBox.getModel().getElementAt(i);
@@ -96,7 +97,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   protected boolean isExtraSettingModified() {
 
     PantsProjectSettings newSettings = new PantsProjectSettings(
-      getSelectedTargetSpecs(),
+      getSelectedTargetSpecsFromBoxes(),
       // Project path is not visible to user, so it will stay the same.
       getInitialSettings().getExternalProjectPath(),
       myLibsWithSourcesCheckBox.isSelected(),
@@ -179,15 +180,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     settings.setLibsWithSources(myLibsWithSourcesCheckBox.isSelected());
     settings.setEnableIncrementalImport(myEnableIncrementalImportCheckBox.isSelected());
     settings.setUseIdeaProjectJdk(myUseIdeaProjectJdkCheckBox.isSelected());
-
-    final List<String> targetSpecs = new ArrayList<>();
-    for (int i = 0; i < myTargetSpecsBox.getItemsCount(); i++) {
-      String target = myTargetSpecsBox.getItemAt(i);
-      if (myTargetSpecsBox.isItemSelected(target)) {
-        targetSpecs.add(target);
-      }
-    }
-    settings.setTargetSpecs(targetSpecs);
+    settings.setTargetSpecs(getSelectedTargetSpecsFromBoxes());
   }
 
   @Override
