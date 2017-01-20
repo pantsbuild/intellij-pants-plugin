@@ -768,7 +768,7 @@ public class PantsUtil {
     String jdkName = "1.x_from_pants";
     for (String version : ContainerUtil.newArrayList("6", "7", "8", "9")) {
       if (defaultPlatform.contains(version)) {
-        jdkName = String.format("1.%s_from_pants", version);
+        jdkName = String.format("1.%s_from_%s", version, pantsExecutable);
         break;
       }
     }
