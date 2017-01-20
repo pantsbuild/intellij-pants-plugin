@@ -35,7 +35,7 @@ public class PantsResolver {
    * Bump this version if project resolve changes. It will prompt user to refresh.
    * E.g. more modules are created or their relationship changes.
    */
-  public static final int VERSION = 14;
+  public static final int VERSION = 15;
 
   protected static final Logger LOG = Logger.getInstance(PantsResolver.class);
   protected final PantsCompileOptionsExecutor myExecutor;

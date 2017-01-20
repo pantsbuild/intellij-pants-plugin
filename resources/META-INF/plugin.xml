@@ -12,7 +12,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.5.1</version>
+  <version>1.5.2</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
@@ -108,11 +108,8 @@
                      groupName="Pants" enabledByDefault="true"
                      implementationClass="com.twitter.intellij.pants.inspection.PythonPluginInspection"/>
 
-    <compileServer.plugin classpath="pants-jps-plugin.jar;pants-common.jar"/>
+    <compileServer.plugin classpath="intellij-pants-plugin-publish.jar"/>
     <buildProcess.parametersProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildProcessParametersProvider"/>
-
-    <projectConfigurable instance="com.twitter.intellij.pants.config.PantsProjectCompilerConfigurable"
-                         id="intellij-pants" displayName="Pants" parentId="project.propCompiler"/>
 
     <projectConfigurable groupId="build.tools" groupWeight="110" id="reference.settingsdialog.project.pants"
                          instance="com.twitter.intellij.pants.settings.PantsConfigurable"

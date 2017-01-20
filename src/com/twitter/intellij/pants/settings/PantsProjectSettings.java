@@ -9,33 +9,52 @@ import com.twitter.intellij.pants.model.PantsCompileOptions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
-  private boolean myWithDependees;
   private boolean myLibsWithSources;
   private boolean myEnableIncrementalImport;
+  private boolean myUseIdeaProjectJdk;
+
   /**
-   * @param targetSpecs targets explicted listed from `pants idea-plugin` goal.
-   * @param externalProjectPath path to the Pants project.
-   * @param withDependees whether depeedees need to be imported. (Untested and probably not working).
-   * @param libsWithSources whether to import sources and docs when resolving for jars.
+   * @param targetSpecs               targets explicted listed from `pants idea-plugin` goal.
+   * @param externalProjectPath       path to the Pants project.
+   * @param libsWithSources           whether to import sources and docs when resolving for jars.
+   * @param isEnableIncrementalImport whether to enabled incremental import.
+   * @param isUseIdeaProjectJdk       whether use IDEA project JDK to compile Pants project.
    */
   public PantsProjectSettings(
     List<String> targetSpecs,
     String externalProjectPath,
-    boolean withDependees,
     boolean libsWithSources,
-    boolean isEnableIncrementalImport
+    boolean isEnableIncrementalImport,
+    boolean isUseIdeaProjectJdk
   ) {
-    myTargetSpecs = targetSpecs;
-    myWithDependees = withDependees;
-    myLibsWithSources = libsWithSources;
     setExternalProjectPath(externalProjectPath);
+    myTargetSpecs = targetSpecs;
+    myLibsWithSources = libsWithSources;
     myEnableIncrementalImport = isEnableIncrementalImport;
+    myUseIdeaProjectJdk = isUseIdeaProjectJdk;
   }
 
   public PantsProjectSettings() {
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!super.equals(obj)) {
+      return false;
+    }
+
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    PantsProjectSettings other = (PantsProjectSettings) obj;
+    return Objects.equals(myLibsWithSources, other.myLibsWithSources)
+           && Objects.equals(myEnableIncrementalImport, other.myEnableIncrementalImport)
+           && Objects.equals(myTargetSpecs, other.myTargetSpecs)
+           && Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk);
   }
 
   @NotNull
@@ -50,10 +69,10 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   protected void copyTo(@NotNull ExternalProjectSettings receiver) {
     super.copyTo(receiver);
     if (receiver instanceof PantsProjectSettings) {
-      ((PantsProjectSettings)receiver).setWithDependees(isWithDependees());
-      ((PantsProjectSettings)receiver).setLibsWithSources(isLibsWithSources());
-      ((PantsProjectSettings)receiver).setTargetSpecs(getTargetSpecs());
-      ((PantsProjectSettings)receiver).setEnableIncrementalImport(isEnableIncrementalImport());
+      ((PantsProjectSettings) receiver).setLibsWithSources(isLibsWithSources());
+      ((PantsProjectSettings) receiver).setTargetSpecs(getTargetSpecs());
+      ((PantsProjectSettings) receiver).setEnableIncrementalImport(isEnableIncrementalImport());
+      ((PantsProjectSettings) receiver).setUseIdeaProjectJdk(isUseIdeaProjectJdk());
     }
   }
 
@@ -67,15 +86,6 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
 
   public void setTargetSpecs(List<String> targetSpecs) {
     myTargetSpecs = targetSpecs;
-  }
-
-  public void setWithDependees(boolean withDependees) {
-    myWithDependees = withDependees;
-  }
-
-  @Override
-  public boolean isWithDependees() {
-    return myWithDependees;
   }
 
   public boolean isLibsWithSources() {
@@ -92,5 +102,13 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
 
   public void setEnableIncrementalImport(boolean enableIncrementalImport) {
     myEnableIncrementalImport = enableIncrementalImport;
+  }
+
+  public boolean isUseIdeaProjectJdk() {
+    return myUseIdeaProjectJdk;
+  }
+
+  public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
+    myUseIdeaProjectJdk = useIdeaProjectJdk;
   }
 }

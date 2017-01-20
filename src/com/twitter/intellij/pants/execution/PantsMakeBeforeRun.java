@@ -11,12 +11,16 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
+import com.intellij.execution.filters.Filter;
+import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -25,23 +29,21 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTask;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
-import com.intellij.openapi.externalSystem.service.notification.ExternalSystemNotificationManager;
-import com.intellij.openapi.externalSystem.service.notification.NotificationCategory;
-import com.intellij.openapi.externalSystem.service.notification.NotificationData;
-import com.intellij.openapi.externalSystem.service.notification.NotificationSource;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
@@ -54,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -68,6 +71,8 @@ import java.util.Set;
 public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
+  public static final String ERROR_TAG = "[error]";
+
 
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
@@ -186,7 +191,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     prepareIDE(currentProject);
     if (targetAddressesToCompile.isEmpty()) {
-      showPantsMakeTaskMessage("No target found in configuration.", NotificationCategory.INFO, currentProject);
+      showPantsMakeTaskMessage("No target found in configuration.\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
       return Pair.create(true, Optional.empty());
     }
 
@@ -201,10 +206,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable.get().getPath());
 
-    showPantsMakeTaskMessage("Checking Pants options...", NotificationCategory.INFO, currentProject);
+    showPantsMakeTaskMessage("Checking Pants options...\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
     Optional<PantsOptions> pantsOptional = PantsOptions.getPantsOptions(currentProject);
     if (!pantsOptional.isPresent()) {
-      showPantsMakeTaskMessage("Pants Options not found.", NotificationCategory.ERROR, currentProject);
+      showPantsMakeTaskMessage("Pants Options not found.\n", ConsoleViewContentType.ERROR_OUTPUT, currentProject);
       return Pair.create(false, Optional.empty());
     }
 
@@ -229,7 +234,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
       }
       catch (Exception e) {
-        showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR, currentProject);
+        showPantsMakeTaskMessage(e.getMessage(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
         return Pair.create(false, Optional.empty());
       }
     }
@@ -245,17 +250,17 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       process = commandLine.createProcess();
     }
     catch (ExecutionException e) {
-      showPantsMakeTaskMessage(e.getMessage(), NotificationCategory.ERROR, currentProject);
+      showPantsMakeTaskMessage(e.getMessage(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
       return Pair.create(false, Optional.empty());
     }
 
     final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
-    addMessageHandler(processHandler, currentProject);
     final List<String> output = new ArrayList<>();
     processHandler.addProcessListener(new ProcessAdapter() {
       @Override
       public void onTextAvailable(ProcessEvent event, Key outputType) {
         super.onTextAvailable(event, outputType);
+        showPantsMakeTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, currentProject);
         output.add(event.getText());
       }
     });
@@ -295,41 +300,15 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       @Override
       public void run() {
         /* Clear message window. */
-        ExternalSystemNotificationManager.getInstance(project)
-          .clearNotifications(NotificationSource.TASK_EXECUTION, PantsConstants.SYSTEM_ID);
+        ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
+        executionConsole.getComponent().setVisible(true);
+        executionConsole.clear();
+        ToolWindowManager.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
         /* Force cached changes to disk. */
         FileDocumentManager.getInstance().saveAllDocuments();
         project.save();
       }
     }, ModalityState.NON_MODAL);
-
-    ExternalSystemNotificationManager.getInstance(project).openMessageView(PantsConstants.SYSTEM_ID, NotificationSource.TASK_EXECUTION);
-  }
-
-  private void addMessageHandler(CapturingProcessHandler processHandler, Project project) {
-    processHandler.addProcessListener(
-      new ProcessAdapter() {
-        @Override
-        public void onTextAvailable(ProcessEvent event, Key outputType) {
-          super.onTextAvailable(event, outputType);
-          String output = event.getText();
-          if (StringUtil.isEmptyOrSpaces(output)) {
-            return;
-          }
-          NotificationCategory notificationCategory = NotificationCategory.INFO;
-          if (output.contains("[warn]")) {
-            notificationCategory = NotificationCategory.WARNING;
-          }
-          else if (output.contains("[error]")) {
-            notificationCategory = NotificationCategory.ERROR;
-          }
-
-          NotificationData notification =
-            new NotificationData(PantsConstants.PANTS, output, notificationCategory, NotificationSource.TASK_EXECUTION);
-          ExternalSystemNotificationManager.getInstance(project).showNotification(PantsConstants.SYSTEM_ID, notification);
-        }
-      }
-    );
   }
 
   @NotNull
@@ -357,9 +336,121 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return result;
   }
 
-  private void showPantsMakeTaskMessage(String message, NotificationCategory type, Project project) {
-    NotificationData notification =
-      new NotificationData(PantsConstants.PANTS, message, type, NotificationSource.TASK_EXECUTION);
-    ExternalSystemNotificationManager.getInstance(project).showNotification(PantsConstants.SYSTEM_ID, notification);
+
+  private void showPantsMakeTaskMessage(String message, ConsoleViewContentType type, Project project) {
+    ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
+    // Create a filter that monitors console outputs, and turns them into a hyperlink if applicable.
+    Filter filter = new Filter() {
+      @Nullable
+      @Override
+      public Result applyFilter(String line, int entireLength) {
+        Optional<ParseResult> result = ParseResult.parseErrorLocation(line, ERROR_TAG);
+        if (result.isPresent()) {
+
+          OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
+            project,
+            result.get().getFile(),
+            result.get().getLineNumber() - 1, // line number needs to be 0 indexed
+            result.get().getColumnNumber() - 1 // column number needs to be 0 indexed
+          );
+          int startHyperlink = entireLength - line.length() + line.indexOf(ERROR_TAG);
+
+          return new Result(
+            startHyperlink,
+            entireLength,
+            linkInfo,
+            null // TextAttributes, going with default hence null
+          );
+        }
+        return null;
+      }
+    };
+
+    ApplicationManager.getApplication().invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        executionConsole.addMessageFilter(filter);
+        executionConsole.print(message, type);
+      }
+    }, ModalityState.NON_MODAL);
+  }
+
+  /**
+   * Encapsulate the result of parsed data.
+   */
+  static class ParseResult {
+    private VirtualFile file;
+    private int lineNumber;
+    private int columnNumber;
+
+
+    /**
+     * This function parses Pants output against known file and tag,
+     * and returns (file, line number, column number)
+     * encapsulated in `ParseResult` object if the output contains valid information.
+     *
+     * @param line original Pants output
+     * @param tag  known tag. e.g. [error]
+     * @return `ParseResult` instance
+     */
+    public static Optional<ParseResult> parseErrorLocation(String line, String tag) {
+      if (!line.contains(tag)) {
+        return Optional.empty();
+      }
+
+      String[] splitByColon = line.split(":");
+      if (splitByColon.length < 3) {
+        return Optional.empty();
+      }
+
+      try {
+        // filePath path is between tag and first colon
+        String filePath = splitByColon[0].substring(splitByColon[0].indexOf(tag) + tag.length()).trim();
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath);
+        if (virtualFile == null) {
+          return Optional.empty();
+        }
+        // line number is between first and second colon
+        int lineNumber = Integer.valueOf(splitByColon[1]);
+        // column number is between second and third colon
+        int columnNumber = Integer.valueOf(splitByColon[2]);
+        return Optional.of(new ParseResult(virtualFile, lineNumber, columnNumber));
+      }
+      catch (NumberFormatException e) {
+        return Optional.empty();
+      }
+    }
+
+    private ParseResult(VirtualFile file, int lineNumber, int columnNumber) {
+      this.file = file;
+      this.lineNumber = lineNumber;
+      this.columnNumber = columnNumber;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
+      ParseResult other = (ParseResult) obj;
+      return Objects.equals(file, other.file)
+             && Objects.equals(lineNumber, other.lineNumber)
+             && Objects.equals(columnNumber, other.columnNumber);
+    }
+
+    public VirtualFile getFile() {
+      return file;
+    }
+
+    public int getLineNumber() {
+      return lineNumber;
+    }
+
+    public int getColumnNumber() {
+      return columnNumber;
+    }
   }
 }
