@@ -781,8 +781,7 @@ public class PantsUtil {
       return Optional.empty();
     }
 
-    Sdk jdk = JavaSdk.getInstance().createJdk(jdkName, jdkHome.get());
-    return Optional.of(jdk);
+    return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome.get()));
   }
 
   /**

@@ -132,9 +132,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected void setUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
 
-    //final Sdk sdk = JavaAwareProjectJdkTableImpl.getInstanceEx().getInternalJdk();
-    //ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
-
     cleanProjectRoot();
 
     myProjectRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(getProjectFolder());
