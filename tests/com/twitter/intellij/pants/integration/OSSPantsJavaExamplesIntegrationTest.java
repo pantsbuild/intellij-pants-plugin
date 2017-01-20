@@ -38,7 +38,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "org.pantsbuild.example.annotation.example.Example", "examples_src_java_org_pantsbuild_example_annotation_example_example"
     );
     assertClassFileInModuleOutput(
-      "org.pantsbuild.example.annotation.processor.ExampleProcessor", "examples_src_java_org_pantsbuild_example_annotation_processor_processor"
+      "org.pantsbuild.example.annotation.processor.ExampleProcessor",
+      "examples_src_java_org_pantsbuild_example_annotation_processor_processor"
     );
   }
 
@@ -74,6 +75,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
   public void testHello() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
+    assertProjectJdk();
 
     String[] initialModules = {
       "examples_src_resources_org_pantsbuild_example_hello_hello",
@@ -195,7 +197,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
-    Optional<VirtualFile>  pantsExe = PantsUtil.findPantsExecutable(myProject);
+    Optional<VirtualFile> pantsExe = PantsUtil.findPantsExecutable(myProject);
     assertTrue(pantsExe.isPresent());
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.get().getPath());
     commandLine.addParameters(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);

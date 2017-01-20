@@ -38,8 +38,7 @@ import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
@@ -133,8 +132,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected void setUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
 
-    final Sdk sdk = JavaAwareProjectJdkTableImpl.getInstanceEx().getInternalJdk();
-    ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
+    //final Sdk sdk = JavaAwareProjectJdkTableImpl.getInstanceEx().getInternalJdk();
+    //ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
 
     cleanProjectRoot();
 
@@ -346,6 +345,16 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     System.out.println("Import: " + projectFolderPathToImport);
     myRelativeProjectPath = projectFolderPathToImport;
     myProjectSettings.setTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        PantsUtil.getDefaultJavaSdk(getProjectPath())
+          .ifPresent(sdk -> {
+            ProjectJdkTable.getInstance().addJdk(sdk);
+            ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
+          });
+      }
+    });
     importProject();
     PantsMetrics.markIndexEnd();
   }
