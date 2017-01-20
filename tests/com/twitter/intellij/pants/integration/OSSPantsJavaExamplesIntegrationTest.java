@@ -75,7 +75,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
   public void testHello() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
-    assertProjectJdk();
+    assertProjectJdkAndLanguageLevel();
 
     String[] initialModules = {
       "examples_src_resources_org_pantsbuild_example_hello_hello",
