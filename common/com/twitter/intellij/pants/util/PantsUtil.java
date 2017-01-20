@@ -763,7 +763,15 @@ public class PantsUtil {
     }
 
     final String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
-    final String jdkName = String.format("JDK from pants %s", defaultPlatform);
+
+    // if defaultPlatform is java8, then jdkName should be 1.8_from_pants
+    String jdkName = "1.x_from_pants";
+    for (String version : ContainerUtil.newArrayList("6", "7", "8", "9")) {
+      if (defaultPlatform.contains(version)) {
+        jdkName = String.format("1.%s_from_pants", version);
+        break;
+      }
+    }
 
     boolean strict = PantsOptions.getPantsOptions(pantsExecutable)
       .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION)
@@ -772,7 +780,8 @@ public class PantsUtil {
     if (!jdkHome.isPresent()) {
       return Optional.empty();
     }
-    return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome.get()));
+    Sdk jdk = JavaSdk.getInstance().createJdk(jdkName, jdkHome.get());
+    return Optional.of(jdk);
   }
 
   /**
