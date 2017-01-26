@@ -65,6 +65,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.JpsProject;
+import org.jetbrains.jps.model.java.JdkVersionDetector;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
 import org.jetbrains.jps.model.library.impl.sdk.JpsSdkImpl;
@@ -762,17 +763,6 @@ public class PantsUtil {
       return Optional.empty();
     }
 
-    final String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
-
-    // if defaultPlatform is java8, then jdkName should be 1.8_from_pants
-    String jdkName = "1.x_from_pants";
-    for (String version : ContainerUtil.newArrayList("6", "7", "8", "9")) {
-      if (defaultPlatform.contains(version)) {
-        jdkName = String.format("1.%s_from_%s", version, pantsExecutable);
-        break;
-      }
-    }
-
     boolean strict = PantsOptions.getPantsOptions(pantsExecutable)
       .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION)
       .isPresent();
@@ -781,6 +771,17 @@ public class PantsUtil {
       return Optional.empty();
     }
 
+    String jdkName = String.format("1.x_from_%s", pantsExecutable);
+    JdkVersionDetector.JdkVersionInfo jdkInfo = JdkVersionDetector.getInstance().detectJdkVersionInfo(jdkHome.get());
+    if (jdkInfo != null) {
+      // Using IJ's framework to detect jdk version. so jdkInfo.getVersion() returns `java version "1.8.0_121"`
+      for (String version : ContainerUtil.newArrayList("1.6", "1.7", "1.8", "1.9")) {
+        if (jdkInfo.getVersion().contains(version)) {
+          jdkName = String.format("%s_from_%s", version, pantsExecutable);
+          break;
+        }
+      }
+    }
     return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome.get()));
   }
 
