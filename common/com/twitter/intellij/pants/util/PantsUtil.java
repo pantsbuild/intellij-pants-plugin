@@ -771,10 +771,10 @@ public class PantsUtil {
       return Optional.empty();
     }
 
-
     String jdkName = String.format("1.x_from_%s", pantsExecutable);
     JdkVersionDetector.JdkVersionInfo jdkInfo = JdkVersionDetector.getInstance().detectJdkVersionInfo(jdkHome.get());
     if (jdkInfo != null) {
+      // Using IJ's framework to detect jdk version. so jdkInfo.getVersion() returns `java version "1.8.0_121"`
       for (String version : ContainerUtil.newArrayList("1.6", "1.7", "1.8", "1.9")) {
         if (jdkInfo.getVersion().contains(version)) {
           jdkName = String.format("%s_from_%s", version, pantsExecutable);
@@ -782,8 +782,6 @@ public class PantsUtil {
         }
       }
     }
-
-
     return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome.get()));
   }
 
