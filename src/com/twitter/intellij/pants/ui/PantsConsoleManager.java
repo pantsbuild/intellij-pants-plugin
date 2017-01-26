@@ -31,7 +31,6 @@ public class PantsConsoleManager {
         true
       );
     ConsoleView console = getOrMakeNewConsole(project);
-    Disposer.register(project, console);
     TabbedContentImpl content = new TabbedContentImpl(console.getComponent(), "", true, "");
     window.getContentManager().addContent(content);
   }
@@ -50,6 +49,7 @@ public class PantsConsoleManager {
     }
     ConsoleView newConsole = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
     mapper.put(project, newConsole);
+    Disposer.register(project, newConsole);
     return newConsole;
   }
 
@@ -59,10 +59,6 @@ public class PantsConsoleManager {
    * @param project current project
    */
   public static void unregisterConsole(Project project) {
-    ConsoleView console = mapper.get(project);
-    if (console != null) {
-      console.dispose();
-    }
     mapper.remove(project);
   }
 
