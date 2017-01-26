@@ -771,6 +771,7 @@ public class PantsUtil {
       return Optional.empty();
     }
 
+
     String jdkName = String.format("1.x_from_%s", pantsExecutable);
     JdkVersionDetector.JdkVersionInfo jdkInfo = JdkVersionDetector.getInstance().detectJdkVersionInfo(jdkHome.get());
     if (jdkInfo != null) {
