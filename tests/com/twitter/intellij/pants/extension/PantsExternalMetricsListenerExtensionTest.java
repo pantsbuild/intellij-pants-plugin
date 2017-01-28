@@ -222,7 +222,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
       Thread.sleep(sleepMilliseconds);
       // Second compile without any change should be lastWasNoop.
       assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-      assertTrue("duration should be refreshed, but is not", listener.duration >= sleepMilliseconds);
+      assertTrue("Recorded duration between last file edit and PantsCompile invocation should be refreshed, but it is not", listener.duration >= sleepMilliseconds);
 
       long dataPoint = listener.duration;
       assertPantsCompileNoop(pantsCompileProject());
