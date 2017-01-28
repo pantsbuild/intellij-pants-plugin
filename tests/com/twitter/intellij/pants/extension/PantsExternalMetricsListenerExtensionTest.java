@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.extension;
 
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.openapi.extensions.Extensions;
+import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
@@ -215,11 +216,16 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     // The first compile has to execute.
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
 
-    modify("org.pantsbuild.example.hello.greet.Greeting");
-    Thread.sleep(500);
-    // Second compile without any change should be lastWasNoop.
-    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-    System.out.println(String.format("Duration: %s", listener.duration));
-    assertTrue(listener.duration > 500);
+    for (long sleepMilliseconds : ContainerUtil.newArrayList(500, 1000)) {
+      modify("org.pantsbuild.example.hello.greet.Greeting");
+      Thread.sleep(sleepMilliseconds);
+      // Second compile without any change should be lastWasNoop.
+      assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+      assertTrue(listener.duration >= sleepMilliseconds);
+
+      long dataPoint = listener.duration;
+      assertPantsCompileNoop(pantsCompileProject());
+      assertEquals("Noop compile should leave recorded duration unchanged, but it is not the case", dataPoint, listener.duration);
+    }
   }
 }
