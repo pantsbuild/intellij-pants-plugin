@@ -217,11 +217,12 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
 
     for (long sleepMilliseconds : ContainerUtil.newArrayList(500, 1000)) {
+      // Modify a file in project so PantsCompile will be triggered.
       modify("org.pantsbuild.example.hello.greet.Greeting");
       Thread.sleep(sleepMilliseconds);
       // Second compile without any change should be lastWasNoop.
       assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-      assertTrue(listener.duration >= sleepMilliseconds);
+      assertTrue("duration should be refreshed, but is not", listener.duration >= sleepMilliseconds);
 
       long dataPoint = listener.duration;
       assertPantsCompileNoop(pantsCompileProject());
