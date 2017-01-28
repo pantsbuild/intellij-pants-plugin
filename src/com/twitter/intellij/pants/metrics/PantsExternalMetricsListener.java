@@ -40,4 +40,12 @@ public interface PantsExternalMetricsListener {
    * @param runner TestRunnerType
    */
   void logTestRunner(TestRunnerType runner) throws Throwable;
+
+  /**
+   * Log the duration between PantsCompile and the last file edit.
+   *
+   * @param milliSeconds long number.
+   * @throws Throwable
+   */
+  void logDurationBeforePantsCompile(long milliSeconds) throws Throwable;
 }

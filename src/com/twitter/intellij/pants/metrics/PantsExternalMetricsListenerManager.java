@@ -74,6 +74,18 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
     });
   }
 
+  @Override
+  public void logDurationBeforePantsCompile(long milliSeconds) {
+    Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
+      try {
+        s.logDurationBeforePantsCompile(milliSeconds);
+      }
+      catch (Throwable t) {
+        LOG.info(t);
+      }
+    });
+  }
+
   public void logTestRunner(RunConfiguration runConfiguration) {
     /**
      /**

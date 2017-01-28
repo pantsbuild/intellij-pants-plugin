@@ -17,6 +17,7 @@ import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -167,7 +168,8 @@ public class FileChangeTracker {
       return true;
     }
     if (lastRecordedState.isDirty()) {
-      long betweenSeconds = MILLIS.between(LocalTime.now(), lastRecordedState.getLastModifiedTime());
+      long betweenMilliSec = MILLIS.between(lastRecordedState.getLastModifiedTime(), LocalTime.now());
+      PantsExternalMetricsListenerManager.getInstance().logDurationBeforePantsCompile(betweenMilliSec);
     }
     Optional<CompileSnapshot> previousSnapshot = lastRecordedState.getLastCompileSnapshot();
     if (

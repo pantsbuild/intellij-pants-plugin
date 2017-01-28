@@ -11,6 +11,8 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import junit.framework.AssertionFailedError;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
+import java.io.File;
+
 public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrationTest {
 
   private PantsExternalMetricsListener.TestRunnerType lastRun;
@@ -36,14 +38,31 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     public void logTestRunner(TestRunnerType runner) {
       lastRun = runner;
     }
-  }
 
+    @Override
+    public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
+
+    }
+  }
 
   @Override
   public void setUp() throws Exception {
     super.setUp();
     // Register `TestMetricsListener` as one of the extension points of PantsExternalMetricsListener
     Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(new TestMetricsListener());
+  }
+
+  @Override
+  public void tearDown() throws Exception {
+    // Git reset .cache/pants dir
+    cmd("git", "reset", "--hard");
+    // Only the files under examples are going to be modified.
+    // Hence issue `git clean -fdx` under examples, so pants does not
+    // have to bootstrap again.
+    File exampleDir = new File(getProjectFolder(), "examples");
+    cmd(exampleDir, "git", "clean", "-fdx");
+    cmd("rm", "-rf", "dist");
+    super.tearDown();
   }
 
   public void testJUnitRunner() throws Throwable {
@@ -103,6 +122,11 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
         called = true;
         throw new Exception("metrics error");
       }
+
+      @Override
+      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
+
+      }
     }
 
     ErrorMetricsListener errorListenerExtension = new ErrorMetricsListener();
@@ -114,7 +138,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
   }
 
   public void testNoopMetrics() throws Throwable {
-    class NoopMetricsListner implements PantsExternalMetricsListener {
+    class NoopMetricsListener implements PantsExternalMetricsListener {
 
       private boolean lastWasNoop;
 
@@ -136,9 +160,14 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
       @Override
       public void logTestRunner(TestRunnerType runner) throws Throwable {
       }
+
+      @Override
+      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
+
+      }
     }
 
-    NoopMetricsListner listener = new NoopMetricsListner();
+    NoopMetricsListener listener = new NoopMetricsListener();
     Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
 
     doImport("examples/tests/scala/org/pantsbuild/example/hello/welcome");
@@ -149,5 +178,48 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     // Second compile without any change should be lastWasNoop.
     assertPantsCompileNoop(pantsCompileProject());
     assertTrue("Last compile should be noop, but was not.", listener.lastWasNoop);
+  }
+
+  public void testDuration() throws Throwable {
+    class DurationMetricsTestListener implements PantsExternalMetricsListener {
+      long duration = -1;
+
+      @Override
+      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
+
+      }
+
+      @Override
+      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
+      }
+
+      @Override
+      public void logIsGUIImport(boolean isGUI) throws Throwable {
+
+      }
+
+      @Override
+      public void logTestRunner(TestRunnerType runner) throws Throwable {
+      }
+
+      @Override
+      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
+        duration = milliSeconds;
+      }
+    }
+
+    DurationMetricsTestListener listener = new DurationMetricsTestListener();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+
+    doImport("examples/tests/scala/org/pantsbuild/example/hello/welcome");
+    // The first compile has to execute.
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+
+    modify("org.pantsbuild.example.hello.greet.Greeting");
+    Thread.sleep(500);
+    // Second compile without any change should be lastWasNoop.
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    System.out.println(String.format("Duration: %s", listener.duration));
+    assertTrue(listener.duration > 500);
   }
 }
