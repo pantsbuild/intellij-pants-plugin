@@ -10,8 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2016.3.1"
-export IJ_BUILD_NUMBER="163.9166.29"
+export IJ_VERSION="2016.3.3"
+export IJ_BUILD_NUMBER="163.11103.6"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
@@ -24,20 +24,20 @@ get_md5(){
 if [[ $IJ_ULTIMATE == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="5d689fe3f3054da1ab9bc35912b6a42f"
+  export EXPECTED_IJ_MD5="b94b85827464cc1441d36febfcac62c0"
   export PYTHON_PLUGIN_ID="Pythonid"
   export PYTHON_PLUGIN_MD5="b736164c472cb60c216eed9aacdc0ec3"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="4420f6155d16012384eb9c0c48ba5209"
+  export EXPECTED_IJ_MD5="eee28ebe453fd555032a5727f16ab384"
   export PYTHON_PLUGIN_ID="PythonCore"
   export PYTHON_PLUGIN_MD5="f61f0f1cb4980755b31de376ad3ed74a"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="43fdb53fa22f67fe8babde3ff3d65fd5" # 2016.3.6
+export SCALA_PLUGIN_MD5="a14d5bc0dfea64e7af9d520a4094afef" # 2016.3.8
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
