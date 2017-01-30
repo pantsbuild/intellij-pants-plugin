@@ -213,11 +213,12 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
       // Modify a file in project so PantsCompile will be triggered.
       modify("org.pantsbuild.example.hello.greet.Greeting");
       Thread.sleep(sleepMilliseconds);
-      // Second compile without any change should be lastWasNoop.
+      // Second compile with modified project should execute.
       assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
       assertTrue("Recorded duration between last file edit and PantsCompile invocation should be refreshed, but it is not", listener.duration >= sleepMilliseconds);
-
+      // Record the current duration.
       long dataPoint = listener.duration;
+      // Run compile again which should be noop, and make sure the the duration is not updated.
       assertPantsCompileNoop(pantsCompileProject());
       assertEquals("Noop compile should leave recorded duration unchanged, but it is not the case", dataPoint, listener.duration);
     }
