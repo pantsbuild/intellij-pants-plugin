@@ -67,18 +67,6 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     fail(String.format("String '%s' contains unexpected substring '%s'.", s, unexpected));
   }
 
-  protected void cleanUpExampleDir() throws Exception{
-    // Git reset .cache/pants dir
-    cmd("git", "reset", "--hard");
-    // Only the files under examples are going to be modified.
-    // Hence issue `git clean -fdx` under examples, so pants does not
-    // have to bootstrap again.
-    File exampleDir = new File(getProjectFolder(), "examples");
-    cmd(exampleDir, "git", "clean", "-fdx");
-    cmd("rm", "-rf", "dist");
-    super.tearDown();
-  }
-
   private List<BeforeRunTask> getBeforeRunTask(RunConfiguration configuration) {
     RunManagerImpl runManager = (RunManagerImpl) RunManager.getInstance(myProject);
     RunnerAndConfigurationSettingsImpl configurationSettings = new RunnerAndConfigurationSettingsImpl(runManager, configuration, true);

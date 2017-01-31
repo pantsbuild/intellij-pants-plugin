@@ -39,7 +39,7 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
-// TODO: Change in pants.ini, `./pants clean-all` is not tracked currently.
+// FIXME: Change in pants.ini, `./pants clean-all` is not tracked currently.
 public class FileChangeTracker {
   private static final Logger LOG = Logger.getInstance(FileChangeTracker.class);
 
@@ -49,6 +49,7 @@ public class FileChangeTracker {
   // so whenever a VirtualFileListener is triggered, we know which Project is affected.
   private static ConcurrentHashMap<VirtualFileListener, Project> listenToProjectMap = new ConcurrentHashMap<>();
 
+  // Maps from Project to <myIsDirty, lastCompileSnapshot>
   private static ConcurrentHashMap<Project, ProjectState> projectStates = new ConcurrentHashMap<>();
 
   /**
