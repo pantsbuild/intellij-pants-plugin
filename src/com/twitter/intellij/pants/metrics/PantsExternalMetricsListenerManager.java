@@ -27,18 +27,6 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
   }
 
   @Override
-  public void logIsIncrementalImport(boolean isIncremental) {
-    Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
-      try {
-        s.logIsIncrementalImport(isIncremental);
-      }
-      catch (Throwable t) {
-        LOG.info(t);
-      }
-    });
-  }
-
-  @Override
   public void logIsGUIImport(boolean isGUI) {
     Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
       try {
@@ -51,10 +39,46 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
   }
 
   @Override
+  public void logIsIncrementalImport(boolean isIncremental) {
+    Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
+      try {
+        s.logIsIncrementalImport(isIncremental);
+      }
+      catch (Throwable t) {
+        LOG.info(t);
+      }
+    });
+  }
+
+  @Override
+  public void logIsPantsNoopCompile(boolean isNoop) {
+    Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
+      try {
+        s.logIsPantsNoopCompile(isNoop);
+      }
+      catch (Throwable t) {
+        LOG.info(t);
+      }
+    });
+  }
+
+  @Override
   public void logTestRunner(PantsExternalMetricsListener.TestRunnerType runner) {
     Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
       try {
         s.logTestRunner(runner);
+      }
+      catch (Throwable t) {
+        LOG.info(t);
+      }
+    });
+  }
+
+  @Override
+  public void logDurationBeforePantsCompile(long milliSeconds) {
+    Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
+      try {
+        s.logDurationBeforePantsCompile(milliSeconds);
       }
       catch (Throwable t) {
         LOG.info(t);

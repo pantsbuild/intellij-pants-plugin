@@ -9,7 +9,6 @@ import com.google.common.hash.Hashing;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileCopyEvent;
@@ -18,6 +17,7 @@ import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +34,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Manifest;
+
+import static java.time.temporal.ChronoUnit.MILLIS;
 
 // FIXME: Change in pants.ini, `./pants clean-all` is not tracked currently.
 public class FileChangeTracker {
@@ -44,10 +47,54 @@ public class FileChangeTracker {
   // so whenever a VirtualFileListener is triggered, we know which Project is affected.
   private static ConcurrentHashMap<VirtualFileListener, Project> listenToProjectMap = new ConcurrentHashMap<>();
 
-  // Maps from Project to <isDirty, lastCompileSnapshot>
-  private static ConcurrentHashMap<Project, Pair<Boolean, Optional<CompileSnapshot>>> projectStates = new ConcurrentHashMap<>();
+  // Maps from Project to <myIsDirty, lastCompileSnapshot>
+  private static ConcurrentHashMap<Project, ProjectState> projectStates = new ConcurrentHashMap<>();
 
-  FileChangeTracker getInstance() {
+  /**
+   * Keep certain states about the current project.
+   */
+  private static class ProjectState {
+
+    boolean myIsDirty;
+    LocalTime myLastModifiedTime;
+    Optional<CompileSnapshot> myLastCompileSnapshot;
+
+    public ProjectState(
+      boolean isDirty,
+      LocalTime lastModified,
+      Optional<CompileSnapshot> lastCompileSnapshot
+    ) {
+      myIsDirty = isDirty;
+      myLastModifiedTime = lastModified;
+      myLastCompileSnapshot = lastCompileSnapshot;
+    }
+
+    public boolean isDirty() {
+      return myIsDirty;
+    }
+
+    public void setDirty(boolean dirty) {
+      myIsDirty = dirty;
+    }
+
+    public LocalTime getLastModifiedTime() {
+      return myLastModifiedTime;
+    }
+
+    public void setLastModifiedTime(LocalTime lastModifiedTime) {
+      this.myLastModifiedTime = lastModifiedTime;
+    }
+
+    public Optional<CompileSnapshot> getLastCompileSnapshot() {
+      return myLastCompileSnapshot;
+    }
+
+    public void setLastCompileSnapshot(Optional<CompileSnapshot> lastCompileSnapshot) {
+      this.myLastCompileSnapshot = lastCompileSnapshot;
+    }
+  }
+
+  public FileChangeTracker getInstance() {
     return instance;
   }
 
@@ -62,16 +109,17 @@ public class FileChangeTracker {
   }
 
   public static void markDirty(@NotNull Project project) {
-    projectStates.put(project, Pair.create(true, Optional.empty()));
+    boolean isDirty = true;
+    projectStates.put(project, new ProjectState(isDirty, LocalTime.now(), Optional.empty()));
   }
 
   public static void addManifestJarIntoSnapshot(@NotNull Project project) {
-    Optional<CompileSnapshot> second = projectStates.get(project).getSecond();
-    if (!second.isPresent()) {
+    Optional<CompileSnapshot> snapshot = projectStates.get(project).getLastCompileSnapshot();
+    if (!snapshot.isPresent()) {
       return;
     }
     Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(project);
-    second.get().setManifestJarHash(fileHash(manifestJar));
+    snapshot.get().setManifestJarHash(fileHash(manifestJar));
   }
 
 
@@ -107,21 +155,27 @@ public class FileChangeTracker {
   public static boolean shouldRecompileThenReset(@NotNull Project project, @NotNull Set<String> targetAddresses) {
     PantsSettings settings = PantsSettings.getInstance(project);
 
-    Pair<Boolean, Optional<CompileSnapshot>> pair = projectStates.get(project);
+    ProjectState lastRecordedState = projectStates.get(project);
+
+
     CompileSnapshot snapshot = new CompileSnapshot(targetAddresses, settings, PantsUtil.findProjectManifestJar(project));
+
     // there is no previous record.
-    if (pair == null) {
+    if (lastRecordedState == null) {
       resetProjectState(project, snapshot);
       return true;
     }
-
-    Optional<CompileSnapshot> previousSnapshot = pair.getSecond();
+    if (lastRecordedState.isDirty()) {
+      long betweenMilliSec = MILLIS.between(lastRecordedState.getLastModifiedTime(), LocalTime.now());
+      PantsExternalMetricsListenerManager.getInstance().logDurationBeforePantsCompile(betweenMilliSec);
+    }
+    Optional<CompileSnapshot> previousSnapshot = lastRecordedState.getLastCompileSnapshot();
     if (
       // Recompile if project is in incremental mode, so there is no way to keep track of the all changes
       // in the transitive graph.
       settings.isEnableIncrementalImport()
       // Recompile if project is dirty or there is no previous record.
-      || (pair.getFirst())
+      || (lastRecordedState.isDirty())
       // Recompile if there is no previous record.
       || !previousSnapshot.isPresent()
       // Recompile if current snapshot is different from previous one.
@@ -174,8 +228,12 @@ public class FileChangeTracker {
     }
   }
 
+  /**
+   * Reset project to be clean.
+   */
   private static void resetProjectState(@NotNull Project project, CompileSnapshot snapshot) {
-    projectStates.put(project, Pair.create(false, Optional.of(snapshot)));
+    boolean isDirty = false;
+    projectStates.put(project, new ProjectState(isDirty, LocalTime.now(), Optional.of(snapshot)));
   }
 
   public static void registerProject(@NotNull Project project) {
@@ -250,8 +308,8 @@ public class FileChangeTracker {
   }
 
   /**
-   * `CompileSnapshot` keeps track of `PantsSettings` and set of target addresses used to compile
-   * at a given time.
+   * `CompileSnapshot` defines a moment with `PantsSettings`, set of target addresses used to compile,
+   * and compiled manifest.jar.
    */
   private static class CompileSnapshot {
     Set<String> myTargetAddresses;
@@ -267,7 +325,6 @@ public class FileChangeTracker {
       myPantsSettings = PantsSettings.copy(pantsSettings);
       myManifestJarHash = fileHash(manifestJar);
     }
-
 
     @Override
     public boolean equals(Object obj) {
