@@ -36,8 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Manifest;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
-import static java.time.temporal.ChronoUnit.MINUTES;
-import static java.time.temporal.ChronoUnit.SECONDS;
 
 // FIXME: Change in pants.ini, `./pants clean-all` is not tracked currently.
 public class FileChangeTracker {
