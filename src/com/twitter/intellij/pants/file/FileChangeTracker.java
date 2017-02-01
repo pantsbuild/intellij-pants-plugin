@@ -21,6 +21,7 @@ import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -129,7 +130,7 @@ public class FileChangeTracker {
     if (PantsUtil.isBUILDFileName(file.getName())) {
       Notification myNotification = new Notification(
         PantsConstants.PANTS,
-        "Project BUILD file(s) changed.",
+        PantsBundle.message("pants.project.build.files.changed"),
         "<a href='reimport'>Refresh Pants Project</a> ",
         NotificationType.INFORMATION,
         refreshAction

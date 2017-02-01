@@ -3,67 +3,43 @@
 
 package com.twitter.intellij.pants.integration;
 
+import com.intellij.notification.EventLog;
+import com.intellij.notification.Notification;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
-import com.twitter.intellij.pants.testFramework.PantsTestUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
-
-  private final static boolean readOnly = false;
-
-  public OSSRefreshPromptIntegrationTest() {
-    super(readOnly);
-  }
 
   public void testRefreshPrompt() throws Throwable {
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
       @Override
       public void run() {
         doImport("examples/tests/java/org/pantsbuild/example/useproto");
-        /**
-         * Open 'Distances.java' in editor and make sure it only contains `getNumber` and not `getNewDummyNumber`.
-         */
+        // Find a BUILD file in project.
         FileEditorManager.getInstance(myProject).openFile(searchForVirtualFileInProject("BUILD"), true);
         Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
+        // Add a newline to the BUILD file.
         editor.getDocument().setText(editor.getDocument().getText() + "\n");
+        // Save the BUILD file. Then the refresh notification should be triggered.
         FileDocumentManager.getInstance().saveAllDocuments();
-
-        int x = 5;
+        // Verify the notification is triggered.
+        ArrayList<Notification> notifications = EventLog.getLogModel(myProject).getNotifications();
+        int notificationSize = notifications.size();
+        assertTrue(notificationSize > 0);
+        assertEquals(PantsBundle.message("pants.project.build.files.changed"), notifications.get(notificationSize - 1).getTitle());
       }
     });
-  }
-
-  @NotNull
-  private Document getTestData(String testDataPath) {
-    File dataFile = PantsTestUtils.findTestPath(testDataPath);
-    VirtualFile dataVirtualFile = VirtualFileManager.getInstance().findFileByUrl("file://" + dataFile.getPath());
-    assertNotNull(dataVirtualFile);
-    Document dataDocument = FileDocumentManager.getInstance().getDocument(dataVirtualFile);
-    assertNotNull(dataDocument);
-    return dataDocument;
-  }
-
-  /**
-   * Find document in project by filename.
-   */
-  @NotNull
-  private Document getDocumentFileInProject(String filename) {
-    VirtualFile sourceFile = searchForVirtualFileInProject(filename);
-    Document doc = FileDocumentManager.getInstance().getDocument(sourceFile);
-    assertNotNull(String.format("%s not found.", filename), doc);
-    return doc;
   }
 
   /**
@@ -74,5 +50,11 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
     Collection<VirtualFile> files = FilenameIndex.getVirtualFilesByName(myProject, filename, GlobalSearchScope.allScope(myProject));
     assertTrue(String.format("Filename %s not found in project", filename), files.size() > 0);
     return files.iterator().next();
+  }
+
+  @Override
+  public void tearDown() throws Exception {
+    gitCleanExampleDir();
+    super.tearDown();
   }
 }
