@@ -167,10 +167,6 @@ public class PantsUtil {
     return StringUtil.equalsIgnoreCase(PantsConstants.BUILD, FileUtil.getNameWithoutExtension(name));
   }
 
-  public static boolean isThriftFileName(@NotNull String name) {
-    return FileUtilRt.getExtension(name).equals("thrift");
-  }
-
   /**
    * Checks if it's a BUILD file or folder under a Pants project
    *
@@ -652,7 +648,7 @@ public class PantsUtil {
 
   @NotNull
   public static String fileNameWithoutExtension(@NotNull String name) {
-    int index = name.lastIndexOf('.' );
+    int index = name.lastIndexOf('.');
     if (index < 0) return name;
     return name.substring(0, index);
   }
