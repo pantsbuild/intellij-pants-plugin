@@ -894,7 +894,7 @@ public class PantsUtil {
       ApplicationManager.getApplication().runWriteAction(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         /**
-         * This is the same as `SaveAndSyncHandler.getInstance().refreshOpenFiles();` below, except using the same thing here
+         * This is the same as `SaveAndSyncHandler.getInstance().refreshOpenFiles();` in the else statement, except using the same thing here
          * does not work, because in headless mode `SaveAndSyncHandler` is implemented by an empty class
          * {@link com.intellij.ide.SaveAndSyncHandlerStub}
          */
