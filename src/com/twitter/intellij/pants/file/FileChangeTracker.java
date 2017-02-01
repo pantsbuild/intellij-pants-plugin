@@ -6,6 +6,10 @@ package com.twitter.intellij.pants.file;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -19,9 +23,11 @@ import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.event.HyperlinkEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -105,6 +111,40 @@ public class FileChangeTracker {
     LOG.debug(String.format("Changed: %s. In project: %s", file.getPath(), inProject));
     if (inProject) {
       markDirty(project);
+      notifyProjectRefreshIfNecessary(file, project);
+    }
+  }
+
+  private static void notifyProjectRefreshIfNecessary(@NotNull VirtualFile file, final Project project) {
+    NotificationListener.Adapter refreshAction = new NotificationListener.Adapter() {
+      @Override
+      protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+        if (event.getDescription().equals("reimport")) {
+          PantsUtil.refreshAllProjects(project);
+        }
+        notification.expire();
+      }
+    };
+
+    if (PantsUtil.isBUILDFileName(file.getName())) {
+      Notification myNotification = new Notification(
+        PantsConstants.PANTS,
+        "BUILD file(s) changed.",
+        "<a href='reimport'>Refresh Pants Project</a> ",
+        NotificationType.INFORMATION,
+        refreshAction
+      );
+      Notifications.Bus.notify(myNotification, project);
+    }
+    else if (PantsUtil.isThriftFileName(file.getName())) {
+      Notification myNotification = new Notification(
+        PantsConstants.PANTS,
+        "Thrift file(s) changed.",
+        "<a href='reimport'>Refresh Pants Project</a> ",
+        NotificationType.INFORMATION,
+        refreshAction
+      );
+      Notifications.Bus.notify(myNotification, project);
     }
   }
 
