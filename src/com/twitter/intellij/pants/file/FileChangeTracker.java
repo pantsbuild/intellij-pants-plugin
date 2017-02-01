@@ -129,17 +129,7 @@ public class FileChangeTracker {
     if (PantsUtil.isBUILDFileName(file.getName())) {
       Notification myNotification = new Notification(
         PantsConstants.PANTS,
-        "BUILD file(s) changed.",
-        "<a href='reimport'>Refresh Pants Project</a> ",
-        NotificationType.INFORMATION,
-        refreshAction
-      );
-      Notifications.Bus.notify(myNotification, project);
-    }
-    else if (PantsUtil.isThriftFileName(file.getName())) {
-      Notification myNotification = new Notification(
-        PantsConstants.PANTS,
-        "Thrift file(s) changed.",
+        "Project BUILD file(s) changed.",
         "<a href='reimport'>Refresh Pants Project</a> ",
         NotificationType.INFORMATION,
         refreshAction
