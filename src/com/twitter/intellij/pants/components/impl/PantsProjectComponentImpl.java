@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.components.impl;
 
+import com.intellij.compiler.server.BuildManagerListener;
 import com.intellij.execution.RunManagerAdapter;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
@@ -17,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
@@ -34,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
   protected PantsProjectComponentImpl(Project project) {
@@ -71,6 +74,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             convertToPantsProject();
           }
 
+          registerExternalBuilderListener();
           subscribeToRunConfigurationAddition();
           registerFileListener();
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
@@ -160,6 +164,35 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         }
       }
     );
+  }
+
+  /**
+   * This registers the listener when IDEA external builder process calls Pants.
+   */
+  private void registerExternalBuilderListener() {
+    MessageBusConnection connection = myProject.getMessageBus().connect();
+    BuildManagerListener buildManagerListener = new BuildManagerListener() {
+      @Override
+      public void beforeBuildProcessStarted(Project project, UUID sessionId) {
+
+      }
+
+      @Override
+      public void buildStarted(Project project, UUID sessionId, boolean isAutomake) {
+
+      }
+
+      @Override
+      public void buildFinished(Project project, UUID sessionId, boolean isAutomake) {
+        /**
+         * Sync files as generated sources may have changed after external compile,
+         * specifically when {@link com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder} finishes,
+         * except this code is run within IDEA core, thus having access to file sync calls.
+         */
+        PantsUtil.synchronizeFiles();
+      }
+    };
+    connection.subscribe(BuildManagerListener.TOPIC, buildManagerListener);
   }
 
   private void registerFileListener() {
