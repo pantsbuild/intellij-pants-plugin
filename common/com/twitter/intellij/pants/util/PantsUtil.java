@@ -10,10 +10,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
-import com.intellij.ide.FrameStateManager;
-import com.intellij.ide.GeneralSettings;
 import com.intellij.ide.SaveAndSyncHandler;
-import com.intellij.ide.SaveAndSyncHandlerImpl;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
@@ -32,7 +29,6 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -889,23 +885,15 @@ public class PantsUtil {
     if (ApplicationManager.getApplication().isUnitTestMode() && ApplicationManager.getApplication().isWriteAccessAllowed()) {
       ApplicationManager.getApplication().runWriteAction(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
-        /**
-         * This is the same as `SaveAndSyncHandler.getInstance().refreshOpenFiles();` in the else statement, except using the same thing here
-         * does not work, because in headless mode `SaveAndSyncHandler` is implemented by an empty class
-         * {@link com.intellij.ide.SaveAndSyncHandlerStub}
-         */
-        new SaveAndSyncHandlerImpl(
-          GeneralSettings.getInstance(),
-          ProgressManager.getInstance(),
-          FrameStateManager.getInstance(),
-          FileDocumentManager.getInstance()
-        ).refreshOpenFiles();
+        SaveAndSyncHandler.getInstance().refreshOpenFiles();
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false); /** synchronous */
       });
     }
     else {
       ApplicationManager.getApplication().invokeLater(() -> {
         FileDocumentManager.getInstance().saveAllDocuments();
         SaveAndSyncHandler.getInstance().refreshOpenFiles();
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true); /** asynchronous */
       });
     }
   }
