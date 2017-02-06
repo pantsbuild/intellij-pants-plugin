@@ -73,8 +73,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
   public static final String ERROR_TAG = "[error]";
-  public static ConcurrentHashMap<Project, Process> runningPantsProcesses = new ConcurrentHashMap<>();
+  private static ConcurrentHashMap<Project, Process> runningPantsProcesses = new ConcurrentHashMap<>();
 
+  public static boolean hasActivePantsProcess(Project project) {
+    return runningPantsProcesses.containsKey(project);
+  }
 
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
@@ -128,6 +131,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     if (process != null) {
       process.destroy();
     }
+    runningPantsProcesses.remove(project);
   }
 
   @Override

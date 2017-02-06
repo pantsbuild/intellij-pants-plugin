@@ -19,6 +19,7 @@ import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AutoScrollToSourceHandler;
 import com.intellij.ui.IdeBorderFactory;
@@ -122,9 +123,26 @@ public class PantsConsoleViewPanel extends JPanel {
     }
   }
 
+  private class StopAction extends DumbAwareAction {
+    public StopAction() {
+      super(IdeBundle.message("action.stop"), null, AllIcons.Actions.Suspend);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      PantsMakeBeforeRun.terminatePantsProcess(e.getProject());
+      PantsConsoleManager.getOrMakeNewConsole(e.getProject()).print("Pants process terminated.", ConsoleViewContentType.ERROR_OUTPUT);
+    }
+
+    @Override
+    public void update(AnActionEvent event) {
+      Presentation presentation = event.getPresentation();
+      presentation.setEnabled(PantsMakeBeforeRun.hasActivePantsProcess(event.getProject()));
+    }
+  }
 
   private JPanel createToolbarPanel() {
-    AnAction closeMessageViewAction = new PantsProcessCancellationAction();
+    AnAction closeMessageViewAction = new StopAction();
 
     DefaultActionGroup leftUpdateableActionGroup = new DefaultActionGroup();
     leftUpdateableActionGroup.add(closeMessageViewAction);
