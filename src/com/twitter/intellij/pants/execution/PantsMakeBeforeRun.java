@@ -38,6 +38,7 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
@@ -303,7 +304,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
         executionConsole.getComponent().setVisible(true);
         executionConsole.clear();
-        ToolWindowManager.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
+        ToolWindowManagerEx.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
         /* Force cached changes to disk. */
         FileDocumentManager.getInstance().saveAllDocuments();
         project.save();
