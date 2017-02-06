@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 package com.twitter.intellij.pants.ui;
 
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.ide.CopyProvider;
 import com.intellij.ide.IdeBundle;
 import com.intellij.ide.OccurenceNavigator;
@@ -67,18 +68,12 @@ public class PantsConsoleViewPanel extends JPanel implements OccurenceNavigator,
   protected static final Logger LOG = Logger.getInstance("#com.intellij.ide.errorTreeView.NewErrorTreeViewPanel");
   private volatile String myProgressText = "";
   private volatile float myFraction;
-  private final boolean myCreateExitAction;
   private final ErrorViewStructure myErrorViewStructure;
   private final ErrorViewTreeBuilder myBuilder;
   private final Alarm myUpdateAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD);
   private volatile boolean myIsDisposed;
   private final ErrorTreeViewConfiguration myConfiguration;
 
-  public interface ProcessController {
-    void stopProcess();
-
-    boolean isProcessStopped();
-  }
 
   private ActionToolbar myLeftToolbar;
   protected Project myProject;
@@ -91,27 +86,9 @@ public class PantsConsoleViewPanel extends JPanel implements OccurenceNavigator,
   private final AutoScrollToSourceHandler myAutoScrollToSourceHandler;
   private final MyOccurrenceNavigatorSupport myOccurrenceNavigatorSupport;
 
-  public PantsConsoleViewPanel(Project project, String helpId) {
-    this(project, helpId, true);
-  }
 
-  public PantsConsoleViewPanel(Project project, String helpId, boolean createExitAction) {
-    this(project, helpId, createExitAction, true);
-  }
-
-  public PantsConsoleViewPanel(Project project, String helpId, boolean createExitAction, boolean createToolbar) {
-    this(project, helpId, createExitAction, createToolbar, null);
-  }
-
-  public PantsConsoleViewPanel(
-    Project project,
-    String helpId,
-    boolean createExitAction,
-    boolean createToolbar,
-    @Nullable Runnable rerunAction
-  ) {
+  public PantsConsoleViewPanel(Project project) {
     myProject = project;
-    myCreateExitAction = createExitAction;
     myConfiguration = ErrorTreeViewConfiguration.getInstance(project);
     setLayout(new BorderLayout());
 
@@ -150,9 +127,7 @@ public class PantsConsoleViewPanel extends JPanel implements OccurenceNavigator,
     scrollPane.setBorder(IdeBorderFactory.createBorder(SideBorder.LEFT));
     myMessagePanel.add(PantsConsoleManager.getOrMakeNewConsole(myProject).getComponent(), BorderLayout.CENTER);
 
-    if (createToolbar) {
-      add(createToolbarPanel(rerunAction), BorderLayout.WEST);
-    }
+    add(createToolbarPanel(null), BorderLayout.WEST);
 
     add(myMessagePanel, BorderLayout.CENTER);
 
@@ -211,20 +186,6 @@ public class PantsConsoleViewPanel extends JPanel implements OccurenceNavigator,
   @Override
   public boolean isCopyVisible(@NotNull DataContext dataContext) {
     return true;
-  }
-
-  private void selectElement(final ErrorTreeElement element, final Runnable onDone) {
-    myBuilder.select(element, onDone);
-  }
-
-  protected boolean shouldShowFirstErrorInEditor() {
-    return false;
-  }
-
-  public void updateTree() {
-    if (!myIsDisposed) {
-      myBuilder.updateTree();
-    }
   }
 
   @Override
@@ -406,6 +367,7 @@ public class PantsConsoleViewPanel extends JPanel implements OccurenceNavigator,
       @Override
       public void actionPerformed(AnActionEvent e) {
         close();
+        PantsConsoleManager.getOrMakeNewConsole(myProject).print("hello", ConsoleViewContentType.NORMAL_OUTPUT);
       }
     };
 
