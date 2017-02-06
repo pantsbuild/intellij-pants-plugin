@@ -22,7 +22,7 @@ public class PantsConsoleToolWindowFactory extends AbstractExternalSystemToolWin
     @NotNull Project project, @NotNull ToolWindow toolWindow
   ) {
     PantsConsoleViewPanel pantsConsoleViewPanel = new PantsConsoleViewPanel(project);
-    Content contentHelpMe = ContentFactory.SERVICE.getInstance().createContent(pantsConsoleViewPanel.getComponent(), "pantsConsoleViewPanel", true);
+    Content contentHelpMe = ContentFactory.SERVICE.getInstance().createContent(pantsConsoleViewPanel, "pantsConsoleViewPanel", true);
     toolWindow.getContentManager().addContent(contentHelpMe);
   }
 }
