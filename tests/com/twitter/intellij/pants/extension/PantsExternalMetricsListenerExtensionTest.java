@@ -53,7 +53,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
   @Override
   public void tearDown() throws Exception {
-    gitCleanExampleDir();
+    gitResetRepoCleanExampleDistDir();
     super.tearDown();
   }
 

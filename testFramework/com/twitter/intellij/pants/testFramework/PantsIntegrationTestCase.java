@@ -493,7 +493,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return runConfiguration;
   }
 
-  protected void gitCleanExampleDir() throws ExecutionException {
+  protected void gitResetRepoCleanExampleDistDir() throws ExecutionException {
     // Git reset .cache/pants dir
     cmd("git", "reset", "--hard");
     // Only the files under examples are going to be modified.

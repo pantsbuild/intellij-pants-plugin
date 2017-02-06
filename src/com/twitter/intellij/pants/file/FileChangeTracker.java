@@ -120,7 +120,7 @@ public class FileChangeTracker {
     NotificationListener.Adapter refreshAction = new NotificationListener.Adapter() {
       @Override
       protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
-        if (event.getDescription().equals("reimport")) {
+        if ("reimport".equals(event.getDescription())) {
           PantsUtil.refreshAllProjects(project);
         }
         notification.expire();
@@ -140,7 +140,7 @@ public class FileChangeTracker {
   }
 
   public static void markDirty(@NotNull Project project) {
-    boolean isDirty = true;
+    final boolean isDirty = true;
     projectStates.put(project, new ProjectState(isDirty, LocalTime.now(), Optional.empty()));
   }
 
