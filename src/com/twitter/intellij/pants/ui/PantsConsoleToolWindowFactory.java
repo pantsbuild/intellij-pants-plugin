@@ -18,8 +18,9 @@ public class PantsConsoleToolWindowFactory implements ToolWindowFactory, DumbAwa
     @NotNull Project project, @NotNull ToolWindow toolWindow
   ) {
     ConsoleView console = PantsConsoleManager.getOrMakeNewConsole(project);
-    toolWindow.getComponent().removeAll();
     toolWindow.getComponent().add(console.getComponent());
+    //toolWindow.getComponent().removeAll();
+    //toolWindow.getComponent().add(console.getComponent());
     console.print("Welcome to Pants project!", ConsoleViewContentType.SYSTEM_OUTPUT);
   }
 }

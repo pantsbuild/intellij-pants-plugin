@@ -22,17 +22,17 @@ public class PantsConsoleManager {
   private static ConcurrentHashMap<Project, ConsoleView> mapper = new ConcurrentHashMap<>();
 
   public static void registerConsole(Project project) {
-    ToolWindow window =
-      ToolWindowManager.getInstance(project).registerToolWindow(
-        PantsConstants.PANTS_CONSOLE_NAME,
-        true,
-        ToolWindowAnchor.BOTTOM,
-        project,
-        true
-      );
-    ConsoleView console = getOrMakeNewConsole(project);
-    TabbedContentImpl content = new TabbedContentImpl(console.getComponent(), "", true, "");
-    window.getContentManager().addContent(content);
+    //ToolWindow window =
+    //  ToolWindowManager.getInstance(project).registerToolWindow(
+    //    PantsConstants.PANTS_CONSOLE_NAME,
+    //    true,
+    //    ToolWindowAnchor.BOTTOM,
+    //    project,
+    //    true
+    //  );
+    //ConsoleView console = getOrMakeNewConsole(project);
+    //TabbedContentImpl content = new TabbedContentImpl(console.getComponent(), "", true, "");
+    //window.getContentManager().addContent(content);
   }
 
   /**
@@ -67,8 +67,8 @@ public class PantsConsoleManager {
    */
   @TestOnly
   public static void disposeAll() {
-    for (Map.Entry<Project, ConsoleView> entrySet : mapper.entrySet()) {
-      entrySet.getValue().dispose();
-    }
+    //for (Map.Entry<Project, ConsoleView> entrySet : mapper.entrySet()) {
+    //  entrySet.getValue().dispose();
+    //}
   }
 }
