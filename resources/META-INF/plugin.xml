@@ -73,18 +73,6 @@
       <add-to-group anchor="before" group-id="ProjectViewCompileGroup" relative-to-action="ProjectViewCompileGroup" />
       <add-to-group group-id="Pants.Menu" anchor="first" />
     </group>
-    <group id="RunMenuBlaBla" text="_Hahaha" description="hahaha">
-      <!--<group id="RunnerActions"/>-->
-      <!--<reference ref="ChooseRunConfiguration"/>-->
-      <!--<reference ref="ChooseDebugConfiguration"/>-->
-      <!--<action id="editRunConfigurations" class="com.intellij.execution.actions.EditRunConfigurationsAction"/>-->
-      <!--&lt;!&ndash;<action id="Stop" class="com.intellij.execution.actions.StopAction" icon="AllIcons.Actions.Suspend"/>&ndash;&gt;-->
-      <!--<action id="ShowLiveRunConfigurations" class="com.intellij.execution.actions.ShowRunningListAction"/>-->
-      <add-to-group group-id="MainMenu" anchor="last"/>
-      <!--<add-to-group group-id="MainMenu" anchor="after" relative-to-action="RefactoringMenu"/>-->
-    </group>
-
-
   </actions>
 
   <extensionPoints>
@@ -152,7 +140,6 @@
     <toolWindow id="Pants" anchor="right" icon="PantsIcons.Icon"
                 factoryClass="com.twitter.intellij.pants.ui.PantsToolWindowFactory"
                 conditionClass="com.twitter.intellij.pants.ui.PantsToolWindowFactoryCondition"/>
-
     <externalSystemNotificationExtension implementation="com.twitter.intellij.pants.notification.PantsNotificationCustomizer"/>
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.PantsMetadataService"/>
   </extensions>

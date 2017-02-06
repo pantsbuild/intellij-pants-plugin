@@ -37,7 +37,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
@@ -60,6 +59,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -73,6 +73,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
   public static final String ERROR_TAG = "[error]";
+  public static ConcurrentHashMap<Project, Process> runningPantsProcesses = new ConcurrentHashMap<>();
 
 
   public PantsMakeBeforeRun(@NotNull Project project) {
@@ -120,6 +121,13 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
     pantsMakeTask.setEnabled(true);
     runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask), false);
+  }
+
+  public static void terminatePantsProcess(Project project) {
+    Process process = runningPantsProcesses.get(project);
+    if (process != null) {
+      process.destroy();
+    }
   }
 
   @Override
@@ -265,7 +273,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         output.add(event.getText());
       }
     });
+
+    runningPantsProcesses.put(currentProject, process);
     processHandler.runProcess();
+    runningPantsProcesses.remove(currentProject);
 
     final boolean success = process.exitValue() == 0;
     // Mark project dirty if compile failed.

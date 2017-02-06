@@ -17,7 +17,6 @@ public class PantsConstants {
 
   @NotNull
   public static final ProjectSystemId SYSTEM_ID = new ProjectSystemId(PANTS);
-  public static final ProjectSystemId PANTS_CONSOLE_SYSTEM_ID = new ProjectSystemId("PANTS_CONSOLE");
   public static final String PANTS_PROJECT_MODULE_SUFFIX = "_module";
   public static final String PANTS_PROJECT_MODULE_ID_PREFIX = ".root.module.for.pants_";
 

@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 package com.twitter.intellij.pants.ui;
 
+import com.intellij.CommonBundle;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeBundle;
-import com.intellij.ide.actions.CloseTabToolbarAction;
 import com.intellij.ide.errorTreeView.NewErrorTreeRenderer;
 import com.intellij.ide.errorTreeView.NewErrorTreeViewPanel;
 import com.intellij.ide.errorTreeView.impl.ErrorTreeViewConfiguration;
@@ -14,7 +15,10 @@ import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.IdeActions;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AutoScrollToSourceHandler;
 import com.intellij.ui.IdeBorderFactory;
@@ -23,6 +27,7 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.EditSourceOnDoubleClickHandler;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JPanel;
@@ -32,6 +37,8 @@ import javax.swing.tree.DefaultTreeModel;
 import java.awt.BorderLayout;
 
 /**
+ * A JPanel consisting controll buttons on the left and a ConsoleView on the right displaying Pants output.
+ * <p>
  * Template came from {@link NewErrorTreeViewPanel} but heavily trimmed.
  */
 public class PantsConsoleViewPanel extends JPanel {
@@ -99,13 +106,25 @@ public class PantsConsoleViewPanel extends JPanel {
     };
   }
 
+  public class PantsProcessCancellationAction extends AnAction implements DumbAware {
+    public PantsProcessCancellationAction() {
+      copyFrom(ActionManager.getInstance().getAction(IdeActions.ACTION_CLOSE_ACTIVE_TAB));
+      Presentation presentation = getTemplatePresentation();
+      presentation.setIcon(AllIcons.Actions.Suspend);
+      presentation.setText(CommonBundle.getCloseButtonText());
+      presentation.setDescription(null);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      PantsMakeBeforeRun.terminatePantsProcess(e.getProject());
+      PantsConsoleManager.getOrMakeNewConsole(e.getProject()).print("Pants process terminated.", ConsoleViewContentType.ERROR_OUTPUT);
+    }
+  }
+
+
   private JPanel createToolbarPanel() {
-    AnAction closeMessageViewAction = new CloseTabToolbarAction() {
-      @Override
-      public void actionPerformed(AnActionEvent e) {
-        PantsConsoleManager.getOrMakeNewConsole(myProject).print("hello", ConsoleViewContentType.NORMAL_OUTPUT);
-      }
-    };
+    AnAction closeMessageViewAction = new PantsProcessCancellationAction();
 
     DefaultActionGroup leftUpdateableActionGroup = new DefaultActionGroup();
     leftUpdateableActionGroup.add(closeMessageViewAction);
