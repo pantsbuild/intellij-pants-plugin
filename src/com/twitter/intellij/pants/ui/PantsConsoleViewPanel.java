@@ -131,11 +131,12 @@ public class PantsConsoleViewPanel extends JPanel {
     @Override
     public void actionPerformed(AnActionEvent e) {
       PantsMakeBeforeRun.terminatePantsProcess(e.getProject());
-      PantsConsoleManager.getOrMakeNewConsole(e.getProject()).print("Pants process terminated.", ConsoleViewContentType.ERROR_OUTPUT);
+      PantsConsoleManager.getOrMakeNewConsole(e.getProject()).print("\nPants process terminated.", ConsoleViewContentType.ERROR_OUTPUT);
     }
 
     @Override
     public void update(AnActionEvent event) {
+      // Make the action only clickable when there is active Pants proecess.
       Presentation presentation = event.getPresentation();
       presentation.setEnabled(PantsMakeBeforeRun.hasActivePantsProcess(event.getProject()));
     }
