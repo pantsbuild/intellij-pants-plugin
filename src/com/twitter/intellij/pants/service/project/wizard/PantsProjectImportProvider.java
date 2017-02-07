@@ -48,7 +48,7 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
     /**
      * Newer export version project sdk can be automatically discovered and configured.
      */
-    AtomicBoolean isSdkConfigured = new AtomicBoolean(false);
+    AtomicBoolean isSdkConfigured = new AtomicBoolean(true);
     String message = PantsBundle.message("pants.default.sdk.config.progress");
     ProgressManager.getInstance().run(new Task.Modal(context.getProject(), message, !CAN_BE_CANCELLED) {
       @Override
