@@ -53,11 +53,6 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
     ProgressManager.getInstance().run(new Task.Modal(context.getProject(), message, !CAN_BE_CANCELLED) {
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
-        Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(context.getProjectFileDirectory());
-        if (pantsExecutable.isPresent()) {
-          isSdkConfigured.set(PantsUtil.supportExportDefaultJavaSdk(pantsExecutable.get().getPath()));
-        }
-
         if (isSdkConfigured.get()) {
           isSdkConfigured.set(isJvmProject(context.getProjectFileDirectory()));
         }

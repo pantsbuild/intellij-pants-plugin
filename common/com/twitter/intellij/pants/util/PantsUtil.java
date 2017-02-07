@@ -81,7 +81,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -739,22 +738,7 @@ public class PantsUtil {
   }
 
   public static Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
-    return new HashSet<String>(
-      ContainerUtil.filter(
-        addresses,
-        new Condition<String>() {
-          @Override
-          public boolean value(String targetAddress) {
-            return !isGenTarget(targetAddress);
-          }
-        }
-      )
-    );
-  }
-
-
-  public static boolean supportExportDefaultJavaSdk(@NotNull final String pantsExecutable) {
-    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.7") >= 0;
+    return addresses.stream().filter(s -> !isGenTarget(s)).collect(Collectors.toSet());
   }
 
   @Nullable
