@@ -23,12 +23,6 @@ import java.util.Collections;
 
 public class OSSFileSyncIntegrationTest extends OSSPantsIntegrationTest {
 
-  private final static boolean readOnly = false;
-
-  public OSSFileSyncIntegrationTest() {
-    super(readOnly);
-  }
-
   public void testFileSync() throws Throwable {
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
       @Override
@@ -58,6 +52,12 @@ public class OSSFileSyncIntegrationTest extends OSSPantsIntegrationTest {
         assertContainsSubstring(Collections.singletonList(editor.getDocument().getText()), "getNewDummyNumber()");
       }
     });
+  }
+
+  @Override
+  public void tearDown() throws Exception {
+    gitResetRepoCleanExampleDistDir();
+    super.tearDown();
   }
 
   @NotNull

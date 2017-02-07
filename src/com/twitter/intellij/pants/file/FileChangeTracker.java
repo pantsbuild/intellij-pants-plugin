@@ -6,6 +6,10 @@ package com.twitter.intellij.pants.file;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -17,11 +21,14 @@ import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
+import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.event.HyperlinkEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,6 +47,7 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 // FIXME: Change in pants.ini, `./pants clean-all` is not tracked currently.
 public class FileChangeTracker {
   private static final Logger LOG = Logger.getInstance(FileChangeTracker.class);
+  public static final String HREF_REFRESH = "refresh";
 
   private static FileChangeTracker instance = new FileChangeTracker();
 
@@ -105,11 +113,39 @@ public class FileChangeTracker {
     LOG.debug(String.format("Changed: %s. In project: %s", file.getPath(), inProject));
     if (inProject) {
       markDirty(project);
+      notifyProjectRefreshIfNecessary(file, project);
+    }
+  }
+
+  /**
+   * Template came from maven plugin:
+   * https://github.com/JetBrains/intellij-community/blob/b5d046018b9a82fccd86bc9c1f1da2e28068440a/plugins/maven/src/main/java/org/jetbrains/idea/maven/utils/MavenImportNotifier.java#L92-L108
+   */
+  private static void notifyProjectRefreshIfNecessary(@NotNull VirtualFile file, final Project project) {
+    NotificationListener.Adapter refreshAction = new NotificationListener.Adapter() {
+      @Override
+      protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+        if (HREF_REFRESH.equals(event.getDescription())) {
+          PantsUtil.refreshAllProjects(project);
+        }
+        notification.expire();
+      }
+    };
+
+    if (PantsUtil.isBUILDFileName(file.getName())) {
+      Notification myNotification = new Notification(
+        PantsConstants.PANTS,
+        PantsBundle.message("pants.project.build.files.changed"),
+        "<a href='" + HREF_REFRESH + "'>Refresh Pants Project</a> ",
+        NotificationType.INFORMATION,
+        refreshAction
+      );
+      Notifications.Bus.notify(myNotification, project);
     }
   }
 
   public static void markDirty(@NotNull Project project) {
-    boolean isDirty = true;
+    final boolean isDirty = true;
     projectStates.put(project, new ProjectState(isDirty, LocalTime.now(), Optional.empty()));
   }
 

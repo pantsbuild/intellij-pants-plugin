@@ -493,6 +493,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return runConfiguration;
   }
 
+  protected void gitResetRepoCleanExampleDistDir() throws ExecutionException {
+    // Git reset .cache/pants dir
+    cmd("git", "reset", "--hard");
+    // Only the files under examples are going to be modified.
+    // Hence issue `git clean -fdx` under examples, so pants does not
+    // have to bootstrap again.
+    File exampleDir = new File(getProjectFolder(), "examples");
+    cmd(exampleDir, "git", "clean", "-fdx");
+    cmd("rm", "-rf", "dist");
+  }
+
   @Override
   public void tearDown() throws Exception {
     // TODO thread leak either a IJ bug https://youtrack.jetbrains.com/issue/IDEA-155496

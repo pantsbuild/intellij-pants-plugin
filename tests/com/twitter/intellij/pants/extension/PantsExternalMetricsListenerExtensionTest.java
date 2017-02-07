@@ -12,8 +12,6 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import junit.framework.AssertionFailedError;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
-import java.io.File;
-
 public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrationTest {
 
   private PantsExternalMetricsListener.TestRunnerType lastRun;
@@ -55,14 +53,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
   @Override
   public void tearDown() throws Exception {
-    // Git reset .cache/pants dir
-    cmd("git", "reset", "--hard");
-    // Only the files under examples are going to be modified.
-    // Hence issue `git clean -fdx` under examples, so pants does not
-    // have to bootstrap again.
-    File exampleDir = new File(getProjectFolder(), "examples");
-    cmd(exampleDir, "git", "clean", "-fdx");
-    cmd("rm", "-rf", "dist");
+    gitResetRepoCleanExampleDistDir();
     super.tearDown();
   }
 
