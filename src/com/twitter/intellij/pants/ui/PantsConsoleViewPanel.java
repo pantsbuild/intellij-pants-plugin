@@ -118,7 +118,7 @@ public class PantsConsoleViewPanel extends JPanel {
 
     @Override
     public void update(AnActionEvent event) {
-      // Make the action only clickable when there is active Pants proecess.
+      // Make the action only clickable when there is an active Pants process.
       Presentation presentation = event.getPresentation();
       presentation.setEnabled(PantsMakeBeforeRun.hasActivePantsProcess(event.getProject()));
     }
