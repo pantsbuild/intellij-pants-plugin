@@ -53,9 +53,9 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
         assertEquals(PantsBundle.message("pants.project.build.files.changed"), notification.getTitle());
 
         /*
-         Currently there is no good to way to prove a project has been refreshed, so we introducued some changes to .proto file,
-         and the changes can only be reflected via project refresh. Therefore we use the change of updated java file from protobuf
-         modification to prove project refresh has happened.
+         Currently there is no good to way to prove a project has been refreshed, so we introducued some changes to .proto file.
+         Since the changes can only be reflected via project refresh, the updated java file from protobuf
+         modification can be used to prove project refresh has happened.
         */
 
         // Open 'Distances.java' in editor and make sure it only contains `getNumber` and not `getNewDummyNumber`.
