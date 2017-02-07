@@ -47,6 +47,7 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 // FIXME: Change in pants.ini, `./pants clean-all` is not tracked currently.
 public class FileChangeTracker {
   private static final Logger LOG = Logger.getInstance(FileChangeTracker.class);
+  public static final String HREF_REFRESH = "refresh";
 
   private static FileChangeTracker instance = new FileChangeTracker();
 
@@ -116,11 +117,15 @@ public class FileChangeTracker {
     }
   }
 
+  /**
+   * Template came from maven plugin:
+   * https://github.com/JetBrains/intellij-community/blob/b5d046018b9a82fccd86bc9c1f1da2e28068440a/plugins/maven/src/main/java/org/jetbrains/idea/maven/utils/MavenImportNotifier.java#L92-L108
+   */
   private static void notifyProjectRefreshIfNecessary(@NotNull VirtualFile file, final Project project) {
     NotificationListener.Adapter refreshAction = new NotificationListener.Adapter() {
       @Override
       protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
-        if (event.getDescription().equals("reimport")) {
+        if (HREF_REFRESH.equals(event.getDescription())) {
           PantsUtil.refreshAllProjects(project);
         }
         notification.expire();
@@ -131,7 +136,7 @@ public class FileChangeTracker {
       Notification myNotification = new Notification(
         PantsConstants.PANTS,
         PantsBundle.message("pants.project.build.files.changed"),
-        "<a href='reimport'>Refresh Pants Project</a> ",
+        "<a href='" + HREF_REFRESH + "'>Refresh Pants Project</a> ",
         NotificationType.INFORMATION,
         refreshAction
       );
@@ -140,7 +145,7 @@ public class FileChangeTracker {
   }
 
   public static void markDirty(@NotNull Project project) {
-    boolean isDirty = true;
+    final boolean isDirty = true;
     projectStates.put(project, new ProjectState(isDirty, LocalTime.now(), Optional.empty()));
   }
 

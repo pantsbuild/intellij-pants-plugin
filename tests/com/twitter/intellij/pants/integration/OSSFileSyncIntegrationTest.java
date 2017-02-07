@@ -56,7 +56,7 @@ public class OSSFileSyncIntegrationTest extends OSSPantsIntegrationTest {
 
   @Override
   public void tearDown() throws Exception {
-    gitCleanExampleDir();
+    gitResetRepoCleanExampleDistDir();
     super.tearDown();
   }
 
