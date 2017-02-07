@@ -31,6 +31,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ContentEntry;
@@ -758,6 +759,15 @@ public class PantsUtil {
 
   @Nullable
   public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable) {
+    // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
+    Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
+      .filter(sdk -> sdk.getName().contains(pantsExecutable) && sdk.getSdkType() instanceof JavaSdk)
+      .findFirst();
+
+    if (sdkForPants.isPresent()) {
+      return sdkForPants;
+    }
+
     final SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
     if (versionCompare(exportResult.getVersion(), "1.0.7") < 0) {
       return Optional.empty();
