@@ -130,8 +130,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Process process = runningPantsProcesses.get(project);
     if (process != null) {
       process.destroy();
+      runningPantsProcesses.remove(project, process);
     }
-    runningPantsProcesses.remove(project);
   }
 
   @Override
@@ -280,7 +280,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     runningPantsProcesses.put(currentProject, process);
     processHandler.runProcess();
-    runningPantsProcesses.remove(currentProject);
+    runningPantsProcesses.remove(currentProject, process);
 
     final boolean success = process.exitValue() == 0;
     // Mark project dirty if compile failed.
