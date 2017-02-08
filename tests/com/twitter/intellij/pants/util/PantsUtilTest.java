@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
@@ -22,9 +24,16 @@ public class PantsUtilTest extends OSSPantsIntegrationTest {
   public void testFindJdk() {
     Optional<File> executable = PantsUtil.findPantsExecutable(getProjectFolder());
     assertTrue(executable.isPresent());
-    Optional<Sdk> sdk_a = PantsUtil.getDefaultJavaSdk(executable.get().getPath());
-    Optional<Sdk> sdk_b = PantsUtil.getDefaultJavaSdk(executable.get().getPath());
-    // Make sure they are identical
-    assertTrue(sdk_a.get() == sdk_b.get());
+    Optional<Sdk> sdkA = PantsUtil.getDefaultJavaSdk(executable.get().getPath());
+    assertTrue(sdkA.isPresent());
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        ProjectJdkTable.getInstance().addJdk(sdkA.get());
+      }
+    });
+    Optional<Sdk> sdkB = PantsUtil.getDefaultJavaSdk(executable.get().getPath());
+    //Make sure they are identical.
+    assertTrue(sdkA.get() == sdkB.get());
   }
 }
