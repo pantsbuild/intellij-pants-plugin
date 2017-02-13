@@ -33,7 +33,7 @@ public class PantsUtilTest extends OSSPantsIntegrationTest {
       }
     });
     Optional<Sdk> sdkB = PantsUtil.getDefaultJavaSdk(executable.get().getPath());
-    //Make sure they are identical.
+    // Make sure they are identical, meaning that no new JDK was created on the 2nd find.
     assertTrue(sdkA.get() == sdkB.get());
   }
 }
