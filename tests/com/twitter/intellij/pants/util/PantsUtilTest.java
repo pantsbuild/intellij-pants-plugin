@@ -3,8 +3,14 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+
+import java.io.File;
+import java.util.Optional;
 
 public class PantsUtilTest extends OSSPantsIntegrationTest {
 
@@ -13,5 +19,21 @@ public class PantsUtilTest extends OSSPantsIntegrationTest {
     assertTrue(PantsUtil.isPantsProjectFile(LocalFileSystem.getInstance().findFileByPath(getProjectPath())));
     // File system root should not.
     assertFalse(PantsUtil.isPantsProjectFile(LocalFileSystem.getInstance().findFileByPath("/")));
+  }
+
+  public void testFindJdk() {
+    Optional<File> executable = PantsUtil.findPantsExecutable(getProjectFolder());
+    assertTrue(executable.isPresent());
+    Optional<Sdk> sdkA = PantsUtil.getDefaultJavaSdk(executable.get().getPath());
+    assertTrue(sdkA.isPresent());
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        ProjectJdkTable.getInstance().addJdk(sdkA.get());
+      }
+    });
+    Optional<Sdk> sdkB = PantsUtil.getDefaultJavaSdk(executable.get().getPath());
+    // Make sure they are identical, meaning that no new JDK was created on the 2nd find.
+    assertTrue(sdkA.get() == sdkB.get());
   }
 }
