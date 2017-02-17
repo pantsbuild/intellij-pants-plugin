@@ -44,10 +44,8 @@ public class PantsConsoleViewPanel extends JPanel {
   protected static final Logger LOG = Logger.getInstance("#com.intellij.ide.errorTreeView.NewErrorTreeViewPanel");
   private final ErrorTreeViewConfiguration myConfiguration;
 
-  private ActionToolbar myLeftToolbar;
   protected Project myProject;
-  protected Tree myTree;
-  private final JPanel myMessagePanel;
+  private Tree myTree;
 
   private final AutoScrollToSourceHandler myAutoScrollToSourceHandler;
 
@@ -69,7 +67,7 @@ public class PantsConsoleViewPanel extends JPanel {
       }
     };
 
-    myMessagePanel = new JPanel(new BorderLayout());
+    JPanel myMessagePanel = new JPanel(new BorderLayout());
 
     DefaultMutableTreeNode root = new DefaultMutableTreeNode();
     final DefaultTreeModel treeModel = new DefaultTreeModel(root);
@@ -132,8 +130,8 @@ public class PantsConsoleViewPanel extends JPanel {
 
     JPanel toolbarPanel = new JPanel(new BorderLayout());
     ActionManager actionManager = ActionManager.getInstance();
-    myLeftToolbar = actionManager.createActionToolbar(ActionPlaces.COMPILER_MESSAGES_TOOLBAR, leftUpdateableActionGroup, false);
-    toolbarPanel.add(myLeftToolbar.getComponent(), BorderLayout.WEST);
+    ActionToolbar leftToolbar = actionManager.createActionToolbar(ActionPlaces.COMPILER_MESSAGES_TOOLBAR, leftUpdateableActionGroup, false);
+    toolbarPanel.add(leftToolbar.getComponent(), BorderLayout.WEST);
 
     return toolbarPanel;
   }
