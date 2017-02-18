@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 public class OSSPantsCompileCancellationTest extends OSSPantsIntegrationTest {
 
-  final ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor(
+  private final ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor(
     new ThreadFactory() {
       @Override
       public Thread newThread(@NotNull Runnable r) {
@@ -52,7 +52,7 @@ public class OSSPantsCompileCancellationTest extends OSSPantsIntegrationTest {
       }
     }, 0, 200, TimeUnit.MILLISECONDS);
 
-    // This compile will fail because it will be interrupt by the above logic.
+    // This compile will fail because it will be interrupted by the above logic.
     assertPantsCompileFailure(pantsCompileModule("examples_src_java_org_pantsbuild_example_hello_main_main"));
 
     // Second Pants compile without interference should succeed.
