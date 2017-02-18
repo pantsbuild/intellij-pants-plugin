@@ -102,6 +102,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       new ModuleRootAdapter() {
         @Override
         public void rootsChanged(ModuleRootEvent event) {
+          // Initiate view switch only when project modules have been created.
           new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
         }
       }
