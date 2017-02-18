@@ -35,6 +35,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
@@ -241,10 +242,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       /**
        * Make sure the project view opened so the view switch will follow.
        */
-      if (ApplicationManager.getApplication().isUnitTestMode()) {
-        return;
-      }
-      final ToolWindow projectWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Project");
+      final ToolWindow projectWindow = ToolWindowManager.getInstance(myProject).getToolWindow(ToolWindowId.PROJECT_VIEW);
       if (projectWindow == null) {
         return;
       }
