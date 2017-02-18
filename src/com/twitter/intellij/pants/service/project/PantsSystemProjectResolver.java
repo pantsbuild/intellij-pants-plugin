@@ -284,7 +284,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
                   }
                 }
               }
-              directoryFocusHandle.cancel(false);
+              final boolean mayInterruptIfRunning = true;
+              directoryFocusHandle.cancel(mayInterruptIfRunning);
             }
           });
         }
