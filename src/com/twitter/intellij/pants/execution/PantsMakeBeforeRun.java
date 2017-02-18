@@ -75,7 +75,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   public static final String ERROR_TAG = "[error]";
   private static ConcurrentHashMap<Project, Process> runningPantsProcesses = new ConcurrentHashMap<>();
 
-  public static boolean hasActivePantsProcess(Project project) {
+  public static boolean hasActivePantsProcess(@NotNull Project project) {
     return runningPantsProcesses.containsKey(project);
   }
 
