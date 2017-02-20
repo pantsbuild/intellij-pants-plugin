@@ -14,6 +14,7 @@ cache:
 
 before_cache:
     - rm -rf .cache/intellij/*/plugins # Remove plugins downloaded, the intellij dist does not change, but plugins may.
+
 notifications:
   email:
     - yic@twitter.com
