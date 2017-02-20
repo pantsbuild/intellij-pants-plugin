@@ -10,7 +10,10 @@ cache:
     - ${HOME}/.cache/pants
     - .cache/bootstrap # See pants.ini [cache.bootstrap]
     - .cache/pants     # Pants downloaded by scripts/setup-ci-environment.sh
+    - .cache/intellij  # IntelliJ downloaded by scripts/setup-ci-environment.sh
 
+before_cache:
+    - rm -rf .cache/intellij/*/plugins # Remove plugins downloaded, the intellij dist does not change, but plugins may.
 notifications:
   email:
     - yic@twitter.com
