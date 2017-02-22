@@ -4,9 +4,14 @@
 package com.twitter.intellij.pants.metrics;
 
 import com.google.common.base.Stopwatch;
+import com.intellij.ProjectTopics;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootAdapter;
+import com.intellij.openapi.roots.ModuleRootEvent;
+import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,6 +46,69 @@ public class PantsMetrics {
   private static final String METRIC_INDEXING = "indexing_second";
   private static final String METRIC_LOAD = "load_second";
   private static final String METRIC_EXPORT = "export_second";
+
+
+  class PerformanceData {
+    double exportAndloadSeconds = -1;
+    double indexingSeconds = -1;
+
+    public PerformanceData() {
+
+    }
+
+    public PerformanceData(double exportAndloadSeconds, double indexingSeconds) {
+      this.exportAndloadSeconds = exportAndloadSeconds;
+    }
+  }
+
+  public static final ConcurrentHashMap<Project, PerformanceData> projectPerformanceData = new ConcurrentHashMap<>();
+
+
+  public static void importStart(@NotNull Project project) {
+
+    Stopwatch indexWatch = Stopwatch.createUnstarted();
+
+
+    class PantsDumbModeListener implements DumbService.DumbModeListener {
+
+      @Override
+      public void enteredDumbMode() {
+        System.out.println("get dumb");
+        indexWatch.start();
+      }
+
+      @Override
+      public void exitDumbMode() {
+        System.out.println("get smart");
+        indexWatch.stop();
+        System.out.println(String.format("index: %s", indexWatch.elapsed(TimeUnit.MILLISECONDS)));
+      }
+    }
+
+    Stopwatch loadWatch = Stopwatch.createUnstarted();
+    loadWatch.start();
+    MessageBusConnection messageBusConnection = project.getMessageBus().connect();
+    messageBusConnection.subscribe(
+      ProjectTopics.PROJECT_ROOTS,
+      new ModuleRootAdapter() {
+        @Override
+        public void rootsChanged(ModuleRootEvent event) {
+          loadWatch.stop();
+          System.out.println(String.format("load: %s", loadWatch.elapsed(TimeUnit.MILLISECONDS)));
+          if (ApplicationManager.getApplication().isUnitTestMode()) {
+            indexWatch.start();
+            DumbService.getInstance(project).waitForSmartMode();
+            indexWatch.stop();
+            System.out.println(String.format("index: %s", indexWatch.elapsed(TimeUnit.MILLISECONDS)));
+          }
+          else {
+            PantsDumbModeListener pantsDumbModeListener = new PantsDumbModeListener();
+            project.getMessageBus().connect().subscribe(DumbService.DUMB_MODE, pantsDumbModeListener);
+          }
+        }
+      }
+    );
+  }
 
 
   @Nullable
