@@ -48,6 +48,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
     PantsMetrics.report();
     FileChangeTracker.unregisterProject(myProject);
     PantsConsoleManager.unregisterConsole(myProject);
+    PantsMetrics.unregisterDumbModeListener(myProject);
     super.projectClosed();
   }
 

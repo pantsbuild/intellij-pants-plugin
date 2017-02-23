@@ -80,6 +80,9 @@ public class PantsMetrics {
     project.getMessageBus().connect().subscribe(DumbService.DUMB_MODE, listener);
   }
 
+  public static void unregisterDumbModeListener(@NotNull Project project) {
+    projectListener.remove(project);
+  }
 
   @Nullable
   public static String getMetricsImportDir() {
