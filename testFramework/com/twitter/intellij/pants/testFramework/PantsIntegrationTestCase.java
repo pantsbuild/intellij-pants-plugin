@@ -354,8 +354,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     });
     importProject();
     PantsMetrics.markIndexEnd();
-    // Mark indexing ended.
-    //DumbServiceImpl.getInstance(myProject).setDumb(false);
   }
 
   protected void assertGotoFileContains(String filename) {
