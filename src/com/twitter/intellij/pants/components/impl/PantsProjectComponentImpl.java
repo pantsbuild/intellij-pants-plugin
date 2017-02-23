@@ -54,6 +54,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   @Override
   public void projectOpened() {
     PantsMetrics.initialize();
+    PantsMetrics.registerDumbModeListener(myProject);
     PantsConsoleManager.registerConsole(myProject);
     super.projectOpened();
     if (myProject.isDefault()) {

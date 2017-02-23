@@ -40,7 +40,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
-import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
@@ -78,9 +77,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     checkForDifferentPantsExecutables(id, projectPath);
 
     Project project = id.findProject();
-    if (project != null) {
-      PantsMetrics.importStart(project);
-    }
 
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);

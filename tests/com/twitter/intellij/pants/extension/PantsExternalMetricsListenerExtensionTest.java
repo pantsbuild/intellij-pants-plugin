@@ -42,6 +42,11 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
 
     }
+
+    @Override
+    public void logIndexingDuration(long milliSeconds) throws Throwable {
+
+    }
   }
 
   @Override
@@ -119,6 +124,11 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
       public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
 
       }
+
+      @Override
+      public void logIndexingDuration(long milliSeconds) throws Throwable {
+
+      }
     }
 
     ErrorMetricsListener errorListenerExtension = new ErrorMetricsListener();
@@ -155,6 +165,11 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
       @Override
       public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
+
+      }
+
+      @Override
+      public void logIndexingDuration(long milliSeconds) throws Throwable {
 
       }
     }
@@ -197,6 +212,11 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
       @Override
       public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
         duration = milliSeconds;
+      }
+
+      @Override
+      public void logIndexingDuration(long milliSeconds) throws Throwable {
+
       }
     }
 

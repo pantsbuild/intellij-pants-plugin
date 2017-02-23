@@ -48,4 +48,12 @@ public interface PantsExternalMetricsListener {
    * @throws Throwable
    */
   void logDurationBeforePantsCompile(long milliSeconds) throws Throwable;
+
+  /**
+   * Log the duration project spent in indexing.
+   *
+   * @param milliSeconds long number.
+   * @throws Throwable
+   */
+  void logIndexingDuration(long milliSeconds) throws Throwable;
 }
