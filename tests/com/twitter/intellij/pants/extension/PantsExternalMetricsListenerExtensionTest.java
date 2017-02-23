@@ -295,7 +295,27 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     DumbServiceImpl.getInstance(myProject).setDumb(false);
     DumbServiceImpl.getInstance(myProject).setDumb(false);
 
-    assertTrue("Indexing duration should be recorded, but is not", listener.duration >= sleepTimeMilliSeconds);
+    assertTrue(
+      String.format("Indexing duration should be greater than %s, but is %s.", sleepTimeMilliSeconds, listener.duration),
+      listener.duration >= sleepTimeMilliSeconds
+    );
+
+    // reset
+    listener.duration = -1;
+
+    // 2nd wave of indexing.
+    DumbServiceImpl.getInstance(myProject).setDumb(true);
+
+    long secondSleepTimeMilliSeconds = 1000;
+    Thread.sleep(secondSleepTimeMilliSeconds);
+
+    // Unset dumb service to signify indexing has ended.
+    DumbServiceImpl.getInstance(myProject).setDumb(false);
+
+    assertTrue(
+      String.format("Indexing duration should be greater than %s, but is %s.", secondSleepTimeMilliSeconds, listener.duration),
+      listener.duration >= secondSleepTimeMilliSeconds
+    );
   }
 
   public void testInvalidDurationIndexing() throws Throwable {
