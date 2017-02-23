@@ -37,7 +37,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -72,7 +73,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
   public static final String ERROR_TAG = "[error]";
+  private static ConcurrentHashMap<Project, Process> runningPantsProcesses = new ConcurrentHashMap<>();
 
+  public static boolean hasActivePantsProcess(@NotNull Project project) {
+    return runningPantsProcesses.containsKey(project);
+  }
 
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
@@ -119,6 +124,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
     pantsMakeTask.setEnabled(true);
     runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask), false);
+  }
+
+  public static void terminatePantsProcess(Project project) {
+    Process process = runningPantsProcesses.get(project);
+    if (process != null) {
+      process.destroy();
+      runningPantsProcesses.remove(project, process);
+    }
   }
 
   @Override
@@ -264,7 +277,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         output.add(event.getText());
       }
     });
+
+    runningPantsProcesses.put(currentProject, process);
     processHandler.runProcess();
+    runningPantsProcesses.remove(currentProject, process);
 
     final boolean success = process.exitValue() == 0;
     // Mark project dirty if compile failed.
@@ -303,7 +319,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
         executionConsole.getComponent().setVisible(true);
         executionConsole.clear();
-        ToolWindowManager.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
+        ToolWindowManagerEx.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
         /* Force cached changes to disk. */
         FileDocumentManager.getInstance().saveAllDocuments();
         project.save();

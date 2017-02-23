@@ -10,8 +10,10 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.impl.TabbedContentImpl;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
 import com.twitter.intellij.pants.util.PantsConstants;
+import icons.PantsIcons;
 import org.jetbrains.annotations.TestOnly;
 
 import java.util.Map;
@@ -22,6 +24,7 @@ public class PantsConsoleManager {
   private static ConcurrentHashMap<Project, ConsoleView> mapper = new ConcurrentHashMap<>();
 
   public static void registerConsole(Project project) {
+    // Create the toolWindow
     ToolWindow window =
       ToolWindowManager.getInstance(project).registerToolWindow(
         PantsConstants.PANTS_CONSOLE_NAME,
@@ -30,9 +33,15 @@ public class PantsConsoleManager {
         project,
         true
       );
-    ConsoleView console = getOrMakeNewConsole(project);
-    TabbedContentImpl content = new TabbedContentImpl(console.getComponent(), "", true, "");
-    window.getContentManager().addContent(content);
+
+    window.setIcon(PantsIcons.Icon);
+
+    // Have the toolWindow contain the view panel.
+    PantsConsoleViewPanel pantsConsoleViewPanel = new PantsConsoleViewPanel(project);
+    final boolean isLockable = true;
+    final String displayName = "";
+    Content pantsConsoleContent = ContentFactory.SERVICE.getInstance().createContent(pantsConsoleViewPanel, displayName, isLockable);
+    window.getContentManager().addContent(pantsConsoleContent);
   }
 
   /**
