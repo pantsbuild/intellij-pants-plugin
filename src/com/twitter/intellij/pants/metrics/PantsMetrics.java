@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -48,6 +49,37 @@ public class PantsMetrics {
   private static final String METRIC_EXPORT = "export_second";
 
 
+  static class PantsDumbModeListener implements DumbService.DumbModeListener {
+    private AtomicInteger count = new AtomicInteger(0);
+    private Project myProject;
+
+    Stopwatch indexWatch = Stopwatch.createUnstarted();
+
+    PantsDumbModeListener(Project project) {
+      myProject = project;
+    }
+
+    @Override
+    public void enteredDumbMode() {
+      if (count.getAndIncrement() == 0) {
+        System.out.println("get dumb");
+        indexWatch.start();
+      }
+    }
+
+    @Override
+    public void exitDumbMode() {
+      if (count.decrementAndGet() == 0) {
+        indexWatch.stop();
+        System.out.println(String.format("get smart. index: %s %s", indexWatch.elapsed(TimeUnit.MILLISECONDS), indexWatch.hashCode()));
+        indexWatch.reset();
+      }
+    }
+  }
+
+  private static final ConcurrentHashMap<Project, PantsDumbModeListener> projectListener = new ConcurrentHashMap<>();
+
+
   class PerformanceData {
     double exportAndloadSeconds = -1;
     double indexingSeconds = -1;
@@ -65,45 +97,27 @@ public class PantsMetrics {
 
 
   public static void importStart(@NotNull Project project) {
+    //Stopwatch loadWatch = Stopwatch.createUnstarted();
+    //Stopwatch indexWatch = Stopwatch.createUnstarted();
 
-    Stopwatch indexWatch = Stopwatch.createUnstarted();
 
-
-    class PantsDumbModeListener implements DumbService.DumbModeListener {
-
-      @Override
-      public void enteredDumbMode() {
-        System.out.println("get dumb");
-        indexWatch.start();
-      }
-
-      @Override
-      public void exitDumbMode() {
-        System.out.println("get smart");
-        indexWatch.stop();
-        System.out.println(String.format("index: %s", indexWatch.elapsed(TimeUnit.MILLISECONDS)));
-      }
-    }
-
-    Stopwatch loadWatch = Stopwatch.createUnstarted();
-    loadWatch.start();
+    //loadWatch.start();
     MessageBusConnection messageBusConnection = project.getMessageBus().connect();
     messageBusConnection.subscribe(
       ProjectTopics.PROJECT_ROOTS,
       new ModuleRootAdapter() {
         @Override
         public void rootsChanged(ModuleRootEvent event) {
-          loadWatch.stop();
-          System.out.println(String.format("load: %s", loadWatch.elapsed(TimeUnit.MILLISECONDS)));
+          //loadWatch.stop();
+          //System.out.println(String.format("load: %s", loadWatch.elapsed(TimeUnit.MILLISECONDS)));
+          PantsDumbModeListener listener = projectListener.computeIfAbsent(project, k -> new PantsDumbModeListener(project));
+
+          project.getMessageBus().connect().subscribe(DumbService.DUMB_MODE, listener);
+
           if (ApplicationManager.getApplication().isUnitTestMode()) {
-            indexWatch.start();
-            DumbService.getInstance(project).waitForSmartMode();
-            indexWatch.stop();
-            System.out.println(String.format("index: %s", indexWatch.elapsed(TimeUnit.MILLISECONDS)));
-          }
-          else {
-            PantsDumbModeListener pantsDumbModeListener = new PantsDumbModeListener();
-            project.getMessageBus().connect().subscribe(DumbService.DUMB_MODE, pantsDumbModeListener);
+            // Manually mark DumbMode in testing
+            // The counter part is in `com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase.doImport()`
+            DumbServiceImpl.getInstance(project).setDumb(true);
           }
         }
       }

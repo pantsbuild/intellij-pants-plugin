@@ -38,6 +38,7 @@ import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -354,6 +355,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     });
     importProject();
     PantsMetrics.markIndexEnd();
+    // Mark indexing ended.
+    DumbServiceImpl.getInstance(myProject).setDumb(false);
   }
 
   protected void assertGotoFileContains(String filename) {
