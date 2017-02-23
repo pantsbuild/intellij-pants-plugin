@@ -201,7 +201,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     @NotNull final ExternalSystemTaskId id,
     @NotNull PantsCompileOptionsExecutor executor,
     final ExternalSystemTaskNotificationListener listener,
-    @NotNull DataNode<ProjectData> projectDataNode,
+    @NotNull DataNode<ProjectData> projectDataNode
   ) {
     final PantsResolver dependenciesResolver = new PantsResolver(executor);
     dependenciesResolver.resolve(
