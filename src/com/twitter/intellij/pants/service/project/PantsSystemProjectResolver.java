@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.service.project;
 
+import com.intellij.ProjectTopics;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
@@ -27,13 +28,17 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootAdapter;
+import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
+import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
@@ -91,7 +96,18 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (ModuleManager.getInstance(ideProject).getModules().length > 0) {
       return;
     }
-    new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
+
+    MessageBusConnection messageBusConnection = ideProject.getMessageBus().connect();
+    messageBusConnection.subscribe(
+      ProjectTopics.PROJECT_ROOTS,
+      new ModuleRootAdapter() {
+        @Override
+        public void rootsChanged(ModuleRootEvent event) {
+          // Initiate view switch only when project modules have been created.
+          new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
+        }
+      }
+    );
   }
 
   /**
@@ -226,10 +242,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       /**
        * Make sure the project view opened so the view switch will follow.
        */
-      if (ApplicationManager.getApplication().isUnitTestMode()) {
-        return;
-      }
-      final ToolWindow projectWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Project");
+      final ToolWindow projectWindow = ToolWindowManager.getInstance(myProject).getToolWindow(ToolWindowId.PROJECT_VIEW);
       if (projectWindow == null) {
         return;
       }
@@ -271,7 +284,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
                   }
                 }
               }
-              directoryFocusHandle.cancel(false);
+              final boolean mayInterruptIfRunning = true;
+              directoryFocusHandle.cancel(mayInterruptIfRunning);
             }
           });
         }
