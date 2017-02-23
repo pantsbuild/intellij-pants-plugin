@@ -76,8 +76,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     }
     checkForDifferentPantsExecutables(id, projectPath);
 
-    Project project = id.findProject();
-
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode =
@@ -160,7 +158,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
     if (!isPreviewMode) {
       PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(isEnableImcrementalImport);
-      resolveUsingPantsGoal(id, executor, listener, projectDataNode, isEnableImcrementalImport);
+      resolveUsingPantsGoal(id, executor, listener, projectDataNode);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
         // Add a module with content root as import project directory path.
@@ -204,7 +202,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     @NotNull PantsCompileOptionsExecutor executor,
     final ExternalSystemTaskNotificationListener listener,
     @NotNull DataNode<ProjectData> projectDataNode,
-    boolean isEnableImcrementalImport
   ) {
     final PantsResolver dependenciesResolver = new PantsResolver(executor);
     dependenciesResolver.resolve(
