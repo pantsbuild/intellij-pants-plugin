@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.service.project.wizard;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;

@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.extension;
 
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.openapi.extensions.Extensions;
+import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
@@ -187,9 +188,9 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     assertTrue("Last compile should be noop, but was not.", listener.lastWasNoop);
   }
 
-  public void testDuration() throws Throwable {
+  public void testDurationSinceLastEdit() throws Throwable {
     class DurationMetricsTestListener implements PantsExternalMetricsListener {
-      long duration = -1;
+      private long duration = -1;
 
       @Override
       public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
@@ -233,12 +234,118 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
       Thread.sleep(sleepMilliseconds);
       // Second compile with modified project should execute.
       assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-      assertTrue("Recorded duration between last file edit and PantsCompile invocation should be refreshed, but it is not", listener.duration >= sleepMilliseconds);
+      assertTrue(
+        "Recorded duration between last file edit and PantsCompile invocation should be refreshed, but it is not",
+        listener.duration >= sleepMilliseconds
+      );
       // Record the current duration.
       long dataPoint = listener.duration;
       // Run compile again which should be noop, and make sure the the duration is not updated.
       assertPantsCompileNoop(pantsCompileProject());
       assertEquals("Noop compile should leave recorded duration unchanged, but it is not the case", dataPoint, listener.duration);
     }
+  }
+
+  public void testDurationIndexing() throws Throwable {
+    class DurationMetricsTestListener implements PantsExternalMetricsListener {
+      private long duration = -1;
+
+      @Override
+      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
+
+      }
+
+      @Override
+      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
+      }
+
+      @Override
+      public void logIsGUIImport(boolean isGUI) throws Throwable {
+
+      }
+
+      @Override
+      public void logTestRunner(TestRunnerType runner) throws Throwable {
+      }
+
+      @Override
+      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
+      }
+
+      @Override
+      public void logIndexingDuration(long milliSeconds) throws Throwable {
+        duration = milliSeconds;
+      }
+    }
+
+    DurationMetricsTestListener listener = new DurationMetricsTestListener();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+
+    // Set DumbService manually to explicitly trigger the StopWatch for indexing.
+    // The goal is to test the whether `logIndexingDuration` works.
+    DumbServiceImpl.getInstance(myProject).setDumb(true);
+
+    // Set dumb mode multiple times to test the semaphore behavior.
+    DumbServiceImpl.getInstance(myProject).setDumb(true);
+
+    long sleepTimeMilliSeconds = 500;
+    Thread.sleep(sleepTimeMilliSeconds);
+
+    // Unset dumb service to signify indexing has ended.
+    DumbServiceImpl.getInstance(myProject).setDumb(false);
+    DumbServiceImpl.getInstance(myProject).setDumb(false);
+
+    assertTrue("Indexing duration should be recorded, but is not", listener.duration >= sleepTimeMilliSeconds);
+  }
+
+  public void testInvalidDurationIndexing() throws Throwable {
+    class DurationMetricsTestListener implements PantsExternalMetricsListener {
+      private long duration = -1;
+
+      @Override
+      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
+
+      }
+
+      @Override
+      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
+      }
+
+      @Override
+      public void logIsGUIImport(boolean isGUI) throws Throwable {
+
+      }
+
+      @Override
+      public void logTestRunner(TestRunnerType runner) throws Throwable {
+      }
+
+      @Override
+      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
+      }
+
+      @Override
+      public void logIndexingDuration(long milliSeconds) throws Throwable {
+        duration = milliSeconds;
+      }
+    }
+
+    DurationMetricsTestListener listener = new DurationMetricsTestListener();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+
+    // Set DumbService manually to explicitly trigger the StopWatch for indexing.
+    // The goal is to test the whether `logIndexingDuration` works.
+    DumbServiceImpl.getInstance(myProject).setDumb(true);
+
+    // Set dumb mode multiple times to test the semaphore behavior.
+    DumbServiceImpl.getInstance(myProject).setDumb(true);
+
+    long sleepTimeMilliSeconds = 500;
+    Thread.sleep(sleepTimeMilliSeconds);
+
+    // Unset dumb service to signify indexing has ended.
+    DumbServiceImpl.getInstance(myProject).setDumb(false);
+
+    assertEquals("Indexing duration should not be recorded", listener.duration, -1);
   }
 }

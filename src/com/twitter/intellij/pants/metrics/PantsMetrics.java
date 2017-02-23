@@ -38,7 +38,6 @@ public class PantsMetrics {
     @Override
     public void enteredDumbMode() {
       if (count.getAndIncrement() == 0) {
-        System.out.println("get dumb");
         indexWatch.start();
       }
     }
@@ -47,7 +46,6 @@ public class PantsMetrics {
     public void exitDumbMode() {
       if (count.decrementAndGet() == 0) {
         indexWatch.stop();
-        System.out.println(String.format("get smart. index: %s %s", indexWatch.elapsed(TimeUnit.MILLISECONDS), indexWatch.hashCode()));
         PantsExternalMetricsListenerManager.getInstance().logIndexingDuration(indexWatch.elapsed(TimeUnit.MILLISECONDS));
         indexWatch.reset();
       }
