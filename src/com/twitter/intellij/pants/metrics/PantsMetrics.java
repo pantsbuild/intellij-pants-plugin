@@ -30,20 +30,6 @@ import java.util.stream.Collectors;
  * TODO: keep the metrics per project.
  */
 public class PantsMetrics {
-  public static ScheduledExecutorService indexThreadPool;
-
-  private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
-  public static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "pants.metrics.report.dir";
-  public static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "pants.metrics.import.dir";
-  public static final String SYSTEM_PROPERTY_METRICS_ENABLE = "pants.metrics.enable";
-
-  private static volatile ScheduledFuture handle;
-  private static volatile int counter = 0;
-
-  private static final String METRIC_INDEXING = "indexing_second";
-  private static final String METRIC_LOAD = "load_second";
-  private static final String METRIC_EXPORT = "export_second";
-
 
   static class PantsDumbModeListener implements DumbService.DumbModeListener {
     private AtomicInteger count = new AtomicInteger(0);
@@ -68,27 +54,26 @@ public class PantsMetrics {
     }
   }
 
+  public static ScheduledExecutorService indexThreadPool;
+
+  public static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "pants.metrics.report.dir";
+  public static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "pants.metrics.import.dir";
+  public static final String SYSTEM_PROPERTY_METRICS_ENABLE = "pants.metrics.enable";
+
+  private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
+
+  private static volatile ScheduledFuture handle;
+  private static volatile int counter = 0;
+
+  private static final String METRIC_INDEXING = "indexing_second";
+  private static final String METRIC_LOAD = "load_second";
+  private static final String METRIC_EXPORT = "export_second";
+
   private static final ConcurrentHashMap<Project, PantsDumbModeListener> projectListener = new ConcurrentHashMap<>();
-
-
-  class PerformanceData {
-    double exportAndloadSeconds = -1;
-    double indexingSeconds = -1;
-
-    public PerformanceData() {
-
-    }
-
-    public PerformanceData(double exportAndloadSeconds, double indexingSeconds) {
-      this.exportAndloadSeconds = exportAndloadSeconds;
-    }
-  }
-
-  public static final ConcurrentHashMap<Project, PerformanceData> projectPerformanceData = new ConcurrentHashMap<>();
-
 
   /**
    * Register project to subscribe the event of hopping in and out of Dumb mode. Being in dumb mode means the IDE is indexing.
+   * This is only functional in the actual GUI setting.
    *
    * @param project project of interest.
    */
