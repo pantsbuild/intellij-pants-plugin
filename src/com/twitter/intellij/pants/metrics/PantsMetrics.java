@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.metrics;
 
 import com.google.common.base.Stopwatch;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -22,7 +21,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -30,35 +28,12 @@ import java.util.stream.Collectors;
  * TODO: keep the metrics per project.
  */
 public class PantsMetrics {
-
-  static class PantsDumbModeListener implements DumbService.DumbModeListener {
-    private AtomicInteger count = new AtomicInteger(0);
-    Stopwatch indexWatch = Stopwatch.createUnstarted();
-
-    @Override
-    public void enteredDumbMode() {
-      if (count.getAndIncrement() == 0) {
-        indexWatch.start();
-      }
-    }
-
-    @Override
-    public void exitDumbMode() {
-      if (count.decrementAndGet() == 0) {
-        indexWatch.stop();
-        PantsExternalMetricsListenerManager.getInstance().logIndexingDuration(indexWatch.elapsed(TimeUnit.MILLISECONDS));
-        indexWatch.reset();
-      }
-    }
-  }
-
   public static ScheduledExecutorService indexThreadPool;
 
+  private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
   public static final String SYSTEM_PROPERTY_METRICS_REPORT_DIR = "pants.metrics.report.dir";
   public static final String SYSTEM_PROPERTY_METRICS_IMPORT_DIR = "pants.metrics.import.dir";
   public static final String SYSTEM_PROPERTY_METRICS_ENABLE = "pants.metrics.enable";
-
-  private static ConcurrentHashMap<String, Stopwatch> timers = new ConcurrentHashMap<>();
 
   private static volatile ScheduledFuture handle;
   private static volatile int counter = 0;
@@ -67,22 +42,6 @@ public class PantsMetrics {
   private static final String METRIC_LOAD = "load_second";
   private static final String METRIC_EXPORT = "export_second";
 
-  private static final ConcurrentHashMap<Project, PantsDumbModeListener> projectListener = new ConcurrentHashMap<>();
-
-  /**
-   * Register project to subscribe the event of hopping in and out of Dumb mode. Being in dumb mode means the IDE is indexing.
-   * This is only functional in the actual GUI setting.
-   *
-   * @param project project of interest.
-   */
-  public static void registerDumbModeListener(@NotNull Project project) {
-    PantsDumbModeListener listener = projectListener.computeIfAbsent(project, k -> new PantsDumbModeListener());
-    project.getMessageBus().connect().subscribe(DumbService.DUMB_MODE, listener);
-  }
-
-  public static void unregisterDumbModeListener(@NotNull Project project) {
-    projectListener.remove(project);
-  }
 
   @Nullable
   public static String getMetricsImportDir() {
