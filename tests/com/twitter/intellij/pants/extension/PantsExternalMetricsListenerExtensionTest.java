@@ -15,47 +15,37 @@ import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunCon
 
 public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrationTest {
 
-  private PantsExternalMetricsListener.TestRunnerType lastRun;
-
-  public class TestMetricsListener implements PantsExternalMetricsListener {
+  /**
+   * Empty listener class, so the tests covering part of the `PantsExternalMetricsListener` do not have
+   * to have all the boilerplate to implement all the abstract methods.
+   */
+  static class EmptyMetricsTestListener implements PantsExternalMetricsListener {
 
     @Override
-    public void logIsIncrementalImport(boolean isIncremental) {
-
+    public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
     }
 
     @Override
     public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
-
     }
 
     @Override
-    public void logIsGUIImport(boolean isGUI) {
-
+    public void logIsGUIImport(boolean isGUI) throws Throwable {
     }
 
     @Override
-    public void logTestRunner(TestRunnerType runner) {
-      lastRun = runner;
+    public void logTestRunner(TestRunnerType runner) throws Throwable {
     }
 
     @Override
     public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
-
     }
 
     @Override
     public void logIndexingDuration(long milliSeconds) throws Throwable {
-
     }
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-    // Register `TestMetricsListener` as one of the extension points of PantsExternalMetricsListener
-    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(new TestMetricsListener());
-  }
 
   @Override
   public void tearDown() throws Exception {
@@ -64,6 +54,20 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
   }
 
   public void testJUnitRunner() throws Throwable {
+    class TestMetricsListener extends EmptyMetricsTestListener {
+      private PantsExternalMetricsListener.TestRunnerType lastRun;
+
+      @Override
+      public void logTestRunner(TestRunnerType runner) {
+        lastRun = runner;
+      }
+    }
+
+    // Register `TestMetricsListener` as one of the extension points of PantsExternalMetricsListener
+    TestMetricsListener listener = new TestMetricsListener();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+
+
     doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
 
     JUnitConfiguration runConfiguration = generateJUnitConfiguration(
@@ -74,10 +78,23 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     assertSuccessfulTest(runConfiguration);
-    assertEquals(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER, lastRun);
+    assertEquals(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER, listener.lastRun);
   }
 
   public void testScalaRunnerMetrics() {
+    class TestMetricsListener extends EmptyMetricsTestListener {
+      private PantsExternalMetricsListener.TestRunnerType lastRun;
+
+      @Override
+      public void logTestRunner(TestRunnerType runner) {
+        lastRun = runner;
+      }
+    }
+
+    // Register `TestMetricsListener` as one of the extension points of PantsExternalMetricsListener
+    TestMetricsListener listener = new TestMetricsListener();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+
     doImport("examples/tests/scala/org/pantsbuild/example/hello");
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     ScalaTestRunConfiguration runConfiguration = generateScalaRunConfiguration(
@@ -91,44 +108,19 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     catch (AssertionFailedError ignored) {
 
     }
-    assertEquals(PantsExternalMetricsListener.TestRunnerType.SCALA_RUNNER, lastRun);
+    assertEquals(PantsExternalMetricsListener.TestRunnerType.SCALA_RUNNER, listener.lastRun);
   }
 
   public void testJUnitRunnerError() throws Throwable {
 
-    class ErrorMetricsListener implements PantsExternalMetricsListener {
+    class ErrorMetricsListener extends EmptyMetricsTestListener {
 
-      public boolean called = false;
-
-      @Override
-      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
-
-      }
-
-      @Override
-      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
-
-      }
-
-      @Override
-      public void logIsGUIImport(boolean isGUI) throws Throwable {
-
-      }
+      private boolean called = false;
 
       @Override
       public void logTestRunner(TestRunnerType runner) throws Throwable {
         called = true;
         throw new Exception("metrics error");
-      }
-
-      @Override
-      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
-
-      }
-
-      @Override
-      public void logIndexingDuration(long milliSeconds) throws Throwable {
-
       }
     }
 
@@ -141,37 +133,13 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
   }
 
   public void testNoopMetrics() throws Throwable {
-    class NoopMetricsListener implements PantsExternalMetricsListener {
+    class NoopMetricsListener extends EmptyMetricsTestListener {
 
       private boolean lastWasNoop;
 
       @Override
-      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
-
-      }
-
-      @Override
       public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
         lastWasNoop = isNoop;
-      }
-
-      @Override
-      public void logIsGUIImport(boolean isGUI) throws Throwable {
-
-      }
-
-      @Override
-      public void logTestRunner(TestRunnerType runner) throws Throwable {
-      }
-
-      @Override
-      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
-
-      }
-
-      @Override
-      public void logIndexingDuration(long milliSeconds) throws Throwable {
-
       }
     }
 
@@ -189,35 +157,12 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
   }
 
   public void testDurationSinceLastEdit() throws Throwable {
-    class DurationMetricsTestListener implements PantsExternalMetricsListener {
+    class DurationMetricsTestListener extends EmptyMetricsTestListener {
       private long duration = -1;
-
-      @Override
-      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
-
-      }
-
-      @Override
-      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
-      }
-
-      @Override
-      public void logIsGUIImport(boolean isGUI) throws Throwable {
-
-      }
-
-      @Override
-      public void logTestRunner(TestRunnerType runner) throws Throwable {
-      }
 
       @Override
       public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
         duration = milliSeconds;
-      }
-
-      @Override
-      public void logIndexingDuration(long milliSeconds) throws Throwable {
-
       }
     }
 
@@ -247,30 +192,8 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
   }
 
   public void testDurationIndexing() throws Throwable {
-    class DurationMetricsTestListener implements PantsExternalMetricsListener {
+    class DurationMetricsTestListener extends EmptyMetricsTestListener {
       private long duration = -1;
-
-      @Override
-      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
-
-      }
-
-      @Override
-      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
-      }
-
-      @Override
-      public void logIsGUIImport(boolean isGUI) throws Throwable {
-
-      }
-
-      @Override
-      public void logTestRunner(TestRunnerType runner) throws Throwable {
-      }
-
-      @Override
-      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
-      }
 
       @Override
       public void logIndexingDuration(long milliSeconds) throws Throwable {
