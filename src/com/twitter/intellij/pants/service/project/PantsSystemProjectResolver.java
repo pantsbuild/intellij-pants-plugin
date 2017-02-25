@@ -158,7 +158,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
     if (!isPreviewMode) {
       PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(isEnableImcrementalImport);
-      resolveUsingPantsGoal(id, executor, listener, projectDataNode, isEnableImcrementalImport);
+      resolveUsingPantsGoal(id, executor, listener, projectDataNode);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
         // Add a module with content root as import project directory path.
@@ -201,8 +201,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     @NotNull final ExternalSystemTaskId id,
     @NotNull PantsCompileOptionsExecutor executor,
     final ExternalSystemTaskNotificationListener listener,
-    @NotNull DataNode<ProjectData> projectDataNode,
-    boolean isEnableImcrementalImport
+    @NotNull DataNode<ProjectData> projectDataNode
   ) {
     final PantsResolver dependenciesResolver = new PantsResolver(executor);
     dependenciesResolver.resolve(

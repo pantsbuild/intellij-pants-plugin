@@ -23,6 +23,7 @@ import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.file.FileChangeTracker;
+import com.twitter.intellij.pants.metrics.LivePantsMetrics;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.service.project.PantsResolver;
@@ -48,12 +49,14 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
     PantsMetrics.report();
     FileChangeTracker.unregisterProject(myProject);
     PantsConsoleManager.unregisterConsole(myProject);
+    LivePantsMetrics.unregisterDumbModeListener(myProject);
     super.projectClosed();
   }
 
   @Override
   public void projectOpened() {
     PantsMetrics.initialize();
+    LivePantsMetrics.registerDumbModeListener(myProject);
     PantsConsoleManager.registerConsole(myProject);
     super.projectOpened();
     if (myProject.isDefault()) {

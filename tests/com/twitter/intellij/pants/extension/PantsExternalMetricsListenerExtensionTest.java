@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.extension;
 
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.openapi.extensions.Extensions;
+import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
@@ -14,42 +15,37 @@ import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunCon
 
 public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrationTest {
 
-  private PantsExternalMetricsListener.TestRunnerType lastRun;
-
-  public class TestMetricsListener implements PantsExternalMetricsListener {
+  /**
+   * Empty listener class, so the tests covering part of the `PantsExternalMetricsListener` do not have
+   * to have all the boilerplate to implement all the abstract methods.
+   */
+  static class EmptyMetricsTestListener implements PantsExternalMetricsListener {
 
     @Override
-    public void logIsIncrementalImport(boolean isIncremental) {
-
+    public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
     }
 
     @Override
     public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
-
     }
 
     @Override
-    public void logIsGUIImport(boolean isGUI) {
-
+    public void logIsGUIImport(boolean isGUI) throws Throwable {
     }
 
     @Override
-    public void logTestRunner(TestRunnerType runner) {
-      lastRun = runner;
+    public void logTestRunner(TestRunnerType runner) throws Throwable {
     }
 
     @Override
     public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
+    }
 
+    @Override
+    public void logIndexingDuration(long milliSeconds) throws Throwable {
     }
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-    // Register `TestMetricsListener` as one of the extension points of PantsExternalMetricsListener
-    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(new TestMetricsListener());
-  }
 
   @Override
   public void tearDown() throws Exception {
@@ -58,6 +54,20 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
   }
 
   public void testJUnitRunner() throws Throwable {
+    class TestMetricsListener extends EmptyMetricsTestListener {
+      private PantsExternalMetricsListener.TestRunnerType lastRun;
+
+      @Override
+      public void logTestRunner(TestRunnerType runner) {
+        lastRun = runner;
+      }
+    }
+
+    // Register `TestMetricsListener` as one of the extension points of PantsExternalMetricsListener
+    TestMetricsListener listener = new TestMetricsListener();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+
+
     doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
 
     JUnitConfiguration runConfiguration = generateJUnitConfiguration(
@@ -68,10 +78,23 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     assertSuccessfulTest(runConfiguration);
-    assertEquals(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER, lastRun);
+    assertEquals(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER, listener.lastRun);
   }
 
   public void testScalaRunnerMetrics() {
+    class TestMetricsListener extends EmptyMetricsTestListener {
+      private PantsExternalMetricsListener.TestRunnerType lastRun;
+
+      @Override
+      public void logTestRunner(TestRunnerType runner) {
+        lastRun = runner;
+      }
+    }
+
+    // Register `TestMetricsListener` as one of the extension points of PantsExternalMetricsListener
+    TestMetricsListener listener = new TestMetricsListener();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+
     doImport("examples/tests/scala/org/pantsbuild/example/hello");
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     ScalaTestRunConfiguration runConfiguration = generateScalaRunConfiguration(
@@ -85,39 +108,19 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     catch (AssertionFailedError ignored) {
 
     }
-    assertEquals(PantsExternalMetricsListener.TestRunnerType.SCALA_RUNNER, lastRun);
+    assertEquals(PantsExternalMetricsListener.TestRunnerType.SCALA_RUNNER, listener.lastRun);
   }
 
   public void testJUnitRunnerError() throws Throwable {
 
-    class ErrorMetricsListener implements PantsExternalMetricsListener {
+    class ErrorMetricsListener extends EmptyMetricsTestListener {
 
-      public boolean called = false;
-
-      @Override
-      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
-
-      }
-
-      @Override
-      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
-
-      }
-
-      @Override
-      public void logIsGUIImport(boolean isGUI) throws Throwable {
-
-      }
+      private boolean called = false;
 
       @Override
       public void logTestRunner(TestRunnerType runner) throws Throwable {
         called = true;
         throw new Exception("metrics error");
-      }
-
-      @Override
-      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
-
       }
     }
 
@@ -130,32 +133,13 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
   }
 
   public void testNoopMetrics() throws Throwable {
-    class NoopMetricsListener implements PantsExternalMetricsListener {
+    class NoopMetricsListener extends EmptyMetricsTestListener {
 
       private boolean lastWasNoop;
 
       @Override
-      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
-
-      }
-
-      @Override
       public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
         lastWasNoop = isNoop;
-      }
-
-      @Override
-      public void logIsGUIImport(boolean isGUI) throws Throwable {
-
-      }
-
-      @Override
-      public void logTestRunner(TestRunnerType runner) throws Throwable {
-      }
-
-      @Override
-      public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
-
       }
     }
 
@@ -172,27 +156,9 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     assertTrue("Last compile should be noop, but was not.", listener.lastWasNoop);
   }
 
-  public void testDuration() throws Throwable {
-    class DurationMetricsTestListener implements PantsExternalMetricsListener {
-      long duration = -1;
-
-      @Override
-      public void logIsIncrementalImport(boolean isIncremental) throws Throwable {
-
-      }
-
-      @Override
-      public void logIsPantsNoopCompile(boolean isNoop) throws Throwable {
-      }
-
-      @Override
-      public void logIsGUIImport(boolean isGUI) throws Throwable {
-
-      }
-
-      @Override
-      public void logTestRunner(TestRunnerType runner) throws Throwable {
-      }
+  public void testDurationSinceLastEdit() throws Throwable {
+    class DurationMetricsTestListener extends EmptyMetricsTestListener {
+      private long duration = -1;
 
       @Override
       public void logDurationBeforePantsCompile(long milliSeconds) throws Throwable {
@@ -213,12 +179,65 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
       Thread.sleep(sleepMilliseconds);
       // Second compile with modified project should execute.
       assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-      assertTrue("Recorded duration between last file edit and PantsCompile invocation should be refreshed, but it is not", listener.duration >= sleepMilliseconds);
+      assertTrue(
+        "Recorded duration between last file edit and PantsCompile invocation should be refreshed, but it is not",
+        listener.duration >= sleepMilliseconds
+      );
       // Record the current duration.
       long dataPoint = listener.duration;
       // Run compile again which should be noop, and make sure the the duration is not updated.
       assertPantsCompileNoop(pantsCompileProject());
       assertEquals("Noop compile should leave recorded duration unchanged, but it is not the case", dataPoint, listener.duration);
     }
+  }
+
+  public void testDurationIndexing() throws Throwable {
+    class DurationMetricsTestListener extends EmptyMetricsTestListener {
+      private long duration = -1;
+
+      @Override
+      public void logIndexingDuration(long milliSeconds) throws Throwable {
+        duration = milliSeconds;
+      }
+    }
+
+    DurationMetricsTestListener listener = new DurationMetricsTestListener();
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+
+    // Set DumbService manually to explicitly trigger the StopWatch for indexing.
+    // The goal is to test the whether `logIndexingDuration` works.
+    DumbServiceImpl.getInstance(myProject).setDumb(true);
+
+    // Set dumb mode multiple times to test the semaphore behavior.
+    DumbServiceImpl.getInstance(myProject).setDumb(true);
+
+    long sleepTimeMilliSeconds = 500;
+    Thread.sleep(sleepTimeMilliSeconds);
+
+    // Unset dumb service to signify indexing has ended.
+    DumbServiceImpl.getInstance(myProject).setDumb(false);
+    DumbServiceImpl.getInstance(myProject).setDumb(false);
+
+    assertTrue(
+      String.format("Indexing duration should be greater than %s, but is %s.", sleepTimeMilliSeconds, listener.duration),
+      listener.duration >= sleepTimeMilliSeconds
+    );
+
+    // reset
+    listener.duration = -1;
+
+    // 2nd wave of indexing.
+    DumbServiceImpl.getInstance(myProject).setDumb(true);
+
+    long secondSleepTimeMilliSeconds = 1000;
+    Thread.sleep(secondSleepTimeMilliSeconds);
+
+    // Unset dumb service to signify indexing has ended.
+    DumbServiceImpl.getInstance(myProject).setDumb(false);
+
+    assertTrue(
+      String.format("Indexing duration should be greater than %s, but is %s.", secondSleepTimeMilliSeconds, listener.duration),
+      listener.duration >= secondSleepTimeMilliSeconds
+    );
   }
 }
