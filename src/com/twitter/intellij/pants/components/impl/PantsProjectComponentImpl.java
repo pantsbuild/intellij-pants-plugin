@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.components.impl;
 
+import com.intellij.ProjectTopics;
 import com.intellij.compiler.server.BuildManagerListener;
 import com.intellij.execution.RunManagerAdapter;
 import com.intellij.execution.RunManagerEx;
@@ -14,10 +15,14 @@ import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.util.Function;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
@@ -131,6 +136,35 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           PantsUtil.refreshAllProjects(myProject);
 
           prepareGuiComponents();
+
+          final MessageBusConnection connection = myProject.getMessageBus().connect(myProject);
+          connection.subscribe(
+            ProjectTopics.MODULES, new ModuleListener() {
+              @Override
+              public void moduleAdded(@NotNull Project project, @NotNull Module module) {
+                ApplicationManager.getApplication().runWriteAction(() -> ProjectRootManager.getInstance(project).setProjectSdk(
+                  PantsUtil.getDefaultJavaSdk(PantsUtil.findPantsExecutable(project).get().getPath()).get()
+                ));
+              }
+
+              @Override
+              public void beforeModuleRemoved(@NotNull Project project, @NotNull Module module) {
+
+              }
+
+              @Override
+              public void moduleRemoved(@NotNull Project project, @NotNull Module module) {
+
+              }
+
+              @Override
+              public void modulesRenamed(
+                @NotNull Project project, @NotNull List<Module> modules, @NotNull Function<Module, String> oldNameProvider
+              ) {
+
+              }
+            }
+          );
         }
 
         /**

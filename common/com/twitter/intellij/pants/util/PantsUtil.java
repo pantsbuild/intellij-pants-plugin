@@ -776,7 +776,15 @@ public class PantsUtil {
         }
       }
     }
-    return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome.get()));
+
+    Sdk jdk = JavaSdk.getInstance().createJdk(jdkName, jdkHome.get());
+    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+      @Override
+      public void run() {
+        ApplicationManager.getApplication().runWriteAction(() -> ProjectJdkTable.getInstance().addJdk(jdk));
+      }
+    });
+    return Optional.of(jdk);
   }
 
   /**
