@@ -18,9 +18,11 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Function;
 import com.intellij.util.messages.MessageBusConnection;
@@ -41,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
@@ -117,9 +120,9 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            * Generate the import spec for the next refresh.
            */
           final List<String> targetSpecs = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
-          boolean loadLibsAndSources = true;
-          boolean enableIncrementalImport = false;
-          boolean useIdeaProjectJdk = false;
+          final boolean loadLibsAndSources = true;
+          final boolean enableIncrementalImport = false;
+          final boolean useIdeaProjectJdk = false;
           final PantsProjectSettings pantsProjectSettings =
             new PantsProjectSettings(targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk);
 
@@ -137,14 +140,28 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
           prepareGuiComponents();
 
+          // Subscribe the change of module addition, meaning when the project finishes resolves,
+          // project SDK should be explicitly set.
           final MessageBusConnection connection = myProject.getMessageBus().connect(myProject);
           connection.subscribe(
             ProjectTopics.MODULES, new ModuleListener() {
               @Override
               public void moduleAdded(@NotNull Project project, @NotNull Module module) {
-                ApplicationManager.getApplication().runWriteAction(() -> ProjectRootManager.getInstance(project).setProjectSdk(
-                  PantsUtil.getDefaultJavaSdk(PantsUtil.findPantsExecutable(project).get().getPath()).get()
-                ));
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                  Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(project);
+                  if (!pantsExecutable.isPresent()) {
+                    return;
+                  }
+
+                  Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath());
+                  if (!sdk.isPresent()) {
+                    return;
+                  }
+
+                  ProjectRootManager.getInstance(project).setProjectSdk(
+                    sdk.get()
+                  );
+                });
               }
 
               @Override
