@@ -158,9 +158,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
                     return;
                   }
 
-                  ProjectRootManager.getInstance(project).setProjectSdk(
-                    sdk.get()
-                  );
+                  ProjectRootManager.getInstance(project).setProjectSdk(sdk.get());
                 });
               }
 
