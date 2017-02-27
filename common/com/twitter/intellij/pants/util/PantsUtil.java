@@ -776,7 +776,17 @@ public class PantsUtil {
         }
       }
     }
-    return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome.get()));
+
+    // Finally if we need to create a new JDK, it needs to be registered in the `ProjectJdkTable` on the IDE level
+    // before it can be used.
+    Sdk jdk = JavaSdk.getInstance().createJdk(jdkName, jdkHome.get());
+    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+      @Override
+      public void run() {
+        ApplicationManager.getApplication().runWriteAction(() -> ProjectJdkTable.getInstance().addJdk(jdk));
+      }
+    });
+    return Optional.of(jdk);
   }
 
   /**
