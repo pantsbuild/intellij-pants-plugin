@@ -10,6 +10,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -122,6 +123,12 @@ public class FileChangeTracker {
    * https://github.com/JetBrains/intellij-community/blob/b5d046018b9a82fccd86bc9c1f1da2e28068440a/plugins/maven/src/main/java/org/jetbrains/idea/maven/utils/MavenImportNotifier.java#L92-L108
    */
   private static void notifyProjectRefreshIfNecessary(@NotNull VirtualFile file, final Project project) {
+    // TODO: Temporarily disable refresh notification due to UX annoyance in GUI mode.
+    // See https://github.com/pantsbuild/intellij-pants-plugin/issues/270
+    if (!ApplicationManager.getApplication().isUnitTestMode()) {
+      return;
+    }
+
     NotificationListener.Adapter refreshAction = new NotificationListener.Adapter() {
       @Override
       protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
