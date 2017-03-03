@@ -18,6 +18,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.StatusText;
@@ -71,7 +72,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myEnableIncrementalImportCheckBox,
       myUseIdeaProjectJdkCheckBox,
       new JBLabel(PantsBundle.message("pants.settings.text.targets")),
-      myTargetSpecsBox
+      new JBScrollPane(myTargetSpecsBox)
     );
 
     GridBag lineConstraints = ExternalSystemUiUtil.getFillLineConstraints(indentLevel);
