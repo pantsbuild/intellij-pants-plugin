@@ -27,7 +27,6 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,13 +64,6 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     params.setUseDynamicClasspath(true);
 
     final PathsList classpath = params.getClassPath();
-
-    for (Map.Entry<String, String> excludedPathEntry : findAllExcludedJars(classpath.getPathList(), findExcludes(module)).entrySet()) {
-      final String excludedPath = excludedPathEntry.getKey();
-      final String address = excludedPathEntry.getValue();
-      LOG.info(address + " excluded " + excludedPath);
-      classpath.remove(excludedPath);
-    }
 
     VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject())
       .orElseThrow(() -> new ExecutionException("Pants supports manifest jar, but it is not found."));
@@ -146,26 +138,6 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     runtimeEnumerator.forEachModule(processor);
   }
 
-  @NotNull
-  private Map<String, String> findAllExcludedJars(@NotNull List<String> classpathEntries, @NotNull Map<String, String> excludes) {
-    if (excludes.isEmpty()) {
-      return Collections.emptyMap();
-    }
-    final Map<String, String> result = new HashMap<String, String>();
-    for (String classpathEntry : classpathEntries) {
-      for (Map.Entry<String, String> excludeEntry : excludes.entrySet()) {
-        final String exclude = excludeEntry.getKey();
-        final String address = excludeEntry.getValue();
-        // exclude looks like com.foo:bar
-        // let's remove all jars with /com.foo/bar/ in the path
-        // because Pants uses Ivy
-        if (StringUtil.contains(classpathEntry, File.separator + exclude.replace(':', File.separatorChar) + File.separator)) {
-          result.put(classpathEntry, address);
-        }
-      }
-    }
-    return result;
-  }
 
   @Nullable
   private <T extends RunConfigurationBase> Module findPantsModule(T configuration) {
