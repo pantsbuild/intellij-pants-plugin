@@ -81,7 +81,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     assertEquals(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER, listener.lastRun);
   }
 
-  public void testScalaRunnerMetrics() {
+  public void testScalaRunnerMetrics() throws Exception {
     class TestMetricsListener extends EmptyMetricsTestListener {
       private PantsExternalMetricsListener.TestRunnerType lastRun;
 

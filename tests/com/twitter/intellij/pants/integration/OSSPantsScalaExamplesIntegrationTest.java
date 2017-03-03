@@ -29,9 +29,6 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     );
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_scala_org_pantsbuild_example_hello_exe_exe"));
 
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.hello.welcome.WelcomeEverybody", "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome"
-    );
     assertGotoFileContains("README");
     //Assert if README file under a sub directory is indexed.
     assertGotoFileContains("README_DOCS");
@@ -45,9 +42,6 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
 
     assertFirstSourcePartyModules(moduleName);
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.scala_with_java_sources.GreetEverybody", moduleName
-    );
   }
 
   public void testExcludes1() throws Throwable {
@@ -67,10 +61,6 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_excludes1"));
 
     findClassAndAssert("org.pantsbuild.testproject.excludes1.nested.foo.Foo");
-
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.testproject.excludes1.nested.foo.Foo", "intellij-integration_src_scala_org_pantsbuild_testproject_excludes1_nested_foo_foo"
-    );
   }
 
   public void testError1() throws Throwable {
@@ -102,9 +92,5 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
 
     findClassAndAssert("org.pantsbuild.example.hello.welcome.WelSpec");
     assertScalaLibrary("examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome");
-
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.hello.welcome.WelSpec", "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome"
-    );
   }
 }
