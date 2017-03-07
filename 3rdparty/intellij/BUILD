@@ -168,7 +168,7 @@ jar_library(
 jar_library(
     name = 'python-plugin',
     jars = [
-        _intellij_plugin_jar(path) for path in _find_jars_for_plugin('python', 'python.jar')
+        _intellij_plugin_jar(path) for path in _find_jars_for_plugin('python-ce', 'python-ce.jar')
     ]
 )
 
