@@ -7,32 +7,23 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
 import com.intellij.ide.plugins.PluginManager;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.IdeActions;
-import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
-import com.intellij.openapi.keymap.Keymap;
-import com.intellij.openapi.keymap.KeymapManager;
-import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
-import com.twitter.intellij.pants.components.PantsInitComponent;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModuleAction;
+import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
+import com.twitter.intellij.pants.components.PantsInitComponent;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.ui.PantsOverrideAction;
-import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.event.HyperlinkEvent;
 import java.io.File;
 
 public class PantsInitComponentImpl implements PantsInitComponent {
@@ -55,10 +46,8 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     final String basePath = System.getProperty("pants.plugin.base.path");
     final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(PantsConstants.PLUGIN_ID));
     if (StringUtil.isNotEmpty(basePath) && plugin instanceof IdeaPluginDescriptorImpl) {
-      ((IdeaPluginDescriptorImpl)plugin).setPath(new File(basePath));
+      ((IdeaPluginDescriptorImpl) plugin).setPath(new File(basePath));
     }
-
-    registerRefreshKey();
 
     registerPantsActions();
   }
@@ -104,33 +93,5 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     actionManager.registerAction(IdeActions.ACTION_MAKE_MODULE, pantsMakeModuleAction);
     actionManager.registerAction(IdeActions.ACTION_COMPILE, pantsDisableCompileAction);
     actionManager.registerAction(IdeActions.ACTION_COMPILE_PROJECT, pantsRebuildAction);
-  }
-
-
-  private void registerRefreshKey() {
-    Keymap keymap = KeymapManager.getInstance().getActiveKeymap();
-    KeyboardShortcut keyboardShortcut = KeyboardShortcut.fromString("shift meta pressed R");
-
-    // Add (Cmd Shift R) as shortcut to refresh the project if there is no shortcut for that action yet.
-    //  Shows error message if conflicting shortcut exists
-    if (KeymapManager.getInstance().getActiveKeymap().getShortcuts("ExternalSystem.RefreshAllProjects").length == 0 &&
-        keymap.getActionIds(keyboardShortcut).length > 0) {
-
-      Notification notification = new Notification(
-        "Keymap Error",
-        "Keymap Error",
-        "Conflict found assigning '⌘+Shift+R' to 'Refresh all external projects'. Please set it manually in " +
-        "<a href='#'>Keymap settings</a>.",
-        NotificationType.WARNING,
-        new NotificationListener() {
-          @Override
-          public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
-            ShowSettingsUtil.getInstance().showSettingsDialog(null, "Keymap");
-          }
-        }
-      );
-      Notifications.Bus.notify(notification);
-      keymap.addShortcut("ExternalSystem.RefreshAllProjects", keyboardShortcut);
-    }
   }
 }
