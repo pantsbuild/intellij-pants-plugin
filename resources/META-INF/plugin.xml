@@ -12,7 +12,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.5.1</version>
+  <version>1.5.3</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
@@ -80,6 +80,7 @@
   <extensionPoints>
     <extensionPoint name="projectResolver" interface="com.twitter.intellij.pants.service.project.PantsResolverExtension"/>
     <extensionPoint name="projectInfoModifier" interface="com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension"/>
+    <extensionPoint name="pantsExternalMetricsListener" interface="com.twitter.intellij.pants.metrics.PantsExternalMetricsListener"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
@@ -109,12 +110,8 @@
                      groupName="Pants" enabledByDefault="true"
                      implementationClass="com.twitter.intellij.pants.inspection.PythonPluginInspection"/>
 
-    <!--This jar has to match binary jar name built by ./pants binary scripts/sdk:intellij-pants-plugin-publish-->
-    <compileServer.plugin classpath="intellij-pants-plugin.jar"/>
+    <compileServer.plugin classpath="intellij-pants-plugin-publish.jar"/>
     <buildProcess.parametersProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildProcessParametersProvider"/>
-
-    <projectConfigurable instance="com.twitter.intellij.pants.config.PantsProjectCompilerConfigurable"
-                         id="intellij-pants" displayName="Pants" parentId="project.propCompiler"/>
 
     <projectConfigurable groupId="build.tools" groupWeight="110" id="reference.settingsdialog.project.pants"
                          instance="com.twitter.intellij.pants.settings.PantsConfigurable"

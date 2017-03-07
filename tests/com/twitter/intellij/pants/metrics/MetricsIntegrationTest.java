@@ -6,7 +6,6 @@ package com.twitter.intellij.pants.metrics;
 import com.google.common.io.Files;
 import com.google.gson.stream.JsonReader;
 import com.intellij.openapi.util.io.FileUtil;
-import com.twitter.intellij.pants.components.impl.PantsMetrics;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 

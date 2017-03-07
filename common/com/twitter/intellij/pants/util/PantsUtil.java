@@ -31,6 +31,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ContentEntry;
@@ -65,6 +66,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.JpsProject;
+import org.jetbrains.jps.model.java.JdkVersionDetector;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
 import org.jetbrains.jps.model.library.impl.sdk.JpsSdkImpl;
@@ -79,7 +81,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +170,7 @@ public class PantsUtil {
    */
   public static boolean isPantsProjectFile(VirtualFile file) {
     if (file.isDirectory()) {
-      return findPantsExecutable(file) != null;
+      return findPantsExecutable(file).isPresent();
     }
     return isBUILDFileName(file.getName());
   }
@@ -737,33 +738,24 @@ public class PantsUtil {
   }
 
   public static Set<String> filterGenTargets(@NotNull Collection<String> addresses) {
-    return new HashSet<String>(
-      ContainerUtil.filter(
-        addresses,
-        new Condition<String>() {
-          @Override
-          public boolean value(String targetAddress) {
-            return !isGenTarget(targetAddress);
-          }
-        }
-      )
-    );
-  }
-
-
-  public static boolean supportExportDefaultJavaSdk(@NotNull final String pantsExecutable) {
-    return versionCompare(SimpleExportResult.getExportResult(pantsExecutable).getVersion(), "1.0.7") >= 0;
+    return addresses.stream().filter(s -> !isGenTarget(s)).collect(Collectors.toSet());
   }
 
   @Nullable
   public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable) {
+    // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
+    Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
+      .filter(sdk -> sdk.getName().contains(pantsExecutable) && sdk.getSdkType() instanceof JavaSdk)
+      .findFirst();
+
+    if (sdkForPants.isPresent()) {
+      return sdkForPants;
+    }
+
     final SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
     if (versionCompare(exportResult.getVersion(), "1.0.7") < 0) {
       return Optional.empty();
     }
-
-    final String defaultPlatform = exportResult.getJvmPlatforms().getDefaultPlatform();
-    final String jdkName = String.format("JDK from pants %s", defaultPlatform);
 
     boolean strict = PantsOptions.getPantsOptions(pantsExecutable)
       .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION)
@@ -772,7 +764,29 @@ public class PantsUtil {
     if (!jdkHome.isPresent()) {
       return Optional.empty();
     }
-    return Optional.of(JavaSdk.getInstance().createJdk(jdkName, jdkHome.get()));
+
+    String jdkName = String.format("1.x_from_%s", pantsExecutable);
+    JdkVersionDetector.JdkVersionInfo jdkInfo = JdkVersionDetector.getInstance().detectJdkVersionInfo(jdkHome.get());
+    if (jdkInfo != null) {
+      // Using IJ's framework to detect jdk version. so jdkInfo.getVersion() returns `java version "1.8.0_121"`
+      for (String version : ContainerUtil.newArrayList("1.6", "1.7", "1.8", "1.9")) {
+        if (jdkInfo.getVersion().contains(version)) {
+          jdkName = String.format("%s_from_%s", version, pantsExecutable);
+          break;
+        }
+      }
+    }
+
+    // Finally if we need to create a new JDK, it needs to be registered in the `ProjectJdkTable` on the IDE level
+    // before it can be used.
+    Sdk jdk = JavaSdk.getInstance().createJdk(jdkName, jdkHome.get());
+    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+      @Override
+      public void run() {
+        ApplicationManager.getApplication().runWriteAction(() -> ProjectJdkTable.getInstance().addJdk(jdk));
+      }
+    });
+    return Optional.of(jdk);
   }
 
   /**

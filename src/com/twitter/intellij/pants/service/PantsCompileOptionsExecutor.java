@@ -16,7 +16,7 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsExecutionException;
-import com.twitter.intellij.pants.components.impl.PantsMetrics;
+import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -208,31 +208,9 @@ public class PantsCompileOptionsExecutor {
 
     commandLine.addParameters(getTargetSpecs());
     System.out.println(getTargetSpecs());
-    if (getOptions().isWithDependees()) {
-      statusConsumer.consume("Looking for dependents...");
-      commandLine.addParameters(loadDependees(getTargetSpecs()));
-    }
-
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
     LOG.debug(commandLine.toString());
     return commandLine;
-  }
-
-  private List<String> loadDependees(List<String> addresses) throws IOException, ExecutionException {
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
-    commandLine.addParameter("dependees");
-    commandLine.addParameter("--transitive");
-    commandLine.addParameters(addresses);
-
-    final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
-    commandLine.addParameter("--dependees-output-file=" + outputFile.getPath());
-
-    final ProcessOutput output = getProcessOutput(commandLine, null);
-    if (!output.checkSuccess(LOG)) {
-      throw new ExternalSystemException("Failed to find dependents!\n" + output.getStderr());
-    }
-
-    return FileUtil.loadLines(outputFile);
   }
 
   @NotNull
@@ -277,11 +255,6 @@ public class PantsCompileOptionsExecutor {
     @NotNull
     public List<String> getTargetSpecs() {
       return myExecutionOptions.getTargetSpecs();
-    }
-
-    @Override
-    public boolean isWithDependees() {
-      return myExecutionOptions.isWithDependees();
     }
 
     public boolean isEnableIncrementalImport() {

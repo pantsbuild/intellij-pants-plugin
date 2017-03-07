@@ -20,6 +20,7 @@ junit_tests(
     'com/twitter/intellij/pants/completion/*.java',
     'com/twitter/intellij/pants/components/impl/*.java',
     'com/twitter/intellij/pants/execution/*.java',
+    'com/twitter/intellij/pants/extension/*.java',
     'com/twitter/intellij/pants/highlighting/*.java',
     'com/twitter/intellij/pants/macro/*.java',
     'com/twitter/intellij/pants/model/*.java',
@@ -30,6 +31,7 @@ junit_tests(
     'com/twitter/intellij/pants/service/project/detector/*.java',
     'com/twitter/intellij/pants/service/project/model/*.java',
     'com/twitter/intellij/pants/service/util/*.java',
+    'com/twitter/intellij/pants/settings/*.java',
     'com/twitter/intellij/pants/util/*.java',
   )
 )

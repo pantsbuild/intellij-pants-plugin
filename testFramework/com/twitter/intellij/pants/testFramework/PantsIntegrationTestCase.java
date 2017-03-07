@@ -14,6 +14,7 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.junit.JUnitConfiguration;
@@ -37,8 +38,7 @@ import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
@@ -48,11 +48,8 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -64,9 +61,8 @@ import com.intellij.testFramework.CompilerTester;
 import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.components.impl.PantsMetrics;
-import com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
+import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -75,6 +71,8 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestConfigurationType;
+import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -133,9 +131,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   protected void setUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
-
-    final Sdk sdk = JavaAwareProjectJdkTableImpl.getInstanceEx().getInternalJdk();
-    ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
 
     cleanProjectRoot();
 
@@ -241,7 +236,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     // This is to match scala-platform used in pants repo across different releases,
     // so we expect at least one of the versions should be found here.
     ArrayList<String> expectedLibs =
-      Lists.newArrayList("Pants: org.scala-lang:scala-library:2.10.4", "Pants: org.scala-lang:scala-library:2.10.6");
+      Lists.newArrayList(
+        "Pants: org.scala-lang:scala-library:2.10.4",
+        "Pants: org.scala-lang:scala-library:2.10.6",
+        "Pants: org.scala-lang:scala-library:2.11.8"
+      );
     for (String libName : expectedLibs) {
       LibraryOrderEntry libX = ContainerUtil.getFirstItem(this.getModuleLibDeps(moduleName, libName));
       if (libX != null) {
@@ -249,17 +248,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         return;
       }
     }
-    fail(String.format("Neither library is found for %s", expectedLibs));
+    fail(String.format("None of %s is found for module %s.", expectedLibs, moduleName));
   }
 
-  protected void assertClassFileInModuleOutput(String className, String moduleName) throws Exception {
+  protected void assertManifestJarExists() throws Exception {
     assertTrue(
-      String.format("Didn't find %s class in %s module's output!", className, moduleName),
-      findClassFile(className, moduleName).isPresent()
+      "Manifest jar not found.",
+      findManifestJar().isPresent()
     );
   }
 
-  private Optional<VirtualFile> findClassFile(String className, String moduleName) throws Exception {
+  private Optional<VirtualFile> findManifestJar() throws Exception {
     Optional<PantsOptions> pantsOptions = PantsOptions.getPantsOptions(myProject);
     if (!pantsOptions.isPresent()) {
       return Optional.empty();
@@ -268,46 +267,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
       if (manifestJar.isPresent()) {
         return manifestJar;
-      }
-      return Optional.empty();
-    }
-
-    ApplicationManager.getApplication().runWriteAction(
-      new Runnable() {
-        @Override
-        public void run() {
-          // we need to refresh because IJ might not pick all newly created symlinks
-          VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
-        }
-      }
-    );
-
-    final Module module = getModule(moduleName);
-    final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(module);
-    assertTrue("Can't find working dir for module '" + moduleName + "'!", buildRoot.isPresent());
-    assertNotNull("Compilation wasn't completed successfully!", getCompilerTester());
-    List<String> compilerOutputPaths = ContainerUtil.newArrayList();
-
-    compilerOutputPaths.addAll(PantsClasspathRunConfigurationExtension.findPublishedClasspath(module));
-
-    for (String compilerOutputPath : compilerOutputPaths) {
-      VirtualFile output = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.pathToUrl(compilerOutputPath));
-      if (output == null) {
-        continue;
-      }
-      try {
-        if (StringUtil.equalsIgnoreCase(output.getExtension(), "jar")) {
-          output = JarFileSystem.getInstance().getJarRootForLocalFile(output);
-          assertNotNull(output);
-        }
-        final VirtualFile classFile = output.findFileByRelativePath(className.replace('.', '/') + ".class");
-        if (classFile != null) {
-          return Optional.of(classFile);
-        }
-      }
-      catch (AssertionError assertionError) {
-        // There are some access assertions in tests. Ignore them.
-        assertionError.printStackTrace();
       }
     }
     return Optional.empty();
@@ -339,15 +298,20 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return classes[0];
   }
 
-  protected void doImportWithDependees(@NotNull String projectFolderPathToImport) {
-    myProjectSettings.setWithDependees(true);
-    doImport(projectFolderPathToImport);
-  }
-
   protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {
     System.out.println("Import: " + projectFolderPathToImport);
     myRelativeProjectPath = projectFolderPathToImport;
     myProjectSettings.setTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        PantsUtil.getDefaultJavaSdk(getProjectPath())
+          .ifPresent(sdk -> {
+            ProjectJdkTable.getInstance().addJdk(sdk);
+            ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
+          });
+      }
+    });
     importProject();
     PantsMetrics.markIndexEnd();
   }
@@ -432,22 +396,22 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertSize(count, genModules);
   }
 
-  public void assertSuccessfulJUnitTest(String moduleName, String className) {
+  public void assertSuccessfulTest(String moduleName, String className) {
     final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
     assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
   }
 
-  public void assertSuccessfulJUnitTest(JUnitConfiguration configuration) {
-    final OSProcessHandler handler = runJUnitWithConfiguration(configuration);
+  public void assertSuccessfulTest(RunConfiguration configuration) {
+    final OSProcessHandler handler = runWithConfiguration(configuration);
     assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
   }
 
   public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) {
-    return runJUnitWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
+    return runWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
   }
 
   @NotNull
-  private OSProcessHandler runJUnitWithConfiguration(JUnitConfiguration configuration) {
+  protected OSProcessHandler runWithConfiguration(RunConfiguration configuration) {
     final PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
       new PantsJUnitRunnerAndConfigurationSettings(configuration);
     final ExecutionEnvironmentBuilder environmentBuilder =
@@ -461,7 +425,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @NotNull
-  public JUnitConfiguration generateJUnitConfiguration(String moduleName, String className, @Nullable String vmParams) {
+  protected JUnitConfiguration generateJUnitConfiguration(String moduleName, String className, @Nullable String vmParams) {
     final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
     final JUnitConfiguration runConfiguration = new JUnitConfiguration("Pants: " + className, myProject, factory);
     runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
@@ -472,6 +436,32 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
     runConfiguration.setMainClass(findClassAndAssert(className));
     return runConfiguration;
+  }
+
+  /**
+   * TODO: ScalaTestRunConfiguration setting may not be fully correct yet. Currently this can only be used to invoke scala runner,
+   * but the run itself may not succeed.
+   */
+  @NotNull
+  protected ScalaTestRunConfiguration generateScalaRunConfiguration(String moduleName, String className, @Nullable String vmParams) {
+    final ConfigurationFactory factory = ScalaTestConfigurationType.CONFIGURATION_TYPE_EP.getExtensions()[0].getConfigurationFactories()[0];
+    final ScalaTestRunConfiguration runConfiguration = new ScalaTestRunConfiguration(myProject, factory, className);
+    runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
+    runConfiguration.setModule(getModule(moduleName));
+    runConfiguration.setName(className);
+    runConfiguration.setTestClassPath(className);
+    return runConfiguration;
+  }
+
+  protected void gitResetRepoCleanExampleDistDir() throws ExecutionException {
+    // Git reset .cache/pants dir
+    cmd("git", "reset", "--hard");
+    // Only the files under examples are going to be modified.
+    // Hence issue `git clean -fdx` under examples, so pants does not
+    // have to bootstrap again.
+    File exampleDir = new File(getProjectFolder(), "examples");
+    cmd(exampleDir, "git", "clean", "-fdx");
+    cmd("rm", "-rf", "dist");
   }
 
   @Override
@@ -559,17 +549,19 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return runner.executeTask(myProject);
   }
 
-  protected void assertPantsCompileExecutesAndSucceeds(final Pair<Boolean, Optional<String>> compileResult) {
+  protected void assertPantsCompileExecutesAndSucceeds(final Pair<Boolean, Optional<String>> compileResult) throws Exception {
     assertTrue("Compile failed", compileResult.getFirst());
     if (compileResult.getSecond().isPresent()) {
       assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.getSecond().get()));
     }
+    assertManifestJarExists();
   }
 
-  protected void assertPantsCompileNoop(final Pair<Boolean, Optional<String>> compileResult) {
+  protected void assertPantsCompileNoop(final Pair<Boolean, Optional<String>> compileResult) throws Exception {
     assertTrue("Compile failed.", compileResult.getFirst());
     assertTrue("Compile message not found.", compileResult.getSecond().isPresent());
     assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.getSecond().get());
+    assertManifestJarExists();
   }
 
   protected void assertPantsCompileFailure(final Pair<Boolean, Optional<String>> compileResult) {

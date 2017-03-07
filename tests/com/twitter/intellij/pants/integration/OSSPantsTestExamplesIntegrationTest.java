@@ -25,7 +25,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertPantsCompileExecutesAndSucceeds(result);
     assertTrue(result.getSecond().isPresent());
     assertTrue(result.getSecond().get().contains("compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
-    assertSuccessfulJUnitTest(
+    assertSuccessfulTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
     final OSProcessHandler processHandler = runJUnitTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects",
@@ -58,7 +58,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertNotContainsSubstring(output, passingTarget);
     assertNotContainsSubstring(output, failingTarget);
 
-    assertSuccessfulJUnitTest(
+    assertSuccessfulTest(
       "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher",
       "org.pantsbuild.testproject.matcher.MatcherTest"
     );

@@ -31,15 +31,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_annotation_main_main"));
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.annotation.main.Main", "examples_src_java_org_pantsbuild_example_annotation_main_main"
-    );
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.annotation.example.Example", "examples_src_java_org_pantsbuild_example_annotation_example_example"
-    );
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.annotation.processor.ExampleProcessor", "examples_src_java_org_pantsbuild_example_annotation_processor_processor"
-    );
   }
 
   public void testAntl3() throws Throwable {
@@ -52,9 +43,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertGenModules(1);
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_antlr3_antlr3"));
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.antlr3.ExampleAntlr3", "examples_src_java_org_pantsbuild_example_antlr3_antlr3"
-    );
   }
 
   public void testAntl4() throws Throwable {
@@ -67,13 +55,11 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertGenModules(1);
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_antlr4_antlr4"));
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.antlr4.ExampleAntlr4", "examples_src_java_org_pantsbuild_example_antlr4_antlr4"
-    );
   }
 
   public void testHello() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
+    assertProjectJdkAndLanguageLevel();
 
     String[] initialModules = {
       "examples_src_resources_org_pantsbuild_example_hello_hello",
@@ -91,40 +77,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_hello_main_main"));
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.hello.greet.Greeting", "examples_src_java_org_pantsbuild_example_hello_greet_greet"
-    );
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.hello.main.HelloMain", "examples_src_java_org_pantsbuild_example_hello_main_main-bin"
-    );
-  }
-
-  public void testHelloWithDependees() throws Throwable {
-    doImportWithDependees("examples/src/java/org/pantsbuild/example/hello");
-
-    assertFirstSourcePartyModules(
-      "examples_src_resources_org_pantsbuild_example_hello_hello",
-      "examples_src_java_org_pantsbuild_example_hello_main_main",
-      "examples_src_java_org_pantsbuild_example_hello_greet_greet",
-      "examples_src_java_org_pantsbuild_example_hello_simple_simple",
-      "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
-      "examples_src_java_org_pantsbuild_example_hello_module",
-      "examples_src_java_org_pantsbuild_example_hello_main_readme",
-      "examples_src_java_org_pantsbuild_example_hello_main_common_sources",
-      "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",  // direct dependee
-      "examples_tests_java_org_pantsbuild_example_hello_greet_greet",     // direct dependee
-      "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome",// transitive dependee
-      "examples_src_scala_org_pantsbuild_example_jvm-run-example-lib",    // transitive dependee
-      "examples_src_scala_org_pantsbuild_example_hello_hello",            // transitive dependee
-      "examples_src_scala_org_pantsbuild_example_jvm-run-example",        // transitive dependee
-      "examples_src_scala_org_pantsbuild_example_hello_exe_exe"           // transitive dependee
-    );
-
-    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.hello.greet.GreetingTest", "examples_tests_java_org_pantsbuild_example_hello_greet_greet"
-    );
   }
 
   public void testJaxb() throws Throwable {
@@ -139,9 +91,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertGenModules(1);
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_jaxb_main_main"));
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.jaxb.main.ExampleJaxb", "examples_src_java_org_pantsbuild_example_jaxb_main_main"
-    );
   }
 
   public void testProtobuf() throws Throwable {
@@ -154,9 +103,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertGenModules(1);
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_protobuf_distance_distance"));
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.example.protobuf.distance.ExampleProtobuf", "examples_src_java_org_pantsbuild_example_protobuf_distance_distance"
-    );
   }
 
   public void testExcludes1() throws Throwable {
@@ -168,9 +114,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertPantsCompileExecutesAndSucceeds(
       pantsCompileModule("intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1")
-    );
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.testproject.excludes1.Foo", "intellij-integration_src_java_org_pantsbuild_testproject_excludes1_excludes1"
     );
   }
 
@@ -184,9 +127,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertPantsCompileExecutesAndSucceeds(
       pantsCompileModule("intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2")
-    );
-    assertClassFileInModuleOutput(
-      "org.pantsbuild.testproject.excludes2.foo.Foo", "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2"
     );
   }
 
@@ -223,7 +163,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {
-    Optional<VirtualFile>  pantsExe = PantsUtil.findPantsExecutable(myProject);
+    Optional<VirtualFile> pantsExe = PantsUtil.findPantsExecutable(myProject);
     assertTrue(pantsExe.isPresent());
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExe.get().getPath());
     commandLine.addParameters(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);

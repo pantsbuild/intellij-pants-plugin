@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.service.project.wizard;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
@@ -48,16 +47,11 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
     /**
      * Newer export version project sdk can be automatically discovered and configured.
      */
-    AtomicBoolean isSdkConfigured = new AtomicBoolean(false);
+    AtomicBoolean isSdkConfigured = new AtomicBoolean(true);
     String message = PantsBundle.message("pants.default.sdk.config.progress");
     ProgressManager.getInstance().run(new Task.Modal(context.getProject(), message, !CAN_BE_CANCELLED) {
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
-        Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(context.getProjectFileDirectory());
-        if (pantsExecutable.isPresent()) {
-          isSdkConfigured.set(PantsUtil.supportExportDefaultJavaSdk(pantsExecutable.get().getPath()));
-        }
-
         if (isSdkConfigured.get()) {
           isSdkConfigured.set(isJvmProject(context.getProjectFileDirectory()));
         }

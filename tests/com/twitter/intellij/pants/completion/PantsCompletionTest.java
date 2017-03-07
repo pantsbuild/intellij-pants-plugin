@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.completion;
 
+import com.twitter.intellij.pants.ui.PantsConsoleManager;
+
 public class PantsCompletionTest extends PantsCompletionTestBase {
   public PantsCompletionTest() {
     super("completion");
@@ -111,5 +113,11 @@ public class PantsCompletionTest extends PantsCompletionTestBase {
 
     configure("foo");
     doTestVariants();
+  }
+
+  @Override
+  protected void tearDown() throws Exception {
+    PantsConsoleManager.disposeAll();
+    super.tearDown();
   }
 }

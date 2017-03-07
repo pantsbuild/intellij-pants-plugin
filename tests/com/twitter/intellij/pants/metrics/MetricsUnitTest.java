@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.metrics;
 
-import com.twitter.intellij.pants.components.impl.PantsMetrics;
 import junit.framework.TestCase;
 
 import java.util.Map;

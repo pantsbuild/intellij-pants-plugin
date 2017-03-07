@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.components.impl;
 
+import com.intellij.ProjectTopics;
 import com.intellij.compiler.server.BuildManagerListener;
 import com.intellij.execution.RunManagerAdapter;
 import com.intellij.execution.RunManagerEx;
@@ -14,18 +15,28 @@ import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.util.Function;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.file.FileChangeTracker;
+import com.twitter.intellij.pants.metrics.LivePantsMetrics;
+import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
+import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
@@ -33,6 +44,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
@@ -44,12 +56,26 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   public void projectClosed() {
     PantsMetrics.report();
     FileChangeTracker.unregisterProject(myProject);
+    PantsConsoleManager.unregisterConsole(myProject);
     super.projectClosed();
+  }
+
+  @Override
+  public void initComponent() {
+    super.initComponent();
+    LivePantsMetrics.registerDumbModeListener(myProject);
+  }
+
+  @Override
+  public void disposeComponent() {
+    super.disposeComponent();
+    LivePantsMetrics.unregisterDumbModeListener(myProject);
   }
 
   @Override
   public void projectOpened() {
     PantsMetrics.initialize();
+    PantsConsoleManager.registerConsole(myProject);
     super.projectOpened();
     if (myProject.isDefault()) {
       return;
@@ -96,6 +122,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
          * 3. Explicitly call {@link PantsUtil#refreshAllProjects}.
          */
         private void convertToPantsProject() {
+          PantsExternalMetricsListenerManager.getInstance().logIsGUIImport(false);
           String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
           String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
           if (serializedTargets == null || projectPath == null) {
@@ -106,8 +133,11 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
            * Generate the import spec for the next refresh.
            */
           final List<String> targetSpecs = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
+          final boolean loadLibsAndSources = true;
+          final boolean enableIncrementalImport = false;
+          final boolean useIdeaProjectJdk = false;
           final PantsProjectSettings pantsProjectSettings =
-            new PantsProjectSettings(targetSpecs, projectPath, false, true, false);
+            new PantsProjectSettings(targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk);
 
           /**
            * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
@@ -122,6 +152,47 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           PantsUtil.refreshAllProjects(myProject);
 
           prepareGuiComponents();
+
+          // Subscribe the change of module addition, meaning when the project finishes resolves,
+          // project SDK should be explicitly set.
+          final MessageBusConnection connection = myProject.getMessageBus().connect(myProject);
+          connection.subscribe(
+            ProjectTopics.MODULES, new ModuleListener() {
+              @Override
+              public void moduleAdded(@NotNull Project project, @NotNull Module module) {
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                  Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(project);
+                  if (!pantsExecutable.isPresent()) {
+                    return;
+                  }
+
+                  Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath());
+                  if (!sdk.isPresent()) {
+                    return;
+                  }
+
+                  ProjectRootManager.getInstance(project).setProjectSdk(sdk.get());
+                });
+              }
+
+              @Override
+              public void beforeModuleRemoved(@NotNull Project project, @NotNull Module module) {
+
+              }
+
+              @Override
+              public void moduleRemoved(@NotNull Project project, @NotNull Module module) {
+
+              }
+
+              @Override
+              public void modulesRenamed(
+                @NotNull Project project, @NotNull List<Module> modules, @NotNull Function<Module, String> oldNameProvider
+              ) {
+
+              }
+            }
+          );
         }
 
         /**
