@@ -164,11 +164,13 @@ jar_library(
     ]
 )
 
+python_plugin_folder = 'python' if is_ultimate() else 'python-ce'
+python_plugin_jar = 'python.jar' if is_ultimate() else 'python-ce.jar'
 
 jar_library(
     name = 'python-plugin',
     jars = [
-        _intellij_plugin_jar(path) for path in _find_jars_for_plugin('python-ce', 'python-ce.jar')
+        _intellij_plugin_jar(path) for path in _find_jars_for_plugin(python_plugin_folder, python_plugin_jar)
     ]
 )
 
