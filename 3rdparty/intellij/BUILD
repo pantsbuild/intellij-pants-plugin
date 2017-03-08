@@ -131,10 +131,10 @@ def _intellij_sdk_jar(path):
     )
 
 
-def _intellij_plugin_jar(path):
+def _intellij_plugin_jar(path, plugin_name='plugins'):
     package, version = extract_package_name_version(path)
     return jar(
-        org='com.intellij.plugins',
+        org='com.intellij.{}'.format(plugin_name),
         name=package,
         rev=version,
         url='file://%s' % path,
@@ -170,7 +170,7 @@ python_plugin_jar = 'python.jar' if is_ultimate() else 'python-ce.jar'
 jar_library(
     name = 'python-plugin',
     jars = [
-        _intellij_plugin_jar(path) for path in _find_jars_for_plugin(python_plugin_folder, python_plugin_jar)
+        _intellij_plugin_jar(path, 'python-plugin') for path in _find_jars_for_plugin(python_plugin_folder, python_plugin_jar)
     ]
 )
 
@@ -178,7 +178,7 @@ jar_library(
 jar_library(
     name = 'scala-plugin',
     jars = [
-        _intellij_plugin_jar(path) for path in _find_jars_for_plugin('Scala',
+        _intellij_plugin_jar(path, 'scala-plugin') for path in _find_jars_for_plugin('Scala',
             'scala-plugin.jar', 'jps/scala-jps-plugin.jar', 'scala-play-2-jps-plugin.jar', 'compiler-settings.jar'
         )
     ] + [jar(org = 'org.scalameta', name = 'trees_2.11', rev = '1.3.0')]
@@ -188,7 +188,7 @@ jar_library(
 jar_library(
     name = 'junit-plugin',
     jars = [
-        _intellij_plugin_jar(path) for path in _find_all_jars(
+        _intellij_plugin_jar(path, 'junit-plugin') for path in _find_all_jars(
             os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'junit', 'lib')
         )
     ]
@@ -199,7 +199,7 @@ jar_library(
     name = 'gradle-plugin',
     dependencies = [':groovy-plugin'],
     jars = [
-        _intellij_plugin_jar(path) for path in _find_all_jars(
+        _intellij_plugin_jar(path, 'gradle-plugin') for path in _find_all_jars(
             os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'gradle', 'lib')
         )
     ]
@@ -210,7 +210,7 @@ jar_library(
     name = 'groovy-plugin',
     dependencies = [':properties-plugin'],
     jars = [
-        _intellij_plugin_jar(path) for path in _find_all_jars(
+        _intellij_plugin_jar(path, 'groovy-plugin') for path in _find_all_jars(
             os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'Groovy', 'lib')
         )
     ]
@@ -220,7 +220,7 @@ jar_library(
 jar_library(
     name = 'properties-plugin',
     jars = [
-        _intellij_plugin_jar(path) for path in _find_all_jars(
+        _intellij_plugin_jar(path, 'properties-plugin') for path in _find_all_jars(
             os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'properties', 'lib')
         )
     ]
