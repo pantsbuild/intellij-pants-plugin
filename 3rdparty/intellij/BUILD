@@ -114,6 +114,9 @@ def _jdk_classpath():
 
 
 def _find_jars_for_plugin(plugin_name, *jar_names):
+    """
+    Find the jars non-built-in plugins under $IDEA/plugins/<plugin_name>
+    """
     base_dir = os.environ['INTELLIJ_PLUGINS_HOME']
     plugin_home = os.path.join(base_dir, plugin_name)
     if not os.path.exists(plugin_home):
@@ -134,6 +137,14 @@ def _intellij_sdk_jar(path):
 
 
 def _intellij_plugin_jar(path, plugin_name='plugins'):
+    """
+    Create a jar instance given its path and name.
+
+    :param path: abs path to a jar
+    :param plugin_name: name of the plugin. also used to distinguish from jar with the same file name
+                        belonging to a different plugin.
+    :return: a jar instance
+    """
     package, version = extract_package_name_version(path)
     return jar(
         org='com.intellij.{}'.format(plugin_name),
