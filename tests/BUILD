@@ -1,9 +1,10 @@
 # Alias for sources and libs needed for tests
 target(name='sources-and-libs',
   dependencies=[
-    '3rdparty/intellij:sdk',
+    '3rdparty/intellij:gradle-plugin',
     '3rdparty/intellij:python-plugin',
     '3rdparty/intellij:scala-plugin',
+    '3rdparty/intellij:sdk',
     'jps-plugin',
     'src:pants-intellij-plugin',
     'testFramework:test-lib',

@@ -20,7 +20,6 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -94,7 +93,12 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
    */
   @Override
   public void tearDown() throws Exception {
-    PlatformTestCase.closeAndDisposeProjectAndCheckThatNoOpenProjects(myProject, new ArrayList<Throwable>());
+    try {
+      PlatformTestCase.closeAndDisposeProjectAndCheckThatNoOpenProjects(myProject);
+    }
+    catch (IllegalStateException ignored) {
+
+    }
     cleanProjectRoot();
   }
 }
