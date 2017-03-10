@@ -61,10 +61,12 @@ def is_ultimate():
     return os.getenv('IJ_ULTIMATE', 'false') == 'true'
 
 
-def _find_all_jars(root_dir):
+def _find_all_jars(root_dir, excludes=[]):
     result = []
     for root, _, files in os.walk(root_dir):
         for file in files:
+            if file in excludes:
+                continue
             if file.endswith('.jar'):
                 result.append(os.path.join(root, file))
     return result
@@ -200,7 +202,9 @@ jar_library(
     dependencies = [':groovy-plugin'],
     jars = [
         _intellij_plugin_jar(path, 'gradle-plugin') for path in _find_all_jars(
-            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'gradle', 'lib')
+            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'gradle', 'lib'),
+            # A workaround to avoid guava version conflicts/shadowing with the one under $IDEA/lib
+            excludes=['guava-jdk5-17.0.jar']
         )
     ]
 )
