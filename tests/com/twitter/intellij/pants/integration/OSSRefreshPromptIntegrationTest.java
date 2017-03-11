@@ -150,7 +150,10 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
         // Verify the notification is triggered.
 
         ArrayList<Notification> notifications = EventLog.getLogModel(myProject).getNotifications();
-        assertEquals(1, notifications.size());
+        assertEquals(
+          String.format("Project should only have 1 refresh notification, but has %s", notifications.size()),
+          1, notifications.size()
+        );
       }
     });
   }
