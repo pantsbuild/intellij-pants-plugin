@@ -6,11 +6,11 @@ package com.twitter.intellij.pants.file;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import com.intellij.notification.EventLog;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -49,6 +50,7 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 public class FileChangeTracker {
   private static final Logger LOG = Logger.getInstance(FileChangeTracker.class);
   public static final String HREF_REFRESH = "refresh";
+  public static final String REFRESH_PANTS_PROJECT_DISPLAY = "Refresh Pants Project";
 
   private static FileChangeTracker instance = new FileChangeTracker();
 
@@ -118,14 +120,18 @@ public class FileChangeTracker {
     }
   }
 
+  private static boolean hasExistingRefreshNotification(Project project) {
+    ArrayList<Notification> notifications = EventLog.getLogModel(project).getNotifications();
+    return notifications.stream().anyMatch(s -> s.getContent().contains(REFRESH_PANTS_PROJECT_DISPLAY));
+  }
+
   /**
    * Template came from maven plugin:
    * https://github.com/JetBrains/intellij-community/blob/b5d046018b9a82fccd86bc9c1f1da2e28068440a/plugins/maven/src/main/java/org/jetbrains/idea/maven/utils/MavenImportNotifier.java#L92-L108
    */
   private static void notifyProjectRefreshIfNecessary(@NotNull VirtualFile file, final Project project) {
-    // TODO: Temporarily disable refresh notification due to UX annoyance in GUI mode.
-    // See https://github.com/pantsbuild/intellij-pants-plugin/issues/270
-    if (!ApplicationManager.getApplication().isUnitTestMode()) {
+    // Check if there is still standing refresh notification, do not proceed to issue another notification.
+    if (hasExistingRefreshNotification(project)) {
       return;
     }
 
@@ -143,7 +149,7 @@ public class FileChangeTracker {
       Notification myNotification = new Notification(
         PantsConstants.PANTS,
         PantsBundle.message("pants.project.build.files.changed"),
-        "<a href='" + HREF_REFRESH + "'>Refresh Pants Project</a> ",
+        "<a href='" + HREF_REFRESH + "'>" + REFRESH_PANTS_PROJECT_DISPLAY + "</a> ",
         NotificationType.INFORMATION,
         refreshAction
       );
@@ -340,12 +346,10 @@ public class FileChangeTracker {
 
       @Override
       public void beforeFileDeletion(@NotNull VirtualFileEvent event) {
-        FileChangeTracker.markDirty(event.getFile(), this);
       }
 
       @Override
       public void beforeFileMovement(@NotNull VirtualFileMoveEvent event) {
-        FileChangeTracker.markDirty(event.getFile(), this);
       }
     };
   }
