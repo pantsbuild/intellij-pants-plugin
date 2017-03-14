@@ -130,7 +130,7 @@ public class FileChangeTracker {
    * https://github.com/JetBrains/intellij-community/blob/b5d046018b9a82fccd86bc9c1f1da2e28068440a/plugins/maven/src/main/java/org/jetbrains/idea/maven/utils/MavenImportNotifier.java#L92-L108
    */
   private static void notifyProjectRefreshIfNecessary(@NotNull VirtualFile file, final Project project) {
-    // Check if there is still standing refresh notification, do not proceed to issue another notification.
+    // If there is standing refresh notification, do not proceed to issue another notification.
     if (hasExistingRefreshNotification(project)) {
       return;
     }
