@@ -324,6 +324,7 @@ public class FileChangeTracker {
 
       @Override
       public void fileDeleted(@NotNull VirtualFileEvent event) {
+        FileChangeTracker.markDirty(event.getFile(), this);
       }
 
       @Override
