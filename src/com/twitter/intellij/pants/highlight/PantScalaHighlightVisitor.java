@@ -62,7 +62,6 @@ public class PantScalaHighlightVisitor implements HighlightVisitor {
       final IntentionAction action = actionDescriptor.getAction();
       if (action instanceof CreateTypeDefinitionQuickFix) {
         final String className = textRange.substring(containingFile.getText());
-
         final List<PantsQuickFix> missingDependencyFixes =
           PantsUnresolvedReferenceFixFinder.findMissingDependencies(className, containingFile);
         for (PantsQuickFix fix : missingDependencyFixes) {
