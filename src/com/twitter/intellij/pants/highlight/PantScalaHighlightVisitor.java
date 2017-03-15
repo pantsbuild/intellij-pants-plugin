@@ -35,6 +35,11 @@ public class PantScalaHighlightVisitor implements HighlightVisitor {
 
   @Override
   public void visit(@NotNull PsiElement element) {
+    // FIXME: Re-enable quick fix for missing dependencies once it is functional again.
+    // https://github.com/pantsbuild/intellij-pants-plugin/issues/280
+    if (!ApplicationManager.getApplication().isUnitTestMode()) {
+      return;
+    }
     final PsiFile containingFile = element.getContainingFile();
     if (containingFile == null || DumbService.getInstance(myHolder.getProject()).isDumb()) {
       return;
@@ -57,18 +62,15 @@ public class PantScalaHighlightVisitor implements HighlightVisitor {
       final IntentionAction action = actionDescriptor.getAction();
       if (action instanceof CreateTypeDefinitionQuickFix) {
         final String className = textRange.substring(containingFile.getText());
-        // FIXME: Re-enable quick fix for missing dependencies once it is functional again.
-        // https://github.com/pantsbuild/intellij-pants-plugin/issues/280
-        if (ApplicationManager.getApplication().isUnitTestMode()) {
-          final List<PantsQuickFix> missingDependencyFixes =
-            PantsUnresolvedReferenceFixFinder.findMissingDependencies(className, containingFile);
-          for (PantsQuickFix fix : missingDependencyFixes) {
-            info.registerFix(fix, null, fix.getName(), textRange, null);
-          }
-          if (!missingDependencyFixes.isEmpty()) {
-            // we should add only one fix per info
-            return;
-          }
+
+        final List<PantsQuickFix> missingDependencyFixes =
+          PantsUnresolvedReferenceFixFinder.findMissingDependencies(className, containingFile);
+        for (PantsQuickFix fix : missingDependencyFixes) {
+          info.registerFix(fix, null, fix.getName(), textRange, null);
+        }
+        if (!missingDependencyFixes.isEmpty()) {
+          // we should add only one fix per info
+          return;
         }
       }
     }
