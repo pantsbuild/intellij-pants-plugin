@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * A hack to extend fixes in Scala code. @fkorotkov asked JetBrains to add an extension point as we have for Java
  */
-public class PantScalaHighlightVisitor implements HighlightVisitor {
+public class PantsScalaHighlightVisitor implements HighlightVisitor {
   private HighlightInfoHolder myHolder;
 
   @Override
@@ -95,7 +95,7 @@ public class PantScalaHighlightVisitor implements HighlightVisitor {
   @NotNull
   @Override
   public HighlightVisitor clone() {
-    return new PantScalaHighlightVisitor();
+    return new PantsScalaHighlightVisitor();
   }
 
   @Override
