@@ -7,6 +7,7 @@ import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightInfoHolder;
 import com.intellij.codeInsight.intention.IntentionAction;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.TextRange;
@@ -56,14 +57,18 @@ public class PantScalaHighlightVisitor implements HighlightVisitor {
       final IntentionAction action = actionDescriptor.getAction();
       if (action instanceof CreateTypeDefinitionQuickFix) {
         final String className = textRange.substring(containingFile.getText());
-        final List<PantsQuickFix> missingDependencyFixes =
-          PantsUnresolvedReferenceFixFinder.findMissingDependencies(className, containingFile);
-        for (PantsQuickFix fix : missingDependencyFixes) {
-          info.registerFix(fix, null, fix.getName(), textRange, null);
-        }
-        if (!missingDependencyFixes.isEmpty()) {
-          // we should add only one fix per info
-          return;
+        // FIXME: Re-enable quick fix for missing dependencies once it is functional again.
+        // https://github.com/pantsbuild/intellij-pants-plugin/issues/280
+        if (ApplicationManager.getApplication().isUnitTestMode()) {
+          final List<PantsQuickFix> missingDependencyFixes =
+            PantsUnresolvedReferenceFixFinder.findMissingDependencies(className, containingFile);
+          for (PantsQuickFix fix : missingDependencyFixes) {
+            info.registerFix(fix, null, fix.getName(), textRange, null);
+          }
+          if (!missingDependencyFixes.isEmpty()) {
+            // we should add only one fix per info
+            return;
+          }
         }
       }
     }
