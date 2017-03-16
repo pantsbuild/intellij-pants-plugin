@@ -42,12 +42,12 @@ public class IntelliJRunnerAddressInvocationTest extends OSSPantsIntegrationTest
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
       @Override
       public void run() {
-        HashSet<String> address_1 = Sets.newHashSet("x:x");
-        HashSet<String> address_2 = Sets.newHashSet("y:y");
-        HashSet<String> address_3 = Sets.newHashSet("z:z");
-        Module module1 = createModuleWithSerializedAddresses("a", address_1);
-        Module module2 = createModuleWithSerializedAddresses("b", address_2);
-        Module module3 = createModuleWithSerializedAddresses("c", address_3);
+        HashSet<String> address1 = Sets.newHashSet("x:x");
+        HashSet<String> address2 = Sets.newHashSet("y:y");
+        HashSet<String> address3 = Sets.newHashSet("z:z");
+        Module module1 = createModuleWithSerializedAddresses("a", address1);
+        Module module2 = createModuleWithSerializedAddresses("b", address2);
+        Module module3 = createModuleWithSerializedAddresses("c", address3);
 
         // Make module1 depend on module2 and module3
         ModifiableRootModel model = ModuleRootManager.getInstance(module1).getModifiableModel();
@@ -58,7 +58,7 @@ public class IntelliJRunnerAddressInvocationTest extends OSSPantsIntegrationTest
         assertTrue(ModuleManager.getInstance(myProject).isModuleDependent(module1, module2));
         assertTrue(ModuleManager.getInstance(myProject).isModuleDependent(module1, module3));
 
-
+        // Make Scala run configuration for that module.
         ScalaTestRunConfiguration configuration =
           new ScalaTestRunConfiguration(
             myProject,
@@ -66,10 +66,11 @@ public class IntelliJRunnerAddressInvocationTest extends OSSPantsIntegrationTest
             "dummy"
           );
         configuration.setModule(module1);
+
+        // Make sure there is only one and the only address that gets passed to Pants.
         PantsMakeBeforeRun run = new PantsMakeBeforeRun(myProject);
         Set<String> addressesToCompile = run.getTargetAddressesToCompile(configuration);
-
-        assertEquals(address_1, addressesToCompile);
+        assertEquals(address1, addressesToCompile);
       }
     });
   }
@@ -79,12 +80,12 @@ public class IntelliJRunnerAddressInvocationTest extends OSSPantsIntegrationTest
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
       @Override
       public void run() {
-        HashSet<String> address_1 = Sets.newHashSet("x:x");
-        HashSet<String> address_2 = Sets.newHashSet("y:y");
-        HashSet<String> address_3 = Sets.newHashSet("z:z");
-        Module module1 = createModuleWithSerializedAddresses("a", address_1);
-        Module module2 = createModuleWithSerializedAddresses("b", address_2);
-        Module module3 = createModuleWithSerializedAddresses("c", address_3);
+        HashSet<String> address1 = Sets.newHashSet("x:x");
+        HashSet<String> address2 = Sets.newHashSet("y:y");
+        HashSet<String> address3 = Sets.newHashSet("z:z");
+        Module module1 = createModuleWithSerializedAddresses("a", address1);
+        Module module2 = createModuleWithSerializedAddresses("b", address2);
+        Module module3 = createModuleWithSerializedAddresses("c", address3);
 
         // Make module1 depend on module2 and module3
         ModifiableRootModel model = ModuleRootManager.getInstance(module1).getModifiableModel();
@@ -95,14 +96,15 @@ public class IntelliJRunnerAddressInvocationTest extends OSSPantsIntegrationTest
         assertTrue(ModuleManager.getInstance(myProject).isModuleDependent(module1, module2));
         assertTrue(ModuleManager.getInstance(myProject).isModuleDependent(module1, module3));
 
-
+        // Make JUnit configuration for that module.
         final ConfigurationFactory factory = JUnitConfigurationType.getInstance().getConfigurationFactories()[0];
         final JUnitConfiguration configuration = new JUnitConfiguration("dummy", myProject, factory);
         configuration.setModule(module1);
+
+        // Make sure there is only one and the only address that gets passed to Pants.
         PantsMakeBeforeRun run = new PantsMakeBeforeRun(myProject);
         Set<String> addressesToCompile = run.getTargetAddressesToCompile(configuration);
-
-        assertEquals(address_1, addressesToCompile);
+        assertEquals(address1, addressesToCompile);
       }
     });
   }
