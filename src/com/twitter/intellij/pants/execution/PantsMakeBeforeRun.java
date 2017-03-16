@@ -328,7 +328,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   @NotNull
-  private Set<String> getTargetAddressesToCompile(RunConfiguration configuration) {
+  protected Set<String> getTargetAddressesToCompile(RunConfiguration configuration) {
     /* Scala run configurations */
     if (configuration instanceof AbstractTestRunConfiguration) {
       Module module = ((AbstractTestRunConfiguration) configuration).getModule();
