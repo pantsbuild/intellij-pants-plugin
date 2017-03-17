@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
 
-
   private static List<Notification> findAllExistingRefreshNotification(Project project) {
     ArrayList<Notification> notifications = EventLog.getLogModel(project).getNotifications();
     return notifications.stream().filter(s -> s.getContent().contains(FileChangeTracker.REFRESH_PANTS_PROJECT_DISPLAY))
@@ -148,8 +147,7 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
         // Save the BUILD file. Then the refresh notification should be triggered.
         FileDocumentManager.getInstance().saveAllDocuments();
         // Verify the notification is triggered.
-
-        ArrayList<Notification> notifications = EventLog.getLogModel(myProject).getNotifications();
+        List<Notification> notifications = findAllExistingRefreshNotification(myProject);
         assertEquals(
           String.format("Project should only have 1 refresh notification, but has %s", notifications.size()),
           1, notifications.size()
