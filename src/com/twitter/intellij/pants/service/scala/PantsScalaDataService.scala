@@ -41,13 +41,13 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
   }
 
   private def doImport(scalaNode: DataNode[ScalaModelData], modelsProvider: IdeModifiableModelsProvider) {
-    val scalaData = scalaNode.getData
+    val scalaData: ScalaModelData = scalaNode.getData
 
-    val scalaLibId = scalaData.getScalaLibId
+    val scalaLibId: String = scalaData.getScalaLibId
 
     LOG.debug(s"Setting up $scalaLibId as Scala SDK")
 
-    val compilerVersion =
+    val compilerVersion: Version =
       scalaLibId.split(":").toSeq.lastOption
       .map(Version(_))
       .getOrElse(throw new ExternalSystemException("Cannot determine Scala compiler version for module " +
@@ -55,7 +55,7 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
 
     val scalaLibrary = modelsProvider.getAllLibraries.find(_.getName.contains(scalaLibId))
       .getOrElse(throw new ExternalSystemException("Cannot find project Scala library " +
-                                                   compilerVersion.number +
+                                                   compilerVersion.presentation +
                                                    " for module " +
                                                    scalaNode.getData(ProjectKeys.MODULE).getExternalName))
 
