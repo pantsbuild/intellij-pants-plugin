@@ -7,6 +7,7 @@ import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightInfoHolder;
 import com.intellij.codeInsight.intention.IntentionAction;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.TextRange;
@@ -24,7 +25,7 @@ import java.util.List;
 /**
  * A hack to extend fixes in Scala code. @fkorotkov asked JetBrains to add an extension point as we have for Java
  */
-public class PantScalaHighlightVisitor implements HighlightVisitor {
+public class PantsScalaHighlightVisitor implements HighlightVisitor {
   private HighlightInfoHolder myHolder;
 
   @Override
@@ -34,6 +35,11 @@ public class PantScalaHighlightVisitor implements HighlightVisitor {
 
   @Override
   public void visit(@NotNull PsiElement element) {
+    // FIXME: Re-enable quick fix for missing dependencies once it is functional again.
+    // https://github.com/pantsbuild/intellij-pants-plugin/issues/280
+    if (!ApplicationManager.getApplication().isUnitTestMode()) {
+      return;
+    }
     final PsiFile containingFile = element.getContainingFile();
     if (containingFile == null || DumbService.getInstance(myHolder.getProject()).isDumb()) {
       return;
@@ -89,7 +95,7 @@ public class PantScalaHighlightVisitor implements HighlightVisitor {
   @NotNull
   @Override
   public HighlightVisitor clone() {
-    return new PantScalaHighlightVisitor();
+    return new PantsScalaHighlightVisitor();
   }
 
   @Override

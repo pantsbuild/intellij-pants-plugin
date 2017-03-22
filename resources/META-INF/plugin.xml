@@ -27,7 +27,7 @@
   </extensions>
   <extensions defaultExtensionNs="com.intellij">
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService" order="last"/>
-    <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantScalaHighlightVisitor"/>
+    <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantsScalaHighlightVisitor"/>
   </extensions>
   <!--End of scala plugin related extensions-->
 
