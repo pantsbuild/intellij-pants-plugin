@@ -30,6 +30,7 @@ public class AddPantsTargetDependencyFixTest extends PantsCodeInsightFixtureTest
         }
       }
     );
+    // FIXME: Fix the formatting of files under testData/quickfix/addPantsTargetDependency
     myFixture.checkResultByFile(testName + "_expected.py");
   }
 

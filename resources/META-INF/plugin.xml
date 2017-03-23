@@ -16,10 +16,12 @@
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
-  <idea-version since-build="163.7743.44" until-build="163.*"/>
+  <idea-version since-build="171.1" until-build="171.*"/>
 
   <!--Scala plugin related extensions-->
   <depends>org.intellij.scala</depends>
+  <!--Add gradle as a dep because of Pants runner requires it.-->
+  <depends>org.jetbrains.plugins.gradle</depends>
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
     <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaSdkResolver"/>
   </extensions>

@@ -121,7 +121,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected String[] getRequiredPluginIds() {
-    return new String[]{"org.intellij.scala", PantsConstants.PLUGIN_ID};
+    return new String[]{
+      "org.intellij.scala",
+      "org.jetbrains.plugins.gradle",
+      PantsConstants.PLUGIN_ID
+    };
   }
 
   @Override
