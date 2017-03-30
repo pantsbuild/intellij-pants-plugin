@@ -12,7 +12,7 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.5.3</version>
+  <version>1.6.0</version>
   <vendor>Twitter, Inc.</vendor>
 
   <!--if you are changing since-build don't forget to change it in .travis.yml file as well-->
