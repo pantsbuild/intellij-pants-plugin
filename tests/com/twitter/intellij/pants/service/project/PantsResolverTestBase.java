@@ -60,14 +60,14 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
   }
 
   @NotNull
-  private DataNode<ProjectData> getProjectNode() {
+  protected DataNode<ProjectData> getProjectNode() {
     if (myProjectNode == null) {
       myProjectNode = createProjectNode();
     }
     return myProjectNode;
   }
 
-  private DataNode<ProjectData> createProjectNode() {
+  protected DataNode<ProjectData> createProjectNode() {
     final PantsResolver dependenciesResolver = new PantsResolver(PantsCompileOptionsExecutor.createMock());
     dependenciesResolver.setProjectInfo(getProjectInfo());
     final ProjectData projectData = new ProjectData(
