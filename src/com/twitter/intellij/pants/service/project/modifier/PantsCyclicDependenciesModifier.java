@@ -7,6 +7,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
@@ -32,6 +33,11 @@ public class PantsCyclicDependenciesModifier implements PantsProjectInfoModifier
       for (String dependencyTargetName : targetInfo.getTargets()) {
         TargetInfo dependencyTargetInfo = projectInfo.getTarget(dependencyTargetName);
         if (dependencyTargetInfo != null && dependencyTargetInfo.dependOn(targetName)) {
+
+          if (targetName.equals(dependencyTargetName)) {
+            throw new PantsException(String.format("Self cyclic dependency found %s", targetName));
+          }
+
           log.info(String.format("Found cyclic dependency between %s and %s", targetName, dependencyTargetName));
 
           final String combinedTargetName = combinedTargetsName(targetName, dependencyTargetName);

@@ -3,6 +3,10 @@
 
 package com.twitter.intellij.pants.service.project;
 
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
+import com.twitter.intellij.pants.PantsException;
+
 public class PantsResolverTest extends PantsResolverTestBase {
   public void testOneCommonRootOwnedBySingleTargetOneNot() {
     addInfo("a:java").
@@ -149,5 +153,22 @@ public class PantsResolverTest extends PantsResolverTestBase {
     assertSourceRoot("a_java_and_scala", "src/java/foo/baz");
     assertSourceRoot("a_java_and_scala", "src/scala/foo/bar");
     assertSourceRoot("a_java_and_scala", "src/scala/foo/baz");
+  }
+
+  public void testSelfCyclicDependencyException() {
+    addInfo("a:java").
+      withRoot("src/java/foo/bar", "com.foo.bar").
+      withDependency("a:java");
+    try {
+      getProjectNode();
+      fail(String.format("Should throw %s due to self cyclic dependency, but did not.", PantsException.class));
+    }
+    catch (PantsException ignored) {
+      // Some editors were opened, so make sure to close them after the exception.
+      Editor[] editors = EditorFactory.getInstance().getAllEditors();
+      for (Editor e : editors) {
+        EditorFactory.getInstance().releaseEditor(e);
+      }
+    }
   }
 }
