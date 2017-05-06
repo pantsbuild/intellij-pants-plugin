@@ -76,8 +76,8 @@ public class PantsConsoleManager {
    */
   @TestOnly
   public static void disposeAll() {
-    for (Map.Entry<Project, ConsoleView> entrySet : mapper.entrySet()) {
-      entrySet.getValue().dispose();
-    }
+    //for (Map.Entry<Project, ConsoleView> entrySet : mapper.entrySet()) {
+    //  entrySet.getValue().dispose();
+    //}
   }
 }
