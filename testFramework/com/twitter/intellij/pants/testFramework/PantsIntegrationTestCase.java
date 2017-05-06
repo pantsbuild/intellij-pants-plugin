@@ -488,7 +488,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     finally {
       // double check.
       if (myProject != null && !myProject.isDisposed()) {
-        super.tearDown();
+        //super.tearDown();
         //Disposer.dispose(myProject);
       }
     }
