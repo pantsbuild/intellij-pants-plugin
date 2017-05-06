@@ -61,7 +61,7 @@ public class PantsConsoleManager {
     }
     ConsoleView newConsole = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
     mapper.put(project, newConsole);
-    Disposer.register(project, newConsole);
+    //Disposer.register(project, newConsole);
     return newConsole;
   }
 
