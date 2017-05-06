@@ -486,10 +486,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       Messages.setTestDialog(TestDialog.DEFAULT);
     }
     finally {
-      super.tearDown();
       // double check.
       if (myProject != null && !myProject.isDisposed()) {
-        Disposer.dispose(myProject);
+        super.tearDown();
+        //Disposer.dispose(myProject);
       }
     }
   }
