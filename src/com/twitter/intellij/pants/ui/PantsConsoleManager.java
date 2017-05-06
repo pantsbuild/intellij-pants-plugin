@@ -53,7 +53,10 @@ public class PantsConsoleManager {
    */
   public static ConsoleView getOrMakeNewConsole(Project project) {
     ConsoleView console = mapper.get(project);
-    if (console != null) {
+    if (console != null && Disposer.isDisposed(console)) {
+      unregisterConsole(project);
+    }
+    else if (console != null) {
       return console;
     }
     ConsoleView newConsole = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
