@@ -71,7 +71,10 @@ public class PantsConsoleManager {
    * @param project current project
    */
   public static void unregisterConsole(Project project) {
-    mapper.remove(project);
+    ConsoleView consoleView = mapper.remove(project);
+    if (consoleView != null && !Disposer.isDisposed(consoleView)) {
+      Disposer.dispose(consoleView);
+    }
   }
 
   /**
