@@ -44,7 +44,6 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -484,13 +483,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       killNailgun();
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
-    }
-    finally {
-      // double check.
       super.tearDown();
-      if (myProject != null && !myProject.isDisposed()) {
-        Disposer.dispose(myProject);
-      }
+    }
+    catch (Exception ignored) {
+
     }
   }
 
