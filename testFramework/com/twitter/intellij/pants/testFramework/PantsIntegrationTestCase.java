@@ -485,9 +485,13 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
       super.tearDown();
-    }
-    catch (Throwable ignored) {
 
+    }
+    catch (Throwable throwable) {
+      // Discard error containing "Already disposed".
+      if (!throwable.getMessage().contains("Already disposed")) {
+        throw throwable;
+      }
     }
   }
 
