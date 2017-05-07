@@ -53,15 +53,12 @@ public class PantsConsoleManager {
    */
   public static ConsoleView getOrMakeNewConsole(Project project) {
     ConsoleView console = mapper.get(project);
-    if (console != null && Disposer.isDisposed(console)) {
-      unregisterConsole(project);
-    }
-    else if (console != null) {
+    if (console != null) {
       return console;
     }
     ConsoleView newConsole = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
     mapper.put(project, newConsole);
-    //Disposer.register(project, newConsole);
+    Disposer.register(project, newConsole);
     return newConsole;
   }
 
@@ -71,10 +68,7 @@ public class PantsConsoleManager {
    * @param project current project
    */
   public static void unregisterConsole(Project project) {
-    ConsoleView consoleView = mapper.remove(project);
-    if (consoleView != null && !Disposer.isDisposed(consoleView)) {
-      Disposer.dispose(consoleView);
-    }
+    mapper.remove(project);
   }
 
   /**
