@@ -485,7 +485,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       Messages.setTestDialog(TestDialog.DEFAULT);
       super.tearDown();
     }
-    catch (Exception ignored) {
+    catch (Throwable ignored) {
 
     }
   }
