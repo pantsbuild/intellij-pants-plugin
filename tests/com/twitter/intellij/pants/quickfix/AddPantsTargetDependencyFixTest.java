@@ -4,9 +4,8 @@
 package com.twitter.intellij.pants.quickfix;
 
 import com.intellij.openapi.command.WriteCommandAction;
-import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
-import com.twitter.intellij.pants.ui.PantsConsoleManager;
+import com.twitter.intellij.pants.testFramework.PantsCodeInsightFixtureTestCase;
 
 public class AddPantsTargetDependencyFixTest extends PantsCodeInsightFixtureTestCase {
   public AddPantsTargetDependencyFixTest() {
@@ -44,11 +43,5 @@ public class AddPantsTargetDependencyFixTest extends PantsCodeInsightFixtureTest
 
   public void testLast() {
     doTest("test", "bar/baz3");
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    PantsConsoleManager.disposeAll();
-    super.tearDown();
   }
 }
