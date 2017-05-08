@@ -44,7 +44,6 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -239,7 +238,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       Lists.newArrayList(
         "Pants: org.scala-lang:scala-library:2.10.4",
         "Pants: org.scala-lang:scala-library:2.10.6",
-        "Pants: org.scala-lang:scala-library:2.11.8"
+        "Pants: org.scala-lang:scala-library:2.11.8",
+        "Pants: org.scala-lang:scala-library:2.11.11"
       );
     for (String libName : expectedLibs) {
       LibraryOrderEntry libX = ContainerUtil.getFirstItem(this.getModuleLibDeps(moduleName, libName));
@@ -484,12 +484,13 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       killNailgun();
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
-    }
-    finally {
       super.tearDown();
-      // double check.
-      if (myProject != null && !myProject.isDisposed()) {
-        Disposer.dispose(myProject);
+
+    }
+    catch (Throwable throwable) {
+      // Discard error containing "Already disposed".
+      if (!throwable.getMessage().contains("Already disposed")) {
+        throw throwable;
       }
     }
   }

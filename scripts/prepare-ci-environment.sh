@@ -10,8 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2017.1"
-export IJ_BUILD_NUMBER="171.3780.107"
+export IJ_VERSION="2017.1.2"
+export IJ_BUILD_NUMBER="171.4249.39"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
@@ -24,15 +24,15 @@ get_md5(){
 if [[ $IJ_ULTIMATE == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="625623556cdbb93f863dae7dc34ac618"
+  export EXPECTED_IJ_MD5="efcd728deb8063ebafa56ed643c7ddfa"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="fdbe77562f4aafb72638ae0f1360349b"
+  export PYTHON_PLUGIN_MD5="bc190fbc60878a6d0f616d6064b87afc"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="b17d25c585c1409eb78d87d4cbe79128"
+  export EXPECTED_IJ_MD5="6c5d4276dae0ff4b025e49fa8532369f"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="0e35d9c84f668e622dad07540ac89dcb"
+  export PYTHON_PLUGIN_MD5="2543000a8b6de15f9e56aef46644b2a0"
 fi
 
 # we will use Community ids to download plugins.
