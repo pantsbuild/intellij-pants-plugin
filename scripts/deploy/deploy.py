@@ -32,9 +32,13 @@ def get_head_sha():
 if __name__ == "__main__":
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('--tag', type=str, default='')
+  parser.add_argument('--tag', type=str, default='',
+                      help='If tag exists, this script will release to {} channel, otherwise {} channel.'
+                      .format(CHANNEL_STABLE, CHANNEL_BLEEDING_EDGE))
   args = parser.parse_args()
 
+  # Make sure the $PLUGIN_XML is not modified after multiple runs,
+  # since the workflow below may do so.
   subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True)
 
   tree = ET.parse(PLUGIN_XML)
@@ -51,7 +55,7 @@ if __name__ == "__main__":
     channel = CHANNEL_BLEEDING_EDGE
 
     sha = get_head_sha()
-    logger.info('Append git sha {} to plugin version'.format(sha))
+    logger.info('Append current git sha, {}, to plugin version'.format(sha))
     version.text = "{}.{}".format(version.text, sha)
 
     tree.write(PLUGIN_XML)
