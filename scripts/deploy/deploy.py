@@ -46,9 +46,9 @@ if __name__ == "__main__":
     exit(1)
 
   if args.tag:
-    channel = CHANNEL_BLEEDING_EDGE
-  else:
     channel = CHANNEL_STABLE
+  else:
+    channel = CHANNEL_BLEEDING_EDGE
 
     sha = get_head_sha()
     logger.info('Append git sha {} to plugin version'.format(sha))
