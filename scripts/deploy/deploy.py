@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import logging
 import os
 import subprocess
@@ -8,7 +9,8 @@ import xml.etree.ElementTree as ET
 PLUGIN_XML = 'resources/META-INF/plugin.xml'
 PLUGIN_ID = 7412
 PLUGIN_JAR = 'dist/intellij-pants-plugin-publish.jar'
-CHANNEL = 'BleedingEdge'
+CHANNEL_BLEEDING_EDGE = 'BleedingEdge'
+CHANNEL_STABLE = 'Stable'
 REPO = 'https://plugins.jetbrains.com/plugin/7412'
 
 logger = logging.getLogger(__name__)
@@ -29,22 +31,32 @@ def get_head_sha():
 
 if __name__ == "__main__":
 
-  subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True)
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--tag', type=str, default='')
+  args = parser.parse_args()
 
-  sha = get_head_sha()
-  logger.info('Append git sha {} to plugin version'.format(sha))
+  subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True)
 
   tree = ET.parse(PLUGIN_XML)
   root = tree.getroot()
-
-  # Find the `version` tag then append the head sha to it.
   version = root.find('version')
+
   if version is None:
     logger.error("version tag not found in {}".format(PLUGIN_XML))
     exit(1)
 
-  version.text = "{}.{}".format(version.text, sha)
-  tree.write(PLUGIN_XML)
+  if args.tag:
+    channel = CHANNEL_BLEEDING_EDGE
+  else:
+    channel = CHANNEL_STABLE
+
+    sha = get_head_sha()
+    logger.info('Append git sha {} to plugin version'.format(sha))
+    version.text = "{}.{}".format(version.text, sha)
+
+    tree.write(PLUGIN_XML)
+
+  logger.info('Releasing {} to {} channel'.format(version.text, channel))
 
   zip_name = 'pants_{}.zip'.format(version.text)
 
@@ -81,7 +93,7 @@ if __name__ == "__main__":
                  '-password \'{password}\' ' \
                  '-plugin {plugin_id} ' \
                  '-file {zip}' \
-      .format(channel=CHANNEL,
+      .format(channel=channel,
               username=os.environ['USERNAME'],
               password=os.environ['PASSWORD'],
               plugin_id=PLUGIN_ID,
