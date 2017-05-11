@@ -148,7 +148,9 @@ To run tests in the same manner as CI, run the following commands in order:
 Individual test or target set can be run as the following, and the parameters are also used by .travis.yml:
 
 ```
-TEST_SET=jvm-integration \./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest#testJaxb
+TEST_SET=jvm-integration \
+./scripts/run-tests-ci.sh \
+--test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest#testJaxb
 ```
 
 ### Debugging the Plugin from local pants development:
