@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * PantsCompileAllTargetsAction is a UI action that, when in a project, compiles all targets in the project
+ * PantsCompileAllTargetsAction is a UI action that, when in a project, compiles target(s) related to the file under edit.
  */
 public class PantsCompileCurrentTargetAction extends PantsCompileActionBase {
 
