@@ -199,7 +199,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     // If project has not changed since last Compile, return immediately.
     if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddressesToCompile)) {
       PantsExternalMetricsListenerManager.getInstance().logIsPantsNoopCompile(true);
-      showPantsMakeTaskMessage("Already up to date.\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
+      Notification start = new Notification(PantsConstants.PANTS, "Pants Compile", "Already up to date.\n", NotificationType.INFORMATION);
+      Notifications.Bus.notify(start);
       return Pair.create(true, Optional.of(PantsConstants.NOOP_COMPILE));
     }
 
