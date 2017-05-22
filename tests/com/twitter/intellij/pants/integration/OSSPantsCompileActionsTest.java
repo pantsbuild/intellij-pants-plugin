@@ -88,11 +88,16 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
 
   public void testCompileTargetsInSelectedEditor() throws Throwable {
     doImport("examples/tests/scala/org/pantsbuild/example");
-
     ArrayList<Pair<String, String>> testClassAndTarget = Lists.newArrayList(
       // Pair of class reference and its containing target
-      Pair.create("org.pantsbuild.example.hello.welcome.WelSpec", "examples/tests/scala/org/pantsbuild/example/hello/welcome:welcome"),
-      Pair.create("org.pantsbuild.example.specs2.HelloWorldSpec", "examples/tests/scala/org/pantsbuild/example/specs2:specs2")
+      Pair.create(
+        "org.pantsbuild.example.hello.welcome.WelSpec",
+        "examples/tests/scala/org/pantsbuild/example/hello/welcome:welcome"
+      ),
+      Pair.create(
+        "org.pantsbuild.example.hello.welcome.WelcomeEverybody",
+        "examples/src/scala/org/pantsbuild/example/hello/welcome:welcome"
+      )
     );
 
     for (Pair<String, String> classAndTarget : testClassAndTarget) {
