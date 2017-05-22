@@ -90,7 +90,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     doImport("examples/tests/scala/org/pantsbuild/example");
 
     ArrayList<Pair<String, String>> testClassAndTarget = Lists.newArrayList(
-      // Pair of class reference and the target it belong to
+      // Pair of class reference and its containing target
       Pair.create("org.pantsbuild.example.hello.welcome.WelSpec", "examples/tests/scala/org/pantsbuild/example/hello/welcome:welcome"),
       Pair.create("org.pantsbuild.example.specs2.HelloWorldSpec", "examples/tests/scala/org/pantsbuild/example/specs2:specs2")
     );
