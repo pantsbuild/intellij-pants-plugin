@@ -101,6 +101,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     );
 
     for (Pair<String, String> classAndTarget : testClassAndTarget) {
+      // Preparation
       String clazzName = classAndTarget.getFirst();
       String target = classAndTarget.getSecond();
 
@@ -109,8 +110,11 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
 
       assertNotNull(String.format("%s does not exist, but should.", clazz), clazz);
 
+      // Open the file and have the editor focus on it
       FileEditorManager.getInstance(myProject).openFile(clazz.getContainingFile().getVirtualFile(), true);
       PantsCompileCurrentTargetAction compileCurrentTargetAction = new PantsCompileCurrentTargetAction();
+
+      // Execute body
       Set<String> currentTargets = compileCurrentTargetAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
       assertEquals(Sets.newHashSet(target), currentTargets);
     }
