@@ -4,6 +4,8 @@
 package com.twitter.intellij.pants.compiler.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -12,10 +14,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -37,14 +35,19 @@ public class PantsCompileCurrentTargetAction extends PantsCompileActionBase {
   @NotNull
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
-    VirtualFile[] files = FileEditorManager.getInstance(project).getSelectedFiles();
-    Set<Module> relatedModules =
-      Arrays.stream(files)
-        .map(x -> ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(x))
-        .collect(Collectors.toSet());
 
-    return relatedModules.stream()
-      .map(PantsUtil::getNonGenTargetAddresses)
-      .flatMap(Collection::stream);
+    Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+    if (editor != null && editor instanceof EditorImpl) {
+      VirtualFile fileUnderEdit = ((EditorImpl) editor).getVirtualFile();
+      Module moduleForFile = ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(fileUnderEdit);
+
+      if (moduleForFile == null) {
+        return Stream.empty();
+      }
+
+      return PantsUtil.getNonGenTargetAddresses(moduleForFile).stream();
+    }
+
+    return Stream.empty();
   }
 }
