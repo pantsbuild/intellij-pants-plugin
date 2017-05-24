@@ -321,7 +321,7 @@ public class PantsUtil {
                       tempFile.getFile().getPath()
         )
       );
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(cmd, null);
+      final ProcessOutput processOutput = PantsUtil.getCmdOutput(cmd, null);
       if (processOutput.checkSuccess(LOG)) {
         String output = FileUtil.loadFile(tempFile.getFile());
         return Arrays.asList(output.split("\n"));
@@ -601,11 +601,20 @@ public class PantsUtil {
     @NotNull GeneralCommandLine command,
     @Nullable ProcessAdapter processAdapter
   ) throws ExecutionException {
-    return getOutput(command.createProcess(), processAdapter);
+    final CapturingProcessHandler processHandler =
+      new CapturingProcessHandler(command.createProcess(), Charset.defaultCharset(), command.getCommandLineString());
+    if (processAdapter != null) {
+      processHandler.addProcessListener(processAdapter);
+    }
+    return processHandler.runProcess();
   }
 
-  public static ProcessOutput getOutput(@NotNull Process process, @Nullable ProcessAdapter processAdapter) {
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), "PantsUtil command");
+  public static ProcessOutput getCmdOutput(
+    @NotNull Process process,
+    @NotNull String commandLineString,
+    @Nullable ProcessAdapter processAdapter
+  ) {
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), commandLineString);
     if (processAdapter != null) {
       processHandler.addProcessListener(processAdapter);
     }
@@ -660,13 +669,6 @@ public class PantsUtil {
         }
       }
     );
-  }
-
-  public static ProcessOutput getProcessOutput(
-    @NotNull GeneralCommandLine command,
-    @Nullable ProcessAdapter processAdapter
-  ) throws ExecutionException {
-    return getOutput(command.createProcess(), processAdapter);
   }
 
   /**

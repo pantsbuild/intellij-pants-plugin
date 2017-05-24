@@ -56,13 +56,13 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
     try {
       final Process process = commandLine.createProcess();
       myCancellationMap.put(id, process);
-      PantsUtil.getOutput(
+      PantsUtil.getCmdOutput(
         process,
-        new ProcessAdapter() {
+        commandLine.getCommandLineString(), new ProcessAdapter() {
           @Override
           public void startNotified(ProcessEvent event) {
             super.startNotified(event);
-            listener.onStart(id);
+            listener.onStart(id, commandLine.getWorkDirectory().getPath());
           }
 
           @Override

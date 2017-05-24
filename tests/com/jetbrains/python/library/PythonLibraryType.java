@@ -58,7 +58,7 @@ public class PythonLibraryType extends LibraryType<LibraryVersionProperties> {
 
   @Nullable
   @Override
-  public Icon getIcon() {
+  public Icon getIcon(@Nullable LibraryVersionProperties properties) {
     return null;
   }
 }

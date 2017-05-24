@@ -65,7 +65,7 @@ public class PantsOptions {
     GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
     exportCommandline.addParameters("options", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     try {
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(exportCommandline, null);
+      final ProcessOutput processOutput = PantsUtil.getCmdOutput(exportCommandline, null);
       PantsOptions result = new PantsOptions(processOutput.getStdout());
       optionsCache.put(pantsExecutableFile, result);
       return result;
