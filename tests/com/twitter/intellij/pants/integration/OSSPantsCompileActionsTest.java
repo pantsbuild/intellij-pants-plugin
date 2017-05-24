@@ -3,15 +3,24 @@
 
 package com.twitter.intellij.pants.integration;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.util.Pair;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModuleAction;
+import com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -75,6 +84,40 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     ));
     assertEquals(expectedTargets, targetAddresses);
     assertFalse(compileAllTargetsInModuleAction.doCleanAll());
+  }
+
+  public void testCompileTargetsInSelectedEditor() throws Throwable {
+    doImport("examples/tests/scala/org/pantsbuild/example");
+    ArrayList<Pair<String, String>> testClassAndTarget = Lists.newArrayList(
+      // Pair of class reference and its containing target
+      Pair.create(
+        "org.pantsbuild.example.hello.welcome.WelSpec",
+        "examples/tests/scala/org/pantsbuild/example/hello/welcome:welcome"
+      ),
+      Pair.create(
+        "org.pantsbuild.example.hello.welcome.WelcomeEverybody",
+        "examples/src/scala/org/pantsbuild/example/hello/welcome:welcome"
+      )
+    );
+
+    for (Pair<String, String> classAndTarget : testClassAndTarget) {
+      // Preparation
+      String clazzName = classAndTarget.getFirst();
+      String target = classAndTarget.getSecond();
+
+      PsiClass clazz = JavaPsiFacade.getInstance(myProject)
+        .findClass(clazzName, GlobalSearchScope.projectScope(myProject));
+
+      assertNotNull(String.format("%s does not exist, but should.", clazz), clazz);
+
+      // Open the file and have the editor focus on it
+      FileEditorManager.getInstance(myProject).openFile(clazz.getContainingFile().getVirtualFile(), true);
+      PantsCompileCurrentTargetAction compileCurrentTargetAction = new PantsCompileCurrentTargetAction();
+
+      // Execute body
+      Set<String> currentTargets = compileCurrentTargetAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
+      assertEquals(Sets.newHashSet(target), currentTargets);
+    }
   }
 
   private AnActionEvent getPantsActionEvent() {
