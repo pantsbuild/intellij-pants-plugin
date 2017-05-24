@@ -5,8 +5,7 @@ package com.twitter.intellij.pants.components.impl;
 
 import com.intellij.ProjectTopics;
 import com.intellij.compiler.server.BuildManagerListener;
-import com.intellij.execution.RunManagerAdapter;
-import com.intellij.execution.RunManagerEx;
+import com.intellij.execution.RunManagerListener;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -211,18 +210,15 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         }
 
         private void subscribeToRunConfigurationAddition() {
-          RunManagerEx.getInstanceEx(myProject).addRunManagerListener(
-            new RunManagerAdapter() {
-              @Override
-              public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
-                super.runConfigurationAdded(settings);
-                if (!PantsUtil.isPantsProject(myProject) && !PantsUtil.isSeedPantsProject(myProject)) {
-                  return;
-                }
-                PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, settings);
+          myProject.getMessageBus().connect().subscribe(RunManagerListener.TOPIC, new RunManagerListener() {
+            @Override
+            public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
+              if (!PantsUtil.isPantsProject(myProject) && !PantsUtil.isSeedPantsProject(myProject)) {
+                return;
               }
+              PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, settings);
             }
-          );
+          });
         }
       }
     );
@@ -232,8 +228,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
    * This registers the listener when IDEA external builder process calls Pants.
    */
   private void registerExternalBuilderListener() {
-    MessageBusConnection connection = myProject.getMessageBus().connect();
-    BuildManagerListener buildManagerListener = new BuildManagerListener() {
+    myProject.getMessageBus().connect().subscribe(BuildManagerListener.TOPIC, new BuildManagerListener() {
       @Override
       public void beforeBuildProcessStarted(Project project, UUID sessionId) {
 
@@ -253,8 +248,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
          */
         PantsUtil.synchronizeFiles();
       }
-    };
-    connection.subscribe(BuildManagerListener.TOPIC, buildManagerListener);
+    });
   }
 
   private void registerFileListener() {
