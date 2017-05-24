@@ -743,7 +743,6 @@ public class PantsUtil {
     return addresses.stream().filter(s -> !isGenTarget(s)).collect(Collectors.toSet());
   }
 
-  @Nullable
   public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable) {
     // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
     Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
