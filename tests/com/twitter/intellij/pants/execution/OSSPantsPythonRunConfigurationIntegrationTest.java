@@ -22,7 +22,7 @@ import com.jetbrains.python.psi.stubs.PyClassNameIndex;
 import com.jetbrains.python.psi.types.PyClassLikeType;
 import com.jetbrains.python.psi.types.PyClassTypeImpl;
 import com.jetbrains.python.psi.types.TypeEvalContext;
-import com.jetbrains.python.testing.pytest.PyTestUtil;
+import com.jetbrains.python.testing.PythonUnitTestUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -40,7 +40,7 @@ public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsInteg
 
     PyClass pyClass = PyClassNameIndex.find("GreetTest", myProject, true).iterator().next();
     PyClass truClass = new PyTestClass(pyClass);
-    assertTrue(PyTestUtil.isPyTestClass(truClass, null));
+    PythonUnitTestUtil.isTestCaseClass(pyClass, null);
 
     PsiFile file = new PyTestFile(truClass.getContainingFile(), truClass);
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(file);
