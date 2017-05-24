@@ -9,12 +9,13 @@ import java.util.Collections
 import com.intellij.ProjectTopics
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.roots.{ModuleRootAdapter, ModuleRootEvent}
+import com.intellij.openapi.roots.{ModuleRootAdapter, ModuleRootEvent, ModuleRootListener}
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.io.FileUtil
 import com.twitter.intellij.pants.model.PantsTargetAddress
 import com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase
 import com.twitter.intellij.pants.util.PantsUtil
+
 import scala.collection.JavaConversions.collectionAsScalaIterable
 
 object PantsPerformanceBenchmark {
@@ -91,7 +92,7 @@ class PantsPerformanceBenchmark(projectFolder: File, pluginsToDisable: Set[Strin
     val messageBusConnection = myProject.getMessageBus.connect()
     messageBusConnection.subscribe(
       ProjectTopics.PROJECT_ROOTS,
-      new ModuleRootAdapter {
+      new ModuleRootListener {
         override def beforeRootsChange(event: ModuleRootEvent) = {
           // import ends with changing of all the roots
           importEnd.set(System.currentTimeMillis)
