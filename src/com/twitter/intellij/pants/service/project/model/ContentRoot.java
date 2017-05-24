@@ -8,6 +8,8 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 public class ContentRoot implements Comparable<ContentRoot> {
   // FIXME: Change `source_root` argument to `content_root` once it is corrected in Pants.
   private String source_root;
@@ -21,8 +23,8 @@ public class ContentRoot implements Comparable<ContentRoot> {
   @NotNull
   public String getPackageRoot() {
     // source_root might contain '.' in the path.
-    final boolean sourceRootMatchesPackage =
-      StringUtil.endsWith(StringUtil.replaceChar(source_root, '/', '.'), package_prefix);
+
+    final boolean sourceRootMatchesPackage = StringUtil.endsWith(source_root.replace(File.separatorChar, '.'), package_prefix);
     return sourceRootMatchesPackage ?
            source_root.substring(0, source_root.length() - package_prefix.length()) :
            source_root;
@@ -43,7 +45,7 @@ public class ContentRoot implements Comparable<ContentRoot> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    ContentRoot root = (ContentRoot)o;
+    ContentRoot root = (ContentRoot) o;
 
     if (!package_prefix.equals(root.package_prefix)) return false;
     if (!source_root.equals(root.source_root)) return false;
