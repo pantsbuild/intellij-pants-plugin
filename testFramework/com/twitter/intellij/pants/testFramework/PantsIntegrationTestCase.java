@@ -531,7 +531,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     runManagerImpl.addConfiguration(runnerAndConfigurationSettings, false);
 
     // Make sure PantsMake is the one and only task before JUnit run.
-    List<BeforeRunTask> beforeRunTaskList = runManagerImpl.getBeforeRunTasks(runConfiguration);
+    List<BeforeRunTask<?>> beforeRunTaskList = runManagerImpl.getBeforeRunTasks(runConfiguration);
     assertEquals(1, beforeRunTaskList.size());
     BeforeRunTask task = beforeRunTaskList.iterator().next();
     assertEquals(PantsMakeBeforeRun.ID, task.getProviderId());
