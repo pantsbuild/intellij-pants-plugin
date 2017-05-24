@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.service.python.component.impl;
 
-import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunManagerListener;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -30,23 +29,20 @@ public class PantsPythonProjectComponentImpl extends AbstractProjectComponent im
     if (myProject.isDefault()) {
       return;
     }
-
-    RunManagerEx.getInstanceEx(myProject).addRunManagerListener(
-      new RunManagerListener() {
-        @Override
-        public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
-          final RunConfiguration runConfiguration = settings.getConfiguration();
-          if (!(runConfiguration instanceof AbstractPythonRunConfiguration)) {
-            return;
-          }
-          final String workingDirectory = ((AbstractPythonRunConfiguration) runConfiguration).getWorkingDirectory();
-          if (StringUtil.isEmpty(workingDirectory)) {
-            final Optional<VirtualFile> projectBuildRoot = PantsUtil.findBuildRoot(myProject);
-            projectBuildRoot
-              .ifPresent(file -> ((AbstractPythonRunConfiguration) runConfiguration).setWorkingDirectory(file.getCanonicalPath()));
-          }
+    myProject.getMessageBus().connect().subscribe(RunManagerListener.TOPIC, new RunManagerListener() {
+      @Override
+      public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
+        final RunConfiguration runConfiguration = settings.getConfiguration();
+        if (!(runConfiguration instanceof AbstractPythonRunConfiguration)) {
+          return;
+        }
+        final String workingDirectory = ((AbstractPythonRunConfiguration) runConfiguration).getWorkingDirectory();
+        if (StringUtil.isEmpty(workingDirectory)) {
+          final Optional<VirtualFile> projectBuildRoot = PantsUtil.findBuildRoot(myProject);
+          projectBuildRoot
+            .ifPresent(file -> ((AbstractPythonRunConfiguration) runConfiguration).setWorkingDirectory(file.getCanonicalPath()));
         }
       }
-    );
+    });
   }
 }
