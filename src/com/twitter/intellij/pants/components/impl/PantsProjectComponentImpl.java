@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.components.impl;
 import com.intellij.ProjectTopics;
 import com.intellij.execution.RunManagerListener;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
@@ -17,13 +18,10 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.util.Function;
-import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
@@ -92,6 +90,13 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             convertToPantsProject();
           }
 
+          myProject.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
+            @Override
+            public void moduleAdded(@NotNull Project project, @NotNull Module module) {
+              applyProjectSdk();
+            }
+          });
+
           subscribeToRunConfigurationAddition();
           FileChangeTracker.registerProject(myProject);
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
@@ -148,47 +153,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           PantsUtil.refreshAllProjects(myProject);
 
           prepareGuiComponents();
-
-          // Subscribe the change of module addition, meaning when the project finishes resolves,
-          // project SDK should be explicitly set.
-          final MessageBusConnection connection = myProject.getMessageBus().connect(myProject);
-          connection.subscribe(
-            ProjectTopics.MODULES, new ModuleListener() {
-              @Override
-              public void moduleAdded(@NotNull Project project, @NotNull Module module) {
-                ApplicationManager.getApplication().runWriteAction(() -> {
-                  Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(project);
-                  if (!pantsExecutable.isPresent()) {
-                    return;
-                  }
-
-                  Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath());
-                  if (!sdk.isPresent()) {
-                    return;
-                  }
-
-                  ProjectRootManager.getInstance(project).setProjectSdk(sdk.get());
-                });
-              }
-
-              @Override
-              public void beforeModuleRemoved(@NotNull Project project, @NotNull Module module) {
-
-              }
-
-              @Override
-              public void moduleRemoved(@NotNull Project project, @NotNull Module module) {
-
-              }
-
-              @Override
-              public void modulesRenamed(
-                @NotNull Project project, @NotNull List<Module> modules, @NotNull Function<Module, String> oldNameProvider
-              ) {
-
-              }
-            }
-          );
         }
 
         /**
@@ -219,5 +183,20 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         }
       }
     );
+  }
+
+  private void applyProjectSdk() {
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(myProject);
+      if (!pantsExecutable.isPresent()) {
+        return;
+      }
+
+      Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath());
+      if (!sdk.isPresent()) {
+        return;
+      }
+      NewProjectUtil.applyJdkToProject(myProject, sdk.get());
+    });
   }
 }
