@@ -24,6 +24,7 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.execution.runners.ExecutionUtil;
+import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
@@ -308,7 +309,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         PantsUtil.getDefaultJavaSdk(getProjectPath())
           .ifPresent(sdk -> {
             ProjectJdkTable.getInstance().addJdk(sdk);
-            ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
+            NewProjectUtil.applyJdkToProject(myProject, sdk);
           });
       }
     });

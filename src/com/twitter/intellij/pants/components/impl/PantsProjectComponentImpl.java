@@ -90,13 +90,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             convertToPantsProject();
           }
 
-          myProject.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
-            @Override
-            public void moduleAdded(@NotNull Project project, @NotNull Module module) {
-              applyProjectSdk();
-            }
-          });
-
           subscribeToRunConfigurationAddition();
           FileChangeTracker.registerProject(myProject);
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
@@ -153,6 +146,13 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           PantsUtil.refreshAllProjects(myProject);
 
           prepareGuiComponents();
+
+          myProject.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
+            @Override
+            public void moduleAdded(@NotNull Project project, @NotNull Module module) {
+              applyProjectSdk();
+            }
+          });
         }
 
         /**
@@ -196,6 +196,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
       if (!sdk.isPresent()) {
         return;
       }
+
       NewProjectUtil.applyJdkToProject(myProject, sdk.get());
     });
   }
