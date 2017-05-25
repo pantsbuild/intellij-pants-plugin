@@ -130,15 +130,28 @@ test sources, resources, test resources, generated sources, etc).
 
 # Running plugin CI tests with Pants
 
-1. `./scripts/prepare-ci-environment.sh`
-2. `./scripts/setup-ci-environment.sh`
-3. `./scripts/run-tests-ci.sh`
+To run tests in the same manner as CI, run the following commands in order:
 
-#### Explanation:
+
+```
+./scripts/prepare-ci-environment.sh
+./scripts/setup-ci-environment.sh
+./scripts/run-tests-ci.sh
+```
+
 * `./scripts/prepare-environment.sh` defines the test suite parameters such as `IJ_VERSION` and `IJ_BUILD_NUMBER`, which then will be used by `./scripts/setup-ci-environment.sh` for setup.
+* `./scripts/setup-ci-environment.sh` downloads a fresh copy of intellij and the associated plugins.
+* `./scripts/run-tests-ci.sh` Runs tests using the setup from the previous commands.
 
-* Individual test or target set can be run as the following, and the parameters are also used by .travis.yml:
-  * `TEST_SET=integration ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest#testJaxb`
+### Running individual tests
+
+Individual test or target set can be run as the following, and the parameters are also used by .travis.yml:
+
+```
+TEST_SET=jvm-integration  \
+./scripts/run-tests-ci.sh \
+--test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest#testJaxb
+```
 
 ### Debugging the Plugin from local pants development:
 
