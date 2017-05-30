@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.service.task;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
@@ -12,9 +14,8 @@ import com.intellij.execution.process.UnixProcessManager;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
-import com.intellij.openapi.externalSystem.task.AbstractExternalSystemTaskManager;
+import com.intellij.openapi.externalSystem.task.ExternalSystemTaskManager;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.Pair;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
@@ -29,28 +30,35 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExecutionSettings> {
-  public static final Map<String, String> goal2JvmOptionsFlag = ContainerUtil.newHashMap(
-    Pair.create("test", "--jvm-test-junit-options"),
-    Pair.create("run", "--jvm-run-jvm-options")
-  );
-  private final Map<ExternalSystemTaskId, Process> myCancellationMap = ContainerUtil.newConcurrentMap();
+public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutionSettings> {
 
+  private static final Map<String, String> goal2JvmOptionsFlag = ImmutableMap.<String, String>builder()
+    .put("test", "--jvm-test-junit-options")
+    .put("run", "--jvm-run-jvm-options")
+    .build();
+
+  private final Map<ExternalSystemTaskId, Process> myCancellationMap = ContainerUtil.newConcurrentMap();
 
   @Override
   public void executeTasks(
-    @NotNull final ExternalSystemTaskId id,
+    @NotNull ExternalSystemTaskId id,
     @NotNull List<String> taskNames,
     @NotNull String projectPath,
     @Nullable PantsExecutionSettings settings,
-    @NotNull List<String> vmOptions,
-    @NotNull List<String> scriptParameters,
-    @Nullable String debuggerSetup,
-    @NotNull final ExternalSystemTaskNotificationListener listener
+    @Nullable String jvmAgentSetup,
+    @NotNull ExternalSystemTaskNotificationListener listener
   ) throws ExternalSystemException {
     PantsExternalMetricsListenerManager.getInstance().logTestRunner(PantsExternalMetricsListener.TestRunnerType.PANTS_RUNNER);
-    final GeneralCommandLine commandLine = constructCommandLine(taskNames, projectPath, settings, vmOptions, scriptParameters, debuggerSetup);
-    if (commandLine == null) return;
+    if (settings == null) {
+      return;
+    }
+
+    final GeneralCommandLine commandLine =
+      constructCommandLine(
+        taskNames, projectPath, settings, Lists.newArrayList(settings.getVmOptions()), settings.getArguments(), jvmAgentSetup);
+    if (commandLine == null) {
+      return;
+    }
 
     listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);
     try {
@@ -114,10 +122,10 @@ public class PantsTaskManager extends AbstractExternalSystemTaskManager<PantsExe
       commandLine.addParameter(jvmOptionsFlag + "=" + debuggerSetup);
     }
     if (settings.isUseIdeaProjectJdk()) {
-      try{
+      try {
         commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
       }
-      catch(Exception e){
+      catch (Exception e) {
         throw new ExternalSystemException(e);
       }
     }
