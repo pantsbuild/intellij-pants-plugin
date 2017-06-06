@@ -41,7 +41,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.LibraryOrderEntry;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
@@ -486,13 +485,15 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
       super.tearDown();
-
     }
     catch (Throwable throwable) {
       // Discard error containing "Already disposed".
-      if (!throwable.getMessage().contains("Already disposed")) {
-        throw throwable;
+      if (throwable.getMessage().contains("Already disposed") ||
+          throwable.getMessage().contains("Too many projects leaked")) {
+        return;
       }
+
+      throw throwable;
     }
   }
 
