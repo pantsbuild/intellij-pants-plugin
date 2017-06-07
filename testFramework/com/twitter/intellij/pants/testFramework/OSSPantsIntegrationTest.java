@@ -34,17 +34,6 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     return Collections.singletonList(testProjects);
   }
 
-  @NotNull
-  @Override
-  protected File getProjectFolder() {
-    final String ossPantsHome = System.getenv("OSS_PANTS_HOME");
-    if (!StringUtil.isEmpty(ossPantsHome)) {
-      return new File(ossPantsHome);
-    }
-    final File workingDir = PantsTestUtils.findTestPath("testData").getParentFile();
-    return new File(workingDir.getParent(), "pants");
-  }
-
   protected void assertContainsSubstring(List<String> stringList, String expected) {
     assertContainsSubstring(StringUtil.join(stringList, ""), expected);
   }

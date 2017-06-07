@@ -41,7 +41,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.LibraryOrderEntry;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
@@ -108,6 +107,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Override
   public void setUp() throws Exception {
+    cleanProjectIdeaDir();
     super.setUp();
     VfsRootAccess.allowRootAccess("/");
     for (String pluginId : getRequiredPluginIds()) {
@@ -149,6 +149,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   protected void passthroughSetUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
+  }
+
+  protected void cleanProjectIdeaDir() throws ExecutionException, IOException {
+    final File projectDir = new File(getProjectFolder().getPath());
+    assertTrue("Failed to clean up!", FileUtil.delete(new File(projectDir, ".idea")));
   }
 
   protected void cleanProjectRoot() throws ExecutionException, IOException {
@@ -205,7 +210,14 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @NotNull
-  abstract protected File getProjectFolder();
+  protected File getProjectFolder() {
+    final String ossPantsHome = System.getenv("OSS_PANTS_HOME");
+    if (!StringUtil.isEmpty(ossPantsHome)) {
+      return new File(ossPantsHome);
+    }
+    final File workingDir = PantsTestUtils.findTestPath("testData").getParentFile();
+    return new File(workingDir.getParent(), "pants");
+  }
 
   @NotNull
   protected List<File> getProjectFoldersToCopy() {
@@ -486,7 +498,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
       super.tearDown();
-
     }
     catch (Throwable throwable) {
       // Discard error containing "Already disposed".
