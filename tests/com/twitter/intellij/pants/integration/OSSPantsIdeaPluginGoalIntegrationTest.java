@@ -89,17 +89,4 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     assertAndRunPantsMake(runConfiguration);
     assertSuccessfulTest(runConfiguration);
   }
-
-
-  @Override
-  public void tearDown() throws Exception {
-    try {
-      super.tearDown();
-    }
-    // Test framework project disposal process does not like newly opened project.
-    // Hence ignore the errors here.
-    catch (IllegalStateException ignored) {
-
-    }
-  }
 }
