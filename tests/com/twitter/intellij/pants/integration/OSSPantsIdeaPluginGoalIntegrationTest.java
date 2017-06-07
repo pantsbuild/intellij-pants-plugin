@@ -49,7 +49,7 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
       "idea-plugin",
       "--no-open",
       "--output-file=" + outputFile.getPath(),
-      "testprojects/tests/java/org/pantsbuild/testproject/::"
+      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:"
     );
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertEquals(commandLine.toString() + " failed", 0, cmdOutput.getExitCode());
