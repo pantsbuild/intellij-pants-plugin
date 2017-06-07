@@ -44,11 +44,12 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
      */
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectFolder().getPath());
     final File outputFile = FileUtil.createTempFile("project_dir_location", ".out");
+    String targetToImport = "testprojects/tests/java/org/pantsbuild/testproject/matcher:matcher";
     commandLine.addParameters(
       "idea-plugin",
       "--no-open",
       "--output-file=" + outputFile.getPath(),
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:"
+      targetToImport
     );
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertEquals(commandLine.toString() + " failed", 0, cmdOutput.getExitCode());
@@ -80,24 +81,25 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     });
 
     JUnitConfiguration runConfiguration = generateJUnitConfiguration(
-      "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest", null);
+      PantsUtil.getCanonicalModuleName(targetToImport),
+      "org.pantsbuild.testproject.matcher.MatcherTest",
+      null
+    );
 
     assertAndRunPantsMake(runConfiguration);
     assertSuccessfulTest(runConfiguration);
   }
 
-  /**
-   * Test framework cannot properly dispose newly opened project.
-   * This is a hack to manually trigger disposal and ignore all disposal errors.
-   */
+
   @Override
   public void tearDown() throws Exception {
     try {
       super.tearDown();
     }
+    // Test framework project disposal process does not like newly opened project.
+    // Hence ignore the errors here.
     catch (IllegalStateException ignored) {
 
     }
-    cleanProjectRoot();
   }
 }
