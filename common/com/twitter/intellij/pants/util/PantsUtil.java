@@ -17,6 +17,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
@@ -471,10 +472,19 @@ public class PantsUtil {
     return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
   }
 
+  public static Optional<String> findModuleAddress(@NotNull Module module) {
+    ExternalSystemModulePropertyManager externalSystemModulePropertyManager = ExternalSystemModulePropertyManager.getInstance(module);
+    String path = externalSystemModulePropertyManager.getLinkedProjectPath();
+    if (path == null) {
+      return Optional.empty();
+    }
+    return getPathFromAddress(module, path);
+  }
+
   public static Optional<VirtualFile> findBUILDFileForModule(@NotNull Module module) {
 
     final Optional<VirtualFile> virtualFile =
-      getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY)
+      findModuleAddress(module)
         .map(VfsUtil::pathToUrl)
         .flatMap(s -> Optional.ofNullable(VirtualFileManager.getInstance().findFileByUrl(s)));
 

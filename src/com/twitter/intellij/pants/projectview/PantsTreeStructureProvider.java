@@ -42,7 +42,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
     if (node instanceof PsiDirectoryNode && project != null) {
       final Module module = ModuleUtil.findModuleForPsiElement(((PsiDirectoryNode) node).getValue());
       final Optional<String> buildPath =
-        module != null ? PantsUtil.getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY) : Optional.empty();
+        module != null ? PantsUtil.findModuleAddress(module) : Optional.empty();
       if (buildPath.isPresent()) {
         final Optional<VirtualFile> buildFile = PantsUtil.findFileRelativeToBuildRoot(project, buildPath.get());
 
