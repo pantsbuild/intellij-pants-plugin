@@ -9,6 +9,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiClass;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.quickfix.AddPantsTargetDependencyFix;
+import org.junit.Ignore;
 
 public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHighlightingIntegrationTest {
   @Override
@@ -16,6 +17,8 @@ public class PantsUnresolvedScalaReferenceQuickFixProviderTest extends PantsHigh
     return ArrayUtil.append(super.getRequiredPluginIds(), "PythonCore");
   }
 
+  // https://github.com/pantsbuild/intellij-pants-plugin/issues/280
+  @Ignore
   public void testScalaMissingDepsWhiteList() throws Throwable {
     doImport("intellij-integration/src/scala/org/pantsbuild/testproject/missingdepswhitelist");
 
