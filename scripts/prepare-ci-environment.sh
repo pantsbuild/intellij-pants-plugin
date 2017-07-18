@@ -10,8 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="172.3198.6"
-export IJ_BUILD_NUMBER="172.3198.6"
+export IJ_VERSION="2017.2"
+export IJ_BUILD_NUMBER="172.3317.76"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
