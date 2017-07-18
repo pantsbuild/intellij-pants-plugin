@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.components.impl;
 
-import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -63,33 +62,42 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
     final PantsProjectCache cache = PantsProjectCacheImpl.getInstance(myFixture.getProject());
     final VirtualFile root = getMainContentRoot();
 
-    final AccessToken writeAccessToken = ApplicationManager.getApplication().acquireWriteActionLock(getClass());
-    try {
-      PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "bar"));
-      PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "baz"));
-      assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "baz")));
-      assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "ba")));
-      assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "bat")));
-    }
-    finally {
-      writeAccessToken.finish();
-    }
+
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "bar"));
+          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "baz"));
+          assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "baz")));
+          assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "ba")));
+          assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "bat")));
+        }
+        catch (IOException e) {
+          fail(e.getMessage());
+        }
+      }
+    });
   }
 
   public void testFirstOne() throws IOException {
     final PantsProjectCache cache = PantsProjectCacheImpl.getInstance(myFixture.getProject());
     final VirtualFile root = getMainContentRoot();
 
-    final AccessToken writeAccessToken = ApplicationManager.getApplication().acquireWriteActionLock(getClass());
-    try {
-      PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "abc"));
-      PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "foo/bar"));
-      PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "foo/baz"));
-      assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "abc")));
-      assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "foo")));
-    }
-    finally {
-      writeAccessToken.finish();
-    }
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "abc"));
+          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "foo/bar"));
+          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "foo/baz"));
+          assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "abc")));
+          assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "foo")));
+        }
+        catch (IOException e) {
+          fail(e.getMessage());
+        }
+      }
+    });
   }
 }

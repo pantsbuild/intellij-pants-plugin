@@ -24,6 +24,7 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.execution.runners.ExecutionUtil;
+import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
@@ -40,7 +41,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.roots.LibraryOrderEntry;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
@@ -107,6 +107,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @Override
   public void setUp() throws Exception {
+    cleanProjectIdeaDir();
     super.setUp();
     VfsRootAccess.allowRootAccess("/");
     for (String pluginId : getRequiredPluginIds()) {
@@ -148,6 +149,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   protected void passthroughSetUpInWriteAction() throws Exception {
     super.setUpInWriteAction();
+  }
+
+  protected void cleanProjectIdeaDir() throws ExecutionException, IOException {
+    final File projectDir = new File(getProjectFolder().getPath());
+    assertTrue("Failed to clean up!", FileUtil.delete(new File(projectDir, ".idea")));
   }
 
   protected void cleanProjectRoot() throws ExecutionException, IOException {
@@ -204,7 +210,14 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @NotNull
-  abstract protected File getProjectFolder();
+  protected File getProjectFolder() {
+    final String ossPantsHome = System.getenv("OSS_PANTS_HOME");
+    if (!StringUtil.isEmpty(ossPantsHome)) {
+      return new File(ossPantsHome);
+    }
+    final File workingDir = PantsTestUtils.findTestPath("testData").getParentFile();
+    return new File(workingDir.getParent(), "pants");
+  }
 
   @NotNull
   protected List<File> getProjectFoldersToCopy() {
@@ -308,7 +321,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         PantsUtil.getDefaultJavaSdk(getProjectPath())
           .ifPresent(sdk -> {
             ProjectJdkTable.getInstance().addJdk(sdk);
-            ProjectRootManager.getInstance(myProject).setProjectSdk(sdk);
+            NewProjectUtil.applyJdkToProject(myProject, sdk);
           });
       }
     });
@@ -485,7 +498,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
       super.tearDown();
-
     }
     catch (Throwable throwable) {
       // Discard error containing "Already disposed".
@@ -531,7 +543,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     runManagerImpl.addConfiguration(runnerAndConfigurationSettings, false);
 
     // Make sure PantsMake is the one and only task before JUnit run.
-    List<BeforeRunTask> beforeRunTaskList = runManagerImpl.getBeforeRunTasks(runConfiguration);
+    List<BeforeRunTask<?>> beforeRunTaskList = runManagerImpl.getBeforeRunTasks(runConfiguration);
     assertEquals(1, beforeRunTaskList.size());
     BeforeRunTask task = beforeRunTaskList.iterator().next();
     assertEquals(PantsMakeBeforeRun.ID, task.getProviderId());

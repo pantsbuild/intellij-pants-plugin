@@ -7,8 +7,8 @@ import com.intellij.ProjectTopics;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootAdapter;
 import com.intellij.openapi.roots.ModuleRootEvent;
+import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -56,10 +56,9 @@ public class PantsProjectCacheImpl extends AbstractProjectComponent implements P
     }
     final MessageBusConnection connection = myProject.getMessageBus().connect(this);
     connection.subscribe(
-      ProjectTopics.PROJECT_ROOTS, new ModuleRootAdapter() {
+      ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
         @Override
         public void rootsChanged(ModuleRootEvent event) {
-          super.rootsChanged(event);
           myProjectRoots = null;
         }
       }

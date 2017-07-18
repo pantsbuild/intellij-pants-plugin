@@ -190,7 +190,7 @@ public class PantsCompileOptionsExecutor {
   ) throws ExecutionException {
     final Process process = command.createProcess();
     myProcesses.add(process);
-    final ProcessOutput processOutput = PantsUtil.getOutput(process, processAdapter);
+    final ProcessOutput processOutput = PantsUtil.getCmdOutput(process, command.getCommandLineString(), null);
     myProcesses.remove(process);
     return processOutput;
   }
@@ -229,6 +229,7 @@ public class PantsCompileOptionsExecutor {
     for (Process process : myProcesses) {
       process.destroy();
     }
+    myProcesses.forEach(Process::destroy);
     return true;
   }
 

@@ -4,10 +4,9 @@
 package com.twitter.intellij.pants.components.impl;
 
 import com.intellij.ProjectTopics;
-import com.intellij.compiler.server.BuildManagerListener;
-import com.intellij.execution.RunManagerAdapter;
-import com.intellij.execution.RunManagerEx;
+import com.intellij.execution.RunManagerListener;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
@@ -19,13 +18,10 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.util.Function;
-import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
@@ -45,7 +41,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
   protected PantsProjectComponentImpl(Project project) {
@@ -95,9 +90,8 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             convertToPantsProject();
           }
 
-          registerExternalBuilderListener();
           subscribeToRunConfigurationAddition();
-          registerFileListener();
+          FileChangeTracker.registerProject(myProject);
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
             pantsSettings instanceof PantsSettings && ((PantsSettings) pantsSettings).getResolverVersion() != PantsResolver.VERSION;
@@ -153,46 +147,12 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
           prepareGuiComponents();
 
-          // Subscribe the change of module addition, meaning when the project finishes resolves,
-          // project SDK should be explicitly set.
-          final MessageBusConnection connection = myProject.getMessageBus().connect(myProject);
-          connection.subscribe(
-            ProjectTopics.MODULES, new ModuleListener() {
-              @Override
-              public void moduleAdded(@NotNull Project project, @NotNull Module module) {
-                ApplicationManager.getApplication().runWriteAction(() -> {
-                  Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(project);
-                  if (!pantsExecutable.isPresent()) {
-                    return;
-                  }
-
-                  Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath());
-                  if (!sdk.isPresent()) {
-                    return;
-                  }
-
-                  ProjectRootManager.getInstance(project).setProjectSdk(sdk.get());
-                });
-              }
-
-              @Override
-              public void beforeModuleRemoved(@NotNull Project project, @NotNull Module module) {
-
-              }
-
-              @Override
-              public void moduleRemoved(@NotNull Project project, @NotNull Module module) {
-
-              }
-
-              @Override
-              public void modulesRenamed(
-                @NotNull Project project, @NotNull List<Module> modules, @NotNull Function<Module, String> oldNameProvider
-              ) {
-
-              }
+          myProject.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
+            @Override
+            public void moduleAdded(@NotNull Project project, @NotNull Module module) {
+              applyProjectSdk();
             }
-          );
+          });
         }
 
         /**
@@ -211,53 +171,33 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         }
 
         private void subscribeToRunConfigurationAddition() {
-          RunManagerEx.getInstanceEx(myProject).addRunManagerListener(
-            new RunManagerAdapter() {
-              @Override
-              public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
-                super.runConfigurationAdded(settings);
-                if (!PantsUtil.isPantsProject(myProject) && !PantsUtil.isSeedPantsProject(myProject)) {
-                  return;
-                }
-                PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, settings);
+          myProject.getMessageBus().connect().subscribe(RunManagerListener.TOPIC, new RunManagerListener() {
+            @Override
+            public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
+              if (!PantsUtil.isPantsProject(myProject) && !PantsUtil.isSeedPantsProject(myProject)) {
+                return;
               }
+              PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, settings);
             }
-          );
+          });
         }
       }
     );
   }
 
-  /**
-   * This registers the listener when IDEA external builder process calls Pants.
-   */
-  private void registerExternalBuilderListener() {
-    MessageBusConnection connection = myProject.getMessageBus().connect();
-    BuildManagerListener buildManagerListener = new BuildManagerListener() {
-      @Override
-      public void beforeBuildProcessStarted(Project project, UUID sessionId) {
-
+  private void applyProjectSdk() {
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(myProject);
+      if (!pantsExecutable.isPresent()) {
+        return;
       }
 
-      @Override
-      public void buildStarted(Project project, UUID sessionId, boolean isAutomake) {
-
+      Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath());
+      if (!sdk.isPresent()) {
+        return;
       }
 
-      @Override
-      public void buildFinished(Project project, UUID sessionId, boolean isAutomake) {
-        /**
-         * Sync files as generated sources may have changed after external compile,
-         * specifically when {@link com.twitter.intellij.pants.jps.incremental.PantsTargetBuilder} finishes,
-         * except this code is run within IDEA core, thus having access to file sync calls.
-         */
-        PantsUtil.synchronizeFiles();
-      }
-    };
-    connection.subscribe(BuildManagerListener.TOPIC, buildManagerListener);
-  }
-
-  private void registerFileListener() {
-    FileChangeTracker.registerProject(myProject);
+      NewProjectUtil.applyJdkToProject(myProject, sdk.get());
+    });
   }
 }

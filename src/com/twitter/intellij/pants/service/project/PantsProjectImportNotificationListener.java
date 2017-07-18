@@ -16,8 +16,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public class PantsProjectImportNotificationListener extends ExternalSystemTaskNotificationListenerAdapter {
   @Override
-  public void onQueued(@NotNull ExternalSystemTaskId id, String workingDir) {
-    super.onQueued(id, workingDir);
+  public void onStart(@NotNull ExternalSystemTaskId id, String workingDir) {
+    super.onStart(id, workingDir);
     if (id.findProject() == null) {
       return;
     }

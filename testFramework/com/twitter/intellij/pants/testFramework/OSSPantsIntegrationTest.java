@@ -34,17 +34,6 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     return Collections.singletonList(testProjects);
   }
 
-  @NotNull
-  @Override
-  protected File getProjectFolder() {
-    final String ossPantsHome = System.getenv("OSS_PANTS_HOME");
-    if (!StringUtil.isEmpty(ossPantsHome)) {
-      return new File(ossPantsHome);
-    }
-    final File workingDir = PantsTestUtils.findTestPath("testData").getParentFile();
-    return new File(workingDir.getParent(), "pants");
-  }
-
   protected void assertContainsSubstring(List<String> stringList, String expected) {
     assertContainsSubstring(StringUtil.join(stringList, ""), expected);
   }
@@ -67,11 +56,11 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     fail(String.format("String '%s' contains unexpected substring '%s'.", s, unexpected));
   }
 
-  private List<BeforeRunTask> getBeforeRunTask(RunConfiguration configuration) {
+  private List<BeforeRunTask<?>> getBeforeRunTask(RunConfiguration configuration) {
     RunManagerImpl runManager = (RunManagerImpl) RunManager.getInstance(myProject);
     RunnerAndConfigurationSettingsImpl configurationSettings = new RunnerAndConfigurationSettingsImpl(runManager, configuration, true);
     runManager.addConfiguration(configurationSettings, true);
-    List<BeforeRunTask> tasks = runManager.getBeforeRunTasks(configuration);
+    List<BeforeRunTask<?>> tasks = runManager.getBeforeRunTasks(configuration);
     runManager.removeConfiguration(configurationSettings);
     return tasks;
   }

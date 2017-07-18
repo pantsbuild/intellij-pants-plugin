@@ -3,7 +3,7 @@
 
 package com.twitter.intellij.pants.resolve;
 
-import com.intellij.codeInsight.TargetElementUtilBase;
+import com.intellij.codeInsight.TargetElementUtil;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -23,7 +23,7 @@ public class PantsResolveTest extends PantsCodeInsightFixtureTestCase {
     assertNotNull(file);
     final PsiReference reference = file.findReferenceAt(myFixture.getCaretOffset());
     assertNotNull("no reference", reference);
-    final Collection<PsiElement> elements = TargetElementUtilBase.getInstance().getTargetCandidates(reference);
+    final Collection<PsiElement> elements = TargetElementUtil.getInstance().getTargetCandidates(reference);
     assertNotNull(elements);
     assertEquals(expectedSize, elements.size());
     return elements;
@@ -58,6 +58,6 @@ public class PantsResolveTest extends PantsCodeInsightFixtureTestCase {
     myFixture.configureByText("BUILD", "scala_library(dependencies=['fo<caret>o/bar']");
     PsiElement element = doTest(1).iterator().next();
     assertTrue("Expected a directory!", element instanceof PsiDirectory);
-    assertEquals("Wrong directory name", "foo", ((PsiDirectory)element).getName());
+    assertEquals("Wrong directory name", "foo", ((PsiDirectory) element).getName());
   }
 }

@@ -28,8 +28,8 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootAdapter;
 import com.intellij.openapi.roots.ModuleRootEvent;
+import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -100,7 +100,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     MessageBusConnection messageBusConnection = ideProject.getMessageBus().connect();
     messageBusConnection.subscribe(
       ProjectTopics.PROJECT_ROOTS,
-      new ModuleRootAdapter() {
+      new ModuleRootListener() {
         @Override
         public void rootsChanged(ModuleRootEvent event) {
           // Initiate view switch only when project modules have been created.

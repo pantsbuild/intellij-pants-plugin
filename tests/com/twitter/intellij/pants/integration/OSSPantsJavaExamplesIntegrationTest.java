@@ -177,7 +177,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       throw new ProjectBuildException(e);
     }
 
-    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process);
+    final CapturingProcessHandler processHandler = new CapturingAnsiEscapesAwareProcessHandler(process, commandLine.getCommandLineString());
     ProcessOutput output = processHandler.runProcess();
     String lines[] = output.getStdout().split("\\r?\\n");
     Set<String> modules = new HashSet<String>();

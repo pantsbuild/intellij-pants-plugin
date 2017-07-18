@@ -17,6 +17,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
@@ -321,7 +322,7 @@ public class PantsUtil {
                       tempFile.getFile().getPath()
         )
       );
-      final ProcessOutput processOutput = PantsUtil.getProcessOutput(cmd, null);
+      final ProcessOutput processOutput = PantsUtil.getCmdOutput(cmd, null);
       if (processOutput.checkSuccess(LOG)) {
         String output = FileUtil.loadFile(tempFile.getFile());
         return Arrays.asList(output.split("\n"));
@@ -471,10 +472,19 @@ public class PantsUtil {
     return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
   }
 
+  public static Optional<String> findModuleAddress(@NotNull Module module) {
+    ExternalSystemModulePropertyManager externalSystemModulePropertyManager = ExternalSystemModulePropertyManager.getInstance(module);
+    String path = externalSystemModulePropertyManager.getLinkedProjectPath();
+    if (path == null) {
+      return Optional.empty();
+    }
+    return getPathFromAddress(module, path);
+  }
+
   public static Optional<VirtualFile> findBUILDFileForModule(@NotNull Module module) {
 
     final Optional<VirtualFile> virtualFile =
-      getPathFromAddress(module, ExternalSystemConstants.LINKED_PROJECT_PATH_KEY)
+      findModuleAddress(module)
         .map(VfsUtil::pathToUrl)
         .flatMap(s -> Optional.ofNullable(VirtualFileManager.getInstance().findFileByUrl(s)));
 
@@ -601,11 +611,20 @@ public class PantsUtil {
     @NotNull GeneralCommandLine command,
     @Nullable ProcessAdapter processAdapter
   ) throws ExecutionException {
-    return getOutput(command.createProcess(), processAdapter);
+    final CapturingProcessHandler processHandler =
+      new CapturingProcessHandler(command.createProcess(), Charset.defaultCharset(), command.getCommandLineString());
+    if (processAdapter != null) {
+      processHandler.addProcessListener(processAdapter);
+    }
+    return processHandler.runProcess();
   }
 
-  public static ProcessOutput getOutput(@NotNull Process process, @Nullable ProcessAdapter processAdapter) {
-    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), "PantsUtil command");
+  public static ProcessOutput getCmdOutput(
+    @NotNull Process process,
+    @NotNull String commandLineString,
+    @Nullable ProcessAdapter processAdapter
+  ) {
+    final CapturingProcessHandler processHandler = new CapturingProcessHandler(process, Charset.defaultCharset(), commandLineString);
     if (processAdapter != null) {
       processHandler.addProcessListener(processAdapter);
     }
@@ -660,13 +679,6 @@ public class PantsUtil {
         }
       }
     );
-  }
-
-  public static ProcessOutput getProcessOutput(
-    @NotNull GeneralCommandLine command,
-    @Nullable ProcessAdapter processAdapter
-  ) throws ExecutionException {
-    return getOutput(command.createProcess(), processAdapter);
   }
 
   /**
@@ -741,7 +753,6 @@ public class PantsUtil {
     return addresses.stream().filter(s -> !isGenTarget(s)).collect(Collectors.toSet());
   }
 
-  @Nullable
   public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable) {
     // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
     Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
