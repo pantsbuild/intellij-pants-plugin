@@ -20,6 +20,16 @@ PANTS_BOOTSTRAP="${PANTS_HOME}/bootstrap-$(uname -s)-$(uname -m)"
 
 VENV_VERSION=15.0.2
 
+# This requirement is installed before pantsbuild.pants to hack around
+# interpreters that have newer setuptools already installed, effectively
+# re-installing an older setuptools and pinning low to a version known to be
+# ingestable by both pants and pex for all reasonable versions of pants.
+# See:
+#   https://github.com/pantsbuild/pants/issues/3948
+#   https://github.com/pantsbuild/setup/issues/14
+#   https://github.com/pantsbuild/setup/issues/19
+SETUPTOOLS_REQUIREMENT="setuptools==5.4.1"
+
 VENV_PACKAGE=virtualenv-${VENV_VERSION}
 VENV_TARBALL=${VENV_PACKAGE}.tar.gz
 
@@ -70,10 +80,18 @@ function bootstrap_pants {
   if [[ ! -d "${PANTS_BOOTSTRAP}/${pants_version}" ]]
   then
     (
+      # NB: We setup the virtualenv with no setuptools to ensure our
+      # ${SETUPTOOLS_REQUIREMENT} wins.
       venv_path="$(bootstrap_venv)" && \
       staging_dir=$(tempdir "${PANTS_BOOTSTRAP}") && \
-      "${PYTHON}" "${venv_path}/virtualenv.py" --no-download "${staging_dir}/install" && \
-      "${staging_dir}/install/bin/python" "${staging_dir}/install/bin/pip" install "${pants_requirement}" && \
+      "${PYTHON}" "${venv_path}/virtualenv.py" --no-setuptools --no-download \
+        "${staging_dir}/install" && \
+      "${staging_dir}/install/bin/python" \
+        "${staging_dir}/install/bin/pip" install \
+          "${SETUPTOOLS_REQUIREMENT}" && \
+      "${staging_dir}/install/bin/python" \
+        "${staging_dir}/install/bin/pip" install \
+          "${pants_requirement}" && \
       ln -s "${staging_dir}/install" "${staging_dir}/${pants_version}" && \
       mv "${staging_dir}/${pants_version}" "${PANTS_BOOTSTRAP}/${pants_version}"
     ) 1>&2
