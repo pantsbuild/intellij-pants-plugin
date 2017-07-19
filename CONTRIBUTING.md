@@ -116,17 +116,12 @@ test sources, resources, test resources, generated sources, etc).
 * In plugin.xml:
   * Update `<version>`. E.g. `1.3.14`
   * Make sure of since/until build number for target IDEA versions.
-  * Add the changes to `<change-notes>`.
+* Open an PR. In description, add the change notes which can be obtained by inspecting the commit since last release.
 * Submit review with green Travis CI.
-* Once shipit, patch the change in master and push to upstream.
-* Create git tag with release number in master. E.g. `git tag release_1.3.14`
-* Push the tag. E.g. `git push upstream release_1.3.14`. Fill out the release notes on github.
-* Distribution:
-  * Create an account at https://account.jetbrains.com/login. Request access to the plugin repo via https://pantsbuild.github.io/howto_contribute.html#join-the-conversation.
-  * Build -> Build Artifacts -> pants -> rebuild. Artifacts will be in `out/artifacts/pants`.
-  * Zip `out/artifacts/pants` folder into `pants.zip`.
-  * Validate the plugin manually in IntelliJ: Preferences -> Plugins -> Install from disk -> pick newly created `pants.zip`.
-  * Upload `pants.zip` to https://plugins.jetbrains.com/plugin/7412.
+* Once merged, create git tag with release number in master. E.g. `git tag release_1.3.14`
+* Push the tag. E.g. `git push upstream release_1.3.14`. Fill out the release notes on github. 
+* Once the build for the tagged commit passed travis ci, the plugin will be published to the stable channel in [the plugin repo](https://plugins.jetbrains.com/plugin/7412)
+
 
 # Running plugin CI tests with Pants
 
