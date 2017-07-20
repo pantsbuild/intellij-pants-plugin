@@ -254,6 +254,7 @@ jvm_binary(
     exclude('com.intellij.sdk.community', 'studio-profiler-grpc'),
     exclude('com.intellij.sdk.community', 'swingx-core'),
     exclude('com.intellij.sdk.community', 'trang-core'),
+    exclude('com.intellij.sdk.community', 'trilead-ssh2'),
     exclude('com.intellij.sdk.community', 'trove4j'),
     exclude('com.intellij.sdk.community', 'util'),
     exclude('com.intellij.sdk.community', 'velocity'),
