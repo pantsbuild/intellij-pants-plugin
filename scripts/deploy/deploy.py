@@ -35,6 +35,9 @@ if __name__ == "__main__":
   parser.add_argument('--tag', type=str, default='',
                       help='If tag exists, this script will release to {} channel, otherwise {} channel.'
                       .format(CHANNEL_STABLE, CHANNEL_BLEEDING_EDGE))
+  parser.add_argument('--skip-publish', type=bool, default=False,
+                      help='If true, skip the final process to upload the plugin.'
+                      .format(CHANNEL_STABLE, CHANNEL_BLEEDING_EDGE))
   args = parser.parse_args()
 
   # Make sure the $PLUGIN_XML is not modified after multiple runs,
@@ -89,6 +92,10 @@ if __name__ == "__main__":
     finally:
       # Reset `PLUGIN_XML` since it has been modified.
       subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True, stderr=devnull)
+
+    if args.skip_publish:
+      logger.info("Publishing skipped.")
+      return
 
     upload_cmd = 'java -jar scripts/deploy/plugin-repository-rest-client-0.3.SNAPSHOT-all.jar upload ' \
                  '-host https://plugins.jetbrains.com/ ' \
