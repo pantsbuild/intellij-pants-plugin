@@ -120,12 +120,17 @@ test sources, resources, test resources, generated sources, etc).
     ```
     source scripts/prepare-ci-environment.sh
     ```
-    Copy the output of 3rdparty jar list
+    Copy the output below, which is a list of jars to exclude.
     ```
     ./scripts/get_3rdparty_jars.py | pbcopy
     ```
-    Paste it into and update https://github.com/pantsbuild/intellij-pants-plugin/blob/master/scripts/sdk/BUILD#L65-L66
+    Paste into and overwrite https://github.com/pantsbuild/intellij-pants-plugin/blob/master/scripts/sdk/BUILD#L65-L66
 
+    Build the jar and check its size is less than 300KB
+    ```
+    TRAVIS_BRANCH=master ./scripts/deploy/deploy.sh --skip-publish
+    ls -lh dist/intellij-pants-plugin-publish.jar
+    ```
 
 * Open an PR. In description, add the change notes which can be obtained by inspecting the commit since last release.
 * Submit review with green Travis CI.
