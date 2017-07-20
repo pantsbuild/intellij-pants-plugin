@@ -166,7 +166,8 @@ def _jdk_jar(path):
 
 jar_library(
     name = 'sdk',
-    jars = _intellij_sdk_classpath() + [ _jdk_jar(path) for path in _jdk_classpath() ]
+    jars = _intellij_sdk_classpath() + [ _jdk_jar(path) for path in _jdk_classpath() ],
+    scope='compile test',
 )
 
 
@@ -174,7 +175,8 @@ jar_library(
     name = 'external-system-test-api',
     jars = [
         _intellij_plugin_jar(os.path.join(os.getcwd(), 'testData', 'external-system-test-api.jar'))
-    ]
+    ],
+    scope='compile test',
 )
 
 python_plugin_folder = 'python' if is_ultimate() else 'python-ce'
@@ -184,7 +186,8 @@ jar_library(
     name = 'python-plugin',
     jars = [
         _intellij_plugin_jar(path, 'python-plugin') for path in _find_jars_for_plugin(python_plugin_folder, python_plugin_jar)
-    ]
+    ],
+    scope='compile test',
 )
 
 
@@ -194,7 +197,8 @@ jar_library(
         _intellij_plugin_jar(path, 'scala-plugin') for path in _find_jars_for_plugin('Scala',
             'scala-plugin.jar', 'jps/scala-jps-plugin.jar', 'scala-play-2-jps-plugin.jar', 'compiler-settings.jar'
         )
-    ] + [jar(org = 'org.scalameta', name = 'trees_2.11', rev = '1.3.0')]
+    ] + [jar(org = 'org.scalameta', name = 'trees_2.11', rev = '1.3.0')],
+    scope='compile test',
 )
 
 
@@ -204,7 +208,8 @@ jar_library(
         _intellij_plugin_jar(path, 'junit-plugin') for path in _find_all_jars(
             os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'junit', 'lib')
         )
-    ]
+    ],
+    scope='compile test',
 )
 
 
@@ -217,7 +222,8 @@ jar_library(
             # A workaround to avoid guava version conflicts/shadowing with the one under $IDEA/lib
             excludes=['guava-jdk5-17.0.jar']
         )
-    ]
+    ],
+    scope='compile test',
 )
 
 
@@ -228,7 +234,8 @@ jar_library(
         _intellij_plugin_jar(path, 'groovy-plugin') for path in _find_all_jars(
             os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'Groovy', 'lib')
         )
-    ]
+    ],
+    scope='compile test',
 )
 
 
@@ -238,5 +245,6 @@ jar_library(
         _intellij_plugin_jar(path, 'properties-plugin') for path in _find_all_jars(
             os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'properties', 'lib')
         )
-    ]
+    ],
+    scope='compile test',
 )

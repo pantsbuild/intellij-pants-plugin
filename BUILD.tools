@@ -16,7 +16,9 @@ jar_library(name = 'scala-library',
             ],
             # Zinc never reports usage of `scala-library`, because it injects it onto the
             # classpath itself.
-            scope='forced',)
+            # Scala runtime will be supplied by intellij scala plugin which pants plugin depends on,
+            # so there is no need to carry it around.
+            scope='compile test',)
 
 target(name = 'scala-repl',
        dependencies=[
