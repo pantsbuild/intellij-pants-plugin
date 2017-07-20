@@ -116,7 +116,7 @@ test sources, resources, test resources, generated sources, etc).
 * In plugin.xml:
   * Update `<version>`. E.g. `1.7.0`
   * Make sure of since/until build number for target IDEA versions.
-* Do a dry run on publishing, and make sure there is no error and produces a pants_xxx.zip
+* Do a dry run on publishing, and make sure it has no error and produces a pants_xxx.zip
   ```
   $ TRAVIS_BRANCH=master ./scripts/deploy/deploy.sh --skip-publish
   INFO:__main__:Append current git sha, c891da3a7dc4bca40938717696310ba612fcba07, to plugin version
