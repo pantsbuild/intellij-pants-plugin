@@ -16,7 +16,7 @@ jar_library(name = 'scala-library',
             ],
             # Zinc never reports usage of `scala-library`, because it injects it onto the
             # classpath itself.
-            scope='forced',)
+            scope='compile test',)
 
 target(name = 'scala-repl',
        dependencies=[
