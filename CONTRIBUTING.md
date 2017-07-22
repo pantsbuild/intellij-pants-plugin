@@ -112,21 +112,27 @@ test sources, resources, test resources, generated sources, etc).
 * Run plugin configuration 'Pants' to verify your setup. It should launch a separate IntelliJ app.
 
 ### Release process:
-* Create a new release branch from the latest master. E.g. `git checkout -b 1.3.14`
+* Create a new release branch from the latest master. E.g. `git checkout -b 1.7.0`
 * In plugin.xml:
-  * Update `<version>`. E.g. `1.3.14`
+  * Update `<version>`. E.g. `1.7.0`
   * Make sure of since/until build number for target IDEA versions.
-  * Add the changes to `<change-notes>`.
+* Do a dry run on publishing, and make sure it has no error and produces a pants_xxx.zip
+  ```
+  $ TRAVIS_BRANCH=master ./scripts/deploy/deploy.sh --skip-publish
+  INFO:__main__:Append current git sha, c891da3a7dc4bca40938717696310ba612fcba07, to plugin version
+  INFO:__main__:Releasing 1.7.0.c891da3a7dc4bca40938717696310ba612fcba07 to BleedingEdge channel
+  INFO:__main__:rm -rf dist;./pants binary scripts/sdk:intellij-pants-plugin-publish
+  INFO:__main__:Packaging into a zip
+  INFO:__main__:mkdir -p tmp/pants/lib && cp dist/intellij-pants-plugin-publish.jar tmp/pants/lib && cd tmp && zip -r pants_1.7.0.c891da3a7dc4bca40938717696310ba612fcba07.zip pants/ &&cd .. &&cp tmp/pants_1.7.0.c891da3a7dc4bca40938717696310ba612fcba07.zip pants_1.7.0.c891da3a7dc4bca40938717696310ba612fcba07.zip &&rm -rf tmp
+  INFO:__main__:pants_1.7.0.c891da3a7dc4bca40938717696310ba612fcba07.zip built successfully
+  INFO:__main__:Publishing skipped.
+  ```
+* Open an PR. In description, add the change notes which can be obtained by inspecting the commit since last release.
 * Submit review with green Travis CI.
-* Once shipit, patch the change in master and push to upstream.
-* Create git tag with release number in master. E.g. `git tag release_1.3.14`
-* Push the tag. E.g. `git push upstream release_1.3.14`. Fill out the release notes on github.
-* Distribution:
-  * Create an account at https://account.jetbrains.com/login. Request access to the plugin repo via https://pantsbuild.github.io/howto_contribute.html#join-the-conversation.
-  * Build -> Build Artifacts -> pants -> rebuild. Artifacts will be in `out/artifacts/pants`.
-  * Zip `out/artifacts/pants` folder into `pants.zip`.
-  * Validate the plugin manually in IntelliJ: Preferences -> Plugins -> Install from disk -> pick newly created `pants.zip`.
-  * Upload `pants.zip` to https://plugins.jetbrains.com/plugin/7412.
+* Once merged, create git tag with release number in master. E.g. `git tag release_1.7.0`
+* Push the tag. E.g. `git push upstream release_1.7.0`. Fill out the release notes on github.
+* Once the build for the tagged commit passed travis ci, the plugin will be published to the stable channel in [the plugin repo](https://plugins.jetbrains.com/plugin/7412)
+
 
 # Running plugin CI tests with Pants
 
