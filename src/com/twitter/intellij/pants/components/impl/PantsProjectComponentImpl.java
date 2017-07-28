@@ -73,6 +73,10 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   public void projectOpened() {
     PantsMetrics.initialize();
     PantsConsoleManager.registerConsole(myProject);
+    if (PantsUtil.isPantsProject(myProject)) {
+      addPantsProjectIgnoredDirs();
+    }
+
     super.projectOpened();
     if (myProject.isDefault()) {
       return;
@@ -90,12 +94,9 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
           if (PantsUtil.isSeedPantsProject(myProject)) {
             convertToPantsProject();
+            addPantsProjectIgnoredDirs();
           }
 
-          PantsUtil.findBuildRoot(myProject).ifPresent(
-            buildRoot -> ChangeListManagerImpl.getInstanceImpl(myProject)
-              .addDirectoryToIgnoreImplicitly(buildRoot.getPath() + File.separator + ".idea")
-          );
 
           subscribeToRunConfigurationAddition();
           FileChangeTracker.registerProject(myProject);
@@ -189,6 +190,13 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           });
         }
       }
+    );
+  }
+
+  private void addPantsProjectIgnoredDirs() {
+    PantsUtil.findBuildRoot(myProject).ifPresent(
+      buildRoot -> ChangeListManagerImpl.getInstanceImpl(myProject)
+        .addDirectoryToIgnoreImplicitly(buildRoot.getPath() + File.separator + ".idea")
     );
   }
 
