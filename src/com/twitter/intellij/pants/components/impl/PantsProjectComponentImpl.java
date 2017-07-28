@@ -20,6 +20,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vcs.changes.ChangeListManagerImpl;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.twitter.intellij.pants.PantsBundle;
@@ -38,6 +39,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +91,11 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           if (PantsUtil.isSeedPantsProject(myProject)) {
             convertToPantsProject();
           }
+
+          PantsUtil.findBuildRoot(myProject).ifPresent(
+            buildRoot -> ChangeListManagerImpl.getInstanceImpl(myProject)
+              .addDirectoryToIgnoreImplicitly(buildRoot.getPath() + File.separator + ".idea")
+          );
 
           subscribeToRunConfigurationAddition();
           FileChangeTracker.registerProject(myProject);
