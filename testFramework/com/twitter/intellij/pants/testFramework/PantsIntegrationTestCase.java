@@ -321,7 +321,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       public void run() {
         PantsUtil.getDefaultJavaSdk(getProjectPath())
           .ifPresent(sdk -> {
-            JavaSdkImpl.attachJdkAnnotations();
             ProjectJdkTable.getInstance().addJdk(sdk);
             NewProjectUtil.applyJdkToProject(myProject, sdk);
           });
