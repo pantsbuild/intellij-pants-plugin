@@ -34,7 +34,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
+import com.intellij.openapi.projectRoots.impl.JavaSdkImpl;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
@@ -760,6 +762,9 @@ public class PantsUtil {
       .findFirst();
 
     if (sdkForPants.isPresent()) {
+      SdkModificator modificator = sdkForPants.get().getSdkModificator();
+      JavaSdkImpl.attachJdkAnnotations(modificator);
+      modificator.commitChanges();
       return sdkForPants;
     }
 

@@ -40,6 +40,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
+import com.intellij.openapi.projectRoots.impl.JavaSdkImpl;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
@@ -320,6 +321,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       public void run() {
         PantsUtil.getDefaultJavaSdk(getProjectPath())
           .ifPresent(sdk -> {
+            JavaSdkImpl.attachJdkAnnotations();
             ProjectJdkTable.getInstance().addJdk(sdk);
             NewProjectUtil.applyJdkToProject(myProject, sdk);
           });
