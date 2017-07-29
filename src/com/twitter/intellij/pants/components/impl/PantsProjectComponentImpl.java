@@ -21,6 +21,7 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl;
+import com.intellij.openapi.vcs.changes.IgnoredBeanFactory;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.twitter.intellij.pants.PantsBundle;
@@ -195,8 +196,15 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
   private void addPantsProjectIgnoredDirs() {
     PantsUtil.findBuildRoot(myProject).ifPresent(
-      buildRoot -> ChangeListManagerImpl.getInstanceImpl(myProject)
-        .addDirectoryToIgnoreImplicitly(buildRoot.getPath() + File.separator + ".idea")
+      buildRoot -> {
+        ChangeListManagerImpl clm = ChangeListManagerImpl.getInstanceImpl(myProject);
+        String pathToIgnore = buildRoot.getPath() + File.separator + ".idea";
+        // This will add buildroot/.idea to Version Control -> Ignored Files
+        // TODO: make sure it reflects on GUI immediately without a project reload.
+        clm.addFilesToIgnore(IgnoredBeanFactory.ignoreUnderDirectory(pathToIgnore, myProject));
+        clm.scheduleUpdate();
+        clm.ensureUpToDate(false);
+      }
     );
   }
 
