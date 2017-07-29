@@ -86,7 +86,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private List<String> getSelectedTargetSpecsFromBoxes() {
     List<String> selectedSpecs = new ArrayList<>();
     for (int i = 0; i < myTargetSpecsBox.getModel().getSize(); i++) {
-      JCheckBox checkBox = (JCheckBox) myTargetSpecsBox.getModel().getElementAt(i);
+      JCheckBox checkBox = myTargetSpecsBox.getModel().getElementAt(i);
       if (checkBox.isSelected()) {
         selectedSpecs.add(checkBox.getText());
       }
