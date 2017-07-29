@@ -98,7 +98,6 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             addPantsProjectIgnoredDirs();
           }
 
-
           subscribeToRunConfigurationAddition();
           FileChangeTracker.registerProject(myProject);
           final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
