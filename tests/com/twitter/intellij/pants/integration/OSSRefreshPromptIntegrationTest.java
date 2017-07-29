@@ -12,6 +12,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.search.FilenameIndex;
@@ -169,7 +170,7 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
   @NotNull
   private Document getTestData(String testDataPath) {
     File dataFile = PantsTestUtils.findTestPath(testDataPath);
-    VirtualFile dataVirtualFile = VirtualFileManager.getInstance().findFileByUrl("file://" + dataFile.getPath());
+    VirtualFile dataVirtualFile = LocalFileSystem.getInstance().findFileByPath(dataFile.getPath());
     assertNotNull(dataVirtualFile);
     Document dataDocument = FileDocumentManager.getInstance().getDocument(dataVirtualFile);
     assertNotNull(dataDocument);

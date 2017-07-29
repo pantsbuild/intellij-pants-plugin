@@ -32,6 +32,7 @@ import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.ToolWindow;
@@ -271,7 +272,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
           ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-              final VirtualFile pathImported = VirtualFileManager.getInstance().findFileByUrl("file://" + myProjectPath);
+              final VirtualFile pathImported = LocalFileSystem.getInstance().findFileByPath(myProjectPath);
               // Skip focusing if directory is not found.
               if (pathImported != null) {
                 VirtualFile importDirectory = pathImported.isDirectory() ? pathImported : pathImported.getParent();
