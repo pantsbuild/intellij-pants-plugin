@@ -33,7 +33,7 @@ public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfig
     myRunConfiguration = configuration;
   }
 
-  @Nullable
+  @NotNull
   @Override
   public ConfigurationType getType() {
     return JUnitConfigurationType.getInstance();
@@ -71,6 +71,7 @@ public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfig
   }
 
   @Override
+  @NotNull
   public String getName() {
     return myName;
   }

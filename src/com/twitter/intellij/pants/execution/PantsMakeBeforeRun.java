@@ -144,9 +144,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return "PantsCompile";
   }
 
-  @Nullable
+  @NotNull
   @Override
-  public ExternalSystemBeforeRunTask createTask(RunConfiguration runConfiguration) {
+  public ExternalSystemBeforeRunTask createTask(@NotNull RunConfiguration runConfiguration) {
     return new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
   }
 

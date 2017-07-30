@@ -87,6 +87,7 @@ public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsInteg
     }
 
     @Override
+    @NotNull
     public List<PyClass> getTopLevelClasses() {
       return Collections.singletonList(myTestClass);
     }

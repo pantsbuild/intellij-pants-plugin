@@ -51,7 +51,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     PantsCompileTargetAction compileTargetAction =
       new PantsCompileTargetAction("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
     Set<String> targetAddresses = compileTargetAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
-    Set<String> expectedTarget = new HashSet<>(Arrays.asList("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main"));
+    Set<String> expectedTarget = Sets.newHashSet("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
     assertEquals(expectedTarget, targetAddresses);
     assertFalse(compileTargetAction.doCleanAll());
   }
