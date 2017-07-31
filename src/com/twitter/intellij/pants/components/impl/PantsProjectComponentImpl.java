@@ -195,7 +195,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
   /**
    * This will add buildroot/.idea, buildroot/.pants.d to Version Control -> Ignored Files.
-   * This is correctly impossible to test because {@link com.intellij.openapi.externalSystem.test.ExternalSystemTestCase}
+   * This is currently impossible to test because {@link com.intellij.openapi.externalSystem.test.ExternalSystemTestCase}
    * put project file in a temp dir unrelated to where the repo resides.
    * TODO: make sure it reflects on GUI immediately without a project reload.
    */

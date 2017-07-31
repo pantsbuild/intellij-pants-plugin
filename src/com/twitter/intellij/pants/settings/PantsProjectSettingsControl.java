@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.settings;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.service.settings.ExternalSystemSettingsControlCustomizer;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
@@ -84,9 +85,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   // It is silly `CheckBoxList` does not provide an iterator.
   private List<String> getSelectedTargetSpecsFromBoxes() {
-    List<String> selectedSpecs = new ArrayList<>();
+    List<String> selectedSpecs = Lists.newArrayList();
     for (int i = 0; i < myTargetSpecsBox.getModel().getSize(); i++) {
-      JCheckBox checkBox = (JCheckBox) myTargetSpecsBox.getModel().getElementAt(i);
+      JCheckBox checkBox = myTargetSpecsBox.getModel().getElementAt(i);
       if (checkBox.isSelected()) {
         selectedSpecs.add(checkBox.getText());
       }

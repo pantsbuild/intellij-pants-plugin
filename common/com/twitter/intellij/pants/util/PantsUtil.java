@@ -271,12 +271,12 @@ public class PantsUtil {
 
   public static Optional<VirtualFile> findDistExportClasspathDirectory(@NotNull Project project) {
     Optional<VirtualFile> buildRoot = findBuildRoot(project);
-    if (!buildRoot.isPresent()) {
-      return Optional.empty();
-    }
-    return Optional.ofNullable(
-      VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" + buildRoot.get().getPath() + "/dist/export-classpath")
-    );
+    return buildRoot
+      .map(s -> {
+             String exportClasspathDir = s.getPath() + File.separator + "dist" + File.separator + "export-classpath";
+             return LocalFileSystem.getInstance().refreshAndFindFileByPath(exportClasspathDir);
+           }
+      );
   }
 
   public static Optional<VirtualFile> findProjectManifestJar(@NotNull Project project) {
