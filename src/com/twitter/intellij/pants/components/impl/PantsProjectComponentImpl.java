@@ -20,6 +20,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vcs.changes.ChangeListManagerImpl;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.twitter.intellij.pants.PantsBundle;
@@ -29,6 +30,7 @@ import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.LivePantsMetrics;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
@@ -38,6 +40,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +74,10 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   public void projectOpened() {
     PantsMetrics.initialize();
     PantsConsoleManager.registerConsole(myProject);
+    if (PantsUtil.isPantsProject(myProject)) {
+      addPantsProjectIgnoredDirs();
+    }
+
     super.projectOpened();
     if (myProject.isDefault()) {
       return;
@@ -88,6 +95,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
           if (PantsUtil.isSeedPantsProject(myProject)) {
             convertToPantsProject();
+            addPantsProjectIgnoredDirs();
           }
 
           subscribeToRunConfigurationAddition();
@@ -181,6 +189,28 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             }
           });
         }
+      }
+    );
+  }
+
+  /**
+   * This will add buildroot/.idea, buildroot/.pants.d to Version Control -> Ignored Files.
+   * This is correctly impossible to test because {@link com.intellij.openapi.externalSystem.test.ExternalSystemTestCase}
+   * put project file in a temp dir unrelated to where the repo resides.
+   * TODO: make sure it reflects on GUI immediately without a project reload.
+   */
+  private void addPantsProjectIgnoredDirs() {
+    PantsUtil.findBuildRoot(myProject).ifPresent(
+      buildRoot -> {
+        ChangeListManagerImpl clm = ChangeListManagerImpl.getInstanceImpl(myProject);
+
+        String pathToIgnore = buildRoot.getPath() + File.separator + ".idea";
+        clm.addDirectoryToIgnoreImplicitly(pathToIgnore);
+
+        PantsOptions.getPantsOptions(myProject).map(optionObj -> optionObj.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR))
+          .ifPresent(optionString -> optionString.ifPresent(
+            clm::addDirectoryToIgnoreImplicitly
+          ));
       }
     );
   }
