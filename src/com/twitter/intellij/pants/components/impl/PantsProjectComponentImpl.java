@@ -30,6 +30,7 @@ import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.LivePantsMetrics;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
@@ -192,14 +193,22 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
     );
   }
 
+  /**
+   * This will add buildroot/.idea, buildroot/.pants.d to Version Control -> Ignored Files
+   * TODO: make sure it reflects on GUI immediately without a project reload.
+   */
   private void addPantsProjectIgnoredDirs() {
     PantsUtil.findBuildRoot(myProject).ifPresent(
       buildRoot -> {
         ChangeListManagerImpl clm = ChangeListManagerImpl.getInstanceImpl(myProject);
+
         String pathToIgnore = buildRoot.getPath() + File.separator + ".idea";
-        // This will add buildroot/.idea to Version Control -> Ignored Files
-        // TODO: make sure it reflects on GUI immediately without a project reload.
         clm.addDirectoryToIgnoreImplicitly(pathToIgnore);
+
+        PantsOptions.getPantsOptions(myProject).map(optionObj -> optionObj.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR))
+          .ifPresent(optionString -> optionString.ifPresent(
+            clm::addDirectoryToIgnoreImplicitly
+          ));
       }
     );
   }
