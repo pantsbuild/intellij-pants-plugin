@@ -45,8 +45,6 @@ export OSS_PANTS_HOME="$CWD/.cache/pants"
 export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
 export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
 
-export IDEA_TEST_HOME="$CWD/.pants.d/intellij/plugins-sandbox/test"
-
 append_intellij_jvm_options() {
   scope=$1
   cmd=""
@@ -54,7 +52,7 @@ append_intellij_jvm_options() {
   INTELLIJ_JVM_OPTIONS=(
     "-Didea.load.plugins.id=com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants"
     "-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME"
-    "-Didea.home.path=$IDEA_TEST_HOME"
+    "-Didea.home.path=$INTELLIJ_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
     "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/rt/jps-plugin-system.jar"
     #EAP build does not know its own build number, thus failing to tell plugin compatibility.

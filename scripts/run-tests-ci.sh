@@ -10,9 +10,6 @@ fi
 rm -rf .cache/dummy_repo
 cp -r testData/dummy_repo .cache/
 
-rm -rf $IDEA_TEST_HOME
-mkdir -p $IDEA_TEST_HOME
-
 pushd .cache
 pushd pants
 if [ -z ${PANTS_SHA+x} ]; then
