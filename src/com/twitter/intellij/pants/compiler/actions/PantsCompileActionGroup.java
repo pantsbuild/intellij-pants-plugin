@@ -7,18 +7,15 @@ import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * PantsCompileActionGroup is an dynamic action group to compile Pants targets
@@ -36,34 +33,24 @@ public class PantsCompileActionGroup extends ActionGroup {
 
     final AnAction[] emptyAction = new AnAction[0];
 
-    if (event == null) {
-      return emptyAction;
-    }
-
-    Project project = event.getProject();
-    VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
-
-    if (project == null || file == null) {
-      return emptyAction;
-    }
-
-    Module module = ModuleUtil.findModuleForFile(file, project);
-    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(module);
-
-    if (targetAddresses.isEmpty()) {
-      return emptyAction;
-    }
-
-    LinkedList<AnAction> actions = new LinkedList<>();
-
-    //  Adds compile all option for modules with multiple targets.
-    if (targetAddresses.size() > 1) {
-      actions.add(new PantsCompileAllTargetsInModuleAction(module));
-    }
-
-    for (String targetAddress : targetAddresses) {
-      actions.add(new PantsCompileTargetAction(targetAddress));
-    }
+    List<AnAction> actions = Optional.ofNullable(event)
+      // TODO: signal if no project found?
+      .flatMap(ev -> PantsUtil.optJoin(Optional.ofNullable(ev.getProject()),
+                                       IPantsGetTargets.getFileForEvent(ev)))
+      .flatMap(projectFile -> Optional.ofNullable(
+        ModuleUtil.findModuleForFile(projectFile.getSecond(), projectFile.getFirst())))
+      .flatMap(module -> Optional.of(PantsUtil.getNonGenTargetAddresses(module))
+        // TODO: signal if no addresses found?
+        .filter(addrs -> (addrs.size() > 0))
+        .map(addrs -> {
+          List<AnAction> result = new LinkedList<>();
+          if (addrs.size() > 1) {
+            result.add(new PantsCompileAllTargetsInModuleAction(module));
+          }
+          addrs.forEach(target -> result.add(new PantsCompileTargetAction(target)));
+          return result;
+        })
+      ).orElse(new LinkedList<>());
 
     return actions.toArray(emptyAction);
   }

@@ -8,8 +8,8 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -152,14 +152,14 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     PantsSettings settings = PantsSettings.getInstance(myProject);
     settings.setUseIdeaProjectJdk(true);
-    Pair<Boolean, Optional<String>> result = pantsCompileProject();
+    PantsMakeBeforeRun.PantsExecuteTaskResult result = pantsCompileProject();
     assertPantsCompileExecutesAndSucceeds(result);
-    assertContainsSubstring(result.getSecond().get(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
+    assertContainsSubstring(result.output.get(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
 
     settings.setUseIdeaProjectJdk(false);
-    Pair<Boolean, Optional<String>> resultB = pantsCompileProject();
+    PantsMakeBeforeRun.PantsExecuteTaskResult resultB = pantsCompileProject();
     assertPantsCompileExecutesAndSucceeds(result);
-    assertNotContainsSubstring(resultB.getSecond().get(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
+    assertNotContainsSubstring(resultB.output.get(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
   }
 
   private String[] getModulesNamesFromPantsDependencies(String targetName) throws ProjectBuildException {

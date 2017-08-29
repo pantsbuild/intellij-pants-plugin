@@ -72,12 +72,22 @@
               class="com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetAction"
               text="Compile target(s) in the selected editor">
       </action>
+      <action id="com.twitter.intellij.pants.compiler.actions.PantsLintCurrentTargetAction"
+              class="com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetAction"
+              text="Lint target(s) in the selected editor">
+      </action>
     </group>
 
     <group id="Pants.Compile" text="Pants Compile" description="Pants compilation options" icon="PantsIcons.Icon"
            popup="true" class="com.twitter.intellij.pants.compiler.actions.PantsCompileActionGroup">
       <add-to-group anchor="before" group-id="ProjectViewCompileGroup" relative-to-action="ProjectViewCompileGroup" />
       <add-to-group group-id="Pants.Menu" anchor="first" />
+    </group>
+
+    <group id="Pants.Lint" text="Pants Lint" description="Pants lint options" icon="PantsIcons.Icon"
+           popup="true" class="com.twitter.intellij.pants.compiler.actions.PantsCompileActionGroup">
+      <add-to-group group-id="ProjectViewCompileGroup" />
+      <add-to-group group-id="Pants.Menu" />
     </group>
   </actions>
 

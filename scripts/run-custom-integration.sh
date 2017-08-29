@@ -19,7 +19,7 @@ function usage() {
 }
 
 while getopts "hf:t:r:" opt; do
-  case ${opt} in
+  case $opt in
     h) usage ;;
     f) target_list_file=$OPTARG ;;
     t) targets_list=$OPTARG ;;

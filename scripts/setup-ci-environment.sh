@@ -25,7 +25,7 @@ if [ ! -f .cache/jdk-libs/sa-jdi.jar ] || [ ! -f .cache/jdk-libs/tools.jar ] ; t
 fi
 
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
-  IJ_TAR_NAME=idea${IJ_BUILD}.tar.gz
+  IJ_TAR_NAME=idea$IJ_BUILD.tar.gz
   echo "Loading $IJ_BUILD..."
   wget -O $IJ_TAR_NAME "http://download.jetbrains.com/idea/$IJ_TAR_NAME"
   verify_md5 $IJ_TAR_NAME $EXPECTED_IJ_MD5

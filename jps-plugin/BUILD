@@ -1,5 +1,3 @@
-import os
-
 java_library(
     name = 'jps-plugin',
     dependencies = [

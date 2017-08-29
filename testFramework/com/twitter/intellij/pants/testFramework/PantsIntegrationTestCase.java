@@ -44,7 +44,6 @@ import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -557,32 +556,32 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
-  protected Pair<Boolean, Optional<String>> pantsCompileProject() {
+  protected PantsMakeBeforeRun.PantsExecuteTaskResult pantsCompileProject() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    return runner.executeTask(myProject);
+    return runner.executeCompileTask(myProject);
   }
 
-  protected void assertPantsCompileExecutesAndSucceeds(final Pair<Boolean, Optional<String>> compileResult) throws Exception {
-    assertTrue("Compile failed", compileResult.getFirst());
-    if (compileResult.getSecond().isPresent()) {
-      assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.getSecond().get()));
+  protected void assertPantsCompileExecutesAndSucceeds(final PantsMakeBeforeRun.PantsExecuteTaskResult compileResult) throws Exception {
+    assertTrue("Compile failed", compileResult.succeeded);
+    if (compileResult.output.isPresent()) {
+      assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.output.get()));
     }
     assertManifestJarExists();
   }
 
-  protected void assertPantsCompileNoop(final Pair<Boolean, Optional<String>> compileResult) throws Exception {
-    assertTrue("Compile failed.", compileResult.getFirst());
-    assertTrue("Compile message not found.", compileResult.getSecond().isPresent());
-    assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.getSecond().get());
+  protected void assertPantsCompileNoop(final PantsMakeBeforeRun.PantsExecuteTaskResult compileResult) throws Exception {
+    assertTrue("Compile failed.", compileResult.succeeded);
+    assertTrue("Compile message not found.", compileResult.output.isPresent());
+    assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.output.get());
     assertManifestJarExists();
   }
 
-  protected void assertPantsCompileFailure(final Pair<Boolean, Optional<String>> compileResult) {
-    assertFalse("Compile succeeded, but should fail.", compileResult.getFirst());
+  protected void assertPantsCompileFailure(final PantsMakeBeforeRun.PantsExecuteTaskResult compileResult) {
+    assertFalse("Compile succeeded, but should fail.", compileResult.succeeded);
   }
 
-  protected Pair<Boolean, Optional<String>> pantsCompileModule(String... moduleNames) {
+  protected PantsMakeBeforeRun.PantsExecuteTaskResult pantsCompileModule(String... moduleNames) {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    return runner.executeTask(getModules(moduleNames));
+    return runner.executeCompileTask(getModules(moduleNames));
   }
 }

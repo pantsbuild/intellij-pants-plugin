@@ -22,14 +22,14 @@ get_md5(){
 }
 
 if [[ $IJ_ULTIMATE == "true" ]]; then
-  export IJ_BUILD="IU-${IJ_VERSION}"
-  export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
+  export IJ_BUILD="IU-$IJ_VERSION"
+  export FULL_IJ_BUILD_NUMBER="IU-$IJ_BUILD_NUMBER"
   export EXPECTED_IJ_MD5="fcba3c2dce4168f0f319a8cbf0ca49cc"
   export PYTHON_PLUGIN_ID="Pythonid"
   export PYTHON_PLUGIN_MD5="7f4471d738f06462590d4a20c147b39d"
 else
-  export IJ_BUILD="IC-${IJ_VERSION}"
-  export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
+  export IJ_BUILD="IC-$IJ_VERSION"
+  export FULL_IJ_BUILD_NUMBER="IC-$IJ_BUILD_NUMBER"
   export EXPECTED_IJ_MD5="d87e4e0c536ba6046c7a10961d54416a"
   export PYTHON_PLUGIN_ID="PythonCore"
   export PYTHON_PLUGIN_MD5="6e78f632263957728bd07b7b5ad9e19f"
@@ -37,13 +37,16 @@ fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="a8eff5676c078fc887b25f3d0fd03295" # 2017.2
+export SCALA_PLUGIN_MD5="c6b52267f30abd738c779f2a21d0fe3c" # 2017.2.6
 
-export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
-export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
-export OSS_PANTS_HOME="$CWD/.cache/pants"
-export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
-export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
+export CACHE_LOCATION="$CWD/.cache"
+export CACHED_IJ_DIR="$CACHE_LOCATION/intellij/$FULL_IJ_BUILD_NUMBER"
+
+export INTELLIJ_HOME="$CACHED_IJ_DIR/idea-dist"
+export INTELLIJ_PLUGINS_HOME="$CACHED_IJ_DIR/plugins"
+export OSS_PANTS_HOME="$CACHE_LOCATION/pants"
+export DUMMY_REPO_HOME="$CACHE_LOCATION/dummy_repo"
+export JDK_LIBS_HOME="$CACHE_LOCATION/jdk-libs"
 
 append_intellij_jvm_options() {
   scope=$1
@@ -65,8 +68,7 @@ append_intellij_jvm_options() {
   done
   while read jvm_option; do
     cmd="$cmd --jvm-$scope-options=$jvm_option"
-  done < "${2:-"$CWD/resources/idea64.vmoptions"}"
+  done < "${2:-$CWD/resources/idea64.vmoptions}"
 
   echo $cmd
 }
-

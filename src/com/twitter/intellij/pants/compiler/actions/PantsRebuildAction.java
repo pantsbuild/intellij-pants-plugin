@@ -3,20 +3,14 @@
 
 package com.twitter.intellij.pants.compiler.actions;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-
 /**
  * PantsRebuildAction is a UI action that, when in a project, runs clean-all, then compiles all targets in the project
  */
-public class PantsRebuildAction extends PantsCompileAllTargetsAction {
+public class PantsRebuildAction extends PantsTaskActionBase {
 
-  @Override
-  public void update(AnActionEvent e) {
-    e.getPresentation().setText("Compile all targets with clean-all");
-  }
-
-  @Override
-  public boolean doCleanAll() {
-    return true;
+  public PantsRebuildAction() {
+    super(new PantsGetAllTargets(),
+          new PantsExecuteRebuild(),
+          "Compile all targets with clean-all");
   }
 }

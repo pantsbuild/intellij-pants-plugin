@@ -41,6 +41,7 @@ import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.util.text.StringUtil;
@@ -929,5 +930,11 @@ public class PantsUtil {
   public static List<String> parseCmdParameters(Optional<String> cmdArgsLine) {
     return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
   }
-}
 
+  public static <U, V> Optional<Pair<U, V>> optJoin(Optional<U> a, Optional<V> b) {
+    if (!a.isPresent() || !b.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(Pair.create(a.get(), b.get()));
+  }
+}
