@@ -7,7 +7,7 @@
 
 ## User documentation
 
-### Installing the Plugin
+### Installing the Pluginreasdf
 Please use `Plugins` tab: (Main menu: Settings | Plugins) to install the plugin.
 Find `Pants Support` plugin. Install and Restart IntelliJ.
 
