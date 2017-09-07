@@ -37,7 +37,7 @@ fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="a8eff5676c078fc887b25f3d0fd03295" # 2017.2
+export SCALA_PLUGIN_MD5="c6b52267f30abd738c779f2a21d0fe3c" # 2017.2.6
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
