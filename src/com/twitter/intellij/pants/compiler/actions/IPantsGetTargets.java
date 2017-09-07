@@ -5,6 +5,8 @@ package com.twitter.intellij.pants.compiler.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.editor.impl.EditorImpl;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +19,14 @@ public interface IPantsGetTargets {
   static Optional<VirtualFile> getFileForEvent(@Nullable AnActionEvent e) {
     return Optional.ofNullable(e)
       .flatMap(ev -> Optional.ofNullable(ev.getData(CommonDataKeys.VIRTUAL_FILE)));
+  }
+
+  static Optional<VirtualFile> getSelectedFile(@Nullable Project project) {
+    return Optional.ofNullable(project)
+      .flatMap(p -> Optional.ofNullable(
+        FileEditorManager.getInstance(p).getSelectedTextEditor()))
+      .filter(editor -> editor instanceof EditorImpl)
+      .map(editor -> ((EditorImpl) editor).getVirtualFile());
   }
 
   @NotNull

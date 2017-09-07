@@ -9,7 +9,7 @@ package com.twitter.intellij.pants.compiler.actions;
 public class PantsLintCurrentTargetAction extends PantsTaskActionBase {
 
   public PantsLintCurrentTargetAction() {
-    super(new PantsGetCurrentFileTargets(),
+    super(new PantsGetJustFileTarget(),
           new PantsExecuteLint(),
           "Lint target(s) in the selected editor");
   }

@@ -59,6 +59,7 @@ public class PantsInitComponentImpl implements PantsInitComponent {
   }
 
   //  Registers the rebuild action to Pants rebuild action.
+  //  Registers Make module action to 'Make all targets in module' action.
   //  Disables compile action
   private void registerPantsActions() {
     ActionManager actionManager = ActionManager.getInstance();
