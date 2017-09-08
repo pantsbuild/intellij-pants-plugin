@@ -34,7 +34,7 @@ public class PantsCompileActionGroup extends ActionGroup {
     ActionManager actionManager = ActionManager.getInstance();
 
     // TODO: don't remove these actions or put on our own unless we're in a
-    // pants project
+    // pants project, so we don't clobber these actions in a non-pants project
     DefaultActionGroup actionGroup = (DefaultActionGroup) actionManager.getAction(PantsConstants.ACTION_COMPILE_GROUP_ID);
     actionGroup.remove(actionManager.getAction(IdeActions.ACTION_MAKE_MODULE));
     actionGroup.remove(actionManager.getAction(IdeActions.ACTION_COMPILE));
