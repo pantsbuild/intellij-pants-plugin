@@ -317,12 +317,13 @@ public class PantsUtil {
   public static Collection<String> listAllTargets(@NotNull String projectPath) throws PantsException {
     GeneralCommandLine cmd = PantsUtil.defaultCommandLine(projectPath);
     try (TempFile tempFile = TempFile.create("list", ".out")) {
+      final String tempPath = tempFile.getFile().getPath();
       cmd.addParameters(
         "list",
         Paths.get(projectPath).getParent().toString() + ':',
-        String.format("%s=%s", PantsConstants.PANTS_CLI_OPTION_LIST_OUTPUT_FILE,
-                      tempFile.getFile().getPath()
-        )
+        String.format("%s=%s",
+                      PantsConstants.PANTS_CLI_OPTION_LIST_OUTPUT_FILE,
+                      tempPath)
       );
       final ProcessOutput processOutput = PantsUtil.getCmdOutput(cmd, null);
       if (processOutput.checkSuccess(LOG)) {
@@ -330,11 +331,23 @@ public class PantsUtil {
         return Arrays.asList(output.split("\n"));
       }
       else {
-        throw new PantsException("Failed:" + cmd.getCommandLineString());
+        final int exitCode = processOutput.getExitCode();
+        LOG.warn(
+          String.format("Failure: process exited with code %d, output logged to '%s', with argv = '%s'",
+                        exitCode,
+                        tempPath,
+                        cmd.getCommandLineString()));
+        throw new PantsException(
+          String.format("pants list tasks failed with code %d",
+                        exitCode));
       }
     }
     catch (IOException | ExecutionException e) {
-      throw new PantsException("Failed:" + cmd.getCommandLineString());
+      LOG.warn(
+        String.format("could not execute command: '%s'",
+                      cmd.getCommandLineString()),
+        e);
+      throw new PantsException("pants list tasks failed on execution");
     }
   }
 
@@ -930,4 +943,3 @@ public class PantsUtil {
     return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
   }
 }
-
