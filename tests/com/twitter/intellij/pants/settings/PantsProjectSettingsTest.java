@@ -6,9 +6,12 @@ package com.twitter.intellij.pants.settings;
 
 import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
@@ -49,7 +52,7 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
     updateSettingsBasedOnGuiStates();
 
     CheckBoxList<String> checkBoxList = getTargetSpecCheckBoxList();
-    assertFalse("Check box list should be disabled, but it not.", checkBoxList.isEnabled());
+    assertFalse("Check box list should be disabled, but it is not.", checkBoxList.isEnabled());
 
     assertEquals(
       ContainerUtil.newArrayList("examples/src/java/org/pantsbuild/example/hello/::"),
@@ -74,7 +77,7 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
 
     CheckBoxList<String> checkBoxList = getTargetSpecCheckBoxList();
 
-    assertTrue("Check box list should be enabled, but it not.", checkBoxList.isEnabled());
+    assertTrue("Check box list should be enabled, but it is not.", checkBoxList.isEnabled());
 
     // Simulate checking all the boxes.
     for (int i = 0; i < checkBoxList.getItemsCount(); i++) {
@@ -95,6 +98,20 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
     );
   }
 
+  public void testInvalidBuildFileAsImportProjectPath() {
+    boolean caught = false;
+    final Path filePath = Paths.get(
+        getProjectPath(), "..", "invalid-build-file", "BUILD");
+    final String badBuildFile = filePath.normalize().toString();
+    try {
+      myFromPantsControl.onLinkedProjectPathChange(badBuildFile);
+    } catch (PantsException e) {
+      caught = true;
+    }
+
+    assertTrue("PantsException not thrown on invalid BUILD file", caught);
+    assertPantsProjectNotFound();
+  }
 
   public void testNonexistentFileAsImportProjectPath() {
     myFromPantsControl.onLinkedProjectPathChange(

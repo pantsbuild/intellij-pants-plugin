@@ -317,37 +317,37 @@ public class PantsUtil {
   public static Collection<String> listAllTargets(@NotNull String projectPath) throws PantsException {
     GeneralCommandLine cmd = PantsUtil.defaultCommandLine(projectPath);
     try (TempFile tempFile = TempFile.create("list", ".out")) {
-      final String tempPath = tempFile.getFile().getPath();
       cmd.addParameters(
         "list",
         Paths.get(projectPath).getParent().toString() + ':',
         String.format("%s=%s",
                       PantsConstants.PANTS_CLI_OPTION_LIST_OUTPUT_FILE,
-                      tempPath)
+                      tempFile.getFile().getPath())
       );
       final ProcessOutput processOutput = PantsUtil.getCmdOutput(cmd, null);
+      final String listOutput = FileUtil.loadFile(tempFile.getFile());
       if (processOutput.checkSuccess(LOG)) {
-        String output = FileUtil.loadFile(tempFile.getFile());
-        return Arrays.asList(output.split("\n"));
+        return Arrays.asList(listOutput.split("\n"));
       }
       else {
-        final int exitCode = processOutput.getExitCode();
-        LOG.warn(
-          String.format("Failure: process exited with code %d, output logged to '%s', with argv = '%s'",
-                        exitCode,
-                        tempPath,
-                        cmd.getCommandLineString()));
-        throw new PantsException(
-          String.format("pants list tasks failed with code %d",
-                        exitCode));
+        final String errorDescription =
+          String.format("could not list targets: pants exited with status %d\n",
+                        processOutput.getExitCode()) +
+          String.format("argv: '%s'\n", cmd.getCommandLineString()) +
+          String.format("stdout:\n%s\n", listOutput) +
+          String.format("warnings:\n%s\n", processOutput.getStdout()) +
+          String.format("stderr:\n%s\n", processOutput.getStderr());
+        LOG.warn(errorDescription);
+        throw new PantsException(errorDescription);
       }
     }
     catch (IOException | ExecutionException e) {
-      LOG.warn(
-        String.format("could not execute command: '%s'",
-                      cmd.getCommandLineString()),
-        e);
-      throw new PantsException("pants list tasks failed on execution");
+      final String noProcessErrMsg =
+        String.format("could not execute command: '%s' due to error: '%s'",
+                      cmd.getCommandLineString(),
+                      e.getMessage());
+      LOG.warn(noProcessErrMsg, e);
+      throw new PantsException(noProcessErrMsg);
     }
   }
 
