@@ -1,4 +1,4 @@
-// Copyright 2016 Pants project contributors (see CONTRIBUTORS.md).
+// Copyright 2017 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 package com.twitter.intellij.pants.execution;
@@ -163,15 +163,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return true;
   }
 
-  public static class PantsExecuteTaskResult {
-    public final boolean succeeded;
-    public final Optional<String> output;
-    public PantsExecuteTaskResult(final boolean succeeded, final Optional<String> output) {
-      this.succeeded = succeeded;
-      this.output = output;
-    }
-  }
-
   @Override
   public boolean executeTask(
     final DataContext context,
@@ -190,21 +181,39 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     return result.succeeded;
   }
 
+  @NotNull
   public PantsExecuteTaskResult executeCompileTask(Project project) {
-    return executeCompileTask(project,
-                              getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()),
-                              Arrays.asList("export-classpath", "compile"));
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    Set<String> targetAddresses = getTargetAddressesToCompile(modules);
+    return executeCompileTask(project, targetAddresses);
   }
 
+  @NotNull
   public PantsExecuteTaskResult executeCompileTask(@NotNull Module[] modules) {
     if (modules.length == 0) {
       return new PantsExecuteTaskResult(false, Optional.empty());
     }
-    return executeCompileTask(modules[0].getProject(),
-                              getTargetAddressesToCompile(modules),
+    Project project = modules[0].getProject();
+    Set<String> targetAddresses = getTargetAddressesToCompile(modules);
+    return executeCompileTask(project, targetAddresses);
+  }
+
+  @NotNull
+  public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject, @NotNull Set<String> targetAddressesToCompile) {
+    return executeCompileTask(currentProject,
+                              targetAddressesToCompile,
                               Arrays.asList("export-classpath", "compile"));
   }
 
+  /**
+   * Execute a list of tasks on a set of target addresses, doing some compile-specific checks.
+   *
+   * @param currentProject:           current project
+   * @param targetAddressesToCompile: set of target addresses to run tasks on
+   * @param tasks:                    pants tasks to perform (e.g. "compile")
+   * @return whether the execution is successful, additional message along with the execution
+   * in a Pair object.
+   */
   @NotNull
   public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject, @NotNull Set<String> targetAddressesToCompile, @NotNull List<String> tasks) {
 
@@ -217,7 +226,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return new PantsExecuteTaskResult(true, Optional.of(PantsConstants.NOOP_COMPILE));
     }
 
-    List<String> pantsCmdLine = new ArrayList<>();
+    List<String> pantsCmdArgs = new Lists.newArrayList();
 
     /* Global options section. */
     showPantsMakeTaskMessage("Checking Pants options...\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
@@ -229,15 +238,15 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     PantsOptions pantsOptions = projectOptsResult.get();
 
     if (pantsOptions.supportsAsyncCleanAll()) {
-      pantsCmdLine.add(PantsConstants.PANTS_CLI_OPTION_ASYNC_CLEAN_ALL);
+      pantsCmdArgs.add(PantsConstants.PANTS_CLI_OPTION_ASYNC_CLEAN_ALL);
     }
     if (pantsOptions.supportsManifestJar()) {
-      pantsCmdLine.add(PantsConstants.PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
+      pantsCmdArgs.add(PantsConstants.PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
     }
     PantsSettings settings = PantsSettings.getInstance(currentProject);
     if (settings.isUseIdeaProjectJdk()) {
       try {
-        pantsCmdLine.add(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
+        pantsCmdArgs.add(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
       }
       catch (Exception e) {
         showPantsMakeTaskMessage(e.getMessage(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
@@ -246,7 +255,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
 
     /* Goals and targets section. */
-    pantsCmdLine.addAll(tasks);
+    pantsCmdArgs.addAll(tasks);
 
     if (targetAddressesToCompile.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);

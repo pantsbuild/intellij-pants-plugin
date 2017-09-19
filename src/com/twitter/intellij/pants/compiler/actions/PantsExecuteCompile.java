@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class PantsExecuteCompile implements IPantsExecuteTask {
   @NotNull
-  public PantsMakeBeforeRun.PantsExecuteTaskResult apply(@NotNull PantsMakeBeforeRun runner, @NotNull Project project, @NotNull Set<String> targetAddresses) {
+  public PantsExecuteTaskResult apply(@NotNull PantsMakeBeforeRun runner, @NotNull Project project, @NotNull Set<String> targetAddresses) {
     return runner.executeCompileTask(project,
                                      targetAddresses,
                                      Arrays.asList("export-classpath", "compile"));
