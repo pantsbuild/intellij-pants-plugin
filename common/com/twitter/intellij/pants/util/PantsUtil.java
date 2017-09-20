@@ -35,6 +35,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
@@ -225,16 +226,22 @@ public class PantsUtil {
     ));
   }
 
+  // TODO: when is an Editor not an EditorImpl? why is this functionality not exposed in the intellij openapi Editor interface?
   public static Optional<VirtualFile> getFileInSelectedEditor(@Nullable Project project) {
     Optional<Editor> editor = Optional.ofNullable(project)
       .flatMap(p -> Optional.ofNullable(FileEditorManager.getInstance(p).getSelectedTextEditor()));
-    Optional<EditorImpl> editorImpl = editor.flatMap(e -> e instanceof EditorImpl ? Optional.of((EditorImpl) e) : Optional.empty());
+    Optional<EditorImpl> editorImpl = editor
+      .flatMap(e -> e instanceof EditorImpl ? Optional.of((EditorImpl) e) : Optional.empty());
     return editorImpl.map(EditorImpl::getVirtualFile);
   }
 
   public static Optional<VirtualFile> getFileForEvent(@Nullable AnActionEvent e) {
     return Optional.ofNullable(e)
       .flatMap(ev -> Optional.ofNullable(ev.getData(CommonDataKeys.VIRTUAL_FILE)));
+  }
+
+  public static Optional<Module> getModuleForFile(@NotNull VirtualFile file, @NotNull Project project) {
+    return Optional.ofNullable(ModuleUtil.findModuleForFile(file, project));
   }
 
   public static Optional<File> findBuildRoot(@NotNull File file) {

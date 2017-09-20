@@ -30,7 +30,8 @@ public class PantsCompileAllTargetsInModuleAction extends PantsCompileActionBase
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
     Optional<Module> module = this.module;
     if (!module.isPresent()) {
-      module = vf.flatMap(file -> Optional.ofNullable(ModuleUtil.findModuleForFile(file, project)));
+      module = PantsUtil.getFileForEvent(e)
+        .flatMap(file -> PantsUtil.getModuleForFile(file, project));
     }
     return module
       .map(PantsUtil::getNonGenTargetAddresses)

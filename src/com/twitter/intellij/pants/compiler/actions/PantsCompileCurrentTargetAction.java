@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.compiler.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -28,7 +27,7 @@ public class PantsCompileCurrentTargetAction extends PantsCompileActionBase {
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
     return PantsUtil.getFileInSelectedEditor(project)
-      .flatMap(file -> Optional.ofNullable(ModuleUtil.findModuleForFile(file, project)))
+      .flatMap(file -> PantsUtil.getModuleForFile(file, project))
       .map(PantsUtil::getNonGenTargetAddresses)
       .orElse(new LinkedList<>())
       .stream();

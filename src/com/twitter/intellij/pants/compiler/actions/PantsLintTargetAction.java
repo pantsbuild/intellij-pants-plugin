@@ -19,20 +19,26 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * PantsLintCurrentTargetAction is a UI action that lints target(s) related to the file under edit.
+ * PantsLintTargetAction is a UI action that lints target(s) related to the file under edit.
  */
-public class PantsLintCurrentTargetAction extends PantsTaskActionBase {
+public class PantsLintTargetAction extends PantsTaskActionBase {
 
-  public PantsLintCurrentTargetAction() {
+  private final Optional<Module> module;
+
+  public PantsLintTargetAction(Optional<Module> module) {
     super("Lint target(s) in the selected editor");
+    this.module = module;
   }
 
-  // FIXME: get smallest list of target addresses including file, NOT just all the addresses in the module!
   @NotNull
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
-    return PantsUtil.getFileInSelectedEditor(project)
-      .flatMap(file -> Optional.ofNullable(ModuleUtil.findModuleForFile(file, project)))
+    Optional<Module> module = this.module;
+    if (!module.isPresent()) {
+      module = PantsUtil.getFileForEvent(e)
+        .flatMap(file -> PantsUtil.getModuleForFile(file, project));
+    }
+    return module
       .map(PantsUtil::getNonGenTargetAddresses)
       .orElse(new LinkedList<>())
       .stream();

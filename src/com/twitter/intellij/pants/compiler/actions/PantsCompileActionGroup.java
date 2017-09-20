@@ -45,25 +45,26 @@ public class PantsCompileActionGroup extends ActionGroup {
       return emptyAction;
     }
     Project project = event.getProject();
-    Optional<VirtualFile> eventFile = IPantsGetTargets.getFileForEvent(event);
+    Optional<VirtualFile> eventFile = PantsUtil.getFileForEvent(event);
     // TODO: signal if no project found?
     if (project == null || !eventFile.isPresent()) {
       return emptyAction;
     }
     VirtualFile file = eventFile.get();
 
-    Module module = ModuleUtil.findModuleForFile(file, project);
-    if (module == null) {
+    List<AnAction> actions = new LinkedList<>();
+
+    Optional<Module> module = Optional.ofNullable(ModuleUtil.findModuleForFile(file, project));
+    if (!module.isPresent()) {
       return emptyAction;
     }
+    actions.add(new PantsLintTargetAction(module));
 
     List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(module);
     // TODO: signal if no addresses found?
     if (targetAddresses.isEmpty()) {
       return emptyAction;
     }
-
-    List<AnAction> actions = new LinkedList<>();
 
     if (targetAddresses.size() > 1) {
       actions.add(new PantsCompileAllTargetsInModuleAction(module));
