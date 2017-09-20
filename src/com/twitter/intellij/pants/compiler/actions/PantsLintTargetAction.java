@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.compiler.actions;
 
 import com.google.common.collect.Lists;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;

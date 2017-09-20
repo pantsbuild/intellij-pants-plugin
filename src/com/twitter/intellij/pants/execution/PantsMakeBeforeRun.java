@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.execution;
 
+import com.google.common.collect.Lists;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.ExecutionException;
@@ -226,7 +227,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return new PantsExecuteTaskResult(true, Optional.of(PantsConstants.NOOP_COMPILE));
     }
 
-    List<String> pantsCmdArgs = new Lists.newArrayList();
+    List<String> pantsCmdArgs = Lists.newArrayList();
 
     /* Global options section. */
     showPantsMakeTaskMessage("Checking Pants options...\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
@@ -261,9 +262,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       showPantsMakeTaskMessage("No target found in configuration.\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
       return new PantsExecuteTaskResult(true, Optional.empty());
     }
-    pantsCmdLine.addAll(targetAddressesToCompile);
+    pantsCmdArgs.addAll(targetAddressesToCompile);
 
-    PantsExecuteTaskResult result = executeTask(currentProject, pantsCmdLine);
+    PantsExecuteTaskResult result = executeTask(currentProject, pantsCmdArgs);
 
     if (result.succeeded) {
       FileChangeTracker.addManifestJarIntoSnapshot(currentProject);

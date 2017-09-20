@@ -3,14 +3,46 @@
 
 package com.twitter.intellij.pants.compiler.actions;
 
+import com.google.common.collect.Lists;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.Project;
+import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
+import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
 /**
  * PantsRebuildAction is a UI action that, when in a project, runs clean-all, then compiles all targets in the project
  */
 public class PantsRebuildAction extends PantsTaskActionBase {
 
   public PantsRebuildAction() {
-    super(new PantsGetAllTargets(),
-          new PantsExecuteRebuild(),
-          "Compile all targets with clean-all");
+    super("Compile all targets in project, after running clean-all");
+  }
+
+  @NotNull
+  @Override
+  public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    return Arrays.stream(modules)
+      .map(PantsUtil::getNonGenTargetAddresses)
+      .flatMap(Collection::stream);
+  }
+
+  @NotNull
+  @Override
+  public PantsExecuteTaskResult execute(@NotNull PantsMakeBeforeRun runner,
+                                        @NotNull Project project,
+                                        @NotNull Set<String> targetAddresses) {
+    List<String> tasks = Lists.newArrayList("clean-all", "export-classpath", "compile");
+    return runner.executeCompileTask(project, targetAddresses, tasks);
   }
 }

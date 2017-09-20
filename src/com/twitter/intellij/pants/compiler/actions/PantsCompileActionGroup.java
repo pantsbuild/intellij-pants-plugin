@@ -60,7 +60,9 @@ public class PantsCompileActionGroup extends ActionGroup {
     }
     actions.add(new PantsLintTargetAction(module));
 
-    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(module);
+    List<String> targetAddresses = module
+      .map(PantsUtil::getNonGenTargetAddresses)
+      .orElse(new LinkedList<>());
     // TODO: signal if no addresses found?
     if (targetAddresses.isEmpty()) {
       return emptyAction;

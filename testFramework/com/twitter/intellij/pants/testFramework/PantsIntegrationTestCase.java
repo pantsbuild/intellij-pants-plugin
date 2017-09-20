@@ -59,6 +59,7 @@ import com.intellij.testFramework.CompilerTester;
 import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -556,12 +557,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
-  protected PantsMakeBeforeRun.PantsExecuteTaskResult pantsCompileProject() {
+  protected PantsExecuteTaskResult pantsCompileProject() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
     return runner.executeCompileTask(myProject);
   }
 
-  protected void assertPantsCompileExecutesAndSucceeds(final PantsMakeBeforeRun.PantsExecuteTaskResult compileResult) throws Exception {
+  protected void assertPantsCompileExecutesAndSucceeds(final PantsExecuteTaskResult compileResult) throws Exception {
     assertTrue("Compile failed", compileResult.succeeded);
     if (compileResult.output.isPresent()) {
       assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.output.get()));
@@ -569,18 +570,18 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertManifestJarExists();
   }
 
-  protected void assertPantsCompileNoop(final PantsMakeBeforeRun.PantsExecuteTaskResult compileResult) throws Exception {
+  protected void assertPantsCompileNoop(final PantsExecuteTaskResult compileResult) throws Exception {
     assertTrue("Compile failed.", compileResult.succeeded);
     assertTrue("Compile message not found.", compileResult.output.isPresent());
     assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.output.get());
     assertManifestJarExists();
   }
 
-  protected void assertPantsCompileFailure(final PantsMakeBeforeRun.PantsExecuteTaskResult compileResult) {
+  protected void assertPantsCompileFailure(final PantsExecuteTaskResult compileResult) {
     assertFalse("Compile succeeded, but should fail.", compileResult.succeeded);
   }
 
-  protected PantsMakeBeforeRun.PantsExecuteTaskResult pantsCompileModule(String... moduleNames) {
+  protected PantsExecuteTaskResult pantsCompileModule(String... moduleNames) {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
     return runner.executeCompileTask(getModules(moduleNames));
   }

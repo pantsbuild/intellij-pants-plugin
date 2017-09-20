@@ -13,7 +13,6 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.twitter.intellij.pants.compiler.actions.IPantsGetTargets;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModuleAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetAction;
@@ -24,6 +23,7 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,8 +35,8 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
   public void testCompileAllAction() throws Throwable {
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
     PantsCompileAllTargetsAction compileAllTargetsAction = new PantsCompileAllTargetsAction();
-    Set<String> targetAddresses = compileAllTargetsAction.getTargets.apply(
-      IPantsGetTargets.getFileForEvent(getPantsActionEvent()), myProject)
+    Set<String> targetAddresses = compileAllTargetsAction
+      .getTargets(getPantsActionEvent(), myProject)
       .collect(Collectors.toSet());
     Set<String> expectedTargets = new HashSet<>(Arrays.asList(
       "testprojects/src/java/org/pantsbuild/testproject/annotation/processor:processor",
@@ -52,8 +52,8 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
     PantsCompileTargetAction compileTargetAction =
       new PantsCompileTargetAction("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
-    Set<String> targetAddresses = compileTargetAction.getTargets.apply(
-      IPantsGetTargets.getFileForEvent(getPantsActionEvent()), myProject)
+    Set<String> targetAddresses = compileTargetAction
+      .getTargets(getPantsActionEvent(), myProject)
       .collect(Collectors.toSet());
     Set<String> expectedTarget = Sets.newHashSet("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
     assertEquals(expectedTarget, targetAddresses);
@@ -62,8 +62,8 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
   public void testRebuildAction() throws Throwable {
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
     PantsRebuildAction rebuildAction = new PantsRebuildAction();
-    Set<String> targetAddresses = rebuildAction.getTargets.apply(
-      IPantsGetTargets.getFileForEvent(getPantsActionEvent()), myProject)
+    Set<String> targetAddresses = rebuildAction
+      .getTargets(getPantsActionEvent(), myProject)
       .collect(Collectors.toSet());
     Set<String> expectedTargets = new HashSet<>(Arrays.asList(
       "testprojects/src/java/org/pantsbuild/testproject/annotation/processor:processor",
@@ -78,9 +78,10 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
   public void testCompileAllTargetsInModuleAction() throws Throwable {
     doImport("testprojects/src/java/org/pantsbuild/testproject/junit");
     Module module = getModule("testprojects_src_java_org_pantsbuild_testproject_junit_testscope_common_sources");
-    PantsCompileAllTargetsInModuleAction compileAllTargetsInModuleAction = new PantsCompileAllTargetsInModuleAction(module);
-    Set<String> targetAddresses = compileAllTargetsInModuleAction.getTargets.apply(
-      IPantsGetTargets.getFileForEvent(getPantsActionEvent()), myProject)
+    PantsCompileAllTargetsInModuleAction compileAllTargetsInModuleAction =
+      new PantsCompileAllTargetsInModuleAction(Optional.of(module));
+    Set<String> targetAddresses = compileAllTargetsInModuleAction
+      .getTargets(getPantsActionEvent(), myProject)
       .collect(Collectors.toSet());
     Set<String> expectedTargets = new HashSet<>(Arrays.asList(
       "testprojects/src/java/org/pantsbuild/testproject/junit/testscope:tests",
@@ -120,8 +121,8 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       PantsCompileCurrentTargetAction compileCurrentTargetAction = new PantsCompileCurrentTargetAction();
 
       // Execute body
-      Set<String> currentTargets = compileCurrentTargetAction.getTargets.apply(
-        IPantsGetTargets.getFileForEvent(getPantsActionEvent()), myProject)
+      Set<String> currentTargets = compileCurrentTargetAction
+        .getTargets(getPantsActionEvent(), myProject)
         .collect(Collectors.toSet());
       assertEquals(Sets.newHashSet(target), currentTargets);
     }

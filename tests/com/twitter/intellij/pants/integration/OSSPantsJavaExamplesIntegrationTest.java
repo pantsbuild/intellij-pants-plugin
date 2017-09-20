@@ -9,6 +9,7 @@ import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
@@ -152,12 +153,12 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     PantsSettings settings = PantsSettings.getInstance(myProject);
     settings.setUseIdeaProjectJdk(true);
-    PantsMakeBeforeRun.PantsExecuteTaskResult result = pantsCompileProject();
+    PantsExecuteTaskResult result = pantsCompileProject();
     assertPantsCompileExecutesAndSucceeds(result);
     assertContainsSubstring(result.output.get(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
 
     settings.setUseIdeaProjectJdk(false);
-    PantsMakeBeforeRun.PantsExecuteTaskResult resultB = pantsCompileProject();
+    PantsExecuteTaskResult resultB = pantsCompileProject();
     assertPantsCompileExecutesAndSucceeds(result);
     assertNotContainsSubstring(resultB.output.get(), PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS);
   }
