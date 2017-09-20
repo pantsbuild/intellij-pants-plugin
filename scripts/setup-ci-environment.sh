@@ -46,7 +46,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   mkdir -p plugins
   pushd plugins
 
-  wget --no-check-certificate -O Scala.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$SCALA_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
+  wget --no-check-certificate -O Scala.zip "http://plugins.jetbrains.com/plugin/download?updateId=36881"
   verify_md5 Scala.zip $SCALA_PLUGIN_MD5
   unzip -q Scala.zip
   rm -f Scala.zip
