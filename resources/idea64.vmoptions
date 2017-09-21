@@ -1,4 +1,4 @@
--Xms2g
+-Xms1g
 -Xmx3g
 -XX:ReservedCodeCacheSize=240m
 -XX:+UseConcMarkSweepGC
