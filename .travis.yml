@@ -13,7 +13,7 @@ cache:
 
 notifications:
   email:
-    - yic@twitter.com
+    - dmcclanahan@twitter.com
 
 install: ./scripts/setup-ci-environment.sh
 
