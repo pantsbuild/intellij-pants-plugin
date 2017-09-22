@@ -17,10 +17,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PantsVirtualFileReference extends PantsPsiReferenceBase {
   public PantsVirtualFileReference(@NotNull PsiElement element, @NotNull TextRange range, @Nls String text, @Nls String relativePath) {
@@ -48,12 +50,10 @@ public class PantsVirtualFileReference extends PantsPsiReferenceBase {
   @Nullable
   @Override
   public PsiElement resolve() {
-    Optional<VirtualFile> virtualFile = findFile();
-    if (!virtualFile.isPresent()) {
-      return null;
-    }
-    VirtualFile buildFileOrDirectory = PantsUtil.findBUILDFile(virtualFile.get()).orElse(virtualFile.get());
-
+    VirtualFile buildFileOrDirectory = findFile()
+      .map(PantsUtil::findBUILDFiles)
+      .flatMap(files -> files.stream().findFirst())
+      .orElse(null);
     final PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
     final PsiFile buildFile = psiManager.findFile(buildFileOrDirectory);
     return buildFile != null ? buildFile : psiManager.findDirectory(buildFileOrDirectory);
