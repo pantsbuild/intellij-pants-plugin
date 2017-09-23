@@ -159,14 +159,21 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
 
   @NotNull
   private ExternalSystemRunConfiguration getExternalSystemRunConfiguration(PsiElement psiElement) {
+    assertNotNull(psiElement);
     ConfigurationContext context = createContext(psiElement, new MapDataContext());
+    assertNotNull(context);
     ConfigurationFromContext myPantsConfigurationFromContext = getPantsJunitConfigurationFromContext(context);
     assertNotNull(myPantsConfigurationFromContext);
     return (ExternalSystemRunConfiguration) myPantsConfigurationFromContext.getConfiguration();
   }
 
   private ConfigurationFromContext getPantsJunitConfigurationFromContext(ConfigurationContext context) {
-    for (RunConfigurationProducer producer : RunConfigurationProducer.getProducers(myProject)) {
+    assertNotNull(context);
+    List<RunConfigurationProducer<?>> producers = RunConfigurationProducer.getProducers(myProject);
+    assertTrue(producers.size() > 0);
+    System.out.println(Integer.toString(producers.size()));
+    for (RunConfigurationProducer producer : producers) {
+      System.out.println(producer.toString());
       if (producer instanceof PantsJUnitTestRunConfigurationProducer) {
         return producer.createConfigurationFromContext(context);
       }

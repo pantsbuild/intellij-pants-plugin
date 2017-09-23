@@ -1,6 +1,6 @@
 # -*- mode: makefile-Gmake; -*-
 
-.PHONY: all pants-clean clean test
+.PHONY: all pants-clean clean test test-sparse
 
 SCRIPTS := scripts
 SETUP_SCRIPT := $(SCRIPTS)/setup-ci-environment.sh
@@ -59,3 +59,6 @@ clean: pants-clean
 
 test: all
 	$(RUN_TESTS)
+
+test-sparse: all
+	$(RUN_TESTS) --fail-fast --test-junit-output-mode=FAILURE_ONLY
