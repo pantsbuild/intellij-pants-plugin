@@ -929,5 +929,19 @@ public class PantsUtil {
   public static List<String> parseCmdParameters(Optional<String> cmdArgsLine) {
     return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
   }
+
+  public static <T> Optional<T> join(Optional<? extends T> a, Optional<? extends T> b) {
+    Optional<? extends T> ret = a;
+    if (!ret.isPresent()) {
+      ret = b;
+    }
+    return ret.map(x -> (T) x);
+  }
+
+  public static <T> Optional<T> join(@NotNull Collection<Optional<T>> optionals) {
+    return optionals.stream()
+      .flatMap(opt -> opt.map(Stream::of).orElse(Stream.empty()))
+      .findFirst();
+  }
 }
 

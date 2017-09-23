@@ -1,6 +1,6 @@
 # -*- mode: makefile-Gmake; -*-
 
-.PHONY: all pants-clean clean test test-sparse
+.PHONY: all clean test test-sparse
 
 SCRIPTS := scripts
 SETUP_SCRIPT := $(SCRIPTS)/setup-ci-environment.sh
@@ -33,10 +33,12 @@ PANTS := ./pants
 PANTS_INI := pants.ini
 
 IVY_CACHE_DIR := ~/.ivy2
+PANTS_USER_CACHE_DIR := ~/.cache/pants
 
-# wish you could declare a dependency on removing files/directories as well, not
-# just creating them (for example)
-CACHE_DIRS := $(TEST_CACHE_DIR) $(PANTS_DIR) $(IVY_CACHE_DIR)
+# wish you could declare a dependency on removing files/directories as well in
+# make, not just creating them (for example)
+CACHE_DIRS := $(TEST_CACHE_DIR) $(PANTS_DIR) $(IVY_CACHE_DIR) \
+	$(PANTS_USER_CACHE_DIR)
 
 pants_run_env = $(call bash_run_env,$(PANTS) $(1))
 
@@ -51,10 +53,7 @@ $(CACHE_FILES): $(SETUP_SCRIPT) $(PREP_SRC)
 $(PANTS): $(PANTS_INI)
 	$(PANTS) -V
 
-pants-clean: $(PANTS)
-	$(PANTS) clean-all --async
-
-clean: pants-clean
+clean:
 	rm -rf $(CACHE_DIRS)
 
 test: all

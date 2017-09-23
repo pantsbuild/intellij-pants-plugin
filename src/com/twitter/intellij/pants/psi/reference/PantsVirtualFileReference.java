@@ -3,9 +3,11 @@
 
 package com.twitter.intellij.pants.psi.reference;
 
+import com.google.common.collect.Lists;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -50,12 +52,16 @@ public class PantsVirtualFileReference extends PantsPsiReferenceBase {
   @Nullable
   @Override
   public PsiElement resolve() {
-    VirtualFile buildFileOrDirectory = findFile()
-      .map(PantsUtil::findBUILDFiles)
-      .flatMap(files -> files.stream().findFirst())
-      .orElse(null);
-    final PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
-    final PsiFile buildFile = psiManager.findFile(buildFileOrDirectory);
-    return buildFile != null ? buildFile : psiManager.findDirectory(buildFileOrDirectory);
+    Stream<VirtualFile> buildFileOrDirectoryCandidates = findFile()
+      .map(file -> PantsUtil.findBUILDFiles(file).stream())
+      .orElse(Stream.empty());
+    PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
+    Stream<PsiElement> resolvedCandidates = buildFileOrDirectoryCandidates.flatMap(candidate -> {
+      Optional<PsiFile> file = Optional.ofNullable(psiManager.findFile(candidate));
+      Optional<PsiDirectory> directory = Optional.ofNullable(psiManager.findDirectory(candidate));
+      Optional<PsiElement> toAdd = PantsUtil.join(file, directory);
+      return toAdd.map(Stream::of).orElse(Stream.empty());
+    });
+    return resolvedCandidates.findFirst().orElse(null);
   }
 }
