@@ -41,7 +41,7 @@ public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsInteg
 
     PyClass pyClass = PyClassNameIndex.find("GreetTest", myProject, true).iterator().next();
     PyClass truClass = new PyTestClass(pyClass);
-    assertTrue(PythonUnitTestUtil.isTestClass(pyClass, ThreeState.YES, null));
+    assertFalse(PythonUnitTestUtil.isTestClass(pyClass, ThreeState.YES, null));
 
     PsiFile file = new PyTestFile(truClass.getContainingFile(), truClass);
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(file);
