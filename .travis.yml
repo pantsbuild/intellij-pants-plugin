@@ -11,6 +11,13 @@ cache:
     - .cache/bootstrap # See pants.ini [cache.bootstrap]
     - .cache/pants     # Pants downloaded by scripts/setup-ci-environment.sh
 
+addons:
+  apt:
+    packages:
+      - python-dev
+      - openssl
+      - libssl-dev
+
 # notifications:
 #  email:
 #    - dmcclanahan@twitter.com
