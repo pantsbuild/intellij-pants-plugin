@@ -30,7 +30,7 @@ if [[ $IJ_ULTIMATE == "true" ]]; then
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="d5c7a493b83f16ea817a8aa91d9420ae"
+  export EXPECTED_IJ_MD5="77c7afde3356f752c0c22b1ec9adeab7"
   export PYTHON_PLUGIN_ID="PythonCore"
   export PYTHON_PLUGIN_MD5="2eeffe7aa2f80f125e8804bbe947753d"
 fi
