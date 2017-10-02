@@ -103,6 +103,7 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
     final Path filePath = Paths.get(
         getProjectPath(), "..", "invalid-build-file", "BUILD");
     final String badBuildFile = filePath.normalize().toString();
+    System.out.println(badBuildFile);
     try {
       myFromPantsControl.onLinkedProjectPathChange(badBuildFile);
     } catch (PantsException e) {

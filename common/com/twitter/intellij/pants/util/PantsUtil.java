@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
@@ -340,7 +341,7 @@ public class PantsUtil {
           processOutput.getStdout(),
           "stderr:",
           processOutput.getStderr());
-        final String errorMessage = errorLogs.join("\n");
+        final String errorMessage = String.join("\n", errorLogs);
         LOG.warn(errorMessage);
         throw new PantsException(errorMessage);
       }
@@ -351,7 +352,7 @@ public class PantsUtil {
                       cmd.getCommandLineString(),
                       e.getMessage());
       LOG.warn(processCreationFailureMessage, e);
-      throw new PantsException(noProcessErrMsg);
+      throw new PantsException(processCreationFailureMessage);
     }
   }
 
