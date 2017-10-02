@@ -317,6 +317,9 @@ public class PantsUtil {
   }
 
   public static Collection<String> listAllTargets(@NotNull String projectPath) throws PantsException {
+    if (!PantsUtil.isBUILDFilePath(projectPath)) {
+      return Lists.newArrayList();
+    }
     GeneralCommandLine cmd = PantsUtil.defaultCommandLine(projectPath);
     try (TempFile tempFile = TempFile.create("list", ".out")) {
       cmd.addParameters(

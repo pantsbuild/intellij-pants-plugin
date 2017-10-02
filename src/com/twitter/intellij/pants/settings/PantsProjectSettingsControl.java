@@ -159,26 +159,19 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       ProgressManager.getInstance().run(new Task.Modal(getProject(), PantsBundle.message("pants.getting.target.list"), false) {
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
-          loadTargets(projectPath);
+          try {
+            final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
+            UIUtil.invokeLaterIfNeeded(() -> {
+                myTargetSpecsBox.clear();
+                targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
+              });
+          } catch (PantsException e) {
+            UIUtil.invokeLaterIfNeeded((Runnable) () -> {
+                Messages.showErrorDialog(getProject(), e.getMessage(), "Pants Failure");
+                Messages.createMessageDialogRemover(getProject()).run();
+              });
+          }
         }
-      });
-    }
-  }
-
-  private void loadTargets(final String projectPath) {
-    if (!PantsUtil.isBUILDFilePath(projectPath)) {
-      return;
-    }
-    try {
-      final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
-      UIUtil.invokeLaterIfNeeded(() -> {
-        myTargetSpecsBox.clear();
-        targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
-      });
-    } catch (PantsException e) {
-      UIUtil.invokeLaterIfNeeded((Runnable) () -> {
-        Messages.showErrorDialog(getProject(), e.getMessage(), "Pants Failure");
-        Messages.createMessageDialogRemover(getProject()).run();
       });
     }
   }

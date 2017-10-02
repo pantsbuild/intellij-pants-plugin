@@ -8,6 +8,7 @@ import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -99,18 +100,19 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
   }
 
   public void testInvalidBuildFileAsImportProjectPath() {
-    boolean caught = false;
     final Path filePath = Paths.get(
         getProjectPath(), "..", "invalid-build-file", "BUILD");
     final String badBuildFile = filePath.normalize().toString();
-    System.out.println(badBuildFile);
+
+    boolean caught = false;
     try {
-      myFromPantsControl.onLinkedProjectPathChange(badBuildFile);
+      PantsUtil.listAllTargets(badBuildFile);
     } catch (PantsException e) {
       caught = true;
     }
-
     assertTrue("PantsException not thrown on invalid BUILD file", caught);
+
+    myFromPantsControl.onLinkedProjectPathChange(badBuildFile);
     assertPantsProjectNotFound();
   }
 
