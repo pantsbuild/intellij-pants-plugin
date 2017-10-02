@@ -49,7 +49,8 @@ public class PantsResolveTest extends PantsCodeInsightFixtureTestCase {
     PsiFile expectedTarget = myFixture.addFileToProject("foo/bar/BUILD", "");
     myFixture.configureByText("BUILD", "scala_library(dependencies=['foo/ba<caret>r']");
     PsiElement target = doTest(1).iterator().next();
-    assertEquals(expectedTarget, target);
+    assertTrue("Expected a file!", target instanceof PsiFile);
+    assertEquals("Wrong file name", expectedTarget, target);
   }
 
   public void testDependencies2() {
