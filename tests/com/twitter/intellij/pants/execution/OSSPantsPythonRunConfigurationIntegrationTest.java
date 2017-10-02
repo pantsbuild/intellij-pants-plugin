@@ -15,6 +15,7 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.MapDataContext;
+import com.intellij.util.ThreeState;
 import com.jetbrains.python.psi.PyClass;
 import com.jetbrains.python.psi.impl.PyClassImpl;
 import com.jetbrains.python.psi.impl.PyFileImpl;
@@ -40,7 +41,7 @@ public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsInteg
 
     PyClass pyClass = PyClassNameIndex.find("GreetTest", myProject, true).iterator().next();
     PyClass truClass = new PyTestClass(pyClass);
-    PythonUnitTestUtil.isTestCaseClass(pyClass, null);
+    assertFalse(PythonUnitTestUtil.isTestClass(pyClass, ThreeState.YES, null));
 
     PsiFile file = new PyTestFile(truClass.getContainingFile(), truClass);
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(file);

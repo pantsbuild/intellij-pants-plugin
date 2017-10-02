@@ -12,6 +12,7 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.ThreeState;
 import com.jetbrains.python.codeInsight.testIntegration.PyTestFinder;
 import com.jetbrains.python.psi.PyClass;
 import com.jetbrains.python.psi.PyFile;
@@ -114,7 +115,7 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
       PyFile pyFile = (PyFile) element;
 
       for (PyClass pyClass : pyFile.getTopLevelClasses()) {
-        if (PythonUnitTestUtil.isTestCaseClass(pyClass, null)) {
+        if (PythonUnitTestUtil.isTestClass(pyClass, ThreeState.YES, null)) {
           return true;
         }
       }

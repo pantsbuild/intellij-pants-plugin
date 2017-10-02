@@ -27,7 +27,7 @@ fi
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   IJ_TAR_NAME=idea${IJ_BUILD}.tar.gz
   echo "Loading $IJ_BUILD..."
-  wget -O $IJ_TAR_NAME "http://download.jetbrains.com/idea/$IJ_TAR_NAME"
+  wget -O $IJ_TAR_NAME "https://download.jetbrains.com/idea/$IJ_TAR_NAME"
   verify_md5 $IJ_TAR_NAME $EXPECTED_IJ_MD5
   {
     tar zxf $IJ_TAR_NAME &&
