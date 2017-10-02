@@ -15,6 +15,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
+import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.util.PantsConstants;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
@@ -23,33 +24,36 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
- * PantsTaskActionBase is a an abstract action that implements basic compilation activities
+ * PantsTaskActionBase is an abstract action that executes Pants tasks on a stream of targets.
  */
 public abstract class PantsTaskActionBase extends AnAction implements DumbAware {
 
-  public final IPantsGetTargets getTargets;
-  public final IPantsExecuteTask executeTask;
-
-  public PantsTaskActionBase(@NotNull final IPantsGetTargets getTargets,
-                             @NotNull final IPantsExecuteTask executeTask,
-                             @NotNull final String name) {
+  public PantsTaskActionBase(@NotNull final String name) {
     super(name);
-    this.getTargets = getTargets;
-    this.executeTask = executeTask;
   }
+
+  @NotNull
+  public abstract Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project);
+
+  @NotNull
+  public abstract PantsExecuteTaskResult execute(@NotNull PantsMakeBeforeRun runner,
+                                                 @NotNull Project project,
+                                                 @NotNull Set<String> targetAddresses);
 
   @Override
   public void actionPerformed(@Nullable AnActionEvent e) {
     if (e == null) {
+      // TODO: signal if null event provided?
       return;
     }
 
     Project project = e.getProject();
 
     if (project == null) {
-      // TODO: signal if no project found?
+      // TODO: signal on null project?
       Notification notification = new Notification(
         PantsConstants.PANTS,
         PantsIcons.Icon,
@@ -63,8 +67,8 @@ public abstract class PantsTaskActionBase extends AnAction implements DumbAware 
       return;
     }
 
-    Set<String> fullTargets = this.getTargets.apply(IPantsGetTargets.getFileForEvent(e), project).collect(Collectors.toSet());
+    Set<String> fullTargets = this.getTargets(e, project).collect(Collectors.toSet());
     PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
-    ApplicationManager.getApplication().executeOnPooledThread(() -> this.executeTask.apply(runner, project, fullTargets));
+    ApplicationManager.getApplication().executeOnPooledThread(() -> execute(runner, project, fullTargets));
   }
 }

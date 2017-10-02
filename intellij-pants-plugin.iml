@@ -29,5 +29,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" scope="PROVIDED" name="scala-sdk-2.11.6" level="project" />
+    <orderEntry type="library" name="scala-sdk-2.11.111" level="project" />
   </component>
 </module>

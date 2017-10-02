@@ -3,14 +3,33 @@
 
 package com.twitter.intellij.pants.compiler.actions;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
+import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.LinkedList;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 /**
  * PantsCompileCurrentTargetAction is a UI action that compiles target(s) related to the file under edit.
  */
-public class PantsCompileCurrentTargetAction extends PantsTaskActionBase {
+public class PantsCompileCurrentTargetAction extends PantsCompileActionBase {
 
   public PantsCompileCurrentTargetAction() {
-    super(new PantsGetCurrentFileTargets(),
-          new PantsExecuteCompile(),
-          "Compile target(s) in the selected editor");
+    super("Compile target(s) in the selected editor");
+  }
+
+  @NotNull
+  @Override
+  public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
+    return PantsUtil.getFileInSelectedEditor(project)
+      .flatMap(file -> PantsUtil.getModuleForFile(file, project))
+      .map(PantsUtil::getNonGenTargetAddresses)
+      .orElse(new LinkedList<>())
+      .stream();
   }
 }
