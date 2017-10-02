@@ -6,4 +6,4 @@ jar_library(
 )
 
 
-import asdfasdf
+import this_import_does_not_exist_and_should_cause_an_error
