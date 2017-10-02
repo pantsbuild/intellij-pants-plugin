@@ -136,6 +136,7 @@ public class PantsUtil {
    * @deprecated {@link #findBUILDFiles(VirtualFile)} should be used instead, as this is likely
    * a sign that you're missing BUILD files
    */
+  @Deprecated
   public static Optional<VirtualFile> findBUILDFile(@Nullable VirtualFile vFile) {
     return findBUILDFiles(vFile).stream().findFirst();
   }

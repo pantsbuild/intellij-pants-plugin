@@ -61,7 +61,7 @@ public class PythonPexResolver implements PantsResolverExtension {
     final Optional<VirtualFile> folderWithPex = PantsUtil.findFolderWithPex();
     if (!folderWithPex.isPresent()) {
       LOG.warn(PantsBundle.message("pants.library.no.pex.folder"));
-      return null;
+      return Optional.empty();
     }
 
     final Optional<VirtualFile> pexFile = folderWithPex.flatMap(file -> PantsUtil.findPexVersionFile(file, pantsVersion.get()));
