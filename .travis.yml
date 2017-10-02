@@ -10,6 +10,10 @@ cache:
     - .cache/bootstrap # See pants.ini [cache.bootstrap]
     - .cache/pants     # Pants downloaded by scripts/setup-ci-environment.sh
 
+notifications:
+  email:
+    - yic@twitter.com
+
 addons:
   apt:
     packages:
@@ -17,9 +21,6 @@ addons:
       - openssl
       - libssl-dev
 
-# notifications:
-#  email:
-#    - dmcclanahan@twitter.com
 before_install:
   # Remove bad openjdk6 from trusty image, so
   # Pants will pick up oraclejdk6 from `packages` above.

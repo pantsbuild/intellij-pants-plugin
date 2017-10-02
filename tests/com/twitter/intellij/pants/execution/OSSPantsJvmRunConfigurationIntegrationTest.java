@@ -171,9 +171,7 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     assertNotNull(context);
     List<RunConfigurationProducer<?>> producers = RunConfigurationProducer.getProducers(myProject);
     assertTrue(producers.size() > 0);
-    System.out.println(Integer.toString(producers.size()));
     for (RunConfigurationProducer producer : producers) {
-      System.out.println(producer.toString());
       if (producer instanceof PantsJUnitTestRunConfigurationProducer) {
         return producer.createConfigurationFromContext(context);
       }
