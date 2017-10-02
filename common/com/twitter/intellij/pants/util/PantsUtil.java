@@ -321,9 +321,9 @@ public class PantsUtil {
       cmd.addParameters(
         "list",
         Paths.get(projectPath).getParent().toString() + ':',
-        String.format("%s=%s",
-                      PantsConstants.PANTS_CLI_OPTION_LIST_OUTPUT_FILE,
-                      tempFile.getFile().getPath())
+        String.format("%s=%s", PantsConstants.PANTS_CLI_OPTION_LIST_OUTPUT_FILE,
+                      tempFile.getFile().getPath()
+        )
       );
       final ProcessOutput processOutput = PantsUtil.getCmdOutput(cmd, null);
       final String listOutput = FileUtil.loadFile(tempFile.getFile());
