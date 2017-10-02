@@ -326,28 +326,31 @@ public class PantsUtil {
         )
       );
       final ProcessOutput processOutput = PantsUtil.getCmdOutput(cmd, null);
-      final String listOutput = FileUtil.loadFile(tempFile.getFile());
       if (processOutput.checkSuccess(LOG)) {
+        // output only exists if "list" task succeeds
+        final String listOutput = FileUtil.loadFile(tempFile.getFile());
         return Arrays.asList(listOutput.split("\n"));
       }
       else {
-        final String errorDescription =
-          String.format("could not list targets: pants exited with status %d\n",
-                        processOutput.getExitCode()) +
-          String.format("argv: '%s'\n", cmd.getCommandLineString()) +
-          String.format("stdout:\n%s\n", listOutput) +
-          String.format("warnings:\n%s\n", processOutput.getStdout()) +
-          String.format("stderr:\n%s\n", processOutput.getStderr());
-        LOG.warn(errorDescription);
-        throw new PantsException(errorDescription);
+        List<String> errorLogs = Lists.newArrayList(
+          String.format("Could not list targets: Pants exited with status %d",
+                        processOutput.getExitCode()),
+          String.format("argv: '%s'", cmd.getCommandLineString()),
+          "stdout:",
+          processOutput.getStdout(),
+          "stderr:",
+          processOutput.getStderr());
+        final String errorMessage = errorLogs.join("\n");
+        LOG.warn(errorMessage);
+        throw new PantsException(errorMessage);
       }
     }
     catch (IOException | ExecutionException e) {
-      final String noProcessErrMsg =
-        String.format("could not execute command: '%s' due to error: '%s'",
+      final String processCreationFailureMessage =
+        String.format("Could not execute command: '%s' due to error: '%s'",
                       cmd.getCommandLineString(),
                       e.getMessage());
-      LOG.warn(noProcessErrMsg, e);
+      LOG.warn(processCreationFailureMessage, e);
       throw new PantsException(noProcessErrMsg);
     }
   }
