@@ -24,7 +24,7 @@ get_md5(){
 if [[ $IJ_ULTIMATE == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="101443bad0a5e2ed63f9535a7d51fc21"
+  export EXPECTED_IJ_MD5="d0203f7f7d21c5fd43eead0df0c7ce59"
   export PYTHON_PLUGIN_ID="Pythonid"
   export PYTHON_PLUGIN_MD5="0e50933c204313aaa2a062e9b19b33ac"
 else
