@@ -52,7 +52,10 @@ public class PantsVirtualFileReference extends PantsPsiReferenceBase {
     if (!virtualFile.isPresent()) {
       return null;
     }
-    VirtualFile buildFileOrDirectory = PantsUtil.findBUILDFile(virtualFile.get()).orElse(virtualFile.get());
+    VirtualFile buildFileOrDirectory = PantsUtil.findBUILDFiles(virtualFile.get())
+      .stream()
+      .findFirst()
+      .orElse(virtualFile.get());
 
     final PsiManager psiManager = PsiManager.getInstance(getElement().getProject());
     final PsiFile buildFile = psiManager.findFile(buildFileOrDirectory);
