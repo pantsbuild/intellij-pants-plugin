@@ -3,7 +3,7 @@
 
 package com.twitter.intellij.pants.execution;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.ExecutionException;
@@ -178,12 +178,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     PantsExecuteTaskResult result = executeCompileTask(
       currentProject,
       targetAddressesToCompile,
-      Arrays.asList("export-classpath", "compile"));
+      Sets.newHashSet("export-classpath", "compile"));
     return result.succeeded;
   }
 
   @NotNull
-  public PantsExecuteTaskResult executeCompileTask(Project project) {
+  public PantsExecuteTaskResult executeCompileTask(@NotNull Project project) {
     Module[] modules = ModuleManager.getInstance(project).getModules();
     Set<String> targetAddresses = getTargetAddressesToCompile(modules);
     return executeCompileTask(project, targetAddresses);
@@ -203,7 +203,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject, @NotNull Set<String> targetAddressesToCompile) {
     return executeCompileTask(currentProject,
                               targetAddressesToCompile,
-                              Arrays.asList("export-classpath", "compile"));
+                              Sets.newHashSet("export-classpath", "compile"));
   }
 
   /**
@@ -216,7 +216,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    * in a Pair object.
    */
   @NotNull
-  public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject, @NotNull Set<String> targetAddressesToCompile, @NotNull List<String> tasks) {
+  public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject, @NotNull Set<String> targetAddressesToCompile, @NotNull Set<String> tasks) {
 
     final String title = "Compile message";
 
@@ -227,8 +227,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return new PantsExecuteTaskResult(true, Optional.of(PantsConstants.NOOP_COMPILE));
     }
 
-    List<String> pantsCmdArgs = Lists.newArrayList();
-
     /* Global options section. */
     showPantsMakeTaskMessage("Checking Pants options...\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
     Optional<PantsOptions> projectOptsResult = PantsOptions.getPantsOptions(currentProject);
@@ -238,12 +236,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
     PantsOptions pantsOptions = projectOptsResult.get();
 
-    if (pantsOptions.supportsAsyncCleanAll()) {
-      pantsCmdArgs.add(PantsConstants.PANTS_CLI_OPTION_ASYNC_CLEAN_ALL);
-    }
-    if (pantsOptions.supportsManifestJar()) {
-      pantsCmdArgs.add(PantsConstants.PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
-    }
+    List<String> pantsCmdArgs = pantsOptions.genCliOptionsForTasks(tasks);
     PantsSettings settings = PantsSettings.getInstance(currentProject);
     if (settings.isUseIdeaProjectJdk()) {
       try {

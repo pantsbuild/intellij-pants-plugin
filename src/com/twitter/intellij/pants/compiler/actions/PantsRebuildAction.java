@@ -3,7 +3,7 @@
 
 package com.twitter.intellij.pants.compiler.actions;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -42,7 +42,7 @@ public class PantsRebuildAction extends PantsTaskActionBase {
   public PantsExecuteTaskResult execute(@NotNull PantsMakeBeforeRun runner,
                                         @NotNull Project project,
                                         @NotNull Set<String> targetAddresses) {
-    List<String> tasks = Lists.newArrayList("clean-all", "export-classpath", "compile");
+    Set<String> tasks = Sets.newHashSet("clean-all", "export-classpath", "compile");
     return runner.executeCompileTask(project, targetAddresses, tasks);
   }
 }

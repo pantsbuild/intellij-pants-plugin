@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
@@ -63,4 +65,25 @@ public class PantsConstants {
   public static final String EXTERNAL_BUILDER_ERROR = "This is a Pants project. Please use PantsCompile under `Edit Configuration`";
 
   public static final String NOOP_COMPILE = "No changes in projects. Noop compile.";
+
+  public static final String PANTS_TASK_CLEAN_ALL = "clean-all";
+  public static final String PANTS_TASK_EXPORT_CLASSPATH = "export-classpath";
+
+  public static final ImmutableMap<String, ImmutableSet<String>> PANTS_MAP_TASK_TO_OPTION_CHECKS =
+    ImmutableMap.of(
+      // clean-all => [clean-all.async]
+      PANTS_TASK_CLEAN_ALL,
+      ImmutableSet.of(PANTS_OPTION_ASYNC_CLEAN_ALL),
+      // export-classpath => [export-classpath.manifest_jar_only]
+      PANTS_TASK_EXPORT_CLASSPATH,
+      ImmutableSet.of(PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR));
+
+  public static final ImmutableMap<String, ImmutableSet<String>> PANTS_MAP_OPTION_TO_CLI_ARGS =
+    ImmutableMap.of(
+      // clean-all.async => [--async]
+      PANTS_OPTION_ASYNC_CLEAN_ALL,
+      ImmutableSet.of(PANTS_CLI_OPTION_ASYNC_CLEAN_ALL),
+      // export-classpath.manifest_jar_only => [--export-classpath-manifest-jar-only]
+      PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR,
+      ImmutableSet.of(PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR));
 }

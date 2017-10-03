@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.model;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessOutput;
@@ -14,9 +16,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 public class PantsOptions {
@@ -47,12 +52,15 @@ public class PantsOptions {
     return PantsUtil.findPantsExecutable(myProject).map(file -> getPantsOptions(file.getPath()));
   }
 
-  public boolean supportsManifestJar() {
-    return has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
-  }
-
-  public boolean supportsAsyncCleanAll() {
-    return has(PantsConstants.PANTS_OPTION_ASYNC_CLEAN_ALL);
+  public List<String> genCliOptionsForTasks(final Set<String> tasks) {
+    Set<String> optionsToCheck = PantsUtil.lookupKeys(
+      tasks, PantsConstants.PANTS_MAP_TASK_TO_OPTION_CHECKS);
+    Set<String> checkedTaskOptions = optionsToCheck.stream()
+      .filter(optionKey -> has(optionKey))
+      .collect(Collectors.toSet());
+    Set<String> addedCliOptions = PantsUtil.lookupKeys(
+      checkedTaskOptions, PantsConstants.PANTS_MAP_OPTION_TO_CLI_ARGS);
+    return addedCliOptions.stream().collect(Collectors.toList());
   }
 
   public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {
