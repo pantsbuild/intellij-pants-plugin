@@ -54,15 +54,13 @@ public class PantsCompileActionGroup extends ActionGroup {
 
     List<AnAction> actions = new LinkedList<>();
 
-    Optional<Module> module = Optional.ofNullable(ModuleUtil.findModuleForFile(file, project));
-    if (!module.isPresent()) {
+    Module module = ModuleUtil.findModuleForFile(file, project);
+    if (module == null) {
       return emptyAction;
     }
     actions.add(new PantsLintTargetAction(module));
 
-    List<String> targetAddresses = module
-      .map(PantsUtil::getNonGenTargetAddresses)
-      .orElse(new LinkedList<>());
+    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(module);
     // TODO: signal if no addresses found?
     if (targetAddresses.isEmpty()) {
       return emptyAction;
