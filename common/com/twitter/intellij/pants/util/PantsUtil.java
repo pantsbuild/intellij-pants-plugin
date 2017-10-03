@@ -332,8 +332,8 @@ public class PantsUtil {
       final ProcessOutput processOutput = PantsUtil.getCmdOutput(cmd, null);
       if (processOutput.checkSuccess(LOG)) {
         // output only exists if "list" task succeeds
-        final String listOutput = FileUtil.loadFile(tempFile.getFile());
-        return Arrays.asList(listOutput.split("\n"));
+        final String output = FileUtil.loadFile(tempFile.getFile());
+        return Arrays.asList(output.split("\n"));
       }
       else {
         List<String> errorLogs = Lists.newArrayList(
