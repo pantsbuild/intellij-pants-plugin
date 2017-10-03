@@ -58,7 +58,8 @@ public class PantsCompileActionGroup extends ActionGroup {
     if (module == null) {
       return emptyAction;
     }
-    actions.add(new PantsLintTargetAction(module));
+    Optional<Module> moduleWrapped = Optional.of(module);
+    actions.add(new PantsLintTargetAction(moduleWrapped));
 
     List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(module);
     // TODO: signal if no addresses found?
@@ -67,7 +68,7 @@ public class PantsCompileActionGroup extends ActionGroup {
     }
 
     if (targetAddresses.size() > 1) {
-      actions.add(new PantsCompileAllTargetsInModuleAction(module));
+      actions.add(new PantsCompileAllTargetsInModuleAction(moduleWrapped));
     }
     targetAddresses.forEach(target -> actions.add(new PantsCompileTargetAction(target)));
 
