@@ -81,7 +81,7 @@ public class PantsUtilTest extends OSSPantsIntegrationTest {
   public void testListTargetInvalidBuildFile() {
     String projectDir = getProjectFolder().getPath();
     Path invalidBuildFilePath = Paths.get(
-      projectDir, "..", "invalid-build-file", "BUILD");
+      projectDir, "../../testData/invalid-build-file/BUILD");
     String invalidBuildFileLocation = invalidBuildFilePath.normalize().toString();
     File invalidBuildFile = new File(invalidBuildFileLocation);
     assertTrue(invalidBuildFile.exists() && !invalidBuildFile.isDirectory());
