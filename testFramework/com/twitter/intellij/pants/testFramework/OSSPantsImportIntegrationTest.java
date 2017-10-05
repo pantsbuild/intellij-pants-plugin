@@ -50,7 +50,5 @@ abstract public class OSSPantsImportIntegrationTest extends OSSPantsIntegrationT
                invalidBuildFile.exists());
     assertFalse("invalid BUILD file should not resolve to a directory",
                 invalidBuildFile.isDirectory());
-
-    assertTrue("huh", false);
   }
 }
