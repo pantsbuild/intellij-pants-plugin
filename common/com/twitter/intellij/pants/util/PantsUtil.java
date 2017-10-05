@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
@@ -316,6 +317,9 @@ public class PantsUtil {
   }
 
   public static Collection<String> listAllTargets(@NotNull String projectPath) throws PantsException {
+    if (!PantsUtil.isBUILDFilePath(projectPath)) {
+      return Lists.newArrayList();
+    }
     GeneralCommandLine cmd = PantsUtil.defaultCommandLine(projectPath);
     try (TempFile tempFile = TempFile.create("list", ".out")) {
       cmd.addParameters(
@@ -327,15 +331,31 @@ public class PantsUtil {
       );
       final ProcessOutput processOutput = PantsUtil.getCmdOutput(cmd, null);
       if (processOutput.checkSuccess(LOG)) {
-        String output = FileUtil.loadFile(tempFile.getFile());
+        // output only exists if "list" task succeeds
+        final String output = FileUtil.loadFile(tempFile.getFile());
         return Arrays.asList(output.split("\n"));
       }
       else {
-        throw new PantsException("Failed:" + cmd.getCommandLineString());
+        List<String> errorLogs = Lists.newArrayList(
+          String.format("Could not list targets: Pants exited with status %d",
+                        processOutput.getExitCode()),
+          String.format("argv: '%s'", cmd.getCommandLineString()),
+          "stdout:",
+          processOutput.getStdout(),
+          "stderr:",
+          processOutput.getStderr());
+        final String errorMessage = String.join("\n", errorLogs);
+        LOG.warn(errorMessage);
+        throw new PantsException(errorMessage);
       }
     }
     catch (IOException | ExecutionException e) {
-      throw new PantsException("Failed:" + cmd.getCommandLineString());
+      final String processCreationFailureMessage =
+        String.format("Could not execute command: '%s' due to error: '%s'",
+                      cmd.getCommandLineString(),
+                      e.getMessage());
+      LOG.warn(processCreationFailureMessage, e);
+      throw new PantsException(processCreationFailureMessage);
     }
   }
 

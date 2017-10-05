@@ -3,15 +3,18 @@
 
 package com.twitter.intellij.pants.settings;
 
-
+import com.google.common.collect.Lists;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
+import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.File;
+import java.lang.RuntimeException;
 import java.util.stream.Collectors;
 
-public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
+public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
 
   private ImportFromPantsControl myFromPantsControl;
 
@@ -44,12 +47,20 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
     );
   }
 
+  private void assertNoTargets() {
+    assertEquals("no target specs should be specified",
+                 Lists.newArrayList(),
+                 myFromPantsControl.getProjectSettings().getTargetSpecs());
+    assertTrue("no target should be listed as a check box in the gui",
+               getTargetSpecCheckBoxList().isEmpty());
+  }
+
   public void testDirectoryAsImportProjectPath() {
     myFromPantsControl.onLinkedProjectPathChange(getProjectPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello");
     updateSettingsBasedOnGuiStates();
 
     CheckBoxList<String> checkBoxList = getTargetSpecCheckBoxList();
-    assertFalse("Check box list should be disabled, but it not.", checkBoxList.isEnabled());
+    assertFalse("Check box list should be disabled, but it is not.", checkBoxList.isEnabled());
 
     assertEquals(
       ContainerUtil.newArrayList("examples/src/java/org/pantsbuild/example/hello/::"),
@@ -74,7 +85,7 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
 
     CheckBoxList<String> checkBoxList = getTargetSpecCheckBoxList();
 
-    assertTrue("Check box list should be enabled, but it not.", checkBoxList.isEnabled());
+    assertTrue("Check box list should be enabled, but it is not.", checkBoxList.isEnabled());
 
     // Simulate checking all the boxes.
     for (int i = 0; i < checkBoxList.getItemsCount(); i++) {
@@ -95,23 +106,38 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
     );
   }
 
-
-  public void testNonexistentFileAsImportProjectPath() {
-    myFromPantsControl.onLinkedProjectPathChange(
-      getProjectPath() + File.separator +
-      "some/invalid/path"
-    );
-
+  public void testInvalidImportPath() {
+    myFromPantsControl.onLinkedProjectPathChange(pantsIniFilePath);
+    updateSettingsBasedOnGuiStates();
     assertPantsProjectNotFound();
-  }
+    assertNoTargets();
 
+    myFromPantsControl.onLinkedProjectPathChange(nonexistentFilePath);
+    updateSettingsBasedOnGuiStates();
+    assertPantsProjectNotFound();
+    assertNoTargets();
 
-  /**
-   * The path exists, but is not related to Pants.
-   */
-  public void testNonPantsProjectFileOrDirectoryAsImportProjectPath() {
+    myFromPantsControl.onLinkedProjectPathChange(nonexistentBuildFilePath);
+    updateSettingsBasedOnGuiStates();
+    assertPantsProjectNotFound();
+    assertNoTargets();
+
+    try {
+      // this calls Messages.showErrorDialog(), which throws a very deeply
+      // nested AssertionError when called from inside a test
+      myFromPantsControl.onLinkedProjectPathChange(invalidBuildFilePath);
+      fail(String.format("%s should have been thrown", AssertionError.class));
+    } catch (AssertionError e) {
+      assertContainsSubstring(
+        e.getMessage(),
+        "Could not list targets: Pants exited with status 1");
+      assertNoTargets();
+    }
+
+    // The path exists, but is not related to Pants.
     myFromPantsControl.onLinkedProjectPathChange("/");
-
+    updateSettingsBasedOnGuiStates();
     assertPantsProjectNotFound();
+    assertNoTargets();
   }
 }

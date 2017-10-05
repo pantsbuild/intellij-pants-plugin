@@ -13,6 +13,7 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -30,7 +31,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -118,10 +118,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     if (lastPath.equals(projectPath)) {
       return;
     }
-
     lastPath = projectPath;
     myTargetSpecsBox.clear();
     errors.clear();
+
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     if (file == null || !PantsUtil.isPantsProjectFile(file)) {
       myTargetSpecsBox.setEnabled(true);
@@ -158,23 +158,20 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       ProgressManager.getInstance().run(new Task.Modal(getProject(), PantsBundle.message("pants.getting.target.list"), false) {
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
-          loadTargets(projectPath);
+          try {
+            final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
+            UIUtil.invokeLaterIfNeeded(() -> {
+                targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
+              });
+          } catch (RuntimeException e) {
+            UIUtil.invokeLaterIfNeeded((Runnable) () -> {
+                Messages.showErrorDialog(getProject(), e.getMessage(), "Pants Failure");
+                Messages.createMessageDialogRemover(getProject()).run();
+              });
+          }
         }
       });
     }
-  }
-
-  private void loadTargets(final String projectPath) {
-    if (!PantsUtil.isBUILDFilePath(projectPath)) {
-      return;
-    }
-    final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
-    UIUtil.invokeLaterIfNeeded(
-      () -> {
-        myTargetSpecsBox.clear();
-        targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
-      }
-    );
   }
 
   @Override
