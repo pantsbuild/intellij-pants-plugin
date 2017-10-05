@@ -8,16 +8,13 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsException;
-import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
-public class PantsUtilTest extends OSSPantsIntegrationTest {
+public class PantsUtilTest extends OSSPantsImportIntegrationTest {
 
   public void testIsPantsProjectFile() {
     // Current project path should be under a Pants repo.
@@ -42,56 +39,43 @@ public class PantsUtilTest extends OSSPantsIntegrationTest {
     assertTrue(sdkA.get() == sdkB.get());
   }
 
-  public void testListTargetsExistingNonBuildFile() {
-    File projectDir = getProjectFolder();
-    VirtualFile virtualProjectDir = LocalFileSystem.getInstance().findFileByIoFile(projectDir);
-    Optional<VirtualFile> pantsIniFileResult = PantsUtil.findPantsIniFile(Optional.ofNullable(virtualProjectDir));
-    assertTrue(pantsIniFileResult.isPresent());
-    String pantsIniFilePath = pantsIniFileResult.get().getPath();
+  public void testisBUILDFilePath() {
     File pantsIniFile = new File(pantsIniFilePath);
-    assertTrue(pantsIniFile.exists() && !pantsIniFile.isDirectory());
-    assertTrue(!PantsUtil.isBUILDFilePath(pantsIniFilePath));
-    assertEquals(PantsUtil.listAllTargets(pantsIniFilePath),
-                 Lists.newArrayList());
-  }
+    assertFalse("pants.ini file should not be interpreted as a BUILD file",
+                PantsUtil.isBUILDFilePath(pantsIniFilePath));
 
-  public void testListTargetsNonexistentNonBuildFile() {
-    String nonexistentFilePath = "not/a/build/file/path";
     File nonexistentFile = new File(nonexistentFilePath);
-    assertTrue(!nonexistentFile.exists());
-    assertTrue(!PantsUtil.isBUILDFilePath(nonexistentFilePath));
-    assertEquals(PantsUtil.listAllTargets(nonexistentFilePath),
-                 Lists.newArrayList());
+    assertFalse("made up file path should not be interpreted as a BUILD file",
+                PantsUtil.isBUILDFilePath(nonexistentFilePath));
+
+    File nonexistentBuildFile = new File(nonexistentBuildFilePath);
+    assertTrue("made up BUILD file path should be interpreted as a BUILD file path",
+               PantsUtil.isBUILDFilePath(nonexistentBuildFilePath));
+
+    File invalidBuildFile = new File(invalidBuildFilePath);
+    assertTrue("path to invalid, existing BUILD file should be interpreted as a BUILD file path",
+               PantsUtil.isBUILDFilePath(invalidBuildFilePath));
   }
 
-  public void testListTargetsNonexistentBuildFile() {
-    String nonexistentBuildFilePath = "not/a/real/BUILD";
-    File nonexistentBuildFile = new File(nonexistentBuildFilePath);
-    assertTrue(!nonexistentBuildFile.exists());
-    assertTrue(PantsUtil.isBUILDFilePath(nonexistentBuildFilePath));
-    boolean caught = false;
+  public void testListAllTargets() {
+    assertEquals("pants.ini file should have no targets",
+                 PantsUtil.listAllTargets(pantsIniFilePath),
+                 Lists.newArrayList());
+
+    assertEquals("made up file path should have no targets",
+                 PantsUtil.listAllTargets(nonexistentFilePath),
+                 Lists.newArrayList());
+
     try {
       PantsUtil.listAllTargets(nonexistentBuildFilePath);
-    } catch (PantsException e) {
-      caught = true;
+      fail(String.format("%s should have been thrown", PantsException.class));
+    } catch (PantsException ignored) {
     }
-    assertTrue("PantsException not thrown for nonexistent BUILD file", caught);
-  }
 
-  public void testListTargetInvalidBuildFile() {
-    String projectDir = getProjectFolder().getPath();
-    Path invalidBuildFilePath = Paths.get(
-      projectDir, "../../testData/invalid-build-file/BUILD");
-    String invalidBuildFileLocation = invalidBuildFilePath.normalize().toString();
-    File invalidBuildFile = new File(invalidBuildFileLocation);
-    assertTrue(invalidBuildFile.exists() && !invalidBuildFile.isDirectory());
-    assertTrue(PantsUtil.isBUILDFilePath(invalidBuildFileLocation));
-    boolean caught = false;
     try {
-      PantsUtil.listAllTargets(invalidBuildFileLocation);
-    } catch (PantsException e) {
-      caught = true;
+      PantsUtil.listAllTargets(invalidBuildFilePath);
+      fail(String.format("%s should have been thrown"));
+    } catch (PantsException ignored) {
     }
-    assertTrue("PantsException not thrown for invalid BUILD file", caught);
   }
 }

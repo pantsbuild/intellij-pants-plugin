@@ -119,10 +119,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     if (lastPath.equals(projectPath)) {
       return;
     }
-
     lastPath = projectPath;
     myTargetSpecsBox.clear();
     errors.clear();
+
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     if (file == null || !PantsUtil.isPantsProjectFile(file)) {
       myTargetSpecsBox.setEnabled(true);
@@ -162,10 +162,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
           try {
             final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
             UIUtil.invokeLaterIfNeeded(() -> {
-                myTargetSpecsBox.clear();
                 targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
               });
-          } catch (PantsException e) {
+          } catch (RuntimeException e) {
             UIUtil.invokeLaterIfNeeded((Runnable) () -> {
                 Messages.showErrorDialog(getProject(), e.getMessage(), "Pants Failure");
                 Messages.createMessageDialogRemover(getProject()).run();

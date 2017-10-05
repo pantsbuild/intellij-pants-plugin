@@ -7,15 +7,14 @@ package com.twitter.intellij.pants.settings;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
-import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.lang.RuntimeException;
 import java.util.stream.Collectors;
 
-public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
+public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
 
   private ImportFromPantsControl myFromPantsControl;
 
@@ -99,39 +98,24 @@ public class PantsProjectSettingsTest extends OSSPantsIntegrationTest {
     );
   }
 
-  public void testInvalidBuildFileAsImportProjectPath() {
-    final Path filePath = Paths.get(
-        getProjectPath(), "..", "invalid-build-file", "BUILD");
-    final String badBuildFile = filePath.normalize().toString();
+  public void testInvalidImportPath() {
+    myFromPantsControl.onLinkedProjectPathChange(pantsIniFilePath);
+    assertPantsProjectNotFound();
 
-    boolean caught = false;
+    myFromPantsControl.onLinkedProjectPathChange(nonexistentFilePath);
+    assertPantsProjectNotFound();
+
+    myFromPantsControl.onLinkedProjectPathChange(nonexistentBuildFilePath);
+    assertPantsProjectNotFound();
+
     try {
-      PantsUtil.listAllTargets(badBuildFile);
-    } catch (PantsException e) {
-      caught = true;
+      myFromPantsControl.onLinkedProjectPathChange(invalidBuildFilePath);
+      fail(String.format("%s should have been thrown", AssertionError.class));
+    } catch (AssertionError ignored) {
     }
-    assertTrue("PantsException not thrown on invalid BUILD file", caught);
 
-    myFromPantsControl.onLinkedProjectPathChange(badBuildFile);
-    assertPantsProjectNotFound();
-  }
-
-  public void testNonexistentFileAsImportProjectPath() {
-    myFromPantsControl.onLinkedProjectPathChange(
-      getProjectPath() + File.separator +
-      "some/invalid/path"
-    );
-
-    assertPantsProjectNotFound();
-  }
-
-
-  /**
-   * The path exists, but is not related to Pants.
-   */
-  public void testNonPantsProjectFileOrDirectoryAsImportProjectPath() {
+    // The path exists, but is not related to Pants.
     myFromPantsControl.onLinkedProjectPathChange("/");
-
     assertPantsProjectNotFound();
   }
 }

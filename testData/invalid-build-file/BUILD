@@ -1,5 +1,5 @@
 jar_library(
-    name='commons-io',
+    name='invalid-build-file',
     jars=[
         jar(org='commons-io', name='commons-io', rev='2.4'),
     ]
