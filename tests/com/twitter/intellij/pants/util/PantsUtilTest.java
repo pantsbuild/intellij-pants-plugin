@@ -58,7 +58,7 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
                  PantsUtil.listAllTargets(pantsIniFilePath),
                  Lists.newArrayList());
 
-    assertEquals("made up file path should have no targets",
+    assertEquals("made up non-BUILD file path should have no targets",
                  PantsUtil.listAllTargets(nonexistentFilePath),
                  Lists.newArrayList());
 
