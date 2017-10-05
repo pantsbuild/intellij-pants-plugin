@@ -26,7 +26,6 @@ import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.StatusText;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 

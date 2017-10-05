@@ -40,19 +40,15 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
   }
 
   public void testisBUILDFilePath() {
-    File pantsIniFile = new File(pantsIniFilePath);
     assertFalse("pants.ini file should not be interpreted as a BUILD file",
                 PantsUtil.isBUILDFilePath(pantsIniFilePath));
 
-    File nonexistentFile = new File(nonexistentFilePath);
     assertFalse("made up file path should not be interpreted as a BUILD file",
                 PantsUtil.isBUILDFilePath(nonexistentFilePath));
 
-    File nonexistentBuildFile = new File(nonexistentBuildFilePath);
     assertTrue("made up BUILD file path should be interpreted as a BUILD file path",
                PantsUtil.isBUILDFilePath(nonexistentBuildFilePath));
 
-    File invalidBuildFile = new File(invalidBuildFilePath);
     assertTrue("path to invalid, existing BUILD file should be interpreted as a BUILD file path",
                PantsUtil.isBUILDFilePath(invalidBuildFilePath));
   }

@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.testFramework;
 
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.testFramework.PantsTestUtils;
 import com.twitter.intellij.pants.util.PantsUtil;
 
@@ -27,32 +26,31 @@ abstract public class OSSPantsImportIntegrationTest extends OSSPantsIntegrationT
 
     VirtualFile virtualProjectDir = LocalFileSystem.getInstance().findFileByIoFile(getProjectFolder());
     this.pantsIniFilePath = PantsUtil.findPantsIniFile(Optional.ofNullable(virtualProjectDir)).get().getPath();
-
-    this.nonexistentFilePath = "not/a/build-file/path";
-    this.nonexistentBuildFilePath = "not/a/real/BUILD";
-
-    Path invalidBuildFileLocation = Paths.get(
-      PantsTestUtils.BASE_TEST_DATA_PATH, "invalid-build-file/BUILD");
-    this.invalidBuildFilePath = invalidBuildFileLocation.normalize().toString();
-  }
-
-  public void verifyTestData() {
     File pantsIniFile = new File(pantsIniFilePath);
     assertTrue("pants.ini file should exist",
                pantsIniFile.exists());
     assertFalse("pants.ini file path should not resolve to a directory",
                 pantsIniFile.isDirectory());
 
+    this.nonexistentFilePath = "not/a/build-file/path";
     File nonexistentFile = new File(nonexistentFilePath);
-    assertFalse("made up file path should not exist", nonexistentFile.exists());
+    assertFalse("made up file path should not exist",
+                nonexistentFile.exists());
 
+    this.nonexistentBuildFilePath = "not/a/real/BUILD";
     File nonexistentBuildFile = new File(nonexistentBuildFilePath);
     assertFalse("made up BUILD file path should not exist",
                 nonexistentBuildFile.exists());
 
+    Path invalidBuildFileLocation = Paths.get(
+      PantsTestUtils.BASE_TEST_DATA_PATH, "invalid-build-file/BUILD");
+    this.invalidBuildFilePath = invalidBuildFileLocation.normalize().toString();
     File invalidBuildFile = new File(invalidBuildFilePath);
-    assertTrue("invalid BUILD file should exist", invalidBuildFile.exists());
+    assertTrue("invalid BUILD file should exist",
+               invalidBuildFile.exists());
     assertFalse("invalid BUILD file should not resolve to a directory",
                 invalidBuildFile.isDirectory());
+
+    assertTrue("huh", false);
   }
 }

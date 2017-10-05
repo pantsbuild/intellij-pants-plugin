@@ -3,7 +3,7 @@
 
 package com.twitter.intellij.pants.settings;
 
-
+import com.google.common.collect.Lists;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
@@ -45,6 +45,14 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
       ((PantsProjectSettingsControl) myFromPantsControl.getProjectSettingsControl()).errors.stream().collect(Collectors.toList()),
       "Pants project not found given project path"
     );
+  }
+
+  private void assertNoTargets() {
+    assertEquals("no target specs should be specified",
+                 Lists.newArrayList(),
+                 myFromPantsControl.getProjectSettings().getTargetSpecs());
+    assertTrue("no target should be listed as a check box in the gui",
+               getTargetSpecCheckBoxList().isEmpty());
   }
 
   public void testDirectoryAsImportProjectPath() {
@@ -100,22 +108,35 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
 
   public void testInvalidImportPath() {
     myFromPantsControl.onLinkedProjectPathChange(pantsIniFilePath);
+    updateSettingsBasedOnGuiStates();
     assertPantsProjectNotFound();
+    assertNoTargets();
 
     myFromPantsControl.onLinkedProjectPathChange(nonexistentFilePath);
+    updateSettingsBasedOnGuiStates();
     assertPantsProjectNotFound();
+    assertNoTargets();
 
     myFromPantsControl.onLinkedProjectPathChange(nonexistentBuildFilePath);
+    updateSettingsBasedOnGuiStates();
     assertPantsProjectNotFound();
+    assertNoTargets();
 
     try {
+      // this calls Messages.showErrorDialog(), which throws a very deeply
+      // nested AssertionError when called from inside a test
       myFromPantsControl.onLinkedProjectPathChange(invalidBuildFilePath);
       fail(String.format("%s should have been thrown", AssertionError.class));
-    } catch (AssertionError ignored) {
+    } catch (AssertionError e) {
+      System.out.println(String.format("AssertionError e.getMessage().length() == '%s'",
+                                       e.getMessage().length()));
+      assertNoTargets();
     }
 
     // The path exists, but is not related to Pants.
     myFromPantsControl.onLinkedProjectPathChange("/");
+    updateSettingsBasedOnGuiStates();
     assertPantsProjectNotFound();
+    assertNoTargets();
   }
 }
