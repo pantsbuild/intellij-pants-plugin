@@ -70,7 +70,7 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
 
     try {
       PantsUtil.listAllTargets(invalidBuildFilePath);
-      fail(String.format("%s should have been thrown"));
+      fail(String.format("%s should have been thrown", PantsException.class));
     } catch (PantsException ignored) {
     }
   }

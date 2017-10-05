@@ -129,8 +129,8 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
       fail(String.format("%s should have been thrown", AssertionError.class));
     } catch (AssertionError e) {
       assertContainsSubstring(
-        "Could not list targets: Pants exited with status 1",
-        e.getMessage());
+        e.getMessage(),
+        "Could not list targets: Pants exited with status 1");
       assertNoTargets();
     }
 
