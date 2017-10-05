@@ -128,8 +128,9 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
       myFromPantsControl.onLinkedProjectPathChange(invalidBuildFilePath);
       fail(String.format("%s should have been thrown", AssertionError.class));
     } catch (AssertionError e) {
-      System.out.println(String.format("AssertionError e.getMessage().length() == '%s'",
-                                       e.getMessage().length()));
+      assertContainsSubstring(
+        "Could not list targets: Pants exited with status 1",
+        e.getMessage());
       assertNoTargets();
     }
 
