@@ -50,8 +50,7 @@ public class PantsLintTargetAction extends PantsTaskActionBase {
   public PantsExecuteTaskResult execute(@NotNull PantsMakeBeforeRun runner,
                                         @NotNull Project project,
                                         @NotNull Set<String> targetAddresses) {
-    List<String> args = Lists.newArrayList();
-    args.add("lint");
+    List<String> args = Lists.newArrayList("lint");
     args.addAll(targetAddresses);
     return runner.executeTask(project, args);
   }
