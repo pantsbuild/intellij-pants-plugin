@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
@@ -62,4 +63,13 @@ public class PantsConstants {
   public static final String EXTERNAL_BUILDER_ERROR = "This is a Pants project. Please use PantsCompile under `Edit Configuration`";
 
   public static final String NOOP_COMPILE = "No changes in projects. Noop compile.";
+
+  public static final String PANTS_TASK_CLEAN_ALL = "clean-all";
+  public static final String PANTS_TASK_COMPILE = "compile";
+  public static final String PANTS_TASK_EXPORT_CLASSPATH = "export-classpath";
+
+  public static final ImmutableSet<String> SUPPORTED_TASKS = ImmutableSet.of(
+    PANTS_TASK_CLEAN_ALL,
+    PANTS_TASK_COMPILE,
+    PANTS_TASK_EXPORT_CLASSPATH);
 }
