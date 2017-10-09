@@ -230,7 +230,6 @@ public class PantsUtil {
     ));
   }
 
-  // TODO: when is an Editor not an EditorImpl? why is this functionality not exposed in the intellij openapi Editor interface?
   public static Optional<VirtualFile> getFileInSelectedEditor(@Nullable Project project) {
     Optional<Editor> editor = Optional.ofNullable(project)
       .flatMap(p -> Optional.ofNullable(FileEditorManager.getInstance(p).getSelectedTextEditor()));

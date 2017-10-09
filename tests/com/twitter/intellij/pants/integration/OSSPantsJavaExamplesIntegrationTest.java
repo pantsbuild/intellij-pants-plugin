@@ -10,7 +10,6 @@ import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
-import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsConstants;

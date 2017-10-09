@@ -3,8 +3,6 @@
 
 package com.twitter.intellij.pants.model;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessOutput;
@@ -52,7 +50,7 @@ public class PantsOptions {
     return PantsUtil.findPantsExecutable(myProject).map(file -> getPantsOptions(file.getPath()));
   }
 
-  public List<String> genCliOptionsForTasks(final Set<String> tasks) {
+  public Set<String> genCliOptionsForTasks(final Set<String> tasks) {
     Set<String> optionsToCheck = PantsUtil.lookupKeys(
       tasks, PantsConstants.PANTS_MAP_TASK_TO_OPTION_CHECKS);
     Set<String> checkedTaskOptions = optionsToCheck.stream()
@@ -60,7 +58,7 @@ public class PantsOptions {
       .collect(Collectors.toSet());
     Set<String> addedCliOptions = PantsUtil.lookupKeys(
       checkedTaskOptions, PantsConstants.PANTS_MAP_OPTION_TO_CLI_ARGS);
-    return addedCliOptions.stream().collect(Collectors.toList());
+    return addedCliOptions;
   }
 
   public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {

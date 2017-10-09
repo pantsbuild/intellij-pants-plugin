@@ -3,10 +3,9 @@
 
 package com.twitter.intellij.pants.compiler.actions;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
@@ -50,8 +49,7 @@ public class PantsLintTargetAction extends PantsTaskActionBase {
   public PantsExecuteTaskResult execute(@NotNull PantsMakeBeforeRun runner,
                                         @NotNull Project project,
                                         @NotNull Set<String> targetAddresses) {
-    List<String> args = Lists.newArrayList("lint");
-    args.addAll(targetAddresses);
-    return runner.executeTask(project, args);
+    return runner.executeTask(
+      project, Sets.newHashSet("lint"), targetAddresses);
   }
 }

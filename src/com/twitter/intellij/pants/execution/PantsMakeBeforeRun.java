@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.execution;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.CommonProgramRunConfigurationParameters;
@@ -53,7 +54,6 @@ import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfigurat
 
 import javax.swing.Icon;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -213,7 +213,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    * @param targetAddressesToCompile: set of target addresses to run tasks on
    * @param tasks:                    pants tasks to perform (e.g. "compile")
    * @return whether the execution is successful, additional message along with the execution
-   * in a Pair object.
+   * in a PantsExecuteTaskResult object.
    */
   @NotNull
   public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject, @NotNull Set<String> targetAddressesToCompile, @NotNull Set<String> tasks) {
@@ -227,39 +227,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       return new PantsExecuteTaskResult(true, Optional.of(PantsConstants.NOOP_COMPILE));
     }
 
-    /* Global options section. */
-    showPantsMakeTaskMessage("Checking Pants options...\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
-    Optional<PantsOptions> projectOptsResult = PantsOptions.getPantsOptions(currentProject);
-    if (!projectOptsResult.isPresent()) {
-      showPantsMakeTaskMessage("Pants Options not found.\n", ConsoleViewContentType.ERROR_OUTPUT, currentProject);
-      return new PantsExecuteTaskResult(false, Optional.empty());
-    }
-    PantsOptions pantsOptions = projectOptsResult.get();
-
-    List<String> pantsCmdArgs = pantsOptions.genCliOptionsForTasks(tasks);
-    PantsSettings settings = PantsSettings.getInstance(currentProject);
-    if (settings.isUseIdeaProjectJdk()) {
-      try {
-        pantsCmdArgs.add(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
-      }
-      catch (Exception e) {
-        showPantsMakeTaskMessage(e.getMessage(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
-        return new PantsExecuteTaskResult(false, Optional.empty());
-      }
-    }
-
-    /* Goals and targets section. */
-    pantsCmdArgs.addAll(tasks);
-
-    if (targetAddressesToCompile.isEmpty()) {
-      showPantsMakeTaskMessage("No target found in configuration.\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
-      return new PantsExecuteTaskResult(true, Optional.empty());
-    }
-    pantsCmdArgs.addAll(targetAddressesToCompile);
-
-    PantsExecuteTaskResult result = executeTask(currentProject, pantsCmdArgs);
+    PantsExecuteTaskResult result = executeTask(currentProject, targetAddressesToCompile, tasks);
 
     if (result.succeeded) {
+      // FIXME: only do this if the manifest jar task was used and pants
+      // supports manifest jar in options and pants invoc succeeded!
       FileChangeTracker.addManifestJarIntoSnapshot(currentProject);
       notify(title, "Pants compile succeeded.", NotificationType.INFORMATION);
     } else {
@@ -275,13 +247,16 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   /**
+   * Execute a list of tasks on a set of target addresses.
+   *
    * @param currentProject:           current project
-   * @param commandArgs:              tasks and target addresses sent to the pants command line
+   * @param targetAddresses:          set of target addresses to run tasks on
+   * @param tasks:                    pants tasks to perform (e.g. "compile")
    * @return whether the execution is successful, additional message along with the execution
-   * in a Pair object.
+   * in a PantsExecuteTaskResult object.
    */
   @NotNull
-  public PantsExecuteTaskResult executeTask(@NotNull Project currentProject, List<String> commandArgs) {
+  public PantsExecuteTaskResult executeTask(@NotNull Project currentProject, @NotNull Set<String> targetAddresses, @NotNull Set<String> tasks) {
     prepareIDE(currentProject);
 
     Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(currentProject);
@@ -295,8 +270,38 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable.get().getPath());
 
-    commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
-    commandLine.addParameters(commandArgs);
+    /* Global options section. */
+    showPantsMakeTaskMessage("Checking Pants options...\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
+    Optional<PantsOptions> projectOptsResult = PantsOptions.getPantsOptions(currentProject);
+    if (!projectOptsResult.isPresent()) {
+      showPantsMakeTaskMessage("Pants Options not found.\n", ConsoleViewContentType.ERROR_OUTPUT, currentProject);
+      return new PantsExecuteTaskResult(false, Optional.empty());
+    }
+    PantsOptions pantsOptions = projectOptsResult.get();
+
+    Set<String> cliOptions = pantsOptions.genCliOptionsForTasks(tasks);
+    cliOptions.add(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
+    commandLine.addParameters(Lists.newArrayList(cliOptions));
+
+    PantsSettings settings = PantsSettings.getInstance(currentProject);
+    if (settings.isUseIdeaProjectJdk()) {
+      try {
+        commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
+      }
+      catch (Exception e) {
+        showPantsMakeTaskMessage(e.getMessage(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
+        return new PantsExecuteTaskResult(false, Optional.empty());
+      }
+    }
+
+    /* Goals and targets section. */
+    commandLine.addParameters(Lists.newArrayList(tasks));
+
+    if (targetAddresses.isEmpty()) {
+      showPantsMakeTaskMessage("No target found in configuration.\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
+      return new PantsExecuteTaskResult(true, Optional.empty());
+    }
+    commandLine.addParameters(Lists.newArrayList(targetAddresses));
 
     final Process process;
     try {

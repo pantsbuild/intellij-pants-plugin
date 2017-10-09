@@ -4,14 +4,11 @@
 package com.twitter.intellij.pants.compiler.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
