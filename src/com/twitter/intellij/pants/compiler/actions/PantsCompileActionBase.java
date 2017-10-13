@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.compiler.actions;
 
+import com.google.common.collect.Sets;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -63,6 +64,7 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
 
     Set<String> fullTargets = getTargets(e, project).collect(Collectors.toSet());
     PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
-    ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeCompileTask(project, fullTargets));
+    Set<String> tasks = doCleanAll() ? Sets.newHashSet("clean-all", "compile", "export-classpath") : Sets.newHashSet("compile", "export-classpath");
+    ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeCompileTask(project, tasks, fullTargets));
   }
 }

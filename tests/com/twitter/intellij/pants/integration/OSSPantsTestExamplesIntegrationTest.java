@@ -25,7 +25,7 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     PantsExecuteTaskResult result = pantsCompileModule("intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects");
     assertPantsCompileExecutesAndSucceeds(result);
     assertTrue(result.output.isPresent());
-    assertTrue(result.output.get().contains("compile export-classpath intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
+    assertTrue(result.output.get().contains("compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
     assertSuccessfulTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
     final OSProcessHandler processHandler = runJUnitTest(
