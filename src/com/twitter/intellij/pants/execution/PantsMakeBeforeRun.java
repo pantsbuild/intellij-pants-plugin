@@ -175,19 +175,19 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     Project currentProject = configuration.getProject();
     prepareIDE(currentProject);
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
-    PantsExecuteTaskResult result = executeCompileTask(currentProject, Sets.newHashSet("compile", "export-classpath"), targetAddressesToCompile);
+    PantsExecuteTaskResult result = executeCompileTask(currentProject, targetAddressesToCompile, false);
     return result.succeeded;
   }
 
   public PantsExecuteTaskResult doPantsCompile(@NotNull Project project) {
-    return executeCompileTask(project, Sets.newHashSet("compile"), getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()));
+    return executeCompileTask(project, getTargetAddressesToCompile(ModuleManager.getInstance(project).getModules()), false);
   }
 
   public PantsExecuteTaskResult doPantsCompile(@NotNull Module[] modules) {
     if (modules.length == 0) {
       return PantsExecuteTaskResult.emptyFailure();
     }
-    return executeCompileTask(modules[0].getProject(), Sets.newHashSet("compile"), getTargetAddressesToCompile(modules));
+    return executeCompileTask(modules[0].getProject(), getTargetAddressesToCompile(modules), false);
   }
 
   /**
@@ -200,7 +200,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    */
   public PantsExecuteTaskResult invokePants(@NotNull Project currentProject,
                                             @NotNull Set<String> targetAddresses,
-                                            @NotNull Set<String> tasks,
+                                            @NotNull List<String> tasks,
                                             @NotNull String opTitle) {
     // TODO: assert that opTitle is one word?
     prepareIDE(currentProject);
@@ -317,19 +317,24 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   /**
    * @param currentProject:           current project
-   * @param compileTasks:             set of tasks given to pants executable (e.g. "compile")
    * @param targetAddressesToCompile: set of target addresses given to pants executable (e.g. "::")
+   * @param useCleanAll:              whether to run "clean-all" before the compilation
    * @return the result of invoking pants with the "compile" task on the given targets.
    */
   public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject,
-                                                   @NotNull Set<String> compileTasks,
-                                                   @NotNull Set<String> targetAddressesToCompile) {
+                                                   @NotNull Set<String> targetAddressesToCompile,
+                                                   boolean useCleanAll) {
     // If project has not changed since last Compile, return immediately.
     if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddressesToCompile)) {
       PantsExternalMetricsListenerManager.getInstance().logIsPantsNoopCompile(true);
       notify("Compile message", "Already up to date.", NotificationType.INFORMATION);
       return new PantsExecuteTaskResult(true, Optional.of(PantsConstants.NOOP_COMPILE));
     }
+    List<String> compileTasks = Lists.newArrayList();
+    if (useCleanAll) {
+      compileTasks.add("clean-all");
+    }
+    compileTasks.addAll(Lists.newArrayList("export-classpath", "compile"));
     return invokePants(currentProject, targetAddressesToCompile, compileTasks, "Compile");
   }
 

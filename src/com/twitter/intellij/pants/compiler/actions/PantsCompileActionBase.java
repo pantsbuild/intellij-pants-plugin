@@ -64,7 +64,6 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
 
     Set<String> fullTargets = getTargets(e, project).collect(Collectors.toSet());
     PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
-    Set<String> tasks = doCleanAll() ? Sets.newHashSet("clean-all", "compile", "export-classpath") : Sets.newHashSet("compile", "export-classpath");
-    ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeCompileTask(project, tasks, fullTargets));
+    ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeCompileTask(project, fullTargets, doCleanAll()));
   }
 }
