@@ -245,16 +245,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     /* Global options section. */
     commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
 
-    if (tasks.contains(PantsConstants.PANTS_TASK_COMPILE)) {
-      // FIXME: what if tasks are ["compile", "lint"]? do we still return?
-      // TODO: should we automatically add "export-classpath" to tasks? (yes?)
-      // If project has not changed since last Compile, return immediately.
-      if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddresses)) {
-        PantsExternalMetricsListenerManager.getInstance().logIsPantsNoopCompile(true);
-        notify("Compile message", "Already up to date.", NotificationType.INFORMATION);
-        return new PantsExecuteTaskResult(true, Optional.of(PantsConstants.NOOP_COMPILE));
-      }
-    }
     if (tasks.contains(PantsConstants.PANTS_TASK_CLEAN_ALL) && pantsOptions.supportsAsyncCleanAll()) {
       commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_ASYNC_CLEAN_ALL);
     }
@@ -332,6 +322,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    */
   public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject,
                                                    @NotNull Set<String> targetAddressesToCompile) {
+    // If project has not changed since last Compile, return immediately.
+    if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddressesToCompile)) {
+      PantsExternalMetricsListenerManager.getInstance().logIsPantsNoopCompile(true);
+      notify("Compile message", "Already up to date.", NotificationType.INFORMATION);
+      return new PantsExecuteTaskResult(true, Optional.of(PantsConstants.NOOP_COMPILE));
+    }
     Set<String> compileTasks = Sets.newHashSet("compile", "export-classpath");
     return invokePants(currentProject, targetAddressesToCompile, compileTasks, "Compile");
   }
