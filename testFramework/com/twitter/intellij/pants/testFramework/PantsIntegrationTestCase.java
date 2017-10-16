@@ -276,11 +276,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     if (!pantsOptions.isPresent()) {
       return Optional.empty();
     }
-    if (pantsOptions.get().has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
-      Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
-      if (manifestJar.isPresent()) {
-        return manifestJar;
-      }
+    Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
+    if (manifestJar.isPresent()) {
+      return manifestJar;
     }
     return Optional.empty();
   }
