@@ -257,7 +257,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
 
     /* Goals and targets section. */
-    commandLine.addParameters(Lists.newArrayList(tasks));
+    commandLine.addParameters(tasks);
     commandLine.addParameters(Lists.newArrayList(targetAddresses));
 
     /* Invoke the Pants subprocess. */
