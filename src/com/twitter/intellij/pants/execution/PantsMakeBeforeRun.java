@@ -202,18 +202,11 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
                                             @NotNull Set<String> targetAddresses,
                                             @NotNull List<String> tasks,
                                             @NotNull String opTitle) {
-    // TODO: assert that opTitle is one word?
     prepareIDE(currentProject);
 
     List<String> unrecognizedTasks = tasks.stream()
       .filter(task -> !PantsConstants.SUPPORTED_TASKS.contains(task))
       .collect(Collectors.toList());
-    if (!unrecognizedTasks.isEmpty()) {
-      String unrecognizedMessage = String.format("Unrecognized tasks specified in Pants invocation: [%s].\n",
-                                                 String.join(", ", unrecognizedTasks));
-      showPantsMakeTaskMessage(unrecognizedMessage, ConsoleViewContentType.ERROR_OUTPUT, currentProject);
-      return PantsExecuteTaskResult.emptyFailure();
-    }
     if (targetAddresses.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
       return new PantsExecuteTaskResult(true, Optional.empty());
@@ -295,12 +288,13 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     final boolean success = process.exitValue() == 0;
     if (tasks.contains(PantsConstants.PANTS_TASK_COMPILE)) {
       if (success) {
-        // FIXME: is manifest jar always created? what is that? IS it always, if there's a compile?
+        // manifest jar is always created if the run succeeds
         FileChangeTracker.addManifestJarIntoSnapshot(currentProject);
       } else {
         // Mark project dirty if compile failed.
         FileChangeTracker.markDirty(currentProject);
       }
+
       // Sync files as generated sources may have changed after Pants compile.
       PantsUtil.synchronizeFiles();
     }
