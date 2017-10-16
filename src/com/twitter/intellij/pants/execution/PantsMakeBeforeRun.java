@@ -241,7 +241,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     if (tasks.contains(PantsConstants.PANTS_TASK_CLEAN_ALL) && pantsOptions.supportsAsyncCleanAll()) {
       commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_ASYNC_CLEAN_ALL);
     }
-    if (tasks.contains(PantsConstants.PANTS_TASK_EXPORT_CLASSPATH) && pantsOptions.supportsManifestJar()) {
+    if (tasks.contains(PantsConstants.PANTS_TASK_EXPORT_CLASSPATH)) {
       commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
     }
 

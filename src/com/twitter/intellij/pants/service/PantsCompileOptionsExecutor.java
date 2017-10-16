@@ -169,7 +169,7 @@ public class PantsCompileOptionsExecutor {
   ) throws IOException, ExecutionException {
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
     final GeneralCommandLine command = getCommand(outputFile, statusConsumer);
-    statusConsumer.consume("Exporting Pants project into IDEA format...");
+    statusConsumer.consume("Resolving dependencies...");
     PantsMetrics.markExportStart();
     final ProcessOutput processOutput = getProcessOutput(command);
     PantsMetrics.markExportEnd();

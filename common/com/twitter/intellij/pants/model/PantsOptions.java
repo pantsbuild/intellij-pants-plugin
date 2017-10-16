@@ -47,10 +47,6 @@ public class PantsOptions {
     return PantsUtil.findPantsExecutable(myProject).map(file -> getPantsOptions(file.getPath()));
   }
 
-  public boolean supportsManifestJar() {
-    return has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR);
-  }
-
   public boolean supportsAsyncCleanAll() {
     return has(PantsConstants.PANTS_OPTION_ASYNC_CLEAN_ALL);
   }
