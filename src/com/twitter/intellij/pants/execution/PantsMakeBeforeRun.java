@@ -173,7 +173,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     ExternalSystemBeforeRunTask beforeRunTask
   ) {
     Project currentProject = configuration.getProject();
-    prepareIDE(currentProject);
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
     PantsExecuteTaskResult result = executeCompileTask(currentProject, targetAddressesToCompile, false);
     return result.succeeded;
@@ -204,9 +203,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
                                             @NotNull String opTitle) {
     prepareIDE(currentProject);
 
-    List<String> unrecognizedTasks = tasks.stream()
-      .filter(task -> !PantsConstants.SUPPORTED_TASKS.contains(task))
-      .collect(Collectors.toList());
     if (targetAddresses.isEmpty()) {
       showPantsMakeTaskMessage("No target found in configuration.\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
       return new PantsExecuteTaskResult(true, Optional.empty());
