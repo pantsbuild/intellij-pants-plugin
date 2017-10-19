@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.compiler.actions;
 
+import com.google.common.collect.Sets;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -46,11 +47,8 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
 
     Project project = e.getProject();
 
-    if (project != null) {
-      Set<String> fullTargets = getTargets(e, project).collect(Collectors.toSet());
-      PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
-      ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeTask(project, fullTargets, doCleanAll()));
-    } else {
+    if (project == null) {
+      // TODO: signal on null project?
       Notification notification = new Notification(
         PantsConstants.PANTS,
         PantsIcons.Icon,
@@ -61,6 +59,11 @@ public abstract class PantsCompileActionBase extends AnAction implements DumbAwa
         null
       );
       Notifications.Bus.notify(notification);
+      return;
     }
+
+    Set<String> fullTargets = getTargets(e, project).collect(Collectors.toSet());
+    PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(project, PantsMakeBeforeRun.ID);
+    ApplicationManager.getApplication().executeOnPooledThread(() -> runner.executeCompileTask(project, fullTargets, doCleanAll()));
   }
 }

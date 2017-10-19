@@ -44,7 +44,6 @@ import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -60,6 +59,7 @@ import com.intellij.testFramework.CompilerTester;
 import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -276,11 +276,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     if (!pantsOptions.isPresent()) {
       return Optional.empty();
     }
-    if (pantsOptions.get().has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
-      Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
-      if (manifestJar.isPresent()) {
-        return manifestJar;
-      }
+    Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
+    if (manifestJar.isPresent()) {
+      return manifestJar;
     }
     return Optional.empty();
   }
@@ -557,32 +555,32 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
-  protected Pair<Boolean, Optional<String>> pantsCompileProject() {
+  protected PantsExecuteTaskResult pantsCompileProject() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    return runner.executeTask(myProject);
+    return runner.doPantsCompile(myProject);
   }
 
-  protected void assertPantsCompileExecutesAndSucceeds(final Pair<Boolean, Optional<String>> compileResult) throws Exception {
-    assertTrue("Compile failed", compileResult.getFirst());
-    if (compileResult.getSecond().isPresent()) {
-      assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.getSecond().get()));
+  protected void assertPantsCompileExecutesAndSucceeds(final PantsExecuteTaskResult compileResult) throws Exception {
+    assertTrue("Compile failed", compileResult.succeeded);
+    if (compileResult.output.isPresent()) {
+      assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.output.get()));
     }
     assertManifestJarExists();
   }
 
-  protected void assertPantsCompileNoop(final Pair<Boolean, Optional<String>> compileResult) throws Exception {
-    assertTrue("Compile failed.", compileResult.getFirst());
-    assertTrue("Compile message not found.", compileResult.getSecond().isPresent());
-    assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.getSecond().get());
+  protected void assertPantsCompileNoop(final PantsExecuteTaskResult compileResult) throws Exception {
+    assertTrue("Compile failed.", compileResult.succeeded);
+    assertTrue("Compile message not found.", compileResult.output.isPresent());
+    assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.output.get());
     assertManifestJarExists();
   }
 
-  protected void assertPantsCompileFailure(final Pair<Boolean, Optional<String>> compileResult) {
-    assertFalse("Compile succeeded, but should fail.", compileResult.getFirst());
+  protected void assertPantsCompileFailure(final PantsExecuteTaskResult compileResult) {
+    assertFalse("Compile succeeded, but should fail.", compileResult.succeeded);
   }
 
-  protected Pair<Boolean, Optional<String>> pantsCompileModule(String... moduleNames) {
+  protected PantsExecuteTaskResult pantsCompileModule(String... moduleNames) {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    return runner.executeTask(getModules(moduleNames));
+    return runner.doPantsCompile(getModules(moduleNames));
   }
 }
