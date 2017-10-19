@@ -5,6 +5,9 @@ package com.twitter.intellij.pants.execution;
 
 import java.util.Optional;
 
+/**
+ * Wrapper class describing the result of a pants invocation.
+ */
 public class PantsExecuteTaskResult {
 
   public final boolean succeeded;
@@ -13,5 +16,9 @@ public class PantsExecuteTaskResult {
   public PantsExecuteTaskResult(final boolean succeeded, final Optional<String> output) {
     this.succeeded = succeeded;
     this.output = output;
+  }
+
+  public static PantsExecuteTaskResult emptyFailure() {
+    return new PantsExecuteTaskResult(false, Optional.empty());
   }
 }

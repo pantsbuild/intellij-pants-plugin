@@ -3,7 +3,7 @@
 
 package com.twitter.intellij.pants.compiler.actions;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -13,7 +13,6 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -49,7 +48,7 @@ public class PantsLintTargetAction extends PantsTaskActionBase {
   public PantsExecuteTaskResult execute(@NotNull PantsMakeBeforeRun runner,
                                         @NotNull Project project,
                                         @NotNull Set<String> targetAddresses) {
-    return runner.executeTask(
-      project, Sets.newHashSet("lint"), targetAddresses);
+    return runner.invokePants(
+      project, targetAddresses, Lists.newArrayList("lint"), "Lint");
   }
 }

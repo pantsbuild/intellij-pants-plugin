@@ -171,10 +171,10 @@ public class PantsCompileOptionsExecutor {
     final GeneralCommandLine command = getCommand(outputFile, statusConsumer);
     statusConsumer.consume("Resolving dependencies...");
     PantsMetrics.markExportStart();
-    final ProcessOutput processOutput = getProcessOutput(command, processAdapter);
+    final ProcessOutput processOutput = getProcessOutput(command);
     PantsMetrics.markExportEnd();
     if (processOutput.getStdout().contains("no such option")) {
-      throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade you pants!");
+      throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade your pants!");
     }
     if (processOutput.checkSuccess(LOG)) {
       return FileUtil.loadFile(outputFile);
@@ -185,8 +185,7 @@ public class PantsCompileOptionsExecutor {
   }
 
   private ProcessOutput getProcessOutput(
-    @NotNull GeneralCommandLine command,
-    @Nullable ProcessAdapter processAdapter
+    @NotNull GeneralCommandLine command
   ) throws ExecutionException {
     final Process process = command.createProcess();
     myProcesses.add(process);

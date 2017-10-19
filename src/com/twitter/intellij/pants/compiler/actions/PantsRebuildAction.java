@@ -41,7 +41,6 @@ public class PantsRebuildAction extends PantsTaskActionBase {
   public PantsExecuteTaskResult execute(@NotNull PantsMakeBeforeRun runner,
                                         @NotNull Project project,
                                         @NotNull Set<String> targetAddresses) {
-    Set<String> tasks = Sets.newHashSet("clean-all", "export-classpath", "compile");
-    return runner.executeCompileTask(project, targetAddresses, tasks);
+    return runner.executeCompileTask(project, targetAddresses, true);
   }
 }

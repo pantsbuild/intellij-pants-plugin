@@ -50,15 +50,8 @@ public class PantsOptions {
     return PantsUtil.findPantsExecutable(myProject).map(file -> getPantsOptions(file.getPath()));
   }
 
-  public Set<String> genCliOptionsForTasks(final Set<String> tasks) {
-    Set<String> optionsToCheck = PantsUtil.lookupKeys(
-      tasks, PantsConstants.PANTS_MAP_TASK_TO_OPTION_CHECKS);
-    Set<String> checkedTaskOptions = optionsToCheck.stream()
-      .filter(optionKey -> has(optionKey))
-      .collect(Collectors.toSet());
-    Set<String> addedCliOptions = PantsUtil.lookupKeys(
-      checkedTaskOptions, PantsConstants.PANTS_MAP_OPTION_TO_CLI_ARGS);
-    return addedCliOptions;
+  public boolean supportsAsyncCleanAll() {
+    return has(PantsConstants.PANTS_OPTION_ASYNC_CLEAN_ALL);
   }
 
   public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {

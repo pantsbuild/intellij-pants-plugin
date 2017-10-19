@@ -276,11 +276,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     if (!pantsOptions.isPresent()) {
       return Optional.empty();
     }
-    if (pantsOptions.get().has(PantsConstants.PANTS_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR)) {
-      Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
-      if (manifestJar.isPresent()) {
-        return manifestJar;
-      }
+    Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
+    if (manifestJar.isPresent()) {
+      return manifestJar;
     }
     return Optional.empty();
   }
@@ -559,7 +557,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   protected PantsExecuteTaskResult pantsCompileProject() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    return runner.executeCompileTask(myProject);
+    return runner.doPantsCompile(myProject);
   }
 
   protected void assertPantsCompileExecutesAndSucceeds(final PantsExecuteTaskResult compileResult) throws Exception {
@@ -583,6 +581,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   protected PantsExecuteTaskResult pantsCompileModule(String... moduleNames) {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    return runner.executeCompileTask(getModules(moduleNames));
+    return runner.doPantsCompile(getModules(moduleNames));
   }
 }

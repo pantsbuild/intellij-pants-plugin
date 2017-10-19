@@ -22,8 +22,8 @@ public abstract class PantsCompileActionBase extends PantsTaskActionBase {
   @NotNull
   @Override
   public PantsExecuteTaskResult execute(@NotNull PantsMakeBeforeRun runner,
-                                                           @NotNull Project project,
-                                                           @NotNull Set<String> targetAddresses) {
-    return runner.executeCompileTask(project, targetAddresses);
+                                        @NotNull Project project,
+                                        @NotNull Set<String> targetAddresses) {
+    return runner.executeCompileTask(project, targetAddresses, false);
   }
 }
