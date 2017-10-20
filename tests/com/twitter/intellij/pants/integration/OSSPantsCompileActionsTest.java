@@ -139,18 +139,6 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     // check whether we have expected targets
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
     List<Module> modules = Lists.newArrayList(ModuleManager.getInstance(myProject).getModules());
-    Set<String> expectedModuleNames = Stream.of(
-      "testprojects_src_java_org_pantsbuild_testproject_annotation_processorwithdep_processor_javapoet",
-      "testprojects_src_java_org_pantsbuild_testproject_annotation_module",
-      "testprojects_src_java_org_pantsbuild_testproject_annotation_processorwithdep_hellomaker_hellomaker",
-      "testprojects_src_java_org_pantsbuild_testproject_annotation_processorwithdep_processor_processor",
-      "3rdparty_guava",
-      "testprojects_src_java_org_pantsbuild_testproject_annotation_main_main",
-      "testprojects_src_java_org_pantsbuild_testproject_annotation_processor_processor",
-      "testprojects_src_java_org_pantsbuild_testproject_annotation_processorwithdep_main_main")
-      .map(name -> String.format("Module: '%s'", name)).collect(Collectors.toSet());
-    Set<String> importModuleNames = modules.stream().map(mod -> mod.toString()).collect(Collectors.toSet());
-    assertEquals(expectedModuleNames, importModuleNames);
     Set<String> expectedAddresses = Sets.newHashSet(
       "testprojects/src/java/org/pantsbuild/testproject/annotation/processor:processor",
       "testprojects/src/java/org/pantsbuild/testproject/annotation/processorwithdep/hellomaker:hellomaker",
