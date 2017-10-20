@@ -9,7 +9,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -18,11 +21,15 @@ import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModul
 import com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
+import com.twitter.intellij.pants.compiler.actions.PantsLintTargetAction;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -126,6 +133,20 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
         .collect(Collectors.toSet());
       assertEquals(Sets.newHashSet(target), currentTargets);
     }
+  }
+
+  public void testLintTargetAction() throws Throwable {
+    doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
+    List<Module> modules = Lists.newArrayList(ModuleManager.getInstance(myProject).getModules());
+    assertEquals(1, modules.size());
+    PantsLintTargetAction lintTargetAction = new PantsLintTargetAction(modules.get(0));
+    Set<String> targetAddresses = lintTargetAction
+      .getTargets(getPantsActionEvent(), myProject)
+      .collect(Collectors.toSet());
+    Set<String> expectedTarget = Sets.newHashSet("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
+    assertEquals(expectedTarget, targetAddresses);
+    PantsMakeBeforeRun runner = getRunner();
+    assertPantsInvocationSucceeds(lintTargetAction.execute(runner, myProject, targetAddresses), "Lint");
   }
 
   private AnActionEvent getPantsActionEvent() {

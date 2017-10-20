@@ -24,9 +24,14 @@ public class PantsLintTargetAction extends PantsTaskActionBase {
 
   private final Optional<Module> module;
 
-  public PantsLintTargetAction(Optional<Module> module) {
+  public PantsLintTargetAction() {
     super("Lint target(s) in the selected editor");
-    this.module = module;
+    this.module = Optional.empty();
+  }
+
+  public PantsLintTargetAction(@NotNull Module module) {
+    super("Lint target(s) in this module");
+    this.module = Optional.of(module);
   }
 
   @NotNull
