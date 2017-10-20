@@ -12,8 +12,7 @@ import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
-import java.util.Optional;
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -22,30 +21,17 @@ import java.util.stream.Stream;
  */
 public class PantsLintTargetAction extends PantsTaskActionBase {
 
-  private final Optional<Module> module;
+  private final Collection<String> targets;
 
-  public PantsLintTargetAction() {
-    super("Lint target(s) in the selected editor");
-    this.module = Optional.empty();
-  }
-
-  public PantsLintTargetAction(@NotNull Module module) {
-    super("Lint target(s) in this module");
-    this.module = Optional.of(module);
+  public PantsLintTargetAction(@NotNull Collection<String> targets) {
+    super("Lint selected target(s)");
+    this.targets = targets;
   }
 
   @NotNull
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
-    Optional<Module> module = this.module;
-    if (!module.isPresent()) {
-      module = PantsUtil.getFileForEvent(e)
-        .flatMap(file -> PantsUtil.getModuleForFile(file, project));
-    }
-    return module
-      .map(PantsUtil::getNonGenTargetAddresses)
-      .orElse(new LinkedList<>())
-      .stream();
+    return targets.stream();
   }
 
   @NotNull

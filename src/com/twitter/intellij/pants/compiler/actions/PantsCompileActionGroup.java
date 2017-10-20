@@ -58,14 +58,13 @@ public class PantsCompileActionGroup extends ActionGroup {
     if (module == null) {
       return emptyAction;
     }
-    actions.add(new PantsLintTargetAction(module));
-
     List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(module);
     // TODO: signal if no addresses found?
     if (targetAddresses.isEmpty()) {
       return emptyAction;
     }
 
+    actions.add(new PantsLintTargetAction(targetAddresses));
     // Adds compile all option for modules with multiple targets.
     if (targetAddresses.size() > 1) {
       actions.add(new PantsCompileAllTargetsInModuleAction(Optional.of(module)));

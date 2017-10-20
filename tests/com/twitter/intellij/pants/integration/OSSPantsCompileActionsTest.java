@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import java.util.stream.Stream;
 
 public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
 
@@ -136,15 +136,37 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
   }
 
   public void testLintTargetAction() throws Throwable {
+    // check whether we have expected targets
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
     List<Module> modules = Lists.newArrayList(ModuleManager.getInstance(myProject).getModules());
-    assertEquals(1, modules.size());
-    PantsLintTargetAction lintTargetAction = new PantsLintTargetAction(modules.get(0));
+    Set<String> expectedModuleNames = Stream.of(
+      "testprojects_src_java_org_pantsbuild_testproject_annotation_processorwithdep_processor_javapoet",
+      "testprojects_src_java_org_pantsbuild_testproject_annotation_module",
+      "testprojects_src_java_org_pantsbuild_testproject_annotation_processorwithdep_hellomaker_hellomaker",
+      "testprojects_src_java_org_pantsbuild_testproject_annotation_processorwithdep_processor_processor",
+      "3rdparty_guava",
+      "testprojects_src_java_org_pantsbuild_testproject_annotation_main_main",
+      "testprojects_src_java_org_pantsbuild_testproject_annotation_processor_processor",
+      "testprojects_src_java_org_pantsbuild_testproject_annotation_processorwithdep_main_main")
+      .map(name -> String.format("Module: '%s'", name)).collect(Collectors.toSet());
+    Set<String> importModuleNames = modules.stream().map(mod -> mod.toString()).collect(Collectors.toSet());
+    assertEquals(expectedModuleNames, importModuleNames);
+    Set<String> expectedAddresses = Sets.newHashSet(
+      "testprojects/src/java/org/pantsbuild/testproject/annotation/processor:processor",
+      "testprojects/src/java/org/pantsbuild/testproject/annotation/processorwithdep/hellomaker:hellomaker",
+      "testprojects/src/java/org/pantsbuild/testproject/annotation/processorwithdep/processor:processor",
+      "testprojects/src/java/org/pantsbuild/testproject/annotation/processorwithdep/main:main",
+      "testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
+    Set<String> importAddresses = modules.stream()
+      .flatMap(module -> PantsUtil.getNonGenTargetAddresses(module).stream())
+      .collect(Collectors.toSet());
+    assertEquals(expectedAddresses, importAddresses);
+    // check if lint completes successfully
+    PantsLintTargetAction lintTargetAction = new PantsLintTargetAction(importAddresses);
     Set<String> targetAddresses = lintTargetAction
       .getTargets(getPantsActionEvent(), myProject)
       .collect(Collectors.toSet());
-    Set<String> expectedTarget = Sets.newHashSet("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
-    assertEquals(expectedTarget, targetAddresses);
+    assertEquals(expectedAddresses, targetAddresses);
     PantsMakeBeforeRun runner = getRunner();
     assertPantsInvocationSucceeds(lintTargetAction.execute(runner, myProject, targetAddresses), "Lint");
   }
