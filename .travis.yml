@@ -42,7 +42,7 @@ env:
     - PANTS_SHA="release_1.2.0" TEST_SET=jvm-integration
 
 script:
-  - ./scripts/run-tests-ci.sh
+  - ./scripts/run-tests-ci.sh --test-junit-output-mode=ALL
 
 after_success:
   - scripts/deploy/deploy.sh
