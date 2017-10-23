@@ -975,10 +975,4 @@ public class PantsUtil {
   public static List<String> parseCmdParameters(Optional<String> cmdArgsLine) {
     return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
   }
-
-  public static <T, U> Set<U> lookupKeys(Set<T> keys, ImmutableMap<T, ImmutableSet<U>> map) {
-    return keys.stream()
-      .flatMap(key -> map.getOrDefault(key, ImmutableSet.of()).asList().stream())
-      .collect(Collectors.toSet());
-  }
 }
