@@ -22,6 +22,7 @@ import com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetActi
 import com.twitter.intellij.pants.compiler.actions.PantsCompileTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
 import com.twitter.intellij.pants.compiler.actions.PantsLintTargetAction;
+import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -156,7 +157,8 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       .collect(Collectors.toSet());
     assertEquals(expectedAddresses, targetAddresses);
     PantsMakeBeforeRun runner = getRunner();
-    assertPantsInvocationSucceeds(lintTargetAction.execute(runner, myProject, targetAddresses), "Lint");
+    PantsExecuteTaskResult result = lintTargetAction.execute(runner, myProject, targetAddresses);
+    assertPantsInvocationSucceeds(result, "Lint");
   }
 
   private AnActionEvent getPantsActionEvent() {

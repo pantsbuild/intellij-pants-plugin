@@ -565,7 +565,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void assertPantsInvocationSucceeds(final PantsExecuteTaskResult result, @NotNull String opTitle) throws Exception {
-    assertTrue(String.format("%s failed", opTitle), result.succeeded);
+    String errorDescription = result.output.orElse("<no output>");
+    assertTrue(String.format("%s failed: '%s'", opTitle, errorDescription),
+               result.succeeded);
   }
 
   protected void assertPantsInvocationFails(final PantsExecuteTaskResult result, @NotNull String opTitle) throws Exception {
