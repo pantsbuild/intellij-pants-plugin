@@ -54,6 +54,13 @@ public class PantsOptions {
     return has(PantsConstants.PANTS_OPTION_ASYNC_CLEAN_ALL);
   }
 
+  public boolean supportsLint() {
+    return options.keySet().stream()
+      .filter(k -> k.startsWith(PantsConstants.PANTS_TASK_LINT))
+      .findAny()
+      .isPresent();
+  }
+
   public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {
     File pantsExecutableFile = new File(pantsExecutable);
     PantsOptions cache = optionsCache.get(pantsExecutableFile);
