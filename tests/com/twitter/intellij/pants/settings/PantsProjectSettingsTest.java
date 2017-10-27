@@ -6,12 +6,9 @@ package com.twitter.intellij.pants.settings;
 import com.google.common.collect.Lists;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
-import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
-import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.File;
-import java.lang.RuntimeException;
 import java.util.stream.Collectors;
 
 public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {

@@ -7,7 +7,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.stream.Stream;
 
 /**
@@ -15,16 +14,16 @@ import java.util.stream.Stream;
  */
 public class PantsCompileTargetAction extends PantsCompileActionBase {
 
-  private HashSet<String> myTargetAddresses = new HashSet<>();
+  private final @NotNull String targetAddress;
 
-  public PantsCompileTargetAction(String targetAddress) {
-    super(targetAddress);
-    myTargetAddresses.add(targetAddress);
+  public PantsCompileTargetAction(@NotNull String targetAddress) {
+    super(String.format("Compile target '%s'", targetAddress));
+    this.targetAddress = targetAddress;
   }
 
   @NotNull
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
-    return myTargetAddresses.stream();
+    return Stream.of(targetAddress);
   }
 }

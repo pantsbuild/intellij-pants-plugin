@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.util;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -15,8 +17,12 @@ import com.intellij.ide.SaveAndSyncHandler;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
@@ -29,8 +35,10 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
@@ -220,6 +228,23 @@ public class PantsUtil {
         }
       }
     ));
+  }
+
+  public static Optional<VirtualFile> getFileInSelectedEditor(@Nullable Project project) {
+    Optional<Editor> editor = Optional.ofNullable(project)
+      .flatMap(p -> Optional.ofNullable(FileEditorManager.getInstance(p).getSelectedTextEditor()));
+    Optional<EditorImpl> editorImpl = editor
+      .flatMap(e -> e instanceof EditorImpl ? Optional.of((EditorImpl) e) : Optional.empty());
+    return editorImpl.map(EditorImpl::getVirtualFile);
+  }
+
+  public static Optional<VirtualFile> getFileForEvent(@Nullable AnActionEvent e) {
+    return Optional.ofNullable(e)
+      .flatMap(ev -> Optional.ofNullable(ev.getData(CommonDataKeys.VIRTUAL_FILE)));
+  }
+
+  public static Optional<Module> getModuleForFile(@NotNull VirtualFile file, @NotNull Project project) {
+    return Optional.ofNullable(ModuleUtil.findModuleForFile(file, project));
   }
 
   public static Optional<File> findBuildRoot(@NotNull File file) {

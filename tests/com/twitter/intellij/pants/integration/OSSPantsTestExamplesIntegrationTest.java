@@ -4,12 +4,9 @@
 package com.twitter.intellij.pants.integration;
 
 import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.openapi.util.Pair;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
-
-import java.util.Optional;
 
 public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest {
   @Override

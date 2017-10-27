@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.compiler.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -18,18 +19,15 @@ import java.util.stream.Stream;
  */
 public class PantsCompileAllTargetsAction extends PantsCompileActionBase {
 
-  protected PantsCompileAllTargetsAction(String name) {
-    super(name);
-  }
-
   public PantsCompileAllTargetsAction() {
-    this("Compile all targets in project");
+    super("Compile all targets in project");
   }
 
   @NotNull
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
-    return Arrays.stream(ModuleManager.getInstance(project).getModules())
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    return Arrays.stream(modules)
       .map(PantsUtil::getNonGenTargetAddresses)
       .flatMap(Collection::stream);
   }

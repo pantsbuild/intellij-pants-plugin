@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.execution;
 import java.util.Optional;
 
 /**
- * Wrapper class for pants invocations.
+ * Wrapper class describing the result of a pants invocation.
  */
 public class PantsExecuteTaskResult {
 

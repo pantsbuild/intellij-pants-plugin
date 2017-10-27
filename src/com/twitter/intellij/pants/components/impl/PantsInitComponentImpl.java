@@ -25,6 +25,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Optional;
 
 public class PantsInitComponentImpl implements PantsInitComponent {
   @NotNull
@@ -72,7 +73,7 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     );
     AnAction pantsMakeModuleAction = new PantsOverrideAction(
       IdeActions.ACTION_MAKE_MODULE,
-      new PantsCompileAllTargetsInModuleAction()
+      new PantsCompileAllTargetsInModuleAction(Optional.empty())
     );
     //  Disables compile option (not applicable in Pants).
     AnAction pantsDisableCompileAction = PantsOverrideAction.createDisabledEmptyAction(IdeActions.ACTION_COMPILE);
