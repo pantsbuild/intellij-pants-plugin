@@ -63,3 +63,11 @@ junit_tests(
   ],
   sources=globs('com/twitter/intellij/pants/metrics/*.java')
 )
+
+junit_tests(
+  name='mine',
+  dependencies=[
+    ':sources-and-libs',
+  ],
+  sources=globs('com/twitter/intellij/pants/integration/OSSPantsCompileActionsTest.java')
+)
