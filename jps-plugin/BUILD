@@ -16,4 +16,3 @@ resources(
     name = 'services',
     sources = globs('META-INF/services/*')
 )
-

@@ -10,8 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2017.2.5"
-export IJ_BUILD_NUMBER="172.4343.14"
+export IJ_VERSION="2017.3"
+export IJ_BUILD_NUMBER="173.3531.6"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
@@ -24,20 +24,20 @@ get_md5(){
 if [[ $IJ_ULTIMATE == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="d0203f7f7d21c5fd43eead0df0c7ce59"
+  export EXPECTED_IJ_MD5="37a2d6b26982f065695eaf9e60b9e3f9"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="0e50933c204313aaa2a062e9b19b33ac"
+  export PYTHON_PLUGIN_MD5="5ff7d0bc3dc00c78461863d704ac74be"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="77c7afde3356f752c0c22b1ec9adeab7"
+  export EXPECTED_IJ_MD5="f4fd1cab9e63bb0c12053ebd355c30e8"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="2eeffe7aa2f80f125e8804bbe947753d"
+  export PYTHON_PLUGIN_MD5="35a25863c68d6c2eaefdf4e26e7a4946"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="e2b247e6c5edf2a6d7e2472769ec2bb7" # 2017.2.11
+export SCALA_PLUGIN_MD5="470ff58463ba71b76d6954631979814a"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
@@ -54,7 +54,7 @@ append_intellij_jvm_options() {
     "-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME"
     "-Didea.home.path=$INTELLIJ_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
-    "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/rt/jps-plugin-system.jar"
+    "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/jps-builders.jar"
     #EAP build does not know its own build number, thus failing to tell plugin compatibility.
     "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"

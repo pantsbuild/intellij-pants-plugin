@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.highlighting;
 
+import com.google.common.collect.Lists;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx;
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl;
@@ -61,7 +62,7 @@ abstract public class PantsHighlightingIntegrationTest extends OSSPantsIntegrati
   public List<HighlightInfo> doHighlighting(@NotNull PsiFile file, @NotNull Editor editor) {
     final DaemonCodeAnalyzerImpl codeAnalyzer = (DaemonCodeAnalyzerImpl)DaemonCodeAnalyzer.getInstance(myProject);
     final TextEditor textEditor = TextEditorProvider.getInstance().getTextEditor(editor);
-    final List<HighlightInfo> infos = codeAnalyzer.runPasses(file, editor.getDocument(), textEditor, new int[0], false, null);
+    final List<HighlightInfo> infos = codeAnalyzer.runPasses(file, editor.getDocument(), Lists.newArrayList(textEditor), new int[0], false, null);
     infos.addAll(DaemonCodeAnalyzerEx.getInstanceEx(myProject).getFileLevelHighlights(myProject, file));
     return infos;
   }
