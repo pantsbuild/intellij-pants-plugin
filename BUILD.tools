@@ -1,4 +1,4 @@
-SCALA_REV='2.11.6'
+SCALA_REV='2.12.3'
 
 # scala-compiler needs explicit dependencies on scala-library and scala-reflect (DPB-4447)
 jar_library(name = 'scalac',
@@ -41,4 +41,3 @@ jar_library(name = 'scalap',
             jars = [
               jar(org = 'org.scala-lang', name = 'scalap', rev = SCALA_REV),
             ])
-
