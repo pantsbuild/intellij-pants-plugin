@@ -1,13 +1,15 @@
 # Alias for sources and libs needed for tests
 target(name='sources-and-libs',
   dependencies=[
+    '3rdparty/intellij:external-system-test-api',
     '3rdparty/intellij:gradle-plugin',
     '3rdparty/intellij:python-plugin',
     '3rdparty/intellij:scala-plugin',
     '3rdparty/intellij:sdk',
     'jps-plugin',
     'src:pants-intellij-plugin',
-    'testFramework:test-lib',
+    'testFramework/com/twitter/intellij/pants/testFramework',
+    'common',
   ],
 )
 
@@ -26,12 +28,12 @@ junit_tests(
     # 'com/twitter/intellij/pants/model/*.java',
     # 'com/twitter/intellij/pants/psi/reference/*.java',
     # 'com/twitter/intellij/pants/quickfix/*.java',
-    'com/twitter/intellij/pants/resolve/*.java',
+    # 'com/twitter/intellij/pants/resolve/*.java',
     # 'com/twitter/intellij/pants/service/project/*.java',
     # 'com/twitter/intellij/pants/service/project/detector/*.java',
     # 'com/twitter/intellij/pants/service/project/model/*.java',
     # 'com/twitter/intellij/pants/service/util/*.java',
-    # 'com/twitter/intellij/pants/settings/*.java',
+    'com/twitter/intellij/pants/settings/*.java',
     # 'com/twitter/intellij/pants/util/*.java',
   )
 )

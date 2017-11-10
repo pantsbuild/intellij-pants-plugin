@@ -1,11 +1,7 @@
 import os
 import re
 
-
-_jdk_jars = [
-    'sa-jdi.jar',
-    'tools.jar'
-]
+_jdk_jars = os.getenv('JDK_JARS').split('\n')
 
 
 VERSION_PATTERN = r"""
@@ -65,10 +61,9 @@ def _find_all_jars(root_dir, excludes=[]):
     result = []
     for root, _, files in os.walk(root_dir):
         for file in files:
-            if file in excludes:
-                continue
-            if file.endswith('.jar'):
-                result.append(os.path.join(root, file))
+            rel_root_path = os.path.join(root, file)
+            if rel_root_path not in excludes and file.endswith('.jar'):
+                result.append(rel_root_path)
     return result
 
 
@@ -84,12 +79,12 @@ def _jar_path_in_folder(lib_path, jar_name):
     return jar_path
 
 
-def _intellij_sdk_classpath():
+def _intellij_sdk_classpath(excludes=[]):
     base_dir = os.environ['INTELLIJ_HOME']
     if not os.path.exists(base_dir):
         raise Exception('Directory %s not exists!' % base_dir)
 
-    def plugin_jar(path, name=None):
+    def plugin_jar(path):
         package, version = extract_package_name_version(path)
         return jar(
             org='com.intellij.sdk.%s' % ('ultimate' if is_ultimate() else 'community'),
@@ -99,11 +94,9 @@ def _intellij_sdk_classpath():
         )
 
     intellij_jars = []
-
-    # lib
-    for file in os.listdir(os.path.join(base_dir, 'lib')):
-        if file.endswith('.jar'):
-            intellij_jars.append(plugin_jar(os.path.join(base_dir, 'lib', file)))
+    lib_dir = os.path.join(base_dir, 'lib')
+    for jar_file in _find_all_jars(lib_dir, excludes=excludes):
+        intellij_jars.append(plugin_jar(os.path.join(lib_dir, jar_file)))
 
     return intellij_jars
 
@@ -113,17 +106,20 @@ def _jdk_classpath():
     return [ _jar_path_in_folder(jdk_libs_home, jdk_jar) for jdk_jar in _jdk_jars ]
 
 
-def _find_jars_for_plugin(plugin_name, *jar_names):
+def _find_plugin_dir(plugin_name, builtin=True):
+    if builtin:
+        plugin_root = os.path.join(os.getenv('INTELLIJ_HOME'), 'plugins')
+    else:
+        plugin_root = os.getenv('INTELLIJ_PLUGINS_HOME')
+    return os.path.join(plugin_root, plugin_name)
+
+
+def _find_jars_for_plugin(plugin_name, builtin=True, excludes=[]):
     """
     Find the jars non-built-in plugins under $IDEA/plugins/<plugin_name>
     """
-    base_dir = os.environ['INTELLIJ_PLUGINS_HOME']
-    plugin_home = os.path.join(base_dir, plugin_name)
-    if not os.path.exists(plugin_home):
-        raise Exception('Directory %s not exists!' % plugin_home)
-    return [
-        _jar_path_in_lib_folder(plugin_home, jar_name) for jar_name in jar_names
-    ]
+    plugin_dir = _find_plugin_dir(plugin_name, builtin=builtin)
+    return [os.path.join(plugin_dir, p) for p in _find_all_jars(plugin_dir, excludes=excludes)]
 
 
 def _intellij_sdk_jar(path):
@@ -136,7 +132,7 @@ def _intellij_sdk_jar(path):
     )
 
 
-def _intellij_plugin_jar(path, plugin_name='plugins'):
+def _intellij_plugin_jar(path, plugin_name):
     """
     Create a jar instance given its path and name.
 
@@ -166,6 +162,9 @@ def _jdk_jar(path):
 
 jar_library(
     name = 'sdk',
+    # dependencies = [
+    #     ':scala-plugin'
+    # ],
     jars = _intellij_sdk_classpath() + [ _jdk_jar(path) for path in _jdk_classpath() ],
     scope='compile test',
 )
@@ -174,66 +173,36 @@ jar_library(
 jar_library(
     name = 'external-system-test-api',
     jars = [
-        _intellij_plugin_jar(os.path.join(os.getcwd(), 'testData', 'external-system-test-api.jar'))
+        _intellij_plugin_jar(
+            os.path.join(os.getcwd(), 'testData', 'external-system-test-api.jar'),
+            'plugins')
     ],
     scope='compile test',
 )
 
 python_plugin_folder = 'python' if is_ultimate() else 'python-ce'
-python_plugin_jar = 'python.jar' if is_ultimate() else 'python-ce.jar'
 
 jar_library(
     name = 'python-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'python-plugin') for path in _find_jars_for_plugin(python_plugin_folder, python_plugin_jar)
+        _intellij_plugin_jar(path, 'python-plugin') for path in _find_jars_for_plugin(python_plugin_folder, False)
     ],
     scope='compile test',
 )
 
-
 jar_library(
     name = 'scala-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'scala-plugin') for path in _find_jars_for_plugin('Scala',
-            'bcel.jar',
-            'compiler-shared.jar',
-            'evo-inflector.jar',
-            'fastparse.jar',
-            'jamm.jar',
-            'jps/compiler-interface.jar',
-            'jps/compiler-jps.jar',
-            'jps/incremental-compiler.jar',
-            'jps/nailgun.jar',
-            'jps/repl-interface-sources.jar',
-            'jps/sbt-interface.jar',
-            'runners.jar',
-            'sbt-structure-core.jar',
-            'scala-library.jar',
-            'scala-nailgun-runner.jar',
-            'scala-parser-combinators.jar',
-            'scala-play-2-jps-plugin.jar',
-            'scala-plugin.jar',
-            'scala-reflect.jar',
-            'scala-xml.jar',
-            'scalamacros.jar',
-            'scalameta.jar',
-            'scalameta120.jar',
-            'scalap.jar',
-            'scalariform.jar',
-            'scalastyle.jar',
-            'scalatest-finders-patched.jar',
-        )
-    ] + [jar(org = 'org.scalameta', name = 'trees_2.12', rev = '2.0.1')],
-    scope='forced',
+        _intellij_plugin_jar(path, 'scala-plugin') for path in _find_jars_for_plugin('Scala', builtin=False)
+    ] + [jar(org = 'org.scalameta', name = 'trees_2.11', rev = '1.3.0')],
+    scope='compile test',
 )
 
 
 jar_library(
     name = 'junit-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'junit-plugin') for path in _find_all_jars(
-            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'junit', 'lib')
-        )
+        _intellij_plugin_jar(path, 'junit-plugin') for path in _find_jars_for_plugin('junit')
     ],
     scope='compile test',
 )
@@ -243,8 +212,7 @@ jar_library(
     name = 'gradle-plugin',
     dependencies = [':groovy-plugin'],
     jars = [
-        _intellij_plugin_jar(path, 'gradle-plugin') for path in _find_all_jars(
-            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'gradle', 'lib'),
+        _intellij_plugin_jar(path, 'gradle-plugin') for path in _find_jars_for_plugin('gradle',
             # A workaround to avoid guava version conflicts/shadowing with the one under $IDEA/lib
             excludes=['guava-jdk5-17.0.jar']
         )
@@ -257,9 +225,7 @@ jar_library(
     name = 'groovy-plugin',
     dependencies = [':properties-plugin'],
     jars = [
-        _intellij_plugin_jar(path, 'groovy-plugin') for path in _find_all_jars(
-            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'Groovy', 'lib')
-        )
+        _intellij_plugin_jar(path, 'groovy-plugin') for path in _find_jars_for_plugin('Groovy')
     ],
     scope='compile test',
 )
@@ -268,9 +234,7 @@ jar_library(
 jar_library(
     name = 'properties-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'properties-plugin') for path in _find_all_jars(
-            os.path.join(os.environ['INTELLIJ_HOME'], 'plugins', 'properties', 'lib')
-        )
+        _intellij_plugin_jar(path, 'properties-plugin') for path in _find_jars_for_plugin('properties')
     ],
     scope='compile test',
 )

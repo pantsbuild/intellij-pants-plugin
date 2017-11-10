@@ -21,7 +21,7 @@ get_md5(){
   fi
 }
 
-if [[ $IJ_ULTIMATE == "true" ]]; then
+if [[ "${IJ_ULTIMATE+false}" == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
   export EXPECTED_IJ_MD5="37a2d6b26982f065695eaf9e60b9e3f9"
@@ -69,3 +69,5 @@ append_intellij_jvm_options() {
 
   echo $cmd
 }
+
+export JDK_JARS="$(printf "%s\n" 'sa-jdi.jar' 'tools.jar')"

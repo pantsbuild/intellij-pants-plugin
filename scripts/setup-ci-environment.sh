@@ -18,11 +18,19 @@ if [ -z $JAVA_HOME ]; then
   exit 1
 fi
 
-if [ ! -f .cache/jdk-libs/sa-jdi.jar ] || [ ! -f .cache/jdk-libs/tools.jar ] ; then
-  echo "Copying JDK libs..."
-  mkdir -p .cache/jdk-libs
-  cp "$JAVA_HOME/lib/sa-jdi.jar" "$JAVA_HOME/lib/tools.jar" .cache/jdk-libs
-fi
+JDK_LIB_DIR="$JAVA_HOME/lib"
+
+CACHE_JDK_LIB_DIR='.cache/jdk-libs'
+
+mkdir -p "$CACHE_JDK_LIB_DIR"
+
+for jar_file in $JDK_JARS; do
+  dest_jar="$CACHE_JDK_LIB_DIR/$jar_file"
+  if [ ! -f "$dest_jar" ]; then
+    src_jar="$JDK_LIB_DIR/$jar_file"
+    cp "$src_jar" "$dest_jar"
+  fi
+done
 
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   IJ_TAR_NAME=idea${FULL_IJ_BUILD_NUMBER}.tar.gz
