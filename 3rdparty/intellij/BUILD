@@ -118,8 +118,24 @@ def _find_jars_for_plugin(plugin_name, builtin=True, excludes=[]):
     """
     Find the jars non-built-in plugins under $IDEA/plugins/<plugin_name>
     """
-    plugin_dir = _find_plugin_dir(plugin_name, builtin=builtin)
-    return [os.path.join(plugin_dir, p) for p in _find_all_jars(plugin_dir, excludes=excludes)]
+    plugin_dir = os.path.join(
+        _find_plugin_dir(plugin_name, builtin=builtin),
+        'lib')
+    lib_jars = []
+    hit_excludes = {exc:False for exc in excludes}
+    for entry in os.listdir(plugin_dir):
+        if entry in excludes:
+            hit_excludes[entry] = True
+            continue
+        full_path = os.path.join(plugin_dir, entry)
+        if full_path.endswith('.jar') and os.path.isfile(full_path):
+            lib_jars.append(full_path)
+    missed_excludes = [exc for exc in excludes if not hit_excludes[exc]]
+    if len(missed_excludes) > 0:
+        raise Exception('some excludes for plugin "%s" were not found.'
+                        ' remove these from excludes or figure out why they'
+                        ' disappeared:\n%s' % (plugin_name, missed_excludes))
+    return lib_jars
 
 
 def _intellij_sdk_jar(path):
@@ -162,9 +178,6 @@ def _jdk_jar(path):
 
 jar_library(
     name = 'sdk',
-    # dependencies = [
-    #     ':scala-plugin'
-    # ],
     jars = _intellij_sdk_classpath() + [ _jdk_jar(path) for path in _jdk_classpath() ],
     scope='compile test',
 )
