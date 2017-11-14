@@ -50,11 +50,11 @@ append_intellij_jvm_options() {
   cmd=""
 
   INTELLIJ_JVM_OPTIONS=(
-    "-Didea.load.plugins.id=com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants"
+    "-Didea.load.plugins.id=com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants,org.jetbrains.intellij"
     "-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME"
     "-Didea.home.path=$INTELLIJ_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
-    "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/jps-builders.jar"
+    "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/jps-model.jar"
     #EAP build does not know its own build number, thus failing to tell plugin compatibility.
     "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"
