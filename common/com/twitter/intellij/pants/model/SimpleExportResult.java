@@ -101,14 +101,10 @@ public class SimpleExportResult {
   }
 
   public Optional<String> getJdkHome(boolean strict) {
-    Map<String, String> platformMap = getPreferredJvmDistributions()
-      .get(getJvmPlatforms().getDefaultPlatform());
-
-    if (platformMap == null) {
-      return Optional.empty();
-    }
-
-    return Optional.ofNullable(platformMap.get(strict ? PantsConstants.PANTS_EXPORT_KEY_STRICT : PantsConstants.PANTS_EXPORT_KEY_NON_STRICT));
+    final Optional<Map<String, String>> platformMap = Optional.ofNullable(
+        getPreferredJvmDistributions().get(getJvmPlatforms().getDefaultPlatform()));
+    final String exportKey = strict ? PantsConstants.PANTS_EXPORT_KEY_STRICT : PantsConstants.PANTS_EXPORT_KEY_NON_STRICT;
+    return platformMap.flatMap(pmap -> Optional.ofNullable(pmap.get(exportKey)));
   }
 
   @VisibleForTesting

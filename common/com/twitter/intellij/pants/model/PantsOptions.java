@@ -61,11 +61,12 @@ public class PantsOptions {
       .isPresent();
   }
 
+  @NotNull
   public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {
     File pantsExecutableFile = new File(pantsExecutable);
-    PantsOptions cache = optionsCache.get(pantsExecutableFile);
-    if (cache != null) {
-      return cache;
+    Optional<PantsOptions> cachedOptions = Optional.ofNullable(optionsCache.get(pantsExecutableFile));
+    if (cachedOptions.isPresent()) {
+      return cachedOptions.get();
     }
 
     GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);

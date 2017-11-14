@@ -26,15 +26,12 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
   public void testFindJdk() {
     Optional<File> executable = PantsUtil.findPantsExecutable(getProjectFolder());
     assertTrue(executable.isPresent());
-    Optional<Sdk> sdkA = PantsUtil.getDefaultJavaSdk(executable.get().getPath());
+    Optional<Sdk> sdkA = getDefaultJavaSdk(executable.get().getPath());
     assertTrue(sdkA.isPresent());
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
+    ApplicationManager.getApplication().runWriteAction(() -> {
         ProjectJdkTable.getInstance().addJdk(sdkA.get());
-      }
     });
-    Optional<Sdk> sdkB = PantsUtil.getDefaultJavaSdk(executable.get().getPath());
+    Optional<Sdk> sdkB = getDefaultJavaSdk(executable.get().getPath());
     // Make sure they are identical, meaning that no new JDK was created on the 2nd find.
     assertTrue(sdkA.get() == sdkB.get());
   }

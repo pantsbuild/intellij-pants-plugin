@@ -33,6 +33,7 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.compiler.CompilerMessage;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
@@ -40,6 +41,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
@@ -313,15 +315,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     System.out.println("Import: " + projectFolderPathToImport);
     myRelativeProjectPath = projectFolderPathToImport;
     myProjectSettings.setTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        PantsUtil.getDefaultJavaSdk(getProjectPath())
-          .ifPresent(sdk -> {
-            ProjectJdkTable.getInstance().addJdk(sdk);
+    ApplicationManager.getApplication().runWriteAction(() -> {
+        getDefaultJavaSdk().ifPresent(sdk -> {
             NewProjectUtil.applyJdkToProject(myProject, sdk);
-          });
-      }
+        });
     });
     importProject();
     PantsMetrics.markIndexEnd();
@@ -596,5 +593,18 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected PantsExecuteTaskResult pantsCompileModule(String... moduleNames) {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
     return runner.doPantsCompile(getModules(moduleNames));
+  }
+
+  protected Optional<Sdk> getDefaultJavaSdk() {
+    return PantsUtil.findPantsExecutable(getProjectPath())
+      .flatMap(vf -> getDefaultJavaSdk(vf.getPath()));
+  }
+
+  protected Optional<Sdk> getDefaultJavaSdk(final @NotNull String path) {
+    return getDefaultJavaSdk(path, getTestRootDisposable());
+  }
+
+  protected Optional<Sdk> getDefaultJavaSdk(final @NotNull String path, final @NotNull Disposable parentDisposable) {
+    return PantsUtil.getDefaultJavaSdk(path, parentDisposable);
   }
 }
