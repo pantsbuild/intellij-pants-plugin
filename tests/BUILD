@@ -1,8 +1,10 @@
 # Alias for sources and libs needed for tests
 target(name='sources-and-libs',
   dependencies=[
+    '//:scala-reflect',
     '3rdparty/intellij:external-system-test-api',
     '3rdparty/intellij:gradle-plugin',
+    '3rdparty/intellij:junit-plugin',
     '3rdparty/intellij:python-plugin',
     '3rdparty/intellij:scala-plugin',
     '3rdparty/intellij:sdk',

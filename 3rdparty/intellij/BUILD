@@ -137,6 +137,12 @@ def _find_jars_for_plugin(plugin_name, builtin=True, excludes=[]):
                         ' disappeared:\n%s' % (plugin_name, missed_excludes))
     return lib_jars
 
+def _find_jar_for_plugin(plugin_name, whitelist, builtin=True):
+    plugin_dir = os.path.join(
+        _find_plugin_dir(plugin_name, builtin=builtin),
+        'lib')
+    return [os.path.join(plugin_dir, path) for path in whitelist]
+
 
 def _intellij_sdk_jar(path):
     package, version = extract_package_name_version(path)
@@ -178,7 +184,9 @@ def _jdk_jar(path):
 
 jar_library(
     name = 'sdk',
-    jars = _intellij_sdk_classpath() + [ _jdk_jar(path) for path in _jdk_classpath() ],
+    jars = _intellij_sdk_classpath() + [
+      _jdk_jar(path) for path in _jdk_classpath()
+    ],
     scope='compile test',
 )
 
@@ -206,11 +214,11 @@ jar_library(
 jar_library(
     name = 'scala-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'scala-plugin') for path in _find_jars_for_plugin('Scala', builtin=False)
-    ] + [jar(org = 'org.scalameta', name = 'trees_2.11', rev = '1.3.0')],
+        _intellij_plugin_jar(path, 'scala-plugin') for path in _find_jar_for_plugin(
+            'Scala', ['scala-plugin.jar', 'scalap.jar', 'bcel.jar'], builtin=False)
+    ] + [jar(org='org.scalameta', name='trees_2.12', rev='2.0.1')],
     scope='compile test',
 )
-
 
 jar_library(
     name = 'junit-plugin',
