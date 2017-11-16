@@ -75,7 +75,7 @@ public class SimpleExportResult {
     .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
   @NotNull
-  public static SimpleExportResult getExportResult(@NotNull String pantsExecutable) {
+  public static SimpleExportResult getExportResult(@NotNull String pantsExecutable) throws PantsException {
     File pantsExecutableFile = new File(pantsExecutable);
     SimpleExportResult cache = simpleExportCache.get(pantsExecutableFile);
     if (cache != null) {
@@ -88,16 +88,20 @@ public class SimpleExportResult {
         String.format("%s=%s", PantsConstants.PANTS_CLI_OPTION_EXPORT_OUTPUT_FILE,
                       tempFile.getFile().getPath()));
       final ProcessOutput processOutput = PantsUtil.getCmdOutput(commandline, null);
-      if (processOutput.checkSuccess(LOG)) {
-        SimpleExportResult result = parse(FileUtil.loadFile(tempFile.getFile()));
-        simpleExportCache.put(pantsExecutableFile, result);
-        return result;
+      if (!processOutput.checkSuccess(LOG)) {
+        throw new PantsException(String.format(
+          "Failed: command '%s' exited with non-zero status",
+          commandline.getCommandLineString()));
       }
+      SimpleExportResult result = parse(FileUtil.loadFile(tempFile.getFile()));
+      simpleExportCache.put(pantsExecutableFile, result);
+      return result;
+    } catch (IOException | ExecutionException e) {
+      throw new PantsException(String.format(
+        "Failed: command '%s' with error \"%s\"",
+        commandline.getCommandLineString(), e.toString()));
     }
-    catch (IOException | ExecutionException e) {
-      // Fall-through to handle outside the block.
-    }
-    throw new PantsException("Failed:" + commandline.getCommandLineString());
+    // unreachable
   }
 
   public Optional<String> getJdkHome(boolean strict) {

@@ -184,9 +184,7 @@ def _jdk_jar(path):
 
 jar_library(
     name = 'sdk',
-    jars = _intellij_sdk_classpath() + [
-      _jdk_jar(path) for path in _jdk_classpath()
-    ],
+    jars = _intellij_sdk_classpath() + [ _jdk_jar(path) for path in _jdk_classpath() ],
     scope='compile test',
 )
 
@@ -194,9 +192,8 @@ jar_library(
 jar_library(
     name = 'external-system-test-api',
     jars = [
-        _intellij_plugin_jar(
-            os.path.join(os.getcwd(), 'testData', 'external-system-test-api.jar'),
-            'plugins')
+        _intellij_plugin_jar(os.path.join(os.getcwd(), 'testData', 'external-system-test-api.jar'),
+                             'plugins')
     ],
     scope='compile test',
 )
@@ -206,7 +203,7 @@ python_plugin_folder = 'python' if is_ultimate() else 'python-ce'
 jar_library(
     name = 'python-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'python-plugin') for path in _find_jars_for_plugin(python_plugin_folder, False)
+        _intellij_plugin_jar(path, 'python-plugin') for path in _find_jars_for_plugin(python_plugin_folder, builtin=False)
     ],
     scope='compile test',
 )
