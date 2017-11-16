@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="scala-plugin">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/.cache/intellij/IC-173.3531.6/plugins/Scala" />
+      <root url="jar://$PROJECT_DIR$/.cache/intellij/IC-173.3531.6/plugins/Scala/lib/bcel.jar!/" />
+      <root url="jar://$PROJECT_DIR$/.cache/intellij/IC-173.3531.6/plugins/Scala/lib/compiler-shared.jar!/" />
+      <root url="jar://$PROJECT_DIR$/.cache/intellij/IC-173.3531.6/plugins/Scala/lib/scala-plugin.jar!/" />
+      <root url="jar://$PROJECT_DIR$/.cache/intellij/IC-173.3531.6/plugins/Scala/lib/scalap.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/.cache/intellij/IC-173.3531.6/plugins/Scala/lib/scala-plugin.jar!/com/intellij/scala/play/projectTemplate/sbtintegr/skeleton260/app_java" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/.cache/intellij/IC-173.3531.6/plugins/Scala" recursive="false" />
+  </library>
+</component>

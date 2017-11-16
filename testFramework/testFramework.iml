@@ -7,6 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="common" />
+    <orderEntry type="library" exported="" name="external-system-test-api" level="project" />
+    <orderEntry type="module" module-name="intellij-pants-plugin" exported="" />
   </component>
 </module>

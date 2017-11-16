@@ -18,8 +18,7 @@ jar_library(name = 'scala-library',
             # classpath itself.
             # Scala runtime will be supplied by intellij scala plugin which pants plugin depends on,
             # so there is no need to carry it around.
-            scope='compile test',
-)
+            scope='compile test',)
 
 target(name = 'scala-repl',
        dependencies=[
@@ -35,12 +34,11 @@ jar_library(name = 'scala-actors',
 
 jar_library(name = 'scala-reflect',
             jars = [
-              jar(org = 'org.scala-lang', name = 'scala-reflect', rev = SCALA_REV,
-                  intransitive=True,
-              ),
+              jar(org = 'org.scala-lang', name = 'scala-reflect', rev = SCALA_REV, intransitive=True),
             ])
 
 jar_library(name = 'scalap',
             jars = [
               jar(org = 'org.scala-lang', name = 'scalap', rev = SCALA_REV),
             ])
+

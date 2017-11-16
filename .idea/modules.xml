@@ -3,8 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/common/common.iml" filepath="$PROJECT_DIR$/common/common.iml" />
-      <module fileurl="file://$PROJECT_DIR$/intellij-pants-plugin.iml" filepath="$PROJECT_DIR$/intellij-pants-plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/intellij-pants-plugin.iml" filepath="$PROJECT_DIR$/src/intellij-pants-plugin.iml" />
       <module fileurl="file://$PROJECT_DIR$/jps-plugin/jps-plugin.iml" filepath="$PROJECT_DIR$/jps-plugin/jps-plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/testFramework/testFramework.iml" filepath="$PROJECT_DIR$/testFramework/testFramework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tests/tests.iml" filepath="$PROJECT_DIR$/tests/tests.iml" />
     </modules>
   </component>
 </project>

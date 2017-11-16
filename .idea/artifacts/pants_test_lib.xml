@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="pants-test-lib">
-    <output-path>$PROJECT_DIR$/out/artifacts/pants-test-lib</output-path>
-    <root id="archive" name="pants-test-lib.jar">
-      <element id="module-test-output" name="intellij-pants-plugin" />
-    </root>
-  </artifact>
-</component>
