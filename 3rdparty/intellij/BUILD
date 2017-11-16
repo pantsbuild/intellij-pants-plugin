@@ -114,48 +114,41 @@ def _find_plugin_dir(plugin_name, builtin=True):
     return os.path.join(plugin_root, plugin_name, 'lib')
 
 
-def _find_jars_blacklist(plugin_dir, blacklist=[]):
+def _check_jar_entries(plugin_dir, entries):
+    non_jars = []
+    for entry in entries:
+        full_path = os.path.join(plugin_dir, entry)
+        if os.path.isfile(full_path) and full_path.endswith('.jar'): continue
+        non_jars.append(entry)
+    if len(non_jars) > 0:
+        raise Exception('entries %s in dir "%s" are not valid jar file paths'
+                        % (non_jars, plugin_dir))
+
+
+def _find_jars_blacklist(plugin_dir, blacklist=frozenset([])):
     """
     Find the jars non-built-in plugins under $IDEA/plugins/<plugin_name>
     """
-    for entry in blacklist:
-        if not entry.endswith('.jar'):
-            raise Exception('some entries for the blacklist for plugin dir "%s"'
-                            ' did not end in ".jar": [%s]' % (plugin_dir, blacklist))
-    lib_jars = []
-    hit_blacklist = {exc:False for exc in blacklist}
+    try:
+        _check_jar_entries(plugin_dir, blacklist)
+    except Exception as e:
+        raise Exception('Error: invalid blacklist entries: %s' % e)
+    excluded = {os.path.join(plugin_dir, e) for e in blacklist}
+    jars = set()
     for entry in os.listdir(plugin_dir):
-        if entry in blacklist:
-            hit_blacklist[entry] = True
-            continue
         full_path = os.path.join(plugin_dir, entry)
         if full_path.endswith('.jar') and os.path.isfile(full_path):
-            lib_jars.append(full_path)
-    missed_blacklist = [entry for entry in blacklist if not hit_blacklist[entry]]
-    if len(missed_blacklist) > 0:
-        raise Exception('some entries for plugin dir "%s" were not found.'
-                        ' remove these from the blacklist or figure out why they'
-                        ' disappeared:\n%s' % (plugin_dir, missed_blacklist))
-    return lib_jars
+            jars.add(full_path)
+    return list(jars - excluded)
 
-def _find_jars_whitelist(plugin_dir, whitelist):
-    for entry in whitelist:
-        if not entry.endswith('.jar'):
-            raise Exception('some entries for the whitelist for plugin dir "%s"'
-                            ' did not end in ".jar": [%s]' % (plugin_dir, whitelist))
-    hit_whitelist = {entry:False for entry in whitelist}
-    lib_jars = []
-    for entry in os.listdir(plugin_dir):
-        full_path = os.path.join(plugin_dir, entry)
-        if entry in whitelist and os.path.isfile(full_path):
-            hit_whitelist[entry] = True
-            lib_jars.append(full_path)
-    missed_whitelist = [entry for entry in whitelist if not hit_whitelist[entry]]
-    if len(missed_whitelist) > 0:
-        raise Exception('some entries for plugin dir "%s" were not found.'
-                        ' remove these from the whitelist or figure out why they'
-                        ' disappeared:\n%s' % (plugin_dir, missed_whitelist))
-    return [os.path.join(plugin_dir, path) for path in whitelist]
+
+def _find_jars_whitelist(plugin_dir, whitelist=frozenset([])):
+    try:
+        _check_jar_entries(plugin_dir, whitelist)
+    except Exception as e:
+        raise Exception('Error: invalid whitelist entries: %s' % e)
+    included = {os.path.join(plugin_dir, path) for path in whitelist}
+    return list(included)
 
 
 def _intellij_sdk_jar(path):
