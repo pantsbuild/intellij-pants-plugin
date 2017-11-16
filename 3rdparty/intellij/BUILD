@@ -111,36 +111,50 @@ def _find_plugin_dir(plugin_name, builtin=True):
         plugin_root = os.path.join(os.getenv('INTELLIJ_HOME'), 'plugins')
     else:
         plugin_root = os.getenv('INTELLIJ_PLUGINS_HOME')
-    return os.path.join(plugin_root, plugin_name)
+    return os.path.join(plugin_root, plugin_name, 'lib')
 
 
-def _find_jars_for_plugin(plugin_name, builtin=True, excludes=[]):
+def _find_jars_blacklist(plugin_dir, blacklist=[]):
     """
     Find the jars non-built-in plugins under $IDEA/plugins/<plugin_name>
     """
-    plugin_dir = os.path.join(
-        _find_plugin_dir(plugin_name, builtin=builtin),
-        'lib')
+    for entry in blacklist:
+        if not entry.endswith('.jar'):
+            raise Exception('some entries for the blacklist for plugin dir "%s"'
+                            ' did not end in ".jar": [%s]' % (plugin_dir, blacklist))
     lib_jars = []
-    hit_excludes = {exc:False for exc in excludes}
+    hit_blacklist = {exc:False for exc in blacklist}
     for entry in os.listdir(plugin_dir):
-        if entry in excludes:
-            hit_excludes[entry] = True
+        if entry in blacklist:
+            hit_blacklist[entry] = True
             continue
         full_path = os.path.join(plugin_dir, entry)
         if full_path.endswith('.jar') and os.path.isfile(full_path):
             lib_jars.append(full_path)
-    missed_excludes = [exc for exc in excludes if not hit_excludes[exc]]
-    if len(missed_excludes) > 0:
-        raise Exception('some excludes for plugin "%s" were not found.'
-                        ' remove these from excludes or figure out why they'
-                        ' disappeared:\n%s' % (plugin_name, missed_excludes))
+    missed_blacklist = [entry for entry in blacklist if not hit_blacklist[entry]]
+    if len(missed_blacklist) > 0:
+        raise Exception('some entries for plugin dir "%s" were not found.'
+                        ' remove these from the blacklist or figure out why they'
+                        ' disappeared:\n%s' % (plugin_dir, missed_blacklist))
     return lib_jars
 
-def _find_jar_for_plugin(plugin_name, whitelist, builtin=True):
-    plugin_dir = os.path.join(
-        _find_plugin_dir(plugin_name, builtin=builtin),
-        'lib')
+def _find_jars_whitelist(plugin_dir, whitelist):
+    for entry in whitelist:
+        if not entry.endswith('.jar'):
+            raise Exception('some entries for the whitelist for plugin dir "%s"'
+                            ' did not end in ".jar": [%s]' % (plugin_dir, whitelist))
+    hit_whitelist = {entry:False for entry in whitelist}
+    lib_jars = []
+    for entry in os.listdir(plugin_dir):
+        full_path = os.path.join(plugin_dir, entry)
+        if entry in whitelist and os.path.isfile(full_path):
+            hit_whitelist[entry] = True
+            lib_jars.append(full_path)
+    missed_whitelist = [entry for entry in whitelist if not hit_whitelist[entry]]
+    if len(missed_whitelist) > 0:
+        raise Exception('some entries for plugin dir "%s" were not found.'
+                        ' remove these from the whitelist or figure out why they'
+                        ' disappeared:\n%s' % (plugin_dir, missed_whitelist))
     return [os.path.join(plugin_dir, path) for path in whitelist]
 
 
@@ -203,7 +217,7 @@ python_plugin_folder = 'python' if is_ultimate() else 'python-ce'
 jar_library(
     name = 'python-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'python-plugin') for path in _find_jars_for_plugin(python_plugin_folder, builtin=False)
+        _intellij_plugin_jar(path, 'python-plugin') for path in _find_jars_blacklist(_find_plugin_dir(python_plugin_folder, builtin=False))
     ],
     scope='compile test',
 )
@@ -211,16 +225,18 @@ jar_library(
 jar_library(
     name = 'scala-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'scala-plugin') for path in _find_jar_for_plugin(
-            'Scala', ['scala-plugin.jar', 'scalap.jar', 'bcel.jar'], builtin=False)
-    ] + [jar(org='org.scalameta', name='trees_2.12', rev='2.0.1')],
+        _intellij_plugin_jar(path, 'scala-plugin') for path in _find_jars_whitelist(
+            _find_plugin_dir('Scala', builtin=False),
+            whitelist=['bcel.jar', 'compiler-shared.jar', 'scala-plugin.jar', 'scalap.jar'])
+    ] + [jar(org='org.scalameta', name='trees_2.12', rev='2.0.1',
+             excludes=[exclude('com.google.protobuf')])],
     scope='compile test',
 )
 
 jar_library(
     name = 'junit-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'junit-plugin') for path in _find_jars_for_plugin('junit')
+        _intellij_plugin_jar(path, 'junit-plugin') for path in _find_jars_blacklist(_find_plugin_dir('junit'))
     ],
     scope='compile test',
 )
@@ -230,9 +246,10 @@ jar_library(
     name = 'gradle-plugin',
     dependencies = [':groovy-plugin'],
     jars = [
-        _intellij_plugin_jar(path, 'gradle-plugin') for path in _find_jars_for_plugin('gradle',
+        _intellij_plugin_jar(path, 'gradle-plugin') for path in _find_jars_blacklist(
+            _find_plugin_dir('gradle'),
             # A workaround to avoid guava version conflicts/shadowing with the one under $IDEA/lib
-            excludes=['guava-jdk5-17.0.jar']
+            blacklist=['guava-jdk5-17.0.jar'],
         )
     ],
     scope='compile test',
@@ -243,7 +260,7 @@ jar_library(
     name = 'groovy-plugin',
     dependencies = [':properties-plugin'],
     jars = [
-        _intellij_plugin_jar(path, 'groovy-plugin') for path in _find_jars_for_plugin('Groovy')
+        _intellij_plugin_jar(path, 'groovy-plugin') for path in _find_jars_blacklist(_find_plugin_dir('Groovy'))
     ],
     scope='compile test',
 )
@@ -252,7 +269,7 @@ jar_library(
 jar_library(
     name = 'properties-plugin',
     jars = [
-        _intellij_plugin_jar(path, 'properties-plugin') for path in _find_jars_for_plugin('properties')
+        _intellij_plugin_jar(path, 'properties-plugin') for path in _find_jars_blacklist(_find_plugin_dir('properties'))
     ],
     scope='compile test',
 )
