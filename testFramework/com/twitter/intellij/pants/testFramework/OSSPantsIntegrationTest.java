@@ -18,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
   public OSSPantsIntegrationTest() {
@@ -80,8 +79,8 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
    */
   protected void assertProjectJdkAndLanguageLevel() {
     assertEquals(
-      Optional.ofNullable(ProjectRootManager.getInstance(myProject).getProjectSdk()).map(sdk -> getHomePath()),
-      PantsUtil.getDefaultJavaSdk(getParentPath(), null).get().getHomePath()
+      ProjectRootManager.getInstance(myProject).getProjectSdk().getHomePath(),
+      PantsUtil.getDefaultJavaSdk(getParentPath()).get().getHomePath()
     );
 
     LanguageLevel projectLanguageLevel = LanguageLevelProjectExtension.getInstance(myProject).getLanguageLevel();

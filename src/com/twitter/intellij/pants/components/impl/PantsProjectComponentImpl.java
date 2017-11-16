@@ -222,7 +222,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         return;
       }
 
-      Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath(), null);
+      Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath());
       if (!sdk.isPresent()) {
         return;
       }

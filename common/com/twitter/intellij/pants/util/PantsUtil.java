@@ -21,7 +21,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.extensions.PluginId;
@@ -84,7 +83,7 @@ import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
 import org.jetbrains.jps.model.library.impl.sdk.JpsSdkImpl;
 import org.jetbrains.jps.model.library.sdk.JpsSdkReference;
-import com.intellij.openapi.Disposable;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -802,62 +801,54 @@ public class PantsUtil {
     return addresses.stream().filter(s -> !isGenTarget(s)).collect(Collectors.toSet());
   }
 
-  private static final List<String> JDK_VERSION_BASES = ContainerUtil.newArrayList("1.x", "1.6", "1.7", "1.8", "1.9");
-
-  public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable, Disposable parentDisposable) {
-    final Sdk[] allJdks = ProjectJdkTable.getInstance().getAllJdks();
-    final Optional<Sdk> sdkForPants = Arrays.stream(allJdks)
-      // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
-      .filter(sdk -> sdk.getName().contains(pantsExecutable))
+  public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable) {
+    // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
+    Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
+      .filter(sdk -> sdk.getName().contains(pantsExecutable) && sdk.getSdkType() instanceof JavaSdk)
       .findFirst();
 
     if (sdkForPants.isPresent()) {
-      final SdkModificator modificator = sdkForPants.get().getSdkModificator();
+      SdkModificator modificator = sdkForPants.get().getSdkModificator();
       JavaSdkImpl.attachJdkAnnotations(modificator);
       modificator.commitChanges();
       return sdkForPants;
     }
 
-    final Optional<SimpleExportResult> exportResult =
-      Optional.of(SimpleExportResult.getExportResult(pantsExecutable))
-        .filter(export -> versionCompare(export.getVersion(), "1.0.7") >= 0);
+    final SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
+    if (versionCompare(exportResult.getVersion(), "1.0.7") < 0) {
+      return Optional.empty();
+    }
 
-    final @NotNull PantsOptions opts = PantsOptions.getPantsOptions(pantsExecutable);
-    final boolean strictJvmVersion =
-      Optional.ofNullable(opts.get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION))
-        .flatMap(strictness -> strictness.equals("True") ? Optional.of(true) : Optional.empty())
-        .orElse(false);
-    final Optional<String> jdkHome = exportResult
-      .flatMap(export -> export.getJdkHome(strictJvmVersion));
+    boolean strict = PantsOptions.getPantsOptions(pantsExecutable)
+      .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION)
+      .isPresent();
+    Optional<String> jdkHome = exportResult.getJdkHome(strict);
+    if (!jdkHome.isPresent()) {
+      return Optional.empty();
+    }
 
-    Optional<Sdk> newJdk = jdkHome.flatMap(home -> {
-        Optional<JdkVersionDetector.JdkVersionInfo> jdkInfo =
-          Optional.ofNullable(JdkVersionDetector.getInstance().detectJdkVersionInfo(home));
-        Optional<String> jdkName = jdkInfo.map(info -> info.getVersion())
-          .flatMap(version -> {
-            return JDK_VERSION_BASES.stream()
-              .map(base -> String.format("%s_from_%s", base, pantsExecutable))
-              // Using IJ's framework to detect jdk version. so info.getVersion() returns `java version "1.8.0_121"`
-              .filter(versionString -> version.contains(versionString))
-              .findFirst();
-        });
-        return jdkName.map(name -> JavaSdk.getInstance().createJdk(name, home));
-    });
+    String jdkName = String.format("1.x_from_%s", pantsExecutable);
+    JdkVersionDetector.JdkVersionInfo jdkInfo = JdkVersionDetector.getInstance().detectJdkVersionInfo(jdkHome.get());
+    if (jdkInfo != null) {
+      // Using IJ's framework to detect jdk version. so jdkInfo.getVersion() returns `java version "1.8.0_121"`
+      for (String version : ContainerUtil.newArrayList("1.6", "1.7", "1.8", "1.9")) {
+        if (jdkInfo.getVersion().contains(version)) {
+          jdkName = String.format("%s_from_%s", version, pantsExecutable);
+          break;
+        }
+      }
+    }
 
     // Finally if we need to create a new JDK, it needs to be registered in the `ProjectJdkTable` on the IDE level
     // before it can be used.
-    newJdk.ifPresent(jdk -> {
-        ApplicationManager.getApplication().invokeAndWait(() -> {
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                if (parentDisposable == null) {
-                  ProjectJdkTable.getInstance().addJdk(jdk);
-                } else {
-                  ProjectJdkTable.getInstance().addJdk(jdk, parentDisposable);
-                }
-            });
-        });
+    Sdk jdk = JavaSdk.getInstance().createJdk(jdkName, jdkHome.get());
+    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+      @Override
+      public void run() {
+        ApplicationManager.getApplication().runWriteAction(() -> ProjectJdkTable.getInstance().addJdk(jdk));
+      }
     });
-    return newJdk;
+    return Optional.of(jdk);
   }
 
   /**
