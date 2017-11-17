@@ -20,6 +20,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.impl.EditorImpl;
@@ -801,16 +802,20 @@ public class PantsUtil {
     return addresses.stream().filter(s -> !isGenTarget(s)).collect(Collectors.toSet());
   }
 
-  public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable) {
-    // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
+  public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable, @Nullable final Disposable parentDisposable) {
     Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
+      // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
       .filter(sdk -> sdk.getName().contains(pantsExecutable) && sdk.getSdkType() instanceof JavaSdk)
       .findFirst();
 
     if (sdkForPants.isPresent()) {
       SdkModificator modificator = sdkForPants.get().getSdkModificator();
       JavaSdkImpl.attachJdkAnnotations(modificator);
-      modificator.commitChanges();
+      ApplicationManager.getApplication().invokeAndWait(() -> {
+          ApplicationManager.getApplication().runWriteAction(() -> {
+              modificator.commitChanges();
+          });
+      });
       return sdkForPants;
     }
 
@@ -819,15 +824,13 @@ public class PantsUtil {
       return Optional.empty();
     }
 
-    boolean strict = PantsOptions.getPantsOptions(pantsExecutable)
-      .get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION)
-      .isPresent();
+    boolean strict = PantsOptions.getPantsOptions(pantsExecutable).usesStrictJvmVersionForJUnit();
     Optional<String> jdkHome = exportResult.getJdkHome(strict);
     if (!jdkHome.isPresent()) {
       return Optional.empty();
     }
 
-    String jdkName = String.format("1.x_from_%s", pantsExecutable);
+    String jdkName = null;
     JdkVersionDetector.JdkVersionInfo jdkInfo = JdkVersionDetector.getInstance().detectJdkVersionInfo(jdkHome.get());
     if (jdkInfo != null) {
       // Using IJ's framework to detect jdk version. so jdkInfo.getVersion() returns `java version "1.8.0_121"`
@@ -838,12 +841,21 @@ public class PantsUtil {
         }
       }
     }
+    if (jdkName == null) {
+      jdkName = String.format("1.x_from_%s", pantsExecutable);
+    }
 
     // Finally if we need to create a new JDK, it needs to be registered in the `ProjectJdkTable` on the IDE level
     // before it can be used.
     Sdk jdk = JavaSdk.getInstance().createJdk(jdkName, jdkHome.get());
     ApplicationManager.getApplication().invokeAndWait(() -> {
-        ApplicationManager.getApplication().runWriteAction(() -> ProjectJdkTable.getInstance().addJdk(jdk));
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            if (parentDisposable == null) {
+              ProjectJdkTable.getInstance().addJdk(jdk);
+            } else {
+              ProjectJdkTable.getInstance().addJdk(jdk, parentDisposable);
+            }
+        });
     });
     return Optional.of(jdk);
   }

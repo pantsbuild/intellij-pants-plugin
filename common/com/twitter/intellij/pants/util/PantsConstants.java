@@ -16,6 +16,8 @@ public class PantsConstants {
   public static final String PANTS_CONSOLE_NAME = "Pants Console";
   public static final String PLUGIN_ID = "com.intellij.plugins.pants";
 
+  public static final String PANTS_SERIALIZED_VALUE_TRUE = "True";
+
   @NotNull
   public static final ProjectSystemId SYSTEM_ID = new ProjectSystemId(PANTS);
   public static final String PANTS_PROJECT_MODULE_SUFFIX = "_module";

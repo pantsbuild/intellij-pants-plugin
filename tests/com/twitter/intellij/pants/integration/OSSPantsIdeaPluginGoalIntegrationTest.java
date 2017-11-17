@@ -88,5 +88,6 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
 
     assertAndRunPantsMake(runConfiguration);
     assertSuccessfulTest(runConfiguration);
+    assertTrue(ProjectUtil.closeAndDispose(myProject));
   }
 }

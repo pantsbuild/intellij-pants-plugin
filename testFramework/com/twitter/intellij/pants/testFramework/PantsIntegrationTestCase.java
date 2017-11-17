@@ -40,6 +40,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
@@ -83,6 +84,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * If your integration test modifies any source files
@@ -309,14 +311,20 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return classes[0];
   }
 
+  protected Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutablePath) {
+    return PantsUtil.getDefaultJavaSdk(pantsExecutablePath, getTestRootDisposable());
+  }
+
   protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {
     System.out.println("Import: " + projectFolderPathToImport);
     myRelativeProjectPath = projectFolderPathToImport;
     myProjectSettings.setTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
     final String pantsExecutablePath = PantsUtil.findPantsExecutable(getProjectPath()).get().getPath();
-    PantsUtil.getDefaultJavaSdk(pantsExecutablePath).ifPresent(sdk -> {
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            NewProjectUtil.applyJdkToProject(myProject, sdk);
+    getDefaultJavaSdk(pantsExecutablePath).ifPresent(sdk -> {
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                NewProjectUtil.applyJdkToProject(myProject, sdk);
+            });
         });
     });
     importProject();
@@ -491,17 +499,20 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       killNailgun();
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
-      Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
+      // intellij's provided test class sometimes yells about a leaky jdk table
+      final Stream<Sdk> leakedJdks = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
         .filter(jdk -> {
             final String name = jdk.getName();
             return name.contains("pants") || name.startsWith("python");
-        }).forEach(jdk -> {
+      });
+      leakedJdks.forEach(jdk -> {
             ApplicationManager.getApplication().runWriteAction(() -> {
                 ProjectJdkTable.getInstance().removeJdk(jdk);
             });
-        });
+      });
       super.tearDown();
-    } catch (Throwable throwable) {
+    }
+    catch (Throwable throwable) {
       // Discard error containing "Already disposed".
       if (!throwable.getMessage().contains("Already disposed")) {
         throw throwable;
