@@ -185,6 +185,7 @@ jar_library(
                 'compiler-shared.jar',
                 'scala-plugin.jar',
                 'scalap.jar',
+                'scala-play-2-jps-plugin.jar',
             ]
         )
     ] + [
