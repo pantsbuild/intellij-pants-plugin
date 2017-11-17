@@ -10,7 +10,7 @@ target(name='sources-and-libs',
     '3rdparty/intellij:sdk',
     'jps-plugin',
     'src:pants-intellij-plugin',
-    'testFramework/com/twitter/intellij/pants/testFramework:test-lib',
+    'testFramework:test-lib',
     'common',
   ],
 )
