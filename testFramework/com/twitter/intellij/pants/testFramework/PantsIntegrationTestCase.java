@@ -499,7 +499,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       killNailgun();
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
+
       // intellij's provided test class sometimes yells about a leaky jdk table
+      // if tests fail with leaky sdk errors, broaden this to include the
+      // leaky sdks
       final Stream<Sdk> leakedJdks = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
         .filter(jdk -> {
             final String name = jdk.getName();

@@ -5,20 +5,20 @@ _jdk_jars = os.getenv('JDK_JARS').split('\n')
 
 
 VERSION_PATTERN = r"""
-    ^
-    (((?P<name>[a-z0-9_\-]+)    # best effort to match name and version
-      ((?:\-)
-       (?P<version>
-         [0-9\.]+
-         (\-[a-zA-Z0-9]+)?
-       )?
-      )?
-     )
-     |
-     (?P<name2>.+)              # otherwise use the entire basename minus suffix as name
-    )
-    (?:\.jar)                   # suffix
-    $
+  ^
+  (((?P<name>[a-z0-9_\-]+)    # best effort to match name and version
+    ((?:\-)
+     (?P<version>
+       [0-9\.]+
+       (\-[a-zA-Z0-9]+)?
+     )?
+    )?
+   )
+   |
+   (?P<name2>.+)              # otherwise use the entire basename minus suffix as name
+  )
+  (?:\.jar)                   # suffix
+  $
 """
 
 
@@ -26,31 +26,31 @@ _regex = re.compile(VERSION_PATTERN, re.VERBOSE)
 
 
 def extract_package_name_version(path):
-    """Extract package name and version out of file basename.
+  """Extract package name and version out of file basename.
 
-    Matching is regular expression based using simple heuristics.
+  Matching is regular expression based using simple heuristics.
 
-    A few examples:
+  A few examples:
 
-      cglib-2.2.2.jar => cglib, 2.2.2
-      markdownj-core-0.4.2-SNAPSHOT.jar => markdownj-core, 0.4.2-SNAPSHOT
-      sanselan-0.98-snapshot.jar => sanselan, 0.98-snapshot
+    cglib-2.2.2.jar => cglib, 2.2.2
+    markdownj-core-0.4.2-SNAPSHOT.jar => markdownj-core, 0.4.2-SNAPSHOT
+    sanselan-0.98-snapshot.jar => sanselan, 0.98-snapshot
 
-    When matches are not found, 'latest' is the default version and basename
-    minus suffix is the package name. For example:
+  When matches are not found, 'latest' is the default version and basename
+  minus suffix is the package name. For example:
 
-      junit-rt.jar => junit-rt, latest
-      jsr173_1.0_api.jar => jsr173_1.0_api, latest
+    junit-rt.jar => junit-rt, latest
+    jsr173_1.0_api.jar => jsr173_1.0_api, latest
 
-    """
+  """
 
-    basename = os.path.basename(path)
-    match = _regex.search(basename)
-    if match:
-        name = match.group('name') or match.group('name2') or basename
-        version = match.group('version') or 'latest'
-        return name, version
-    return basename, 'latest'
+  basename = os.path.basename(path)
+  match = _regex.search(basename)
+  if match:
+      name = match.group('name') or match.group('name2') or basename
+      version = match.group('version') or 'latest'
+      return name, version
+  return basename, 'latest'
 
 
 _is_ultimate = os.getenv('IJ_ULTIMATE', 'false') == 'true'

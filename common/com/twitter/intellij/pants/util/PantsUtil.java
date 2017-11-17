@@ -802,6 +802,8 @@ public class PantsUtil {
     return addresses.stream().filter(s -> !isGenTarget(s)).collect(Collectors.toSet());
   }
 
+  // NB: `pantsExecutable` should be a path to a pants executable (from
+  // findPantsExecutable()), NOT a directory path!
   public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable, @Nullable final Disposable parentDisposable) {
     Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
       // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
