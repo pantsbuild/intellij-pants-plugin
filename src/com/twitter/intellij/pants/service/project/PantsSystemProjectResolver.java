@@ -141,7 +141,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     @NotNull final PantsCompileOptionsExecutor executor,
     @NotNull ExternalSystemTaskNotificationListener listener,
     boolean isPreviewMode,
-    boolean isEnableImcrementalImport
+    boolean isEnableIncrementalImport
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     // todo(fkorotkov): add ability to choose a name for a project
     final ProjectData projectData = new ProjectData(
@@ -157,7 +157,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {
-      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(isEnableImcrementalImport);
+      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(isEnableIncrementalImport);
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
