@@ -1,0 +1,9 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="notice" value="Copyright &amp;#36;today.year Pants project contributors (see CONTRIBUTORS.md).&#10;Licensed under the Apache License, Version 2.0 (see LICENSE)." />
+    <option name="keyword" value="Copyright" />
+    <option name="allowReplaceKeyword" value="" />
+    <option name="myName" value="pants" />
+    <option name="myLocal" value="true" />
+  </copyright>
+</component>
