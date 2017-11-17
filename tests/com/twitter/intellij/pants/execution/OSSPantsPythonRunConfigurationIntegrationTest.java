@@ -42,19 +42,6 @@ import java.util.stream.Stream;
 
 public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
 
-  @Override
-  public void tearDown() throws Exception {
-    final Sdk[] maybeJdks = ProjectJdkTable.getInstance().getAllJdks();
-    final Stream<Sdk> nonJavaSdks = Arrays.stream(maybeJdks)
-      .filter(jdk -> !(jdk.getSdkType() instanceof JavaSdk));
-    ApplicationManager.getApplication().runWriteAction(() -> {
-        nonJavaSdks.forEach(pyJdk -> {
-            ProjectJdkTable.getInstance().removeJdk(pyJdk);
-        });
-    });
-    super.tearDown();
-  }
-
   public void testPyTestRunConfiguration() throws Throwable {
     doImport("examples/tests/python/example_test/hello");
 

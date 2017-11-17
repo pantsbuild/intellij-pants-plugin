@@ -314,8 +314,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     myRelativeProjectPath = projectFolderPathToImport;
     myProjectSettings.setTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
     final String pantsExecutablePath = PantsUtil.findPantsExecutable(getProjectPath()).get().getPath();
-    ApplicationManager.getApplication().runWriteAction(() -> {
-        PantsUtil.getDefaultJavaSdk(pantsExecutablePath).ifPresent(sdk -> {
+    PantsUtil.getDefaultJavaSdk(pantsExecutablePath).ifPresent(sdk -> {
+        ApplicationManager.getApplication().runWriteAction(() -> {
             NewProjectUtil.applyJdkToProject(myProject, sdk);
         });
     });
@@ -491,9 +491,17 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       killNailgun();
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
+      Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
+        .filter(jdk -> {
+            final String name = jdk.getName();
+            return name.contains("pants") || name.startsWith("python");
+        }).forEach(jdk -> {
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                ProjectJdkTable.getInstance().removeJdk(jdk);
+            });
+        });
       super.tearDown();
-    }
-    catch (Throwable throwable) {
+    } catch (Throwable throwable) {
       // Discard error containing "Already disposed".
       if (!throwable.getMessage().contains("Already disposed")) {
         throw throwable;
