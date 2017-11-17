@@ -189,7 +189,9 @@ jar_library(
             ]
         )
     ] + [
-        jar(org='org.scalameta', name='trees_2.12', rev='2.0.1', excludes=[exclude('com.google.protobuf')]),
+        jar(org='org.scalameta', name='trees_2.12', rev='2.0.1', excludes=[
+            exclude('com.google.protobuf'),
+        ]),
     ],
     scope='compile test',
 )
