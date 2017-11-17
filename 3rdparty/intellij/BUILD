@@ -98,16 +98,6 @@ def _find_jars_whitelist(dir, whitelist):
     return list(included)
 
 
-def _jdk_jar(path):
-    package, version = extract_package_name_version(path)
-    return jar(
-        org='jdk',
-        name=package,
-        rev=version,
-        url='file://%s' % path,
-    )
-
-
 _is_ultimate = os.getenv('IJ_ULTIMATE', 'false') == 'true'
 
 
@@ -133,6 +123,16 @@ def _intellij_plugin_jar(plugin_name, path):
     package, version = extract_package_name_version(path)
     return jar(
         org='com.intellij.{}'.format(plugin_name),
+        name=package,
+        rev=version,
+        url='file://%s' % path,
+    )
+
+
+def _jdk_jar(path):
+    package, version = extract_package_name_version(path)
+    return jar(
+        org='jdk',
         name=package,
         rev=version,
         url='file://%s' % path,
