@@ -500,9 +500,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
 
-      // intellij's provided test class sometimes yells about a leaky jdk table
-      // if tests fail with leaky sdk errors, broaden this to include the
-      // leaky sdks
+      // TODO(dmcclanahan): after updating from 172.4343.14 to 173.3531.6,
+      // intellij's provided test class sometimes yells about a leaky jdk
+      // table. i don't think this indicates any problems, so for now if tests
+      // fail with leaky sdk errors, broaden this to include the leaked sdks
       final Stream<Sdk> leakedJdks = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
         .filter(jdk -> {
             final String name = jdk.getName();

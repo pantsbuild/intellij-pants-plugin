@@ -803,7 +803,8 @@ public class PantsUtil {
   }
 
   // NB: `pantsExecutable` should be a path to a pants executable (from
-  // findPantsExecutable()), NOT a directory path!
+  // findPantsExecutable()), NOT a directory!
+  // NB: tests should use getTestRootDisposable() here to avoid vfs errors!
   public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable, @Nullable final Disposable parentDisposable) {
     Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
       // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
