@@ -76,7 +76,7 @@
 
     <group id="Pants.Compile" text="Pants Compile" description="Pants compilation options" icon="PantsIcons.Icon"
            popup="true" class="com.twitter.intellij.pants.compiler.actions.PantsCompileActionGroup">
-      <add-to-group anchor="before" group-id="ProjectViewCompileGroup" relative-to-action="ProjectViewCompileGroup" />
+      <add-to-group group-id="ProjectViewCompileGroup" />
       <add-to-group group-id="Pants.Menu" anchor="first" />
     </group>
   </actions>

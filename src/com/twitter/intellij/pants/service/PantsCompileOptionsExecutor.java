@@ -220,7 +220,7 @@ public class PantsCompileOptionsExecutor {
   }
 
   /**
-   * @return if successfully canceled all running processes. false if failed ot there were no processes to cancel.
+   * @return if successfully canceled all running processes. false if failed and there were no processes to cancel.
    */
   public boolean cancelAllProcesses() {
     if (myProcesses.isEmpty()) {

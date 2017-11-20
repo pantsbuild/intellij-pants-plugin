@@ -14,9 +14,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 public class PantsOptions {
@@ -49,6 +52,13 @@ public class PantsOptions {
 
   public boolean supportsAsyncCleanAll() {
     return has(PantsConstants.PANTS_OPTION_ASYNC_CLEAN_ALL);
+  }
+
+  public boolean supportsLint() {
+    return options.keySet().stream()
+      .filter(k -> k.startsWith(PantsConstants.PANTS_TASK_LINT))
+      .findAny()
+      .isPresent();
   }
 
   public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {

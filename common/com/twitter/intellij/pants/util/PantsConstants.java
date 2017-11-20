@@ -58,6 +58,7 @@ public class PantsConstants {
   public static final String ACTION_MAKE_PROJECT_ID = "CompileDirty";
   public static final String ACTION_MAKE_PROJECT_DESCRIPTION = "Make Project";
   public static final String REBUILD_PROJECT_DESCRIPTION = "Rebuild Project";
+  public static final String ACTION_COMPILE_GROUP_ID = "ProjectViewCompileGroup";
 
   public static final String EXTERNAL_BUILDER_ERROR = "This is a Pants project. Please use PantsCompile under `Edit Configuration`";
 
@@ -66,9 +67,5 @@ public class PantsConstants {
   public static final String PANTS_TASK_CLEAN_ALL = "clean-all";
   public static final String PANTS_TASK_COMPILE = "compile";
   public static final String PANTS_TASK_EXPORT_CLASSPATH = "export-classpath";
-
-  public static final ImmutableSet<String> SUPPORTED_TASKS = ImmutableSet.of(
-    PANTS_TASK_CLEAN_ALL,
-    PANTS_TASK_COMPILE,
-    PANTS_TASK_EXPORT_CLASSPATH);
+  public static final String PANTS_TASK_LINT = "lint";
 }

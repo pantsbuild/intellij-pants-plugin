@@ -4,14 +4,13 @@
 package com.twitter.intellij.pants.compiler.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.LinkedList;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -19,28 +18,24 @@ import java.util.stream.Stream;
  */
 public class PantsCompileAllTargetsInModuleAction extends PantsCompileActionBase {
 
-  private Module myModule;
+  private final Optional<Module> module;
 
-  public PantsCompileAllTargetsInModuleAction(Module module) {
+  public PantsCompileAllTargetsInModuleAction(Optional<Module> module) {
     super("Compile all targets in module");
-    myModule = module;
-  }
-
-  public PantsCompileAllTargetsInModuleAction() {
-    super("Compile all targets in module");
+    this.module = module;
   }
 
   @NotNull
   @Override
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
-    if (myModule == null) {
-      VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
-      if (file == null) {
-        return Stream.empty();
-      }
-      myModule = ModuleUtil.findModuleForFile(file, project);
+    Optional<Module> module = this.module;
+    if (!module.isPresent()) {
+      module = PantsUtil.getFileForEvent(e)
+        .flatMap(file -> PantsUtil.getModuleForFile(file, project));
     }
-
-    return PantsUtil.getNonGenTargetAddresses(myModule).stream();
+    return module
+      .map(PantsUtil::getNonGenTargetAddresses)
+      .orElse(new LinkedList<>())
+      .stream();
   }
 }

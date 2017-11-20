@@ -555,13 +555,27 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertTrue(provider.executeTask(null, runConfiguration, null, task));
   }
 
+  protected PantsMakeBeforeRun getRunner() {
+    return new PantsMakeBeforeRun(myProject);
+  }
+
   protected PantsExecuteTaskResult pantsCompileProject() {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
-    return runner.doPantsCompile(myProject);
+    return getRunner().doPantsCompile(myProject);
+  }
+
+  protected void assertPantsInvocationSucceeds(final PantsExecuteTaskResult result, @NotNull String opTitle) throws Exception {
+    String errorDescription = result.output.orElse("<no output>");
+    assertTrue(String.format("%s failed: '%s'", opTitle, errorDescription),
+               result.succeeded);
+  }
+
+  protected void assertPantsInvocationFails(final PantsExecuteTaskResult result, @NotNull String opTitle) throws Exception {
+    assertFalse(String.format("%s succeeded, but should fail.", opTitle), result.succeeded);
   }
 
   protected void assertPantsCompileExecutesAndSucceeds(final PantsExecuteTaskResult compileResult) throws Exception {
-    assertTrue("Compile failed", compileResult.succeeded);
+    assertPantsInvocationSucceeds(compileResult, "Compile");
     if (compileResult.output.isPresent()) {
       assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.output.get()));
     }
@@ -569,14 +583,14 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected void assertPantsCompileNoop(final PantsExecuteTaskResult compileResult) throws Exception {
-    assertTrue("Compile failed.", compileResult.succeeded);
+    assertPantsInvocationSucceeds(compileResult, "Compile");
     assertTrue("Compile message not found.", compileResult.output.isPresent());
     assertEquals("Compile was not noop, but should be.", PantsConstants.NOOP_COMPILE, compileResult.output.get());
     assertManifestJarExists();
   }
 
-  protected void assertPantsCompileFailure(final PantsExecuteTaskResult compileResult) {
-    assertFalse("Compile succeeded, but should fail.", compileResult.succeeded);
+  protected void assertPantsCompileFailure(final PantsExecuteTaskResult compileResult) throws Exception {
+    assertPantsInvocationFails(compileResult, "Compile");
   }
 
   protected PantsExecuteTaskResult pantsCompileModule(String... moduleNames) {

@@ -1,4 +1,4 @@
-// Copyright 2016 Pants project contributors (see CONTRIBUTORS.md).
+// Copyright 2017 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 package com.twitter.intellij.pants.execution;
@@ -190,6 +190,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   /**
+   * Execute a list of tasks on a set of target addresses, doing some compile-specific checks.
+   *
    * @param currentProject:           current project
    * @param targetAddresses:          set of target addresses given to pants executable (e.g. "::")
    * @param tasks:                    set of tasks given to pants executable (e.g. "lint")
@@ -224,12 +226,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(pantsExecutable.get().getPath());
 
     showPantsMakeTaskMessage("Checking Pants options...\n", ConsoleViewContentType.SYSTEM_OUTPUT, currentProject);
-    Optional<PantsOptions> pantsOptional = PantsOptions.getPantsOptions(currentProject);
-    if (!pantsOptional.isPresent()) {
+    Optional<PantsOptions> projectOptsResult = PantsOptions.getPantsOptions(currentProject);
+    if (!projectOptsResult.isPresent()) {
       showPantsMakeTaskMessage("Pants Options not found.\n", ConsoleViewContentType.ERROR_OUTPUT, currentProject);
       return PantsExecuteTaskResult.emptyFailure();
     }
-    PantsOptions pantsOptions = pantsOptional.get();
+    PantsOptions pantsOptions = projectOptsResult.get();
 
     /* Global options section. */
     commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
@@ -276,7 +278,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         output.add(event.getText());
       }
     });
-
     runningPantsProcesses.put(currentProject, process);
     processHandler.runProcess();
     runningPantsProcesses.remove(currentProject, process);
