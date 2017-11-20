@@ -198,6 +198,7 @@ public class PantsCompileOptionsExecutor {
   private GeneralCommandLine getCommand(final File outputFile, @NotNull Consumer<String> statusConsumer)
     throws IOException, ExecutionException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+    commandLine.addParameter("--no-quiet");
     commandLine.addParameter("export");
     commandLine.addParameter("--formatted"); // json outputs in a compact format
     if (myResolveSourcesAndDocsForJars) {
