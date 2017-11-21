@@ -1,22 +1,25 @@
 import os
 import re
 
+_jdk_jar_paths = os.environ['JDK_JARS'].split('\n')
+
+_is_ultimate = os.getenv('IJ_ULTIMATE', 'false') == 'true'
 
 VERSION_PATTERN = r"""
-    ^
-    (((?P<name>[a-z0-9_\-]+)    # best effort to match name and version
-      ((?:\-)
-       (?P<version>
-         [0-9\.]+
-         (\-[a-zA-Z0-9]+)?
-       )?
-      )?
-     )
-     |
-     (?P<name2>.+)              # otherwise use the entire basename minus suffix as name
-    )
-    (?:\.jar)                   # suffix
-    $
+  ^
+  (((?P<name>[a-z0-9_\-]+)    # best effort to match name and version
+    ((?:\-)
+     (?P<version>
+       [0-9\.]+
+       (\-[a-zA-Z0-9]+)?
+     )?
+    )?
+   )
+   |
+   (?P<name2>.+)              # otherwise use the entire basename minus suffix as name
+  )
+  (?:\.jar)                   # suffix
+  $
 """
 
 
@@ -24,38 +27,38 @@ _package_version_regex = re.compile(VERSION_PATTERN, re.VERBOSE)
 
 
 def extract_package_name_version(path):
-    """Extract package name and version out of file basename.
+  """Extract package name and version out of file basename.
 
-    Matching is regular expression based using simple heuristics.
+  Matching is regular expression based using simple heuristics.
 
-    A few examples:
+  A few examples:
 
-        cglib-2.2.2.jar => cglib, 2.2.2
-        markdownj-core-0.4.2-SNAPSHOT.jar => markdownj-core, 0.4.2-SNAPSHOT
-        sanselan-0.98-snapshot.jar => sanselan, 0.98-snapshot
+    cglib-2.2.2.jar => cglib, 2.2.2
+    markdownj-core-0.4.2-SNAPSHOT.jar => markdownj-core, 0.4.2-SNAPSHOT
+    sanselan-0.98-snapshot.jar => sanselan, 0.98-snapshot
 
-    When matches are not found, 'latest' is the default version and basename
-    minus suffix is the package name. For example:
+  When matches are not found, 'latest' is the default version and basename
+  minus suffix is the package name. For example:
 
-        junit-rt.jar => junit-rt, latest
-        jsr173_1.0_api.jar => jsr173_1.0_api, latest
+    junit-rt.jar => junit-rt, latest
+    jsr173_1.0_api.jar => jsr173_1.0_api, latest
 
-    """
+  """
 
-    basename = os.path.basename(path)
-    match = _package_version_regex.search(basename)
-    if match:
-        name = match.group('name') or match.group('name2') or basename
-        version = match.group('version') or 'latest'
-        return name, version
-    return basename, 'latest'
+  basename = os.path.basename(path)
+  match = _package_version_regex.search(basename)
+  if match:
+    name = match.group('name') or match.group('name2') or basename
+    version = match.group('version') or 'latest'
+    return name, version
+  return basename, 'latest'
 
 
 def _find_plugin_dir(plugin_name, builtin=True):
     if builtin:
-        plugin_root = os.path.join(os.getenv('INTELLIJ_HOME'), 'plugins')
+        plugin_root = os.path.join(os.environ['INTELLIJ_HOME'], 'plugins')
     else:
-        plugin_root = os.getenv('INTELLIJ_PLUGINS_HOME')
+        plugin_root = os.environ['INTELLIJ_PLUGINS_HOME']
     return os.path.join(plugin_root, plugin_name, 'lib')
 
 
@@ -96,9 +99,6 @@ def _find_jars_whitelist(dir, whitelist):
         raise Exception('Error: invalid whitelist entries: %s' % e)
     included = {os.path.join(dir, path) for path in whiteset}
     return list(included)
-
-
-_is_ultimate = os.getenv('IJ_ULTIMATE', 'false') == 'true'
 
 
 def _intellij_sdk_jar(path):
@@ -143,24 +143,20 @@ jar_library(
     name = 'sdk',
     jars = [
         _intellij_sdk_jar(path) for path in _find_jars_blacklist(
-            os.path.join(os.environ['INTELLIJ_HOME'],
-                         'lib'))
+            os.path.join(os.environ['INTELLIJ_HOME'], 'lib'))
     ] + [
         _jdk_jar(path) for path in _find_jars_whitelist(
             os.environ['JDK_LIBS_HOME'],
-            whitelist=os.getenv('JDK_JARS').split('\n'))
+            whitelist=_jdk_jar_paths)
     ],
     scope='compile test',
 )
 
+
 jar_library(
     name = 'external-system-test-api',
     jars = [
-        _intellij_plugin_jar(
-            'plugins',
-            os.path.join(os.getcwd(),
-                         'testData',
-                         'external-system-test-api.jar'))
+        _intellij_plugin_jar('plugins', os.path.join(os.getcwd(), 'testData', 'external-system-test-api.jar'))
     ],
     scope='compile test',
 )
@@ -176,6 +172,7 @@ jar_library(
     scope='compile test',
 )
 
+
 jar_library(
     name = 'scala-plugin',
     jars = [
@@ -188,17 +185,18 @@ jar_library(
                 'scala-play-2-jps-plugin.jar',
             ]
         )
-    ] + [
-        jar(org='org.scalameta', name='trees_2.12', rev='2.0.1', excludes=[
-            exclude('com.google.protobuf'),
-        ]),
-    ],
+    ] + [jar(org='org.scalameta', name='trees_2.12', rev='2.0.1', excludes=[exclude('com.google.protobuf')])],
     scope='compile test',
 )
 
+
 jar_library(
     name = 'junit-plugin',
-    jars = [_intellij_plugin_jar('junit-plugin', path) for path in _find_jars_blacklist(_find_plugin_dir('junit'))],
+    jars = [
+        _intellij_plugin_jar('junit-plugin', path) for path in _find_jars_blacklist(
+            _find_plugin_dir('junit')
+        )
+    ],
     scope='compile test',
 )
 
@@ -221,13 +219,21 @@ jar_library(
 jar_library(
     name = 'groovy-plugin',
     dependencies = [':properties-plugin'],
-    jars = [_intellij_plugin_jar('groovy-plugin', path) for path in _find_jars_blacklist(_find_plugin_dir('Groovy'))],
+    jars = [
+        _intellij_plugin_jar('groovy-plugin', path) for path in _find_jars_blacklist(
+            _find_plugin_dir('Groovy')
+        )
+    ],
     scope='compile test',
 )
 
 
 jar_library(
     name = 'properties-plugin',
-    jars = [_intellij_plugin_jar('properties-plugin', path) for path in _find_jars_blacklist(_find_plugin_dir('properties'))],
+    jars = [
+        _intellij_plugin_jar('properties-plugin', path) for path in _find_jars_blacklist(
+            _find_plugin_dir('properties')
+        )
+    ],
     scope='compile test',
 )
