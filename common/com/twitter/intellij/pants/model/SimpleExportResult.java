@@ -82,7 +82,7 @@ public class SimpleExportResult {
       return cache;
     }
     final GeneralCommandLine commandline = PantsUtil.defaultCommandLine(pantsExecutable);
-    commandline.addParameters("export", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
+    commandline.addParameters("--no-quiet", "export", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     try (TempFile tempFile = TempFile.create("pants_export_run", ".out")) {
       commandline.addParameter(
         String.format("%s=%s", PantsConstants.PANTS_CLI_OPTION_EXPORT_OUTPUT_FILE,
