@@ -83,6 +83,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -479,6 +480,20 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     cmd("rm", "-rf", "dist");
   }
 
+  @NotNull
+  public static Stream<Sdk> getAllJdks() {
+    return Arrays.stream(ProjectJdkTable.getInstance().getAllJdks());
+  }
+
+  @NotNull
+  public static void removeJdks(@NotNull final Predicate<Sdk> pred) {
+    getAllJdks().filter(pred).forEach(jdk -> {
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        ProjectJdkTable.getInstance().removeJdk(jdk);
+      });
+    });
+  }
+
   @Override
   public void tearDown() throws Exception {
     // TODO thread leak either a IJ bug https://youtrack.jetbrains.com/issue/IDEA-155496
@@ -503,17 +518,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       // TODO(cosmicexplorer): after updating from 172.4343.14 to 173.3531.6,
       // intellij's provided test class sometimes yells about a leaky jdk
       // table. i don't think this indicates any problems, so for now if tests
-      // fail with leaky sdk errors, broaden this to include the leaked sdks
-      final Stream<Sdk> leakedJdks = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
-        .filter(jdk -> {
-            final String name = jdk.getName();
-            return name.contains("pants") || name.startsWith("python");
-      });
-      leakedJdks.forEach(jdk -> {
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                ProjectJdkTable.getInstance().removeJdk(jdk);
-            });
-      });
+      // fail with leaky sdk errors, broaden this to include the leaked sdks.
+      removeJdks(jdk -> jdk.getName().contains("pants"));
       super.tearDown();
     }
     catch (Throwable throwable) {

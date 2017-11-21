@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PantsUtilTest extends OSSPantsImportIntegrationTest {
 
@@ -25,10 +24,6 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     assertTrue(PantsUtil.isPantsProjectFile(LocalFileSystem.getInstance().findFileByPath(getProjectPath())));
     // File system root should not.
     assertFalse(PantsUtil.isPantsProjectFile(LocalFileSystem.getInstance().findFileByPath("/")));
-  }
-
-  public static Stream<Sdk> getAllJdks() {
-    return Arrays.stream(ProjectJdkTable.getInstance().getAllJdks());
   }
 
   protected List<Sdk> getSameJdks(Sdk sdk) {
