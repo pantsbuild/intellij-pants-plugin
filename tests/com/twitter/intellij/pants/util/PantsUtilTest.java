@@ -44,10 +44,10 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     final Sdk sdkA = getDefaultJavaSdk(executable.getPath()).get();
     assertEquals(Lists.newArrayList(sdkA), getSameJdks(sdkA));
 
-    List<Sdk> singleSdkInTable = getSameJdks(sdkA);
+    final List<Sdk> singleSdkInTable = getSameJdks(sdkA);
     assertTrue(singleSdkInTable.get(0).getName().contains("pants"));
 
-    List<Sdk> twoEntriesSameSdk = Lists.newArrayList(sdkA, sdkA);
+    final List<Sdk> twoEntriesSameSdk = Lists.newArrayList(sdkA, sdkA);
     // manually adding the same jdk to the table should result in two identical
     // entries
     ApplicationManager.getApplication().runWriteAction(() -> {
@@ -58,7 +58,7 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
 
     // calling getDefaultJavaSdk should only add a new entry to the table if it
     // needs to make one
-    Sdk sdkB = getDefaultJavaSdk(executable.getPath()).get();
+    final Sdk sdkB = getDefaultJavaSdk(executable.getPath()).get();
     // Make sure they are identical, meaning that no new JDK was created on the 2nd find.
     assertTrue(sdkA == sdkB);
     assertEquals(twoEntriesSameSdk, getSameJdks(sdkA));
