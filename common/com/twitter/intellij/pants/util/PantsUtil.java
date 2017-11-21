@@ -802,9 +802,19 @@ public class PantsUtil {
     return addresses.stream().filter(s -> !isGenTarget(s)).collect(Collectors.toSet());
   }
 
-  // NB: `pantsExecutable` should be a path to a pants executable (from
-  // findPantsExecutable()), NOT a directory!
-  // NB: tests should use getTestRootDisposable() here to avoid vfs errors!
+  /**
+   * @param pantsExecutable path to the pants executable file for the
+   * project. This function will return erroneous output if you use a directory path. The
+   * pants executable can be found from a project path with {@link #findPantsExecutable(String)}.
+   * @param parentDisposable Disposable object to use if a new JDK is added to
+   * the project jdk table (otherwise null). Integration tests should use getTestRootDisposable() for
+   * this argument to avoid exceptions during teardown.
+   * @return The default Sdk object to use for the project at the given pants
+   * executable path.
+   *
+   * This method will add a JDK to the project JDK table if it needs to create
+   * one, which mutates global state (protected by a read/write lock).
+   */
   public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable, @Nullable final Disposable parentDisposable) {
     Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
       // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.

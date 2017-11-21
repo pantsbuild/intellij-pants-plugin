@@ -2,10 +2,6 @@
 
 source scripts/prepare-ci-environment.sh
 
-if [[ $IJ_ULTIMATE == "true" ]]; then
-  export TEST_SET='jvm-integration'
-fi
-
 # For tests/com/twitter/intellij/pants/integration/WholeRepoIntegrationTest.java
 rm -rf .cache/dummy_repo
 cp -r testData/dummy_repo .cache/

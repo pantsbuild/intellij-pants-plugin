@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PantsUtilTest extends OSSPantsImportIntegrationTest {
 
@@ -26,30 +27,41 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     assertFalse(PantsUtil.isPantsProjectFile(LocalFileSystem.getInstance().findFileByPath("/")));
   }
 
+  public static Stream<Sdk> getAllJdks() {
+    return Arrays.stream(ProjectJdkTable.getInstance().getAllJdks());
+  }
+
+  protected List<Sdk> getSameJdks(Sdk sdk) {
+    return getAllJdks()
+      .filter(jdk -> jdk == sdk)
+      .collect(Collectors.toList());
+  }
+
   public void testFindJdk() {
     final File executable = PantsUtil.findPantsExecutable(getProjectFolder()).get();
+    assertSame(Lists.newArrayList(), getAllJdks().collect(Collectors.toList()));
+
     final Sdk sdkA = getDefaultJavaSdk(executable.getPath()).get();
-    List<Sdk> sdkResults = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
-      .filter(jdk -> jdk == sdkA)
-      .collect(Collectors.toList());
-    assertTrue(sdkResults.size() == 1);
-    assertTrue(sdkResults.get(0) == sdkA);
+    assertSame(Lists.newArrayList(sdkA), getSameJdks(sdkA));
+
+    List<Sdk> singleSdkInTable = getSameJdks(sdkA);
+    assertTrue(singleSdkInTable.get(0).getName().contains("pants"));
+
+    List<Sdk> twoEntriesSameSdk = Lists.newArrayList(sdkA, sdkA);
+    // manually adding the same jdk to the table should result in two identical
+    // entries
     ApplicationManager.getApplication().runWriteAction(() -> {
         // no need to use disposable here, because this should not add a new jdk
         ProjectJdkTable.getInstance().addJdk(sdkA);
     });
-    sdkResults = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
-      .filter(jdk -> jdk == sdkA)
-      .collect(Collectors.toList());
-    assertTrue(sdkResults.size() == 2);
+    assertSame(twoEntriesSameSdk, getSameJdks(sdkA));
+
+    // calling getDefaultJavaSdk should only add a new entry to the table if it
+    // needs to make one
     Sdk sdkB = getDefaultJavaSdk(executable.getPath()).get();
     // Make sure they are identical, meaning that no new JDK was created on the 2nd find.
     assertTrue(sdkA == sdkB);
-    sdkResults = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
-      .filter(jdk -> jdk == sdkA)
-      .collect(Collectors.toList());
-    assertTrue(sdkResults.size() == 2);
-    assertTrue(sdkResults.get(0) == sdkA);
+    assertSame(twoEntriesSameSdk, getSameJdks(sdkA));
   }
 
   public void testisBUILDFilePath() {
