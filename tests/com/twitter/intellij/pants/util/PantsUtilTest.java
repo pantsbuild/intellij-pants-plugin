@@ -39,10 +39,10 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
 
   public void testFindJdk() {
     final File executable = PantsUtil.findPantsExecutable(getProjectFolder()).get();
-    assertSame(Lists.newArrayList(), getAllJdks().collect(Collectors.toList()));
+    assertEquals(Lists.newArrayList(), getAllJdks().collect(Collectors.toList()));
 
     final Sdk sdkA = getDefaultJavaSdk(executable.getPath()).get();
-    assertSame(Lists.newArrayList(sdkA), getSameJdks(sdkA));
+    assertEquals(Lists.newArrayList(sdkA), getSameJdks(sdkA));
 
     List<Sdk> singleSdkInTable = getSameJdks(sdkA);
     assertTrue(singleSdkInTable.get(0).getName().contains("pants"));
@@ -54,14 +54,14 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
         // no need to use disposable here, because this should not add a new jdk
         ProjectJdkTable.getInstance().addJdk(sdkA);
     });
-    assertSame(twoEntriesSameSdk, getSameJdks(sdkA));
+    assertEquals(twoEntriesSameSdk, getSameJdks(sdkA));
 
     // calling getDefaultJavaSdk should only add a new entry to the table if it
     // needs to make one
     Sdk sdkB = getDefaultJavaSdk(executable.getPath()).get();
     // Make sure they are identical, meaning that no new JDK was created on the 2nd find.
     assertTrue(sdkA == sdkB);
-    assertSame(twoEntriesSameSdk, getSameJdks(sdkA));
+    assertEquals(twoEntriesSameSdk, getSameJdks(sdkA));
   }
 
   public void testisBUILDFilePath() {
