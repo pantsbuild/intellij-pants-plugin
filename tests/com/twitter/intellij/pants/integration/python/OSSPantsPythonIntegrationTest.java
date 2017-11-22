@@ -8,6 +8,13 @@ import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsPythonIntegrationTest extends OSSPantsIntegrationTest {
+
+  @Override
+  public void tearDown() throws Exception {
+    removeJdks(jdk -> jdk.getName().startsWith("python"));
+    super.tearDown();
+  }
+
   @Override
   protected String[] getRequiredPluginIds() {
     return ArrayUtil.append(super.getRequiredPluginIds(), "PythonCore");
