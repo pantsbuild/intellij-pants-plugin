@@ -11,7 +11,7 @@ fi
 
 export CWD=$(pwd)
 export IJ_VERSION="2017.3"
-export IJ_BUILD_NUMBER="173.3531.6"
+export IJ_BUILD_NUMBER="173.3727.78"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
@@ -24,15 +24,15 @@ get_md5(){
 if [[ "${IJ_ULTIMATE:-false}" == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="37a2d6b26982f065695eaf9e60b9e3f9"
+  export EXPECTED_IJ_MD5="994547db739debaf2eccc6ede78dad5f"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="5ff7d0bc3dc00c78461863d704ac74be"
+  export PYTHON_PLUGIN_MD5="c77e47f6ec70fc250e6abbde0896aca4"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="f4fd1cab9e63bb0c12053ebd355c30e8"
+  export EXPECTED_IJ_MD5="21b78e59ef881d97df588c798e4a46fe"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="35a25863c68d6c2eaefdf4e26e7a4946"
+  export PYTHON_PLUGIN_MD5="00abf2f22839411696da96124b0c93ca"
 fi
 
 # we will use Community ids to download plugins.
