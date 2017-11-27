@@ -62,42 +62,43 @@ def _find_plugin_dir(plugin_name, builtin=True):
     return os.path.join(plugin_root, plugin_name, 'lib')
 
 
-def _check_jar_entries(dir, entries):
+def _check_jar_entries(dir_path, entries):
     non_jars = []
     for entry in entries:
-        full_path = os.path.join(dir, entry)
-        if os.path.isfile(full_path) and full_path.endswith('.jar'): continue
+        full_path = os.path.join(dir_path, entry)
+        if os.path.isfile(full_path) and full_path.endswith('.jar'):
+            continue
         non_jars.append(entry)
     if len(non_jars) > 0:
         raise Exception('entries %s in dir "%s" are not valid jar file paths'
-                        % (non_jars, dir))
+                        % (non_jars, dir_path))
 
 
-def _find_jars_blacklist(dir, blacklist=[]):
+def _find_jars_blacklist(dir_path, blacklist=[]):
     """
     Find the jars non-built-in plugins under $IDEA/plugins/<plugin_name>
     """
     blackset = frozenset(blacklist)
     try:
-        _check_jar_entries(dir, blackset)
+        _check_jar_entries(dir_path, blackset)
     except Exception as e:
         raise Exception('Error: invalid blacklist entries: %s' % e)
-    excluded = {os.path.join(dir, e) for e in blackset}
+    excluded = {os.path.join(dir_path, rel_path) for rel_path in blackset}
     jars = set()
-    for entry in os.listdir(dir):
-        full_path = os.path.join(dir, entry)
+    for entry in os.listdir(dir_path):
+        full_path = os.path.join(dir_path, entry)
         if full_path.endswith('.jar') and os.path.isfile(full_path):
             jars.add(full_path)
     return list(jars - excluded)
 
 
-def _find_jars_whitelist(dir, whitelist):
+def _find_jars_whitelist(dir_path, whitelist):
     whiteset = frozenset(whitelist)
     try:
-        _check_jar_entries(dir, whiteset)
+        _check_jar_entries(dir_path, whiteset)
     except Exception as e:
         raise Exception('Error: invalid whitelist entries: %s' % e)
-    included = {os.path.join(dir, path) for path in whiteset}
+    included = {os.path.join(dir_path, rel_path) for rel_path in whiteset}
     return list(included)
 
 
