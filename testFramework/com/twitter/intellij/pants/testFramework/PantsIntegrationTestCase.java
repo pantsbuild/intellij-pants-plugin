@@ -465,7 +465,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
-    runConfiguration.setTestClassPath(className);
+    runConfiguration.setupIntegrationTestClassPath();
     return runConfiguration;
   }
 
