@@ -93,12 +93,10 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     assertFalse(action.module.isPresent());
 
     VirtualFile vf = PantsUtil.findFileRelativeToBuildRoot(myProject, "testprojects/src/java/org/pantsbuild/testproject/junit/mixed/tests/org/pantsbuild/tmp/tests/AllTests.java").get();
-    Module mockModule = PantsUtil.getModuleForFile(vf, myProject).get();
-    assertEquals(mockModule, mixedModule);
+    assertEquals(mixedModule, PantsUtil.getModuleForFile(vf, myProject).get());
     Set<String> expectedTargetsMixed = Sets.newHashSet(
       "testprojects/src/java/org/pantsbuild/testproject/junit/mixed/tests/org/pantsbuild/tmp/tests:tests");
-    Set<String> mixedModuleAddresses = PantsUtil.getNonGenTargetAddresses(mixedModule).stream().collect(Collectors.toSet());
-    assertEquals(mixedModuleAddresses, expectedTargetsMixed);
+    assertEquals(expectedTargetsMixed, PantsUtil.getNonGenTargetAddresses(mixedModule).stream().collect(Collectors.toSet()));
     DataContext dcMock = new DataContext() {
         @Override
         public Object getData(String dataId) {
@@ -115,7 +113,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
 
     PantsCompileAllTargetsInModuleAction compileAllTargetsInModuleAction = new PantsCompileAllTargetsInModuleAction(Optional.of(testscopeModule));
     assertTrue(compileAllTargetsInModuleAction.module.isPresent());
-    assertEquals(compileAllTargetsInModuleAction.module.get(), testscopeModule);
+    assertEquals(testscopeModule, compileAllTargetsInModuleAction.module.get());
 
     Set<String> targetAddresses = compileAllTargetsInModuleAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
     Set<String> expectedTargets = Sets.newHashSet(
@@ -125,12 +123,12 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       "testprojects/src/java/org/pantsbuild/testproject/junit/testscope:bin");
     assertEquals(expectedTargets, targetAddresses);
     assertTrue(compileAllTargetsInModuleAction.module.isPresent());
-    assertEquals(compileAllTargetsInModuleAction.module.get(), testscopeModule);
+    assertEquals(testscopeModule, compileAllTargetsInModuleAction.module.get());
 
     Set<String> mockedTargetAddresses = compileAllTargetsInModuleAction.getTargets(evMock, myProject).collect(Collectors.toSet());
     assertEquals(expectedTargets, mockedTargetAddresses);
     assertTrue(compileAllTargetsInModuleAction.module.isPresent());
-    assertEquals(compileAllTargetsInModuleAction.module.get(), testscopeModule);
+    assertEquals(testscopeModule, compileAllTargetsInModuleAction.module.get());
   }
 
   public void testCompileTargetsInSelectedEditor() throws Throwable {
