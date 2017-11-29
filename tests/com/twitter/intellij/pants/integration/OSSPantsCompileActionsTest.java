@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.integration;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
@@ -86,19 +87,48 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
 
   public void testCompileAllTargetsInModuleAction() throws Throwable {
     doImport("testprojects/src/java/org/pantsbuild/testproject/junit");
-    Module module = getModule("testprojects_src_java_org_pantsbuild_testproject_junit_testscope_common_sources");
-    PantsCompileAllTargetsInModuleAction compileAllTargetsInModuleAction =
-      new PantsCompileAllTargetsInModuleAction(Optional.of(module));
-    Set<String> targetAddresses = compileAllTargetsInModuleAction
-      .getTargets(getPantsActionEvent(), myProject)
-      .collect(Collectors.toSet());
-    Set<String> expectedTargets = new HashSet<>(Arrays.asList(
+    Module testscopeModule = getModule("testprojects_src_java_org_pantsbuild_testproject_junit_testscope_common_sources");
+    Module mixedModule = getModule("testprojects_src_java_org_pantsbuild_testproject_junit_mixed_tests_org_pantsbuild_tmp_tests_tests");
+    PantsCompileAllTargetsInModuleAction action = new PantsCompileAllTargetsInModuleAction(Optional.empty());
+    assertFalse(action.module.isPresent());
+
+    VirtualFile vf = PantsUtil.findFileRelativeToBuildRoot(myProject, "testprojects/src/java/org/pantsbuild/testproject/junit/mixed/tests/org/pantsbuild/tmp/tests/AllTests.java").get();
+    assertEquals(mixedModule, PantsUtil.getModuleForFile(vf, myProject).get());
+    Set<String> expectedTargetsMixed = Sets.newHashSet(
+      "testprojects/src/java/org/pantsbuild/testproject/junit/mixed/tests/org/pantsbuild/tmp/tests:tests");
+    assertEquals(expectedTargetsMixed, PantsUtil.getNonGenTargetAddresses(mixedModule).stream().collect(Collectors.toSet()));
+    DataContext dcMock = new DataContext() {
+        @Override
+        public Object getData(String dataId) {
+          if (dataId.equals(CommonDataKeys.VIRTUAL_FILE.getName())) {
+            return vf;
+          }
+          return null;
+        }
+    };
+    AnActionEvent evMock = AnActionEvent.createFromDataContext("", null, dcMock);
+    Set<String> mockAddresses = action.getTargets(evMock, myProject).collect(Collectors.toSet());
+    assertEquals(expectedTargetsMixed, mockAddresses);
+    assertFalse(action.module.isPresent());
+
+    PantsCompileAllTargetsInModuleAction compileAllTargetsInModuleAction = new PantsCompileAllTargetsInModuleAction(Optional.of(testscopeModule));
+    assertTrue(compileAllTargetsInModuleAction.module.isPresent());
+    assertEquals(testscopeModule, compileAllTargetsInModuleAction.module.get());
+
+    Set<String> targetAddresses = compileAllTargetsInModuleAction.getTargets(getPantsActionEvent(), myProject).collect(Collectors.toSet());
+    Set<String> expectedTargets = Sets.newHashSet(
       "testprojects/src/java/org/pantsbuild/testproject/junit/testscope:tests",
       "testprojects/src/java/org/pantsbuild/testproject/junit/testscope:check",
       "testprojects/src/java/org/pantsbuild/testproject/junit/testscope:lib",
-      "testprojects/src/java/org/pantsbuild/testproject/junit/testscope:bin"
-    ));
+      "testprojects/src/java/org/pantsbuild/testproject/junit/testscope:bin");
     assertEquals(expectedTargets, targetAddresses);
+    assertTrue(compileAllTargetsInModuleAction.module.isPresent());
+    assertEquals(testscopeModule, compileAllTargetsInModuleAction.module.get());
+
+    Set<String> mockedTargetAddresses = compileAllTargetsInModuleAction.getTargets(evMock, myProject).collect(Collectors.toSet());
+    assertEquals(expectedTargets, mockedTargetAddresses);
+    assertTrue(compileAllTargetsInModuleAction.module.isPresent());
+    assertEquals(testscopeModule, compileAllTargetsInModuleAction.module.get());
   }
 
   public void testCompileTargetsInSelectedEditor() throws Throwable {
@@ -137,6 +167,8 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     }
   }
 
+  // TODO(cosmicexplorer): should check the output of the lint task and ensure it catches errors
+  // according to the lint specification
   public void testLintTargetAction() throws Throwable {
     // check whether we have expected targets
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");

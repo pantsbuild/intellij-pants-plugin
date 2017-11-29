@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  */
 public class PantsCompileAllTargetsInModuleAction extends PantsCompileActionBase {
 
-  private final Optional<Module> module;
+  public final Optional<Module> module;
 
   public PantsCompileAllTargetsInModuleAction(Optional<Module> module) {
     super("Compile all targets in module");
