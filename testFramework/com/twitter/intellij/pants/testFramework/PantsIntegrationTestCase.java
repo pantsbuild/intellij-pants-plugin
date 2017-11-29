@@ -413,21 +413,29 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   public void assertSuccessfulTest(String moduleName, String className) {
-    final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
-    assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+    try {
+      final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
+      assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+    } catch (ExecutionException e){
+      fail(e.toString());
+    }
   }
 
   public void assertSuccessfulTest(RunConfiguration configuration) {
-    final OSProcessHandler handler = runWithConfiguration(configuration);
-    assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+    try {
+      final OSProcessHandler handler = runWithConfiguration(configuration);
+      assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+    } catch (ExecutionException e) {
+      fail(e.toString());
+    }
   }
 
-  public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) {
+  public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) throws ExecutionException {
     return runWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
   }
 
   @NotNull
-  protected OSProcessHandler runWithConfiguration(RunConfiguration configuration) {
+  protected OSProcessHandler runWithConfiguration(RunConfiguration configuration) throws ExecutionException {
     final PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
       new PantsJUnitRunnerAndConfigurationSettings(configuration);
     final ExecutionEnvironmentBuilder environmentBuilder =
