@@ -13,6 +13,7 @@ import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.executors.DefaultRunExecutor;
@@ -468,7 +469,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
    * but the run itself may not succeed.
    */
   @NotNull
-  protected ScalaTestRunConfiguration generateScalaRunConfiguration(String moduleName, String className, @Nullable String vmParams) {
+  protected ScalaTestRunConfiguration generateScalaRunConfiguration(String moduleName, String className) {
     final ConfigurationFactory factory = ScalaTestConfigurationType.CONFIGURATION_TYPE_EP.getExtensions()[0].getConfigurationFactories()[0];
     final ScalaTestRunConfiguration runConfiguration = new ScalaTestRunConfiguration(myProject, factory, className);
     runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
@@ -476,9 +477,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     runConfiguration.setName(className);
     runConfiguration.setupIntegrationTestClassPath();
     runConfiguration.setTestConfigurationData(ClassTestData$.MODULE$.apply(runConfiguration, className));
-    if (StringUtil.isNotEmpty(vmParams)) {
-      runConfiguration.setVMParameters(vmParams);
-    }
     return runConfiguration;
   }
 
