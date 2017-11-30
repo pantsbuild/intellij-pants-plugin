@@ -71,6 +71,7 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.scala.testingSupport.test.ClassTestData$;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestConfigurationType;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
@@ -474,6 +475,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
     runConfiguration.setupIntegrationTestClassPath();
+    runConfiguration.setTestConfigurationData(ClassTestData$.MODULE$.apply(runConfiguration, className));
+    if (StringUtil.isNotEmpty(vmParams)) {
+      runConfiguration.setVMParameters(vmParams);
+    }
     return runConfiguration;
   }
 

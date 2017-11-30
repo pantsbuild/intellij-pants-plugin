@@ -177,15 +177,7 @@ jar_library(
 jar_library(
     name = 'scala-plugin',
     jars = [
-        _intellij_plugin_jar('scala-plugin', path) for path in _find_jars_whitelist(
-            _find_plugin_dir('Scala', builtin=False), whitelist=[
-                'bcel.jar',
-                'compiler-shared.jar',
-                'scala-plugin.jar',
-                'scalap.jar',
-                'scala-play-2-jps-plugin.jar',
-            ]
-        )
+        _intellij_plugin_jar('scala-plugin', path) for path in _find_jars_blacklist(_find_plugin_dir('Scala', builtin=False))
     ] + [jar(org='org.scalameta', name='trees_2.12', rev='2.0.1', excludes=[exclude('com.google.protobuf')])],
     scope='compile test',
 )
