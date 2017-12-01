@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.rc;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -66,7 +67,11 @@ public class IJRC {
   }
 
   public List<String> getImportArgsAdditions() {
-    return importArgs.get("+");
+    return Optional.ofNullable(importArgs.get("+")).orElse(Lists.newArrayList());
+  }
+
+  public List<String> getImportArgsRemovals() {
+    return Optional.ofNullable(importArgs.get("-")).orElse(Lists.newArrayList());
   }
 
   public void setImportArgs(Map<String, List<String>> importArgs) {

@@ -35,6 +35,7 @@ public class IJRCTest extends UsefulTestCase {
     Optional<IJRC> rc = IJRC.getPantsRc(temp.getParent());
     assertTrue(rc.isPresent());
     assertEquals(Lists.newArrayList("--resolver-resolver=coursier"), rc.get().getImportArgsAdditions());
+    assertTrue(rc.get().getImportArgsRemovals().isEmpty());
   }
 
   public void testInvalidPath() {
