@@ -168,7 +168,7 @@ public class PantsCompileOptionsExecutor {
     @Nullable ProcessAdapter processAdapter
   ) throws IOException, ExecutionException {
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
-    final GeneralCommandLine command = getCommand(outputFile, statusConsumer);
+    final GeneralCommandLine command = getPantsExportCommand(outputFile, statusConsumer);
     statusConsumer.consume("Resolving dependencies...");
     PantsMetrics.markExportStart();
     final ProcessOutput processOutput = getProcessOutput(command);
@@ -195,7 +195,7 @@ public class PantsCompileOptionsExecutor {
   }
 
   @NotNull
-  private GeneralCommandLine getCommand(final File outputFile, @NotNull Consumer<String> statusConsumer)
+  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer)
     throws IOException, ExecutionException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
     commandLine.addParameter("--no-quiet");
