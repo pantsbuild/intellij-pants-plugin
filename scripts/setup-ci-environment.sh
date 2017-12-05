@@ -33,7 +33,7 @@ for jar_file in $JDK_JARS; do
 done
 
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
-  IJ_TAR_NAME=idea${FULL_IJ_BUILD_NUMBER}.tar.gz
+  IJ_TAR_NAME=idea${IJ_BUILD}.tar.gz
   echo "Loading $IJ_BUILD..."
   wget -O $IJ_TAR_NAME "https://download.jetbrains.com/idea/$IJ_TAR_NAME"
   verify_md5 $IJ_TAR_NAME $EXPECTED_IJ_MD5
