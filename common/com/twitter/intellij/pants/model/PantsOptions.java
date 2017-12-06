@@ -54,6 +54,12 @@ public class PantsOptions {
     return has(PantsConstants.PANTS_OPTION_ASYNC_CLEAN_ALL);
   }
 
+  public boolean usesStrictJvmVersionForJUnit() {
+    return get(PantsConstants.PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION)
+      .map(value -> value.equals(PantsConstants.PANTS_SERIALIZED_VALUE_TRUE))
+      .orElse(false);
+  }
+
   public boolean supportsLint() {
     return options.keySet().stream()
       .filter(k -> k.startsWith(PantsConstants.PANTS_TASK_LINT))
