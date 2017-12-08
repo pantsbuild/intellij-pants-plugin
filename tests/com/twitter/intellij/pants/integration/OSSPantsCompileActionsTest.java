@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -83,6 +84,10 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       "testprojects/src/java/org/pantsbuild/testproject/annotation/main:main"
     ));
     assertEquals(expectedTargets, targetAddresses);
+
+    PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(myProject, PantsMakeBeforeRun.ID);
+    PantsExecuteTaskResult result = rebuildAction.execute(runner, myProject, targetAddresses);
+    assertTrue(result.output.get(), result.succeeded);
   }
 
   public void testCompileAllTargetsInModuleAction() throws Throwable {

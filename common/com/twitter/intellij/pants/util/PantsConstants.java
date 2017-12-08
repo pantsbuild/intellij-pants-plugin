@@ -50,7 +50,7 @@ public class PantsConstants {
   public static final String PANTS_CLI_OPTION_NO_COLORS = "--no-colors";
   public static final String PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS = "--jvm-distributions-paths";
   public static final String PANTS_CLI_OPTION_NO_TEST_JUNIT_TIMEOUTS = "--no-test-junit-timeouts";
-  public static final String PANTS_CLI_OPTION_ASYNC_CLEAN_ALL = "--async";
+  public static final String PANTS_CLI_OPTION_ASYNC_CLEAN_ALL = "--clean-all-async";
   public static final String PANTS_CLI_OPTION_PYTEST = "--test-pytest-options";
   public static final String PANTS_CLI_OPTION_JUNIT_TEST = "--test-junit-test";
 
