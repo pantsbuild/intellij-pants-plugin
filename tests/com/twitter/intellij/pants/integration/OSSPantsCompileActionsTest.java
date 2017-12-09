@@ -24,6 +24,7 @@ import com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetActi
 import com.twitter.intellij.pants.compiler.actions.PantsCompileTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
 import com.twitter.intellij.pants.compiler.actions.PantsLintTargetAction;
+import com.twitter.intellij.pants.compiler.actions.PantsTaskActionBase;
 import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -43,6 +44,12 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
 
   private final DataContext PANTS_PROJECT_DATA = s -> s.equals("project") ? myProject : null;
 
+  protected void assertActionSucceeds(PantsTaskActionBase action, Set<String> targetAddresses) throws Exception {
+    PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(myProject, PantsMakeBeforeRun.ID);
+    PantsExecuteTaskResult result = action.execute(runner, myProject, targetAddresses);
+    assertPantsCompileExecutesAndSucceeds(result);
+  }
+
   public void testCompileAllAction() throws Throwable {
     doImport("testprojects/src/java/org/pantsbuild/testproject/annotation");
     PantsCompileAllTargetsAction compileAllTargetsAction = new PantsCompileAllTargetsAction();
@@ -57,6 +64,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       "testprojects/src/java/org/pantsbuild/testproject/annotation/main:main"
     ));
     assertEquals(expectedTargets, targetAddresses);
+    assertActionSucceeds(compileAllTargetsAction, targetAddresses);
   }
 
   public void testCompileTargetAction() throws Throwable {
@@ -68,6 +76,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       .collect(Collectors.toSet());
     Set<String> expectedTarget = Sets.newHashSet("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
     assertEquals(expectedTarget, targetAddresses);
+    assertActionSucceeds(compileTargetAction, Sets.newHashSet());
   }
 
   public void testRebuildAction() throws Throwable {
@@ -84,10 +93,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       "testprojects/src/java/org/pantsbuild/testproject/annotation/main:main"
     ));
     assertEquals(expectedTargets, targetAddresses);
-
-    PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(myProject, PantsMakeBeforeRun.ID);
-    PantsExecuteTaskResult result = rebuildAction.execute(runner, myProject, targetAddresses);
-    assertTrue(result.output.get(), result.succeeded);
+    assertActionSucceeds(rebuildAction, targetAddresses);
   }
 
   public void testCompileAllTargetsInModuleAction() throws Throwable {
@@ -134,6 +140,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     assertEquals(expectedTargets, mockedTargetAddresses);
     assertTrue(compileAllTargetsInModuleAction.module.isPresent());
     assertEquals(testscopeModule, compileAllTargetsInModuleAction.module.get());
+    assertActionSucceeds(compileAllTargetsInModuleAction, expectedTargets);
   }
 
   public void testCompileTargetsInSelectedEditor() throws Throwable {
@@ -169,6 +176,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
         .getTargets(getPantsActionEvent(), myProject)
         .collect(Collectors.toSet());
       assertEquals(Sets.newHashSet(target), currentTargets);
+      assertActionSucceeds(compileCurrentTargetAction, currentTargets);
     }
   }
 
