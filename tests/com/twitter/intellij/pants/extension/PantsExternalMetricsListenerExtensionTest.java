@@ -99,8 +99,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     ScalaTestRunConfiguration runConfiguration = generateScalaRunConfiguration(
       "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome",
-      "org.pantsbuild.example.hello.welcome.WelSpec",
-      null
+      "org.pantsbuild.example.hello.welcome.WelSpec"
     );
     try {
       runWithConfiguration(runConfiguration);

@@ -36,6 +36,12 @@ import java.util.Optional;
 
 public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
 
+  @Override
+  public void tearDown() throws Exception {
+    removeJdks(jdk -> jdk.getName().startsWith("python"));
+    super.tearDown();
+  }
+
   public void testPyTestRunConfiguration() throws Throwable {
     doImport("examples/tests/python/example_test/hello");
 

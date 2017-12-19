@@ -13,6 +13,7 @@ import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.executors.DefaultRunExecutor;
@@ -40,6 +41,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
@@ -70,6 +72,7 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.scala.testingSupport.test.ClassTestData$;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestConfigurationType;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
@@ -82,7 +85,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * If your integration test modifies any source files
@@ -309,19 +314,21 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     return classes[0];
   }
 
+  protected Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutablePath) {
+    return PantsUtil.getDefaultJavaSdk(pantsExecutablePath, getTestRootDisposable());
+  }
+
   protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {
     System.out.println("Import: " + projectFolderPathToImport);
     myRelativeProjectPath = projectFolderPathToImport;
     myProjectSettings.setTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        PantsUtil.getDefaultJavaSdk(getProjectPath())
-          .ifPresent(sdk -> {
-            ProjectJdkTable.getInstance().addJdk(sdk);
-            NewProjectUtil.applyJdkToProject(myProject, sdk);
-          });
-      }
+    final String pantsExecutablePath = PantsUtil.findPantsExecutable(getProjectPath()).get().getPath();
+    getDefaultJavaSdk(pantsExecutablePath).ifPresent(sdk -> {
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                NewProjectUtil.applyJdkToProject(myProject, sdk);
+            });
+        });
     });
     importProject();
     PantsMetrics.markIndexEnd();
@@ -408,21 +415,29 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   public void assertSuccessfulTest(String moduleName, String className) {
-    final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
-    assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+    try {
+      final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
+      assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+    } catch (ExecutionException e){
+      fail(e.toString());
+    }
   }
 
   public void assertSuccessfulTest(RunConfiguration configuration) {
-    final OSProcessHandler handler = runWithConfiguration(configuration);
-    assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+    try {
+      final OSProcessHandler handler = runWithConfiguration(configuration);
+      assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+    } catch (ExecutionException e) {
+      fail(e.toString());
+    }
   }
 
-  public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) {
+  public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) throws ExecutionException {
     return runWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
   }
 
   @NotNull
-  protected OSProcessHandler runWithConfiguration(RunConfiguration configuration) {
+  protected OSProcessHandler runWithConfiguration(RunConfiguration configuration) throws ExecutionException {
     final PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
       new PantsJUnitRunnerAndConfigurationSettings(configuration);
     final ExecutionEnvironmentBuilder environmentBuilder =
@@ -454,13 +469,14 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
    * but the run itself may not succeed.
    */
   @NotNull
-  protected ScalaTestRunConfiguration generateScalaRunConfiguration(String moduleName, String className, @Nullable String vmParams) {
+  protected ScalaTestRunConfiguration generateScalaRunConfiguration(String moduleName, String className) {
     final ConfigurationFactory factory = ScalaTestConfigurationType.CONFIGURATION_TYPE_EP.getExtensions()[0].getConfigurationFactories()[0];
     final ScalaTestRunConfiguration runConfiguration = new ScalaTestRunConfiguration(myProject, factory, className);
     runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
-    runConfiguration.setTestClassPath(className);
+    runConfiguration.setupIntegrationTestClassPath();
+    runConfiguration.setTestConfigurationData(ClassTestData$.MODULE$.apply(runConfiguration, className));
     return runConfiguration;
   }
 
@@ -473,6 +489,20 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     File exampleDir = new File(getProjectFolder(), "examples");
     cmd(exampleDir, "git", "clean", "-fdx");
     cmd("rm", "-rf", "dist");
+  }
+
+  @NotNull
+  public static Stream<Sdk> getAllJdks() {
+    return Arrays.stream(ProjectJdkTable.getInstance().getAllJdks());
+  }
+
+  @NotNull
+  public static void removeJdks(@NotNull final Predicate<Sdk> pred) {
+    getAllJdks().filter(pred).forEach(jdk -> {
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        ProjectJdkTable.getInstance().removeJdk(jdk);
+      });
+    });
   }
 
   @Override
@@ -495,6 +525,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       killNailgun();
       cleanProjectRoot();
       Messages.setTestDialog(TestDialog.DEFAULT);
+
+      // TODO(cosmicexplorer): after updating from 172.4343.14 to 173.3531.6,
+      // intellij's provided test class sometimes yells about a leaky jdk
+      // table. i don't think this indicates any problems, so for now if tests
+      // fail with leaky sdk errors, broaden this to include the leaked sdks.
+      removeJdks(jdk -> jdk.getName().contains("pants"));
       super.tearDown();
     }
     catch (Throwable throwable) {

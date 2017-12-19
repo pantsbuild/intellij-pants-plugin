@@ -10,8 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2017.2.5"
-export IJ_BUILD_NUMBER="172.4343.14"
+export IJ_VERSION="2017.3"
+export IJ_BUILD_NUMBER="173.3727.127"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
@@ -21,23 +21,23 @@ get_md5(){
   fi
 }
 
-if [[ $IJ_ULTIMATE == "true" ]]; then
+if [[ "${IJ_ULTIMATE:-false}" == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="d0203f7f7d21c5fd43eead0df0c7ce59"
+  export EXPECTED_IJ_MD5="50ed0829e4899cb14b2e7e80e1b03e78"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="0e50933c204313aaa2a062e9b19b33ac"
+  export PYTHON_PLUGIN_MD5="cfdce2031ab782bfa8891248de807dd3"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="77c7afde3356f752c0c22b1ec9adeab7"
+  export EXPECTED_IJ_MD5="b2bfeda03fe9a4aab0fec6893219a293"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="2eeffe7aa2f80f125e8804bbe947753d"
+  export PYTHON_PLUGIN_MD5="f82f18c33c35c3320374d9bb25664aa8"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="474ec053a0fbf6a9772b380c1efaf03e" # 2017.2.13
+export SCALA_PLUGIN_MD5="5009e830aa1f24d2eddd88c2e0889d56"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
@@ -54,7 +54,7 @@ append_intellij_jvm_options() {
     "-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME"
     "-Didea.home.path=$INTELLIJ_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
-    "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/rt/jps-plugin-system.jar"
+    "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/jps-model.jar"
     #EAP build does not know its own build number, thus failing to tell plugin compatibility.
     "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"
@@ -69,3 +69,5 @@ append_intellij_jvm_options() {
 
   echo $cmd
 }
+
+export JDK_JARS="$(printf "%s\n" 'sa-jdi.jar' 'tools.jar')"

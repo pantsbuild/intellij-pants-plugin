@@ -1,13 +1,17 @@
 # Alias for sources and libs needed for tests
 target(name='sources-and-libs',
   dependencies=[
+    '//:scala-reflect',
+    '3rdparty/intellij:external-system-test-api',
     '3rdparty/intellij:gradle-plugin',
+    '3rdparty/intellij:junit-plugin',
     '3rdparty/intellij:python-plugin',
     '3rdparty/intellij:scala-plugin',
     '3rdparty/intellij:sdk',
     'jps-plugin',
     'src:pants-intellij-plugin',
     'testFramework:test-lib',
+    'common',
   ],
 )
 
@@ -63,12 +67,4 @@ junit_tests(
     ':sources-and-libs',
   ],
   sources=globs('com/twitter/intellij/pants/metrics/*.java')
-)
-
-junit_tests(
-  name='mine',
-  dependencies=[
-    ':sources-and-libs',
-  ],
-  sources=globs('com/twitter/intellij/pants/integration/OSSPantsCompileActionsTest.java')
 )
