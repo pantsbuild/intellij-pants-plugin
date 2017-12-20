@@ -20,18 +20,20 @@ import java.util.Optional;
 
 
 /**
- * RC file to configure options to add to / remove from the existing Pants calling procedure.
- * <p>
+ * .ijrc file, typically directly under the build root, to configure options to add to / remove from the existing Pants calling procedure.
+ *
  * For example:
  * {
- * 'importArgs': {
- * '+': ['--resolver-resolver=coursier']
- * '-': ['--no-quiet']
+ *   'importArgs': {
+ *     '+': [
+ *       '--resolver-resolver=coursier'
+ *     ],
+ *     '-': [
+ *       '--no-quiet'
+ *     ]
+ *   }
  * }
- * }
- * }
- *
- * This means that at project import and refresh stage, `--resolver-resolver=coursier` will be added to the Pants command line, and `--no-quiet`
+ * means that at project import and refresh stage, `--resolver-resolver=coursier` will be added to the Pants command line, and `--no-quiet`
  * will be removed from the command line if it existed before.
  */
 public class IJRC {

@@ -171,16 +171,10 @@ public class PantsCompileOptionsExecutor {
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
     final GeneralCommandLine command = getPantsExportCommand(outputFile, statusConsumer);
 
-    GeneralCommandLine cmdToRun = getPantsExportCommand(outputFile, statusConsumer);
-    // command's working directory is the build root.
-    Optional<IJRC> ijrc = IJRC.getPantsRc(command.getWorkDirectory().getPath());
-    if (ijrc.isPresent()) {
-      cmdToRun = ijrc.get().processCommand(command, IJRC.STAGE_IMPORT);
-    }
 
     statusConsumer.consume("Resolving dependencies...");
     PantsMetrics.markExportStart();
-    final ProcessOutput processOutput = getExportProcessOutput(cmdToRun);
+    final ProcessOutput processOutput = getProcessOutput(command);
     PantsMetrics.markExportEnd();
     if (processOutput.getStdout().contains("no such option")) {
       throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade your pants!");
@@ -189,11 +183,11 @@ public class PantsCompileOptionsExecutor {
       return FileUtil.loadFile(outputFile);
     }
     else {
-      throw new PantsExecutionException("Failed to update the project!", cmdToRun.getCommandLineString("pants"), processOutput);
+      throw new PantsExecutionException("Failed to update the project!", command.getCommandLineString("pants"), processOutput);
     }
   }
 
-  private ProcessOutput getExportProcessOutput(
+  private ProcessOutput getProcessOutput(
     @NotNull GeneralCommandLine command
   ) throws ExecutionException {
     final Process process = command.createProcess();
@@ -204,8 +198,7 @@ public class PantsCompileOptionsExecutor {
   }
 
   @NotNull
-  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer)
-    throws IOException, ExecutionException {
+  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer) {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
     commandLine.addParameter("--no-quiet");
     commandLine.addParameter("export");
@@ -217,8 +210,16 @@ public class PantsCompileOptionsExecutor {
 
     commandLine.addParameters(getTargetSpecs());
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
-    LOG.debug(commandLine.toString());
-    return commandLine;
+
+    // This is the command at import stage, so do the command line process for IJRC.
+    // Command's working directory is the build root.
+    Optional<IJRC> ijrc = IJRC.getPantsRc(commandLine.getWorkDirectory().getPath());
+    if (ijrc.isPresent()) {
+      return ijrc.get().processCommand(commandLine, IJRC.STAGE_IMPORT);
+    }
+    else {
+      return commandLine;
+    }
   }
 
   @NotNull
