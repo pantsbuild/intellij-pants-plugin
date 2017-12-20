@@ -1,10 +1,11 @@
 // Copyright 2017 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-package com.twitter.intellij.pants.rc;
+package com.twitter.intellij.pants.model;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -26,20 +27,21 @@ import java.util.Optional;
  * 'importArgs': {
  * '+': ['--resolver-resolver=coursier']
  * '-': ['--no-quiet']
- * },
- * runConfiguration: {
- * '+': ['--resolver-resolver=coursier']
- * '-': ['--no-quiet']
  * }
  * }
+ * }
+ *
+ * This means that at project import and refresh stage, `--resolver-resolver=coursier` will be added to the Pants command line, and `--no-quiet`
+ * will be removed from the command line if it existed before.
  */
-
 public class IJRC {
 
   public static final String rcFilename = ".ijrc";
 
+  public static final String STAGE_IMPORT = "importArgs";
+
   private Map<String, List<String>> importArgs;
-  // TODO add functionality for runConfiguration
+  // TODO(wisechengyi): add functionality for runConfiguration
 
   public static Optional<IJRC> getPantsRc(final Project myProject) {
     Optional<VirtualFile> root = PantsUtil.findBuildRoot(myProject);
@@ -66,6 +68,32 @@ public class IJRC {
     }
   }
 
+  /**
+   * @param stage the stage where the process is happening in a Pants project.
+   * @return
+   */
+  private List<String> getStageAdditions(String stage) {
+    switch (stage) {
+      case STAGE_IMPORT:
+        return getImportArgsAdditions();
+      default:
+        return Lists.newArrayList();
+    }
+  }
+
+  /**
+   * @param stage the stage where the process is happening in a Pants project.
+   * @return
+   */
+  private List<String> getStageRemovals(String stage) {
+    switch (stage) {
+      case STAGE_IMPORT:
+        return getImportArgsRemovals();
+      default:
+        return Lists.newArrayList();
+    }
+  }
+
   public List<String> getImportArgsAdditions() {
     return Optional.ofNullable(importArgs.get("+")).orElse(Lists.newArrayList());
   }
@@ -76,5 +104,18 @@ public class IJRC {
 
   public void setImportArgs(Map<String, List<String>> importArgs) {
     this.importArgs = importArgs;
+  }
+
+  public GeneralCommandLine processCommand(GeneralCommandLine cmd, String stage) {
+
+    // 1. Initiate with additions (This assumes that all additional options are fully scoped)
+    // 2. Add the args from original command
+    // 3. Filter out the ones to remove by exact string match
+
+    List<String> newArgs = Lists.newArrayList(getStageAdditions(stage));
+    newArgs.addAll(cmd.getParametersList().getParameters());
+    newArgs.removeAll(getStageRemovals(stage));
+
+    return new GeneralCommandLine().withParameters(newArgs).withWorkDirectory(cmd.getWorkDirectory()).withExePath(cmd.getExePath());
   }
 }

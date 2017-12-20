@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.rc;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.testFramework.UsefulTestCase;
+import com.twitter.intellij.pants.model.IJRC;
 
 import java.io.File;
 import java.io.IOException;

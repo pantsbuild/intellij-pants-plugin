@@ -17,6 +17,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsExecutionException;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
+import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -169,9 +170,17 @@ public class PantsCompileOptionsExecutor {
   ) throws IOException, ExecutionException {
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
     final GeneralCommandLine command = getPantsExportCommand(outputFile, statusConsumer);
+
+    GeneralCommandLine cmdToRun = getPantsExportCommand(outputFile, statusConsumer);
+    // command's working directory is the build root.
+    Optional<IJRC> ijrc = IJRC.getPantsRc(command.getWorkDirectory().getPath());
+    if (ijrc.isPresent()) {
+      cmdToRun = ijrc.get().processCommand(command, IJRC.STAGE_IMPORT);
+    }
+
     statusConsumer.consume("Resolving dependencies...");
     PantsMetrics.markExportStart();
-    final ProcessOutput processOutput = getProcessOutput(command);
+    final ProcessOutput processOutput = getExportProcessOutput(cmdToRun);
     PantsMetrics.markExportEnd();
     if (processOutput.getStdout().contains("no such option")) {
       throw new ExternalSystemException("Pants doesn't have necessary APIs. Please upgrade your pants!");
@@ -180,11 +189,11 @@ public class PantsCompileOptionsExecutor {
       return FileUtil.loadFile(outputFile);
     }
     else {
-      throw new PantsExecutionException("Failed to update the project!", command.getCommandLineString("pants"), processOutput);
+      throw new PantsExecutionException("Failed to update the project!", cmdToRun.getCommandLineString("pants"), processOutput);
     }
   }
 
-  private ProcessOutput getProcessOutput(
+  private ProcessOutput getExportProcessOutput(
     @NotNull GeneralCommandLine command
   ) throws ExecutionException {
     final Process process = command.createProcess();
@@ -207,7 +216,6 @@ public class PantsCompileOptionsExecutor {
     }
 
     commandLine.addParameters(getTargetSpecs());
-    System.out.println(getTargetSpecs());
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
     LOG.debug(commandLine.toString());
     return commandLine;

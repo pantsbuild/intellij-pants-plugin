@@ -66,7 +66,8 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
       myCancellationMap.put(id, process);
       PantsUtil.getCmdOutput(
         process,
-        commandLine.getCommandLineString(), new ProcessAdapter() {
+        commandLine.getCommandLineString(),
+        new ProcessAdapter() {
           @Override
           public void startNotified(ProcessEvent event) {
             super.startNotified(event);
