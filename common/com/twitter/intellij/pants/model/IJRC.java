@@ -116,6 +116,10 @@ public class IJRC {
     newArgs.addAll(cmd.getParametersList().getParameters());
     newArgs.removeAll(getStageRemovals(stage));
 
-    return new GeneralCommandLine().withParameters(newArgs).withWorkDirectory(cmd.getWorkDirectory()).withExePath(cmd.getExePath());
+    return new GeneralCommandLine().withParameters(newArgs)
+      .withWorkDirectory(cmd.getWorkDirectory())
+      .withExePath(cmd.getExePath())
+      .withEnvironment(cmd.getEnvironment())
+      .withCharset(cmd.getCharset());
   }
 }

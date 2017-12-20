@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.rc;
 
 import com.google.common.collect.Lists;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.testFramework.UsefulTestCase;
 import com.twitter.intellij.pants.model.IJRC;
@@ -52,5 +53,28 @@ public class IJRCTest extends UsefulTestCase {
     }
     catch (com.google.gson.JsonSyntaxException ignored) {
     }
+  }
+
+  public void testProcessCommand() throws IOException {
+    FileUtil.writeToFile(temp, "{\n" +
+                               "  'importArgs': {\n" +
+                               "    '+': [\n" +
+                               "      '--resolver-resolver=coursier'\n" +
+                               "    ],\n" +
+                               "    '-': [\n" +
+                               "      '--no-quiet'\n" +
+                               "    ]\n" +
+                               "  }\n" +
+                               "}\n");
+    Optional<IJRC> rc = IJRC.getPantsRc(temp.getParent());
+    assertTrue(rc.isPresent());
+
+    GeneralCommandLine exportCmd = new GeneralCommandLine().withExePath("abc").withParameters("export", "--no-quiet");
+    GeneralCommandLine rcProcessedExportCmd = rc.get().processCommand(exportCmd, IJRC.STAGE_IMPORT);
+
+    assertEquals(exportCmd.getWorkDirectory(), rcProcessedExportCmd.getWorkDirectory());
+    assertEquals(exportCmd.getExePath(), rcProcessedExportCmd.getExePath());
+    // --resolver-resolver=coursier should be added, and '--no-quiet' should be removed.
+    assertEquals(Lists.newArrayList("--resolver-resolver=coursier", "export"), rcProcessedExportCmd.getParametersList().getParameters());
   }
 }
