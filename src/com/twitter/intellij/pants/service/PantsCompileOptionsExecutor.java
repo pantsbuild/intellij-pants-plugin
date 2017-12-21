@@ -200,6 +200,11 @@ public class PantsCompileOptionsExecutor {
   @NotNull
   private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer) {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+
+    // Grab the import stage pants rc file for IntelliJ.
+    Optional<String> rcArg = IJRC.getImportPantsRc(commandLine.getWorkDirectory().getPath());
+    rcArg.ifPresent(commandLine::addParameter);
+
     commandLine.addParameter("--no-quiet");
     commandLine.addParameter("export");
     commandLine.addParameter("--formatted"); // json outputs in a compact format
@@ -211,15 +216,9 @@ public class PantsCompileOptionsExecutor {
     commandLine.addParameters(getTargetSpecs());
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
 
-    // This is the command at import stage, so do the command line process for IJRC.
-    // Command's working directory is the build root.
-    Optional<IJRC> ijrc = IJRC.getPantsRc(commandLine.getWorkDirectory().getPath());
-    if (ijrc.isPresent()) {
-      return ijrc.get().processCommand(commandLine, IJRC.STAGE_IMPORT);
-    }
-    else {
-      return commandLine;
-    }
+
+
+    return commandLine;
   }
 
   @NotNull

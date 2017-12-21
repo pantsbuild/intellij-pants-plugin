@@ -78,6 +78,22 @@ Compilation options can be configured in Preferences -> Build, Execution, Deploy
 ![Compilation Options](images/compilation_options.png)
 
 ### Plugin Features.
+* Dynamic options
+
+  By touching a `.ijrc` file in the build root:
+  ```
+  {
+    'importArgs': {
+      '+': [
+        '-ldebug'
+      ],
+      '-': [
+        '--no-quiet'
+      ]
+    }
+  }
+  ```
+  You can dynamically add or remove arguments to pants called at various stages. Currently only import/refresh stage is supported.
 * Project File Tree View.
   The plugin configures modules per pants build target. Due to multiple modules, the default "Project View" is not very user friendly.
   The Plugin provides a custom view "Project Files Tree View". This view adheres to your repository file hierarchy.
