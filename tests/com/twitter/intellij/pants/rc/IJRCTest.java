@@ -31,7 +31,7 @@ public class IJRCTest extends UsefulTestCase {
     assertFalse(IJRC.getImportPantsRc("/invalid/").isPresent());
   }
 
-  public void testProcessCommand() throws IOException {
+  public void testRcPickup() throws IOException {
     FileUtil.writeToFile(temp, "123");
     Optional<String> rc = IJRC.getImportPantsRc(temp.getParent());
     assertTrue(rc.isPresent());
