@@ -25,7 +25,7 @@ public class IJRCTest extends UsefulTestCase {
     super.tearDown();
     temp.delete();
   }
- 
+
   public void testInvalidPath() {
     assertFalse(IJRC.getImportPantsRc("/invalid/").isPresent());
   }
