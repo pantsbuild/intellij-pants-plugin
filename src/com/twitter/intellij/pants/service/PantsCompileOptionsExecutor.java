@@ -212,12 +212,8 @@ public class PantsCompileOptionsExecutor {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");
     }
-
     commandLine.addParameters(getTargetSpecs());
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
-
-
-
     return commandLine;
   }
 
