@@ -17,6 +17,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsExecutionException;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
+import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
@@ -168,7 +169,7 @@ public class PantsCompileOptionsExecutor {
     @Nullable ProcessAdapter processAdapter
   ) throws IOException, ExecutionException {
     final File outputFile = FileUtil.createTempFile("pants_depmap_run", ".out");
-    final GeneralCommandLine command = getCommand(outputFile, statusConsumer);
+    final GeneralCommandLine command = getPantsExportCommand(outputFile, statusConsumer);
     statusConsumer.consume("Resolving dependencies...");
     PantsMetrics.markExportStart();
     final ProcessOutput processOutput = getProcessOutput(command);
@@ -195,9 +196,13 @@ public class PantsCompileOptionsExecutor {
   }
 
   @NotNull
-  private GeneralCommandLine getCommand(final File outputFile, @NotNull Consumer<String> statusConsumer)
-    throws IOException, ExecutionException {
+  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer) {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+
+    // Grab the import stage pants rc file for IntelliJ.
+    Optional<String> rcArg = IJRC.getImportPantsRc(commandLine.getWorkDirectory().getPath());
+    rcArg.ifPresent(commandLine::addParameter);
+
     commandLine.addParameter("--no-quiet");
     commandLine.addParameter("export");
     commandLine.addParameter("--formatted"); // json outputs in a compact format
@@ -205,11 +210,8 @@ public class PantsCompileOptionsExecutor {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");
     }
-
     commandLine.addParameters(getTargetSpecs());
-    System.out.println(getTargetSpecs());
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
-    LOG.debug(commandLine.toString());
     return commandLine;
   }
 
