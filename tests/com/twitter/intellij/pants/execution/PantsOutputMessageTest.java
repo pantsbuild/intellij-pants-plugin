@@ -71,7 +71,7 @@ public class PantsOutputMessageTest extends UsefulTestCase {
     assertNotNull(pathToFile);
     final List<String> lines = FileUtil.loadLines(new File(pathToFile));
     assertNotNull(lines);
-    List<PantsOutputMessage> list = new ArrayList<PantsOutputMessage>();
+    List<PantsOutputMessage> list = new ArrayList<>();
     for (String line : lines) {
       list.add(PantsOutputMessage.parseOutputMessage(line));
     }

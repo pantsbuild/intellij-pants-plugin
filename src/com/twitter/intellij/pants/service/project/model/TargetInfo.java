@@ -82,7 +82,7 @@ public class TargetInfo {
   }
 
   public void setExcludes(Set<String> excludes) {
-    this.excludes = new TreeSet<String>(excludes);
+    this.excludes = new TreeSet<>(excludes);
   }
 
   @NotNull
@@ -91,7 +91,7 @@ public class TargetInfo {
   }
 
   public void setTargets(Set<String> targets) {
-    this.targets = new TreeSet<String>(targets);
+    this.targets = new TreeSet<>(targets);
   }
 
   @NotNull
@@ -100,7 +100,7 @@ public class TargetInfo {
   }
 
   public void setRoots(Set<ContentRoot> roots) {
-    this.roots = new TreeSet<ContentRoot>(roots);
+    this.roots = new TreeSet<>(roots);
   }
 
   public boolean isEmpty() {

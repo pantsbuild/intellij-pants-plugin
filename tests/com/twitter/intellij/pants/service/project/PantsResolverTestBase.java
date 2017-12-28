@@ -73,7 +73,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID, "test-project", "path/to/fake/project", "path/to/fake/project/BUILD"
     );
-    final DataNode<ProjectData> dataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
+    final DataNode<ProjectData> dataNode = new DataNode<>(ProjectKeys.PROJECT, projectData, null);
     dependenciesResolver.addInfoTo(dataNode);
     return dataNode;
   }
@@ -92,7 +92,7 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
       )
     );
 
-    final Map<String, LibraryInfo> libraries = new HashMap<String, LibraryInfo>();
+    final Map<String, LibraryInfo> libraries = new HashMap<>();
     for (TargetInfo targetInfo : result.getTargets().values()) {
       for (String libraryId : targetInfo.getLibraries()) {
         libraries.put(libraryId, new LibraryInfo(libraryId.replace('.', File.separatorChar)));
@@ -224,10 +224,10 @@ abstract class PantsResolverTestBase extends PantsCodeInsightFixtureTestCase {
 
   public static final class TargetInfoBuilder implements Builder<TargetInfo> {
     private String type = "scala_library";
-    private Set<String> libraries = new HashSet<String>();
-    private Set<String> excludes = new HashSet<String>();
-    private Set<String> targets = new HashSet<String>();
-    private Set<ContentRoot> roots = new HashSet<ContentRoot>();
+    private Set<String> libraries = new HashSet<>();
+    private Set<String> excludes = new HashSet<>();
+    private Set<String> targets = new HashSet<>();
+    private Set<ContentRoot> roots = new HashSet<>();
 
     @Override
     public TargetInfo build() {

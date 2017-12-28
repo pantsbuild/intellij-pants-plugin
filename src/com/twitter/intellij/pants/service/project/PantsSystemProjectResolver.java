@@ -60,7 +60,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   protected static final Logger LOG = Logger.getInstance(PantsSystemProjectResolver.class);
 
   private final Map<ExternalSystemTaskId, PantsCompileOptionsExecutor> task2executor =
-    new ConcurrentHashMap<ExternalSystemTaskId, PantsCompileOptionsExecutor>();
+    new ConcurrentHashMap<>();
 
   @Nullable
   @Override
@@ -150,7 +150,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       executor.getBuildRoot().getPath() + "/.idea/pants-projects/" + executor.getProjectRelativePath(),
       executor.getProjectPath()
     );
-    final DataNode<ProjectData> projectDataNode = new DataNode<ProjectData>(ProjectKeys.PROJECT, projectData, null);
+    final DataNode<ProjectData> projectDataNode = new DataNode<>(ProjectKeys.PROJECT, projectData, null);
 
     PantsUtil.findPantsExecutable(executor.getProjectPath())
       .flatMap(file -> PantsUtil.getDefaultJavaSdk(file.getPath(), null))

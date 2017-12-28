@@ -139,7 +139,7 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testMethod);
 
-    Set<String> items = new HashSet<String>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
+    Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
     assertTrue(items.contains("--test-junit-test=" + classReference + "#" + methodName));
   }
 

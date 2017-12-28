@@ -33,7 +33,7 @@ public class PantsPsiUtil {
     if (file == null) {
       return Collections.emptyMap();
     }
-    final Map<String, PyCallExpression> result = new HashMap<String, PyCallExpression>();
+    final Map<String, PyCallExpression> result = new HashMap<>();
     for (PyExpressionStatement statement : PsiTreeUtil.findChildrenOfType(file, PyExpressionStatement.class)) {
       final Pair<String, PyCallExpression> nameExpressionPair = findTarget(statement);
       if (nameExpressionPair != null) {
@@ -61,7 +61,7 @@ public class PantsPsiUtil {
     final PyFunction buildFileAliases = pyFile.findTopLevelFunction("build_file_aliases");
     final PyStatement[] statements =
       buildFileAliases != null ? buildFileAliases.getStatementList().getStatements() : PyStatement.EMPTY_ARRAY;
-    final Map<String, PyReferenceExpression> result = new HashMap<String, PyReferenceExpression>();
+    final Map<String, PyReferenceExpression> result = new HashMap<>();
     for (PyStatement statement : statements) {
       if (!(statement instanceof PyReturnStatement)) {
         continue;

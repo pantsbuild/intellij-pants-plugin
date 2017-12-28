@@ -47,7 +47,7 @@ public class PantsTargetReferenceSet {
     }
 
     final PartialTargetAddress address = PartialTargetAddress.parse(expression.getStringValue());
-    final List<PsiReference> result = new ArrayList<PsiReference>();
+    final List<PsiReference> result = new ArrayList<>();
 
     result.addAll(createPathSegments(expression, address.normalizedPath));
 
@@ -59,7 +59,7 @@ public class PantsTargetReferenceSet {
 
   @NotNull
   private List<PsiReference> createPathSegments(@NotNull PyStringLiteralExpression expression, @NotNull String path) {
-    final List<PsiReference> result = new ArrayList<PsiReference>();
+    final List<PsiReference> result = new ArrayList<>();
     int prevIndex = 0;
     for (int i = 0; i < path.length(); ++i) {
       if (path.charAt(i) != '/') continue;

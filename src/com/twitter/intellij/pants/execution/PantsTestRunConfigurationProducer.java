@@ -33,7 +33,7 @@ public abstract class PantsTestRunConfigurationProducer extends RunConfiguration
     final ExternalSystemRunConfiguration tempConfig = new ExternalSystemRunConfiguration(
       PantsConstants.SYSTEM_ID, context.getProject(), configuration.getFactory(), configuration.getName()
     );
-    final Ref<PsiElement> locationRef = new Ref<PsiElement>(context.getPsiLocation());
+    final Ref<PsiElement> locationRef = new Ref<>(context.getPsiLocation());
     setupConfigurationFromContext(tempConfig, context, locationRef);
     return compareSettings(configuration.getSettings(), tempConfig.getSettings());
   }

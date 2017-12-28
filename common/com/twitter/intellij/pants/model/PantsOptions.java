@@ -14,12 +14,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 
 public class PantsOptions {
@@ -92,7 +89,7 @@ public class PantsOptions {
   private static Map<String, String> parseOptions(final String rawData) {
     String lines[] = rawData.split("\\r?\\n");
 
-    Map<String, String> options = new HashMap<String, String>();
+    Map<String, String> options = new HashMap<>();
     for (String line : lines) {
       String fields[] = line.split(" = ", 2);
       if (fields.length != 2) {

@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.execution;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.ExecutionException;
@@ -61,7 +60,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 
 /**
