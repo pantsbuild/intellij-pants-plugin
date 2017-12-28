@@ -110,7 +110,7 @@ public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsInteg
 
     @NotNull
     public List<PyClassLikeType> getAncestorTypes(@NotNull TypeEvalContext context) {
-      ArrayList<PyClassLikeType> ancestors = new ArrayList<PyClassLikeType>();
+      ArrayList<PyClassLikeType> ancestors = new ArrayList<>();
       ancestors.add(new AncestorPyClass(within));
       return ancestors;
     }

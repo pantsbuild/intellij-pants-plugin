@@ -35,11 +35,11 @@ public class TargetInfoDeserializer implements JsonDeserializer<TargetInfo> {
     );
     final TargetAddressInfo addressInfo = context.deserialize(element, TargetAddressInfo.class);
     return new TargetInfo(
-      new HashSet<TargetAddressInfo>(Collections.singleton(addressInfo)),
-      new HashSet<String>(targets),
-      new HashSet<String>(libraries),
-      new HashSet<String>(excludes),
-      new HashSet<ContentRoot>(contentRoots)
+      new HashSet<>(Collections.singleton(addressInfo)),
+      new HashSet<>(targets),
+      new HashSet<>(libraries),
+      new HashSet<>(excludes),
+      new HashSet<>(contentRoots)
     );
   }
 

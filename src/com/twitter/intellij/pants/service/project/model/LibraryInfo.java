@@ -18,7 +18,7 @@ public class LibraryInfo {
   private HashMap<String, String> contents;
 
   public LibraryInfo() {
-    contents = new HashMap<String, String>();
+    contents = new HashMap<>();
   }
 
   public LibraryInfo(@Nullable String defaultPath) {
@@ -46,7 +46,7 @@ public class LibraryInfo {
   }
 
   public List<String> getJarsWithCustomClassifiers() {
-    ArrayList<String> result = new ArrayList<String>();
+    ArrayList<String> result = new ArrayList<>();
 
     for (String key : contents.keySet()) {
       if (key.equals(DEFAULT) || key.equals(JAVADOC) || key.equals(SOURCES)) {

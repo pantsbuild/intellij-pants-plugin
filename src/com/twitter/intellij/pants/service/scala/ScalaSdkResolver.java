@@ -42,7 +42,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
     @NotNull Map<String, DataNode<ModuleData>> modules,
     @NotNull Optional<BuildGraph> buildGraph
   ) {
-    final Map<String, Set<String>> scalaLibId2Jars = new HashMap<String, Set<String>>();
+    final Map<String, Set<String>> scalaLibId2Jars = new HashMap<>();
     for (String libId : ContainerUtil.sorted(projectInfo.getLibraries().keySet())) {
       if (PantsScalaUtil.isScalaLibraryLib(libId)) {
         final LibraryInfo scalaLib = projectInfo.getLibraries(libId);
@@ -50,7 +50,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
         if (scalaLibPath == null) {
           continue;
         }
-        final Set<String> scalaSdkJars = new HashSet<String>();
+        final Set<String> scalaSdkJars = new HashSet<>();
         for (String scalaLibNameToAdd : PantsScalaUtil.getScalaLibNamesToAdd()) {
           findAndAddScalaLib(scalaSdkJars, scalaLibPath, scalaLibNameToAdd);
         }
@@ -66,7 +66,7 @@ public class ScalaSdkResolver implements PantsResolverExtension {
       return;
     }
 
-    final Map<String, LibraryData> scalaLibId2Data = new HashMap<String, LibraryData>();
+    final Map<String, LibraryData> scalaLibId2Data = new HashMap<>();
     for (Map.Entry<String, Set<String>> entry : scalaLibId2Jars.entrySet()) {
       final String scalaLibraryId = entry.getKey();
       final Set<String> scalaJars = entry.getValue();

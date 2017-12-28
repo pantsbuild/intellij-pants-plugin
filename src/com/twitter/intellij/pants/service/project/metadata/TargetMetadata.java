@@ -42,7 +42,7 @@ public class TargetMetadata extends AbstractExternalEntityData {
   }
 
   public void setTargetAddresses(Collection<String> targetAddresses) {
-    myTargetAddresses = new HashSet<String>(targetAddresses);
+    myTargetAddresses = new HashSet<>(targetAddresses);
   }
 
   public Set<TargetAddressInfo> getTargetAddressInfoSet() {
@@ -50,7 +50,7 @@ public class TargetMetadata extends AbstractExternalEntityData {
   }
 
   public void setTargetAddressInfoSet(Set<TargetAddressInfo> targetAddressInfoSet) {
-    myTargetAddressInfoSet = new HashSet<TargetAddressInfo>(targetAddressInfoSet);
+    myTargetAddressInfoSet = new HashSet<>(targetAddressInfoSet);
   }
 
   @NotNull

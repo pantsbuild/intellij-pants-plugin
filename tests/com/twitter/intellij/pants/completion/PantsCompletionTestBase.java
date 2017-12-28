@@ -67,7 +67,7 @@ abstract public class PantsCompletionTestBase extends PantsCodeInsightFixtureTes
   }
 
   protected void checkCompletion(CheckType checkType, String... variants) {
-    checkCompletion(checkType, new ArrayList<String>(Arrays.asList(variants)));
+    checkCompletion(checkType, new ArrayList<>(Arrays.asList(variants)));
   }
 
   protected void checkCompletion(CheckType checkType, List<String> variants) {

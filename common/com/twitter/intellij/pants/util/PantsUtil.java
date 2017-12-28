@@ -3,8 +3,6 @@
 
 package com.twitter.intellij.pants.util;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -541,7 +539,7 @@ public class PantsUtil {
   }
 
   public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> map, Function<V1, V2> fun) {
-    final Map<K, V2> result = new HashMap<K, V2>(map.size());
+    final Map<K, V2> result = new HashMap<>(map.size());
     for (K key : map.keySet()) {
       final V1 originalValue = map.get(key);
       final V2 newValue = fun.fun(originalValue);
@@ -553,7 +551,7 @@ public class PantsUtil {
   }
 
   public static <K, V> Map<K, V> filterByValue(Map<K, V> map, Condition<V> condition) {
-    final Map<K, V> result = new HashMap<K, V>(map.size());
+    final Map<K, V> result = new HashMap<>(map.size());
     for (Map.Entry<K, V> entry : map.entrySet()) {
       final K key = entry.getKey();
       final V value = entry.getValue();
@@ -620,7 +618,7 @@ public class PantsUtil {
    * {@code processor} should return false if we don't want to step into the directory.
    */
   public static void traverseDirectoriesRecursively(@NotNull File root, @NotNull Processor<File> processor) {
-    final LinkedList<File> queue = new LinkedList<File>();
+    final LinkedList<File> queue = new LinkedList<>();
     queue.add(root);
     while (!queue.isEmpty()) {
       final File file = queue.removeFirst();
@@ -769,7 +767,7 @@ public class PantsUtil {
   @NotNull
   public static String getJvmDistributionPathParameter(@Nullable final String jdkPath) throws Exception {
     if (jdkPath != null) {
-      HashMap<String, List<String>> distributionFlag = new HashMap<String, List<String>>();
+      HashMap<String, List<String>> distributionFlag = new HashMap<>();
       distributionFlag.put(System.getProperty("os.name").toLowerCase(), Collections.singletonList(jdkPath));
       return PantsConstants.PANTS_CLI_OPTION_JVM_DISTRIBUTIONS_PATHS + "=" + new Gson().toJson(distributionFlag);
     }

@@ -22,7 +22,7 @@ public class PantsCyclicDependenciesModifier implements PantsProjectInfoModifier
   @Override
   public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
     final Set<Map.Entry<String, TargetInfo>> originalEntries =
-      new HashSet<Map.Entry<String, TargetInfo>>(projectInfo.getTargets().entrySet());
+      new HashSet<>(projectInfo.getTargets().entrySet());
     for (Map.Entry<String, TargetInfo> nameAndInfo : originalEntries) {
       final String targetName = nameAndInfo.getKey();
       final TargetInfo targetInfo = nameAndInfo.getValue();

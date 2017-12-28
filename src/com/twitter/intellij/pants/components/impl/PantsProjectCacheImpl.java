@@ -85,7 +85,7 @@ public class PantsProjectCacheImpl extends AbstractProjectComponent implements P
 
   @NotNull
   private TreeSet<VirtualFile> collectRoots() {
-    final TreeSet<VirtualFile> result = new TreeSet<VirtualFile>(VIRTUAL_FILE_COMPARATOR);
+    final TreeSet<VirtualFile> result = new TreeSet<>(VIRTUAL_FILE_COMPARATOR);
     final ProjectRootManager rootManager = ProjectRootManager.getInstance(myProject);
     result.addAll(rootManager.getModuleSourceRoots(ContainerUtil.set(JavaSourceRootType.SOURCE, JavaSourceRootType.TEST_SOURCE)));
     return result;

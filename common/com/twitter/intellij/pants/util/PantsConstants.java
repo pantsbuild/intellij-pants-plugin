@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.util;
 
-import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;

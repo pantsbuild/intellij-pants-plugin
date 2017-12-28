@@ -34,7 +34,7 @@ public class FilePathRelativeToBuiltRootMacroTest extends OSSPantsIntegrationTes
   }
 
   private DataContext getFakeContext(VirtualFile file) {
-    Map<String, Object> dataId2data = new THashMap<String, Object>();
+    Map<String, Object> dataId2data = new THashMap<>();
     dataId2data.put(CommonDataKeys.PROJECT.getName(), myProject);
     dataId2data.put(CommonDataKeys.VIRTUAL_FILE.getName(), file);
     dataId2data.put(PlatformDataKeys.PROJECT_FILE_DIRECTORY.getName(), myProject.getBaseDir());

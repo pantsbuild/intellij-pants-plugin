@@ -52,7 +52,7 @@ public class PantsUnresolvedReferenceFixFinder {
 
     final PsiClass[] classes = PsiShortNamesCache.getInstance(project).getClassesByName(referenceName, GlobalSearchScope.allScope(project));
     final List<PsiClass> allowedDependencies = filterAllowedDependencies(containingFile, classes);
-    final List<PantsQuickFix> result = new ArrayList<PantsQuickFix>();
+    final List<PantsQuickFix> result = new ArrayList<>();
     for (PsiClass dependency : allowedDependencies) {
       final Module module = ModuleUtil.findModuleForPsiElement(dependency);
       for (PantsTargetAddress addressToAdd : PantsUtil.getTargetAddressesFromModule(module)) {
@@ -65,7 +65,7 @@ public class PantsUnresolvedReferenceFixFinder {
 
   private static List<PsiClass> filterAllowedDependencies(PsiFile fromFile, PsiClass[] classes) {
     final DependencyValidationManager dependencyValidationManager = DependencyValidationManager.getInstance(fromFile.getProject());
-    final List<PsiClass> result = new ArrayList<PsiClass>();
+    final List<PsiClass> result = new ArrayList<>();
     for (PsiClass psiClass : classes) {
       if (dependencyValidationManager.getViolatorDependencyRule(fromFile, psiClass.getContainingFile()) == null) {
         result.add(psiClass);

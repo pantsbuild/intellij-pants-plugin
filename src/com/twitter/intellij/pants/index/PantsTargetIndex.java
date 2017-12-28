@@ -41,7 +41,7 @@ public class PantsTargetIndex extends ScalarIndexExtension<String> {
 
   public static List<PsiElement> resolveTargetByName(@Nls String name, @NotNull Project project, GlobalSearchScope scope) {
     final PsiManager psiManager = PsiManager.getInstance(project);
-    final ArrayList<PsiElement> result = new ArrayList<PsiElement>();
+    final ArrayList<PsiElement> result = new ArrayList<>();
     final Collection<VirtualFile> containingFiles = FileBasedIndex.getInstance().getContainingFiles(NAME, name, scope);
     for (VirtualFile virtualFile : containingFiles) {
       final PsiFile psiFile = psiManager.findFile(virtualFile);

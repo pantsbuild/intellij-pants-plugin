@@ -66,7 +66,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
                 data.setIcon(PantsIcons.Icon);
               }
             };
-            final List<AbstractTreeNode> modifiedCollection = new ArrayList<AbstractTreeNode>(collection);
+            final List<AbstractTreeNode> modifiedCollection = new ArrayList<>(collection);
             modifiedCollection.add(buildNode);
             return modifiedCollection;
           }
