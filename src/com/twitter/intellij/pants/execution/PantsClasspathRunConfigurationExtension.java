@@ -7,7 +7,12 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
-import com.intellij.execution.configurations.*;
+import com.intellij.execution.configurations.JavaParameters;
+import com.intellij.execution.configurations.ModuleBasedConfiguration;
+import com.intellij.execution.configurations.RunConfigurationBase;
+import com.intellij.execution.configurations.RunConfigurationModule;
+import com.intellij.execution.configurations.RunnerSettings;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
@@ -35,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PantsClasspathRunConfigurationExtension extends RunConfigurationExtension {
   protected static final Logger LOG = Logger.getInstance(PantsClasspathRunConfigurationExtension.class);
@@ -63,7 +69,21 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
      */
     params.setUseDynamicClasspath(true);
 
+    String homePath = PathManager.getHomePath();
+    String jdkPath = params.getJdkPath();
+    String pluginPath = PathManager.getPluginsPath();
+
+    // Filter out all jars imported to the project with the exception of
+    // jars on the JDK path, IntelliJ installation paths, and plugin installation path,
+    // because Pants is already exporting all the runtime classpath in manifest.jar
     final PathsList classpath = params.getClassPath();
+    List<String> classpathToKeep =
+      classpath.getPathList().stream().filter(
+        p -> p.contains(jdkPath) ||
+             p.contains(homePath) ||
+             p.contains(pluginPath)).collect(Collectors.toList());
+    classpath.clear();
+    classpath.addAll(classpathToKeep);
 
     VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject())
       .orElseThrow(() -> new ExecutionException("Pants supports manifest jar, but it is not found."));
@@ -77,7 +97,8 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   public static List<String> findPublishedClasspath(@NotNull Module module) {
     final List<String> result = ContainerUtil.newArrayList();
     // This is type for Gson to figure the data type to deserialize
-    final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {}.getType();
+    final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {
+    }.getType();
     Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), type);
     // The new way to find classpath by target id
     for (TargetAddressInfo ta : targetInfoSet) {
