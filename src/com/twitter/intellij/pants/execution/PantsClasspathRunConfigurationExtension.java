@@ -97,8 +97,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   public static List<String> findPublishedClasspath(@NotNull Module module) {
     final List<String> result = ContainerUtil.newArrayList();
     // This is type for Gson to figure the data type to deserialize
-    final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {
-    }.getType();
+    final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {}.getType();
     Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), type);
     // The new way to find classpath by target id
     for (TargetAddressInfo ta : targetInfoSet) {
