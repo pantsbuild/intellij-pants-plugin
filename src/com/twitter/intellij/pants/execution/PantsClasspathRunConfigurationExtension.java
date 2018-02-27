@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.execution;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
@@ -12,8 +13,11 @@ import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunConfigurationModule;
 import com.intellij.execution.configurations.RunnerSettings;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.roots.OrderEnumerator;
@@ -69,26 +73,40 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
      */
     params.setUseDynamicClasspath(true);
 
+    // Filter out all jars imported to the project with the exception of
+    // jars on the JDK path, IntelliJ installation paths, and plugin installation path,
+    // because Pants is already exporting all the runtime classpath in manifest.jar
     String homePath = PathManager.getHomePath();
     String jdkPath = params.getJdkPath();
     String pluginPath = PathManager.getPluginsPath();
 
-    // Filter out all jars imported to the project with the exception of
-    // jars on the JDK path, IntelliJ installation paths, and plugin installation path,
-    // because Pants is already exporting all the runtime classpath in manifest.jar
+    Set<String> pathsAllowed = Sets.newHashSet(jdkPath, homePath, pluginPath);
+    if (ApplicationManager.getApplication().isUnitTestMode()) {
+      pathsAllowed.add(
+        // /Users/yic/.ivy2/pants/com.intellij.sdk.community/idea_rt/jars/idea_rt-latest.jar ->
+        // /Users/yic/.ivy2/pants/com.intellij.sdk.community/
+        Optional.ofNullable(PluginManager.getPlugin(PluginId.getId("com.intellij")))
+          .map(s -> s.getPath().getParentFile().getParentFile().getParentFile().getAbsolutePath()).get()
+      );
+
+      pathsAllowed.add(
+        // At this point we know junit plugin is already enabled.
+        // //Users/yic/.ivy2/pants/com.intellij.junit-plugin/junit-rt/jars/junit-rt-latest.jar ->
+        // /Users/yic/.ivy2/pants/com.intellij.junit-plugin/
+        Optional.ofNullable(PluginManager.getPlugin(PluginId.getId("JUnit")))
+          .map(s -> s.getPath().getParentFile().getParentFile().getParentFile().getAbsolutePath()).get()
+      );
+    }
+
     final PathsList classpath = params.getClassPath();
-    List<String> classpathToKeep =
-      classpath.getPathList().stream().filter(
-        p -> p.contains(jdkPath) ||
-             p.contains(homePath) ||
-             p.contains(pluginPath)).collect(Collectors.toList());
+    List<String> classpathToKeep = classpath.getPathList().stream()
+      .filter(p -> pathsAllowed.stream().anyMatch(p::contains)).collect(Collectors.toList());
     classpath.clear();
     classpath.addAll(classpathToKeep);
 
     VirtualFile manifestJar = PantsUtil.findProjectManifestJar(configuration.getProject())
       .orElseThrow(() -> new ExecutionException("Pants supports manifest jar, but it is not found."));
     classpath.add(manifestJar.getPath());
-
 
     PantsExternalMetricsListenerManager.getInstance().logTestRunner(configuration);
   }
