@@ -35,4 +35,22 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
     assertSuccessfulTest(runConfiguration);
   }
 
+  /**
+   * This delegates the test to
+   * testData/testprojects/intellij-integration/tests/java/org/pantsbuild/cp_print/AppTest.java
+   * where classpath entries are being checked.
+   */
+  public void testIntelliJTestRunnerClasspath() throws Throwable {
+    doImport("intellij-integration/tests/java/org/pantsbuild/cp_print/");
+
+    JUnitConfiguration runConfiguration = generateJUnitConfiguration(
+      "intellij-integration_tests_java_org_pantsbuild_cp_print_cp_print",
+      "org.pantsbuild.testproject.cp_print.AppTest",
+      null
+    );
+
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    assertSuccessfulTest(runConfiguration);
+  }
+
 }
