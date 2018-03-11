@@ -42,6 +42,14 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     // So it will be in process all the time.
     final String key = PantsConstants.SYSTEM_ID.getId() + ExternalSystemConstants.USE_IN_PROCESS_COMMUNICATION_REGISTRY_KEY_SUFFIX;
     Registry.get(key).setValue(true);
+
+    // hack to trick BuildProcessClasspathManager
+    final String basePath = System.getProperty("pants.plugin.base.path");
+    final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(PantsConstants.PLUGIN_ID));
+    if (StringUtil.isNotEmpty(basePath) && plugin instanceof IdeaPluginDescriptorImpl) {
+      ((IdeaPluginDescriptorImpl) plugin).setPath(new File(basePath));
+    }
+
     registerPantsActions();
   }
 
