@@ -846,7 +846,7 @@ public class PantsUtil {
     if (jdkInfo != null) {
       // Using IJ's framework to detect jdk version. so jdkInfo.getVersion() returns `java version "1.8.0_121"`
       for (String version : ContainerUtil.newArrayList("1.6", "1.7", "1.8", "1.9")) {
-        if (jdkInfo.getVersion().contains(version)) {
+        if (jdkInfo.version.toString().contains(version)) {
           jdkName = String.format("%s_from_%s", version, pantsExecutable);
           break;
         }
