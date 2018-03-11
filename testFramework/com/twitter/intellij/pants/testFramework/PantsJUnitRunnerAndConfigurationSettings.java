@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.testFramework;
 
-import com.intellij.execution.ExecutionTarget;
 import com.intellij.execution.Executor;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
