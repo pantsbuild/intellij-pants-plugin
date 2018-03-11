@@ -199,10 +199,7 @@ jar_library(
     dependencies = [':groovy-plugin'],
     jars = [
         _intellij_plugin_jar('gradle-plugin', path) for path in _find_jars_blacklist(
-            _find_plugin_dir('gradle'), blacklist=[
-                # A workaround to avoid guava version conflicts/shadowing with the one under $IDEA/lib
-                'guava-jdk5-17.0.jar',
-            ]
+            _find_plugin_dir('gradle')
         )
     ],
     scope='compile test',
