@@ -4,7 +4,7 @@
 package com.twitter.intellij.pants.service.project.model.graph;
 
 import com.google.common.collect.Sets;
-import com.intellij.util.containers.HashMap;
+import java.util.HashMap;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfoTest;
 import junit.framework.TestCase;

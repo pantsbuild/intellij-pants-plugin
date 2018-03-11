@@ -104,11 +104,6 @@ public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfig
   }
 
   @Override
-  public boolean canRunOn(@NotNull ExecutionTarget target) {
-    return true;
-  }
-
-  @Override
   public Factory<RunnerAndConfigurationSettings> createFactory() {
     return new Factory<RunnerAndConfigurationSettings>() {
       @Override
