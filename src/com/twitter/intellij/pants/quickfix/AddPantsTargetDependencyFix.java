@@ -25,6 +25,8 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
 public class AddPantsTargetDependencyFix extends PantsQuickFix {
   protected final PantsTargetAddress myAddress;
   protected final PantsTargetAddress myAddressToAdd;
@@ -90,7 +92,7 @@ public class AddPantsTargetDependencyFix extends PantsQuickFix {
     if (dependenciesArgument == null) {
       final PyKeywordArgument keywordArgument =
         generator.createKeywordArgument(LanguageLevel.forElement(buildFile), "dependencies", "['"+ targetAddressStringToAdd + "']");
-      targetDefinitionExpression.addArgument(keywordArgument);
+      Optional.ofNullable(targetDefinitionExpression.getArgumentList()).ifPresent(l -> l.addArgument(keywordArgument));
     } else if (dependenciesArgument instanceof PyListLiteralExpression) {
       PyExpression position = null;
       // we assume all elements are sorted.
