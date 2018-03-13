@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.testFramework;
 
-import com.intellij.execution.ExecutionTarget;
 import com.intellij.execution.Executor;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -101,11 +100,6 @@ public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfig
   @Override
   public void checkSettings(@Nullable Executor executor) throws RuntimeConfigurationException {
     myRunConfiguration.checkConfiguration();
-  }
-
-  @Override
-  public boolean canRunOn(@NotNull ExecutionTarget target) {
-    return true;
   }
 
   @Override

@@ -15,7 +15,7 @@
   <version>1.8.1</version>
   <vendor>Twitter, Inc.</vendor>
 
-  <idea-version since-build="173.0" until-build="173.*"/>
+  <idea-version since-build="181.0" until-build="181.*"/>
 
   <!--Scala plugin related extensions-->
   <depends>org.intellij.scala</depends>
