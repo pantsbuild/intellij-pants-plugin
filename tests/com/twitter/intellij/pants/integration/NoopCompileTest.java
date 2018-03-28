@@ -59,7 +59,7 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
       @Override
       public void run() {
-        Document doc = getDocumentFileInProject("WelSpec.scala");
+        Document doc = getDocumentFileInProject("Welcome.scala");
         doc.setText(doc.getText() + " ");
       }
     });
