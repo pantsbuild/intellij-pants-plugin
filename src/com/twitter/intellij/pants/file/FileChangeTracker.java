@@ -11,10 +11,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -205,18 +202,10 @@ public class FileChangeTracker {
    * the previous one.
    */
   public static boolean shouldRecompileThenReset(@NotNull Project project, @NotNull Set<String> targetAddresses) {
-
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-      @Override
-      public void run() {
-        /* Force cached changes to disk so {@link com.twitter.intellij.pants.file.FileChangeTracker} can mark the project dirty. */
-        FileDocumentManager.getInstance().saveAllDocuments();
-      }
-    }, ModalityState.NON_MODAL);
-
     PantsSettings settings = PantsSettings.getInstance(project);
 
     ProjectState lastRecordedState = projectStates.get(project);
+
 
     CompileSnapshot snapshot = new CompileSnapshot(targetAddresses, settings, PantsUtil.findProjectManifestJar(project));
 

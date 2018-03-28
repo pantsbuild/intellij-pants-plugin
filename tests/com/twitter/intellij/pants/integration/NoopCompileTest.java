@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.integration;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
@@ -51,6 +53,20 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
   }
 
+  public void testEditDocInProjectShouldOp() throws Throwable {
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    assertPantsCompileNoop(pantsCompileProject());
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        Document doc = getDocumentFileInProject("WelSpec.scala");
+        doc.setText(doc.getText() + " ");
+      }
+    });
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    assertPantsCompileNoop(pantsCompileProject());
+  }
+
   public void testAddFileInsideProjectShouldOp() throws Throwable {
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     // Simulate out of band adding a file outside of IDE
@@ -71,6 +87,8 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     LocalFileSystem.getInstance().refresh(false);
     assertPantsCompileNoop(pantsCompileProject());
   }
+
+
 
   /**
    * NOTE: Disabled because it is flaky.

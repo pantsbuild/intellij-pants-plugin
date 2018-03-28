@@ -22,11 +22,14 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
     assertAndRunPantsMake(runConfiguration);
     assertSuccessfulTest(runConfiguration);
 
-    assertFalse(FileChangeTracker.shouldRecompileThenReset(myProject, Sets.newHashSet()));
+    assertAndRunPantsMake(runConfiguration);
+    //assertFalse(FileChangeTracker.shouldRecompileThenReset(myProject, Sets.newHashSet()));
     Document doc = getDocumentFileInProject("MatcherTest.java");
+
     // Add a space to it
     doc.setText(doc.getText() + " ");
-    assertTrue(FileChangeTracker.shouldRecompileThenReset(myProject, Sets.newHashSet()));
+    assertAndRunPantsMake(runConfiguration);
+    //assertTrue(FileChangeTracker.shouldRecompileThenReset(myProject, Sets.newHashSet()));
   }
 
   public void testCompileAll() throws Throwable {
