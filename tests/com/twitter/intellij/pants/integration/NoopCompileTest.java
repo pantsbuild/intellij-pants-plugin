@@ -88,8 +88,6 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
     assertPantsCompileNoop(pantsCompileProject());
   }
 
-
-
   /**
    * NOTE: Disabled because it is flaky.
    * Also either behavior is okay in this case, although preferably noop.
