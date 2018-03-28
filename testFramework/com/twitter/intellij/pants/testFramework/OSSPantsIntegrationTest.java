@@ -126,7 +126,7 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
   @NotNull
   protected VirtualFile searchForVirtualFileInProject(String filename) {
     Collection<VirtualFile> files = FilenameIndex.getVirtualFilesByName(myProject, filename, GlobalSearchScope.allScope(myProject));
-    assertEquals(1, files.size());
+    assertEquals(String.format("%s not found.", filename), 1, files.size());
     return files.iterator().next();
   }
 
