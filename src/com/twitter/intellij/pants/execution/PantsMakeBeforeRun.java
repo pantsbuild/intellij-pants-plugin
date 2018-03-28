@@ -313,14 +313,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject,
                                                    @NotNull Set<String> targetAddressesToCompile,
                                                    boolean useCleanAll) {
-
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-      @Override
-      public void run() {
-        /* Force cached changes to disk so {@link com.twitter.intellij.pants.file.FileChangeTracker} can mark the project dirty. */
-        FileDocumentManager.getInstance().saveAllDocuments();
-      }
-    }, ModalityState.NON_MODAL);
     // If project has not changed since last Compile, return immediately.
     if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddressesToCompile)) {
       PantsExternalMetricsListenerManager.getInstance().logIsPantsNoopCompile(true);

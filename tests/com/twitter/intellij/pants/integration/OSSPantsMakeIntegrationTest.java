@@ -4,7 +4,10 @@
 package com.twitter.intellij.pants.integration;
 
 import com.intellij.execution.junit.JUnitConfiguration;
+import com.intellij.openapi.editor.Document;
+import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import org.fest.util.Sets;
 
 
 public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
@@ -18,6 +21,12 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
 
     assertAndRunPantsMake(runConfiguration);
     assertSuccessfulTest(runConfiguration);
+
+    assertFalse(FileChangeTracker.shouldRecompileThenReset(myProject, Sets.newHashSet()));
+    Document doc = getDocumentFileInProject("MatcherTest.java");
+    // Add a space to it
+    doc.setText(doc.getText() + " ");
+    assertTrue(FileChangeTracker.shouldRecompileThenReset(myProject, Sets.newHashSet()));
   }
 
   public void testCompileAll() throws Throwable {

@@ -59,35 +59,4 @@ public class OSSFileSyncIntegrationTest extends OSSPantsIntegrationTest {
     gitResetRepoCleanExampleDistDir();
     super.tearDown();
   }
-
-  @NotNull
-  private Document getTestData(String testDataPath) {
-    File dataFile = PantsTestUtils.findTestPath(testDataPath);
-    VirtualFile dataVirtualFile = LocalFileSystem.getInstance().findFileByPath(dataFile.getPath());
-    assertNotNull(dataVirtualFile);
-    Document dataDocument = FileDocumentManager.getInstance().getDocument(dataVirtualFile);
-    assertNotNull(dataDocument);
-    return dataDocument;
-  }
-
-  /**
-   * Find document in project by filename.
-   */
-  @NotNull
-  private Document getDocumentFileInProject(String filename) {
-    VirtualFile sourceFile = searchForVirtualFileInProject(filename);
-    Document doc = FileDocumentManager.getInstance().getDocument(sourceFile);
-    assertNotNull(String.format("%s not found.", filename), doc);
-    return doc;
-  }
-
-  /**
-   * Find VirtualFile in project by filename.
-   */
-  @NotNull
-  private VirtualFile searchForVirtualFileInProject(String filename) {
-    Collection<VirtualFile> files = FilenameIndex.getVirtualFilesByName(myProject, filename, GlobalSearchScope.allScope(myProject));
-    assertEquals(1, files.size());
-    return files.iterator().next();
-  }
 }
