@@ -8,8 +8,6 @@ import com.google.common.collect.Sets;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
@@ -23,8 +21,8 @@ import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModuleAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileTargetAction;
-import com.twitter.intellij.pants.compiler.actions.PantsLintTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
+import com.twitter.intellij.pants.compiler.actions.PantsLintTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsTaskActionBase;
 import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
@@ -44,13 +42,9 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
 
   private final DataContext PANTS_PROJECT_DATA = s -> s.equals("project") ? myProject : null;
 
-  PantsExecuteTaskResult getPantsActionResult(PantsTaskActionBase action, Set<String> targetAddresses) throws Exception {
-    PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(myProject, PantsMakeBeforeRun.ID);
-    return action.execute(runner, myProject, targetAddresses);
-  }
-
   protected void assertActionSucceeds(PantsTaskActionBase action, Set<String> targetAddresses) throws Exception {
-    PantsExecuteTaskResult result = getPantsActionResult(action, targetAddresses);
+    PantsMakeBeforeRun runner = (PantsMakeBeforeRun) ExternalSystemBeforeRunTaskProvider.getProvider(myProject, PantsMakeBeforeRun.ID);
+    PantsExecuteTaskResult result = action.execute(runner, myProject, targetAddresses);
     assertPantsCompileExecutesAndSucceeds(result);
   }
 
@@ -80,24 +74,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       .collect(Collectors.toSet());
     Set<String> expectedTarget = Sets.newHashSet("testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
     assertEquals(expectedTarget, targetAddresses);
-    PantsExecuteTaskResult firstResult = getPantsActionResult(compileTargetAction, targetAddresses);
-    assertPantsCompileExecutesAndSucceeds(firstResult);
-
-    PantsExecuteTaskResult secondResult = getPantsActionResult(compileTargetAction, targetAddresses);
-    assertPantsCompileExecutesAndSucceeds(secondResult);
-
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        /* Force cached changes to disk so {@link com.twitter.intellij.pants.file.FileChangeTracker} can mark the project dirty. */
-        Document doc = getDocumentFileInProject("Main.java");
-        doc.setText(doc.getText() + " ");
-      }
-    });
-
-    PantsExecuteTaskResult thirdResult = getPantsActionResult(compileTargetAction, targetAddresses);
-    int x = 5;
-
+    assertActionSucceeds(compileTargetAction, Sets.newHashSet());
   }
 
   public void testRebuildAction() throws Throwable {
