@@ -74,7 +74,7 @@ if [ ! -d .cache/pants/.git ]; then
   echo "Getting latest Pants..."
   pushd .cache
   git clone https://github.com/pantsbuild/pants
-  echo "Bootstrapping Pants and Ivy..."
+  echo "Bootstrapping Pants..."
   pushd pants
   ./pants goals
   popd
