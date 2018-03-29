@@ -12,21 +12,13 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.search.FilenameIndex;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
-import com.twitter.intellij.pants.testFramework.PantsTestUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.HyperlinkEvent;
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -154,26 +146,6 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
         );
       }
     });
-  }
-
-  /**
-   * Find VirtualFile in project by filename.
-   */
-  @NotNull
-  private VirtualFile firstMatchingVirtualFileInProject(String filename) {
-    Collection<VirtualFile> files = FilenameIndex.getVirtualFilesByName(myProject, filename, GlobalSearchScope.allScope(myProject));
-    assertTrue(String.format("Filename %s not found in project", filename), files.size() > 0);
-    return files.iterator().next();
-  }
-
-  @NotNull
-  private Document getTestData(String testDataPath) {
-    File dataFile = PantsTestUtils.findTestPath(testDataPath);
-    VirtualFile dataVirtualFile = LocalFileSystem.getInstance().findFileByPath(dataFile.getPath());
-    assertNotNull(dataVirtualFile);
-    Document dataDocument = FileDocumentManager.getInstance().getDocument(dataVirtualFile);
-    assertNotNull(dataDocument);
-    return dataDocument;
   }
 
   @Override

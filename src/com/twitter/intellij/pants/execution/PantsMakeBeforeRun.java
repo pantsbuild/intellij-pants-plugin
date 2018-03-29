@@ -313,6 +313,16 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject,
                                                    @NotNull Set<String> targetAddressesToCompile,
                                                    boolean useCleanAll) {
+
+    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+      @Override
+      public void run() {
+        /* Force cached changes to disk so {@link com.twitter.intellij.pants.file.FileChangeTracker} can mark the project dirty. */
+        FileDocumentManager.getInstance().saveAllDocuments();
+        currentProject.save();
+      }
+    }, ModalityState.NON_MODAL);
+
     // If project has not changed since last Compile, return immediately.
     if (!FileChangeTracker.shouldRecompileThenReset(currentProject, targetAddressesToCompile)) {
       PantsExternalMetricsListenerManager.getInstance().logIsPantsNoopCompile(true);
@@ -339,7 +349,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   private void prepareIDE(Project project) {
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+    ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
         /* Clear message window. */
@@ -347,9 +357,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         executionConsole.getComponent().setVisible(true);
         executionConsole.clear();
         ToolWindowManagerEx.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
-        /* Force cached changes to disk. */
-        FileDocumentManager.getInstance().saveAllDocuments();
-        project.save();
       }
     }, ModalityState.NON_MODAL);
   }

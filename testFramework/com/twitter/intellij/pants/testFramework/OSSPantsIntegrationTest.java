@@ -8,14 +8,21 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.roots.LanguageLevelProjectExtension;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.java.LanguageLevel;
+import com.intellij.psi.search.FilenameIndex;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -90,5 +97,46 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
       String.format("Project Language Level should be %s, but is %s", expectedLanguageLevel, projectLanguageLevel),
       projectLanguageLevel.equals(LanguageLevel.JDK_1_8)
     );
+  }
+
+  @NotNull
+  protected Document getTestData(String testDataPath) {
+    File dataFile = PantsTestUtils.findTestPath(testDataPath);
+    VirtualFile dataVirtualFile = LocalFileSystem.getInstance().findFileByPath(dataFile.getPath());
+    assertNotNull(dataVirtualFile);
+    Document dataDocument = FileDocumentManager.getInstance().getDocument(dataVirtualFile);
+    assertNotNull(dataDocument);
+    return dataDocument;
+  }
+
+  /**
+   * Find document in project by filename.
+   */
+  @NotNull
+  protected Document getDocumentFileInProject(String filename) {
+    VirtualFile sourceFile = searchForVirtualFileInProject(filename);
+    Document doc = FileDocumentManager.getInstance().getDocument(sourceFile);
+    assertNotNull(String.format("%s not found.", filename), doc);
+    return doc;
+  }
+
+  /**
+   * Find VirtualFile in project by filename.
+   */
+  @NotNull
+  protected VirtualFile searchForVirtualFileInProject(String filename) {
+    Collection<VirtualFile> files = FilenameIndex.getVirtualFilesByName(myProject, filename, GlobalSearchScope.allScope(myProject));
+    assertEquals(String.format("%s not found.", filename), 1, files.size());
+    return files.iterator().next();
+  }
+
+  /**
+   * Find VirtualFile in project by filename.
+   */
+  @NotNull
+  protected VirtualFile firstMatchingVirtualFileInProject(String filename) {
+    Collection<VirtualFile> files = FilenameIndex.getVirtualFilesByName(myProject, filename, GlobalSearchScope.allScope(myProject));
+    assertTrue(String.format("Filename %s not found in project", filename), files.size() > 0);
+    return files.iterator().next();
   }
 }
