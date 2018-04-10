@@ -96,13 +96,14 @@ if __name__ == "__main__":
       logger.info("Publishing skipped.")
       exit(0)
 
-    upload_cmd = 'java -jar scripts/deploy/plugin-repository-rest-client-0.3.SNAPSHOT-all.jar upload ' \
-                 '-host https://plugins.jetbrains.com/ ' \
-                 '-channel {channel} ' \
-                 '-username {username} ' \
-                 '-password \'{password}\' ' \
-                 '-plugin {plugin_id} ' \
-                 '-file {zip}' \
+    # Reference: https://www.jetbrains.org/intellij/sdk/docs/plugin_repository/api/plugin_upload.html
+    upload_cmd = 'curl -v -i ' \
+                 '-F userName="{username}" ' \
+                 '-F password="{password}" ' \
+                 '-F pluginId="{plugin_id}" ' \
+                 '-F file=@{zip} ' \
+                 '-F channel="{channel}" ' \
+                 'https://plugins.jetbrains.com/plugin/uploadPlugin ' \
       .format(channel=channel,
               username=os.environ['USERNAME'],
               password=os.environ['PASSWORD'],
@@ -110,15 +111,9 @@ if __name__ == "__main__":
               zip=zip_name)
 
     logger.info('Uploading...')
-
-    subprocess.call(upload_cmd, shell=True, stderr=devnull)
-
-    # Plugin upload will return error even if it succeeds,
-    # so the return code is meaningless. Hence check the plugin repo
-    # explicitly to see if the version is there.
     try:
-      subprocess.check_output('curl {} | grep {}'.format(REPO, sha), shell=True, stderr=devnull)
+      subprocess.check_output(upload_cmd, shell=True)
     except subprocess.CalledProcessError as e:
-      logger.error("Deploy failed: not available on {}".format(REPO))
+      logger.error("Upload failed.")
     else:
-      logger.info("Deploy succeeded.")
+      logger.info("Upload succeeded.")
