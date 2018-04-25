@@ -109,7 +109,9 @@ test sources, resources, test resources, generated sources, etc).
     * `<IDEA_BIN_HOME>/plugins/junit/lib/idea-junit.jar` where `<IDEA_BIN_HOME>` is the path to your Idea binary
 * Set Scala 2.11.6 as your Scala SDK (Gold reference should be [the version used to build Scala plugin](https://github.com/JetBrains/intellij-scala/blob/idea163.x/.idea/artifacts/ScalaPlugins.xml#L41-L42))
 * Make sure that your project is set to configure bytecode compatible with 1.8.  Preferences -> Compiler -> Java Compiler -> Project bytecode version
-* Run plugin configuration 'Pants' to verify your setup. It should launch a separate IntelliJ app.
+* Make sure your project language level is 8. Project Structure(Cmd + ; ) -> Project -> Project language level.
+* Make sure you have a project compiler output set; it doesn't matter where, but needs to be set. Project Structure(Cmd + ; ) -> Project -> Project compiler output.
+* Run plugin configuration 'Pants' to verify your setup. It should launch a separate IntelliJ app. If this fails on the first run because the Scala plugin isn't installed, install it in the separate launched IntelliJ, restart it, and things should be good.
 
 ### Release process:
 * Create a new release branch from the latest master. E.g. `git checkout -b 1.8.0`
