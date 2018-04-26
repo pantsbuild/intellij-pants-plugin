@@ -32,7 +32,7 @@ else
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
   export EXPECTED_IJ_MD5="f53d01a87baf4c8a066c4921f8a4d459"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="031ee7232aef9de191b836e004007efb"
+  export PYTHON_PLUGIN_MD5="da3034ce7bc4e42607f3b53a69804b08"
 fi
 
 # we will use Community ids to download plugins.

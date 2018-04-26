@@ -78,6 +78,22 @@
       <add-to-group group-id="ProjectViewCompileGroup" />
       <add-to-group group-id="Pants.Menu" anchor="first" />
     </group>
+
+    <!-- Ideally this would be in CutCopyPasteGroup anchored after CopyPaths, but if we do that,
+	 it also appears in the Edit menu. It turns out that CopyPaths doesn't actually work in the
+	 Edit menu (it no-ops), and if we put this action there, it doesn't actually get invoked when it's
+	 clicked.
+
+	 So instead of putting the button both in the Edit menu (where it doesn't work), and where we want
+	 in the ProjectViewPopupMenu (where it does), we just put it in the ProjectViewPopupMenu just after
+	 the CutCopyPasteGroup. It means the Paste button is awkwardly between Copy Path and Copy Path
+	 Relative to Build Root, but that seems less bad than having a non-functioning button elsewhere in
+	 the UI. -->
+    <action id="Pants.CopyPathRelativeToBuildRootAction"
+	    class="com.twitter.intellij.pants.ui.CopyPathRelativeToBuildRootAction"
+	    text="Copy Path Relative to Build Root">
+	    <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="CutCopyPasteGroup" />
+    </action>
   </actions>
 
   <extensionPoints>
