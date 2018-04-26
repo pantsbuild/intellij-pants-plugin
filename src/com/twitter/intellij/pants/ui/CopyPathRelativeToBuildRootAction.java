@@ -19,7 +19,7 @@ public class CopyPathRelativeToBuildRootAction extends AnAction {
   public void actionPerformed(AnActionEvent event) {
     Optional<VirtualFile> maybeBuildRoot = PantsUtil.findBuildRoot(event.getProject());
     Optional<VirtualFile> maybeFile = PantsUtil.getFileForEvent(event);
-    if (!maybeBuildRoot.isPresent() || !maybeFile.isPresent()) {
+    if (!(maybeBuildRoot.isPresent() && maybeFile.isPresent())) {
       // Should be guarded by the check in update, so this should never happen.
       return;
     }
