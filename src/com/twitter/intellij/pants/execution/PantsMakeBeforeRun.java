@@ -96,8 +96,9 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     /**
      /**
      * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
+     * Use string test on class name due to scala plugin can be optional and it is hard to separate this logic.
      */
-    if (runConfiguration instanceof AbstractTestRunConfiguration) {
+    if (runConfiguration.getClass().getName().equals("org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration")) {
       if (buildRoot.isPresent()) {
         ((AbstractTestRunConfiguration) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
       }
