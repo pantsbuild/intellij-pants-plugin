@@ -105,7 +105,7 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
      * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
      * Use string test on class name due to scala plugin can be optional and it is hard to separate this logic.
      */
-    if (runConfiguration.getClass().getName().equals(PantsConstants.ABSTRACT_TEST_RUN_CONFIGURATION_CLASS_NAME)) {
+    if (runConfiguration.getClass().getName().equals(PantsConstants.SCALA_PLUGIN_ABSTRACT_TEST_RUN_CONFIGURATION_CLASS_NAME)) {
       Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
         try {
           s.logTestRunner(TestRunnerType.SCALA_RUNNER);
