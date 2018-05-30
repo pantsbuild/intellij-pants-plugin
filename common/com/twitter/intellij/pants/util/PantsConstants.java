@@ -25,6 +25,8 @@ public class PantsConstants {
   public static final String PANTS_INI = "pants.ini";
   public static final String PANTS_PEX = "pants.pex";
   public static final String PANTS_LIBRARY_NAME = PANTS_PEX;
+  public static final String ABSTRACT_TEST_RUN_CONFIGURATION_CLASS_NAME =
+    "org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration";
 
   protected static final String BUILD = "BUILD";
   protected static final String THRIFT_EXT = "thrift";
