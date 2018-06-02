@@ -119,18 +119,21 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
          */
         private void convertToPantsProject() {
           PantsExternalMetricsListenerManager.getInstance().logIsGUIImport(false);
-          String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
-          String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
+          final String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
+          final String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
           if (serializedTargets == null || projectPath == null) {
             return;
           }
+          // TODO: This is actually an integer value: if we replaced the incremental import
+          // checkbox with an integer optional, we could propagate this value through.
+          final boolean enableIncrementalImport =
+            PropertiesComponent.getInstance(myProject).getValue("incremental_import") != null;
 
           /**
            * Generate the import spec for the next refresh.
            */
           final List<String> targetSpecs = PantsUtil.gson.fromJson(serializedTargets, PantsUtil.TYPE_LIST_STRING);
           final boolean loadLibsAndSources = true;
-          final boolean enableIncrementalImport = false;
           final boolean useIdeaProjectJdk = false;
           final PantsProjectSettings pantsProjectSettings =
             new PantsProjectSettings(targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk);
