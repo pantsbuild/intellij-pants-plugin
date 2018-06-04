@@ -84,9 +84,11 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
       PantsUtil.listAllTargets(myProjectRoot.getPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello/main/BUILD")
     );
     assertEquals(
-      Sets.newHashSet("examples/src/java/org/pantsbuild/example/hello/main:main",
-                              "examples/src/java/org/pantsbuild/example/hello/main:readme",
-                              "examples/src/java/org/pantsbuild/example/hello/main:main-bin"),
+      Sets.newHashSet(
+        "examples/src/java/org/pantsbuild/example/hello/main:main",
+        "examples/src/java/org/pantsbuild/example/hello/main:readme",
+        "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
+      ),
       targetsInBuild
     );
   }
