@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.integration;
 
+import com.google.common.collect.Sets;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolver;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 
 public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   private static Consumer<String> STRING_CONSUMER = new Consumer<String>() {
@@ -78,13 +80,14 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   }
 
   public void testListTargets() {
-    assertEquals(
-      Arrays.asList(
-        "examples/src/java/org/pantsbuild/example/hello/main:main",
-        "examples/src/java/org/pantsbuild/example/hello/main:readme",
-        "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
-      ),
+    HashSet<String> targetsInBuild = Sets.newHashSet(
       PantsUtil.listAllTargets(myProjectRoot.getPath() + File.separator + "examples/src/java/org/pantsbuild/example/hello/main/BUILD")
+    );
+    assertEquals(
+      Sets.newHashSet("examples/src/java/org/pantsbuild/example/hello/main:main",
+                              "examples/src/java/org/pantsbuild/example/hello/main:readme",
+                              "examples/src/java/org/pantsbuild/example/hello/main:main-bin"),
+      targetsInBuild
     );
   }
 }

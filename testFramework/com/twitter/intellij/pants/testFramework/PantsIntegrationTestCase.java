@@ -253,10 +253,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     // so we expect at least one of the versions should be found here.
     ArrayList<String> expectedLibs =
       Lists.newArrayList(
-        "Pants: org.scala-lang:scala-library:2.10.4",
         "Pants: org.scala-lang:scala-library:2.10.6",
         "Pants: org.scala-lang:scala-library:2.11.8",
-        "Pants: org.scala-lang:scala-library:2.11.11"
+        "Pants: org.scala-lang:scala-library:2.11.11",
+        "Pants: org.scala-lang:scala-library:2.11.12"
       );
     for (String libName : expectedLibs) {
       LibraryOrderEntry libX = ContainerUtil.getFirstItem(this.getModuleLibDeps(moduleName, libName));
