@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
@@ -185,6 +186,10 @@ public class PantsUtil {
       return findPantsExecutable(file).isPresent();
     }
     return isBUILDFileName(file.getName());
+  }
+
+  public static boolean isScalaTestRunConfiguration(RunConfiguration rc) {
+    return rc.getClass().getPackage().getName().startsWith(PantsConstants.SCALA_PLUGIN_PACKAGE_TEST_SCALATEST);
   }
 
   public static Optional<String> findPantsVersion(Optional<VirtualFile> workingDir) {

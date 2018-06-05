@@ -8,6 +8,7 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 
 import java.util.Arrays;
@@ -105,7 +106,7 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
      * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
      * Use string test on class name due to scala plugin can be optional and it is hard to separate this logic.
      */
-    if (runConfiguration.getClass().getName().equals(PantsConstants.SCALA_PLUGIN_ABSTRACT_TEST_RUN_CONFIGURATION_CLASS_NAME)) {
+    if (PantsUtil.isScalaTestRunConfiguration(runConfiguration)) {
       Arrays.stream(EP_NAME.getExtensions()).forEach(s -> {
         try {
           s.logTestRunner(TestRunnerType.SCALA_RUNNER);
