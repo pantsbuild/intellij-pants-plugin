@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
+import org.fest.util.Sets;
 
 import java.io.File;
 import java.util.stream.Collectors;
@@ -94,12 +95,12 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
 
     // Now project setting should contain all the targets in the BUILD file.
     assertEquals(
-      ContainerUtil.newArrayList(
+      Sets.newLinkedHashSet(
         "examples/src/java/org/pantsbuild/example/hello/main:main",
         "examples/src/java/org/pantsbuild/example/hello/main:readme",
         "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
       ),
-      myFromPantsControl.getProjectSettings().getTargetSpecs()
+      Sets.newHashSet(myFromPantsControl.getProjectSettings().getTargetSpecs())
     );
   }
 
