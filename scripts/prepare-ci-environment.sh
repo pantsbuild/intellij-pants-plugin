@@ -49,8 +49,14 @@ append_intellij_jvm_options() {
   scope=$1
   cmd=""
 
+  if [[ ${ENABLE_SCALA_PLUGIN} ]]; then
+    load_plugins="-Didea.load.plugins.id=com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants"
+  else
+    load_plugins="-Didea.load.plugins.id=com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,PythonCore,JUnit,com.intellij.plugins.pants"
+  fi
+
   INTELLIJ_JVM_OPTIONS=(
-    "-Didea.load.plugins.id=com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants"
+    "-Didea.load.plugins.id=${load_plugins}"
     "-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME"
     "-Didea.home.path=$INTELLIJ_HOME"
     "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
