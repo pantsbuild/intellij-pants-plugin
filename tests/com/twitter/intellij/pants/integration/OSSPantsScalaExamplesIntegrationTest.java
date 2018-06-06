@@ -6,11 +6,21 @@ package com.twitter.intellij.pants.integration;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.SourceFolder;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.jps.model.java.JavaSourceRootType;
 
 import java.util.List;
 
 public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTest {
+
+  protected String[] getRequiredPluginIds() {
+    return new String[]{
+      "org.intellij.scala",
+      "org.jetbrains.plugins.gradle",
+      PantsConstants.PLUGIN_ID
+    };
+  }
+
   public void testHelloByTargetName() throws Throwable {
     doImport("examples/src/scala/org/pantsbuild/example/hello/BUILD", "hello");
 

@@ -17,20 +17,10 @@
 
   <idea-version since-build="181.0" until-build="181.*"/>
 
-  <!--Scala plugin related extensions-->
-  <depends>org.intellij.scala</depends>
   <!--Add gradle as a dep because of Pants runner requires it.-->
   <depends>org.jetbrains.plugins.gradle</depends>
-  <extensions defaultExtensionNs="com.intellij.plugins.pants">
-    <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaSdkResolver"/>
-  </extensions>
-  <extensions defaultExtensionNs="com.intellij">
-    <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService" order="last"/>
-    <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantsScalaHighlightVisitor"/>
-  </extensions>
-  <!--End of scala plugin related extensions-->
 
-  <depends>JUnit</depends>
+  <depends optional="true" config-file="pants-scala.xml">org.intellij.scala</depends>
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
 
