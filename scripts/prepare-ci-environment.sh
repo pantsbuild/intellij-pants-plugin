@@ -24,20 +24,20 @@ get_md5(){
 if [[ "${IJ_ULTIMATE:-false}" == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="600b3996dd5c6cc5646b9b1e1f3a8818"
+  export EXPECTED_IJ_MD5="ca21652fdcbe81ed5ea60ae49a9394a5"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="8dec8315e530f144fe6b747cb30d88d0"
+  export PYTHON_PLUGIN_MD5="578103a4e9fc96acf38c5e082f322f0f"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="f53d01a87baf4c8a066c4921f8a4d459"
+  export EXPECTED_IJ_MD5="621457c9147f285683b489d0368b60fc"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="da3034ce7bc4e42607f3b53a69804b08"
+  export PYTHON_PLUGIN_MD5="7e6a7e48f7c01484115bfe2116d853dd"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="df191d318e124da346605b2b4560ced9"
+export SCALA_PLUGIN_MD5="b69af0284c698d7ad086476d545c504a"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
