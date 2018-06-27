@@ -145,7 +145,7 @@ public class FileChangeTracker {
       }
     };
 
-    if (PantsUtil.isFileUnderPantsProject(file) && PantsUtil.isBUILDFileName(file.getName())) {
+    if (PantsUtil.isFileUnderPantsRepo(file) && PantsUtil.isBUILDFileName(file.getName())) {
       Notification myNotification = new Notification(
         PantsConstants.PANTS,
         PantsBundle.message("pants.project.build.files.changed"),

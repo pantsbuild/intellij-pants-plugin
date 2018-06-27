@@ -196,8 +196,8 @@ public class PantsUtil {
    *
    * @param file - a BUILD file
    */
-  public static boolean isFileUnderPantsProject(VirtualFile file) {
-    return findPantsExecutable(file).isPresent() && isBUILDFileName(file.getName());
+  public static boolean isFileUnderPantsRepo(VirtualFile file) {
+    return findPantsExecutable(file).isPresent();
   }
 
   public static boolean isScalaTestRunConfiguration(RunConfiguration rc) {
