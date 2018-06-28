@@ -178,6 +178,8 @@ public class PantsUtil {
 
   /**
    * Checks if it's a BUILD file or folder under a Pants project
+   * Does not consider if the file is a BUILD file under a Pants project, only
+   * that the file is a directory under a pants project.
    *
    * @param file - a BUILD file or a directory
    */
@@ -186,6 +188,16 @@ public class PantsUtil {
       return findPantsExecutable(file).isPresent();
     }
     return isBUILDFileName(file.getName());
+  }
+
+  /**
+   * Almost exactly like isPantsProjectFile, but checks that the BUILD
+   * file is under a Pants project.
+   *
+   * @param file - a BUILD file
+   */
+  public static boolean isFileUnderPantsRepo(VirtualFile file) {
+    return findPantsExecutable(file).isPresent();
   }
 
   public static boolean isScalaTestRunConfiguration(RunConfiguration rc) {
