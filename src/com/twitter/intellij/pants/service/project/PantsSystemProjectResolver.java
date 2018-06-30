@@ -46,10 +46,12 @@ import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -147,7 +149,14 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
       executor.getProjectName(),
-      executor.getBuildRoot().getPath() + "/.idea/pants-projects/" + executor.getProjectRelativePath(),
+      Paths.get(
+        executor.getBuildRoot().getPath(),
+        ".idea",
+        "pants-projects",
+        DigestUtils.sha1Hex(Long.toString(System.currentTimeMillis())),
+        executor.getProjectRelativePath()
+      )
+        .toString(),
       executor.getProjectPath()
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<>(ProjectKeys.PROJECT, projectData, null);
