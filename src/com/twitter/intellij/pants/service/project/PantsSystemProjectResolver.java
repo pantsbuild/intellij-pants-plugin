@@ -155,8 +155,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
         "pants-projects",
         DigestUtils.sha1Hex(Long.toString(System.currentTimeMillis())),
         executor.getProjectRelativePath()
-      )
-        .toString(),
+      ).toString(),
       executor.getProjectPath()
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<>(ProjectKeys.PROJECT, projectData, null);
