@@ -153,6 +153,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
         executor.getBuildRoot().getPath(),
         ".idea",
         "pants-projects",
+        // Use a timestamp hash to avoid module creation dead lock
+        // when overlapping targets were imported into multiple projects
+        // from the same Pants repo.
         DigestUtils.sha1Hex(Long.toString(System.currentTimeMillis())),
         executor.getProjectRelativePath()
       ).toString(),
