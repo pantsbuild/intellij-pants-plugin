@@ -40,10 +40,10 @@ import java.util.Set;
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
 
   private enum ProjectPathFileType {
-    nonExistent,
-    nonPantsFile,
-    recursiveDirectory,
-    executable,
+    isNonExistent,
+    isNonPantsFile,
+    isRecursiveDirectory,
+    executableScript,
     isBUILDFile
   }
 
@@ -142,13 +142,13 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
     ProjectPathFileType pathFileType = determinePathKind(file);
     switch (pathFileType) {
-      case nonExistent:
-      case nonPantsFile:
+      case isNonExistent:
+      case isNonPantsFile:
         myTargetSpecsBox.setEnabled(true);
         errors.add(String.format("Pants project not found given project path: %s", projectPath));
         break;
 
-      case recursiveDirectory:
+      case isRecursiveDirectory:
         myTargetSpecsBox.setEnabled(false);
         Optional<String> relativeProjectPath = PantsUtil.getRelativeProjectPath(file.getPath());
 
@@ -165,7 +165,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         }
         break;
 
-      case executable:
+      case executableScript:
         myTargetSpecsBox.setEnabled(false);
         myTargetSpecsBox.setEmptyText(PantsUtil.getRelativeProjectPath(file.getPath()).orElse(file.getName()));
 
@@ -218,16 +218,18 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(projectUrl);
     ProjectPathFileType pathFileType = determinePathKind(file);
     switch (pathFileType) {
-      case nonExistent:
+      case isNonExistent:
         throw new ConfigurationException(PantsBundle.message("pants.error.file.not.exists", projectUrl));
-      case nonPantsFile:
+      case isNonPantsFile:
         throw new ConfigurationException(PantsBundle.message("pants.error.not.build.file.path.or.directory"));
-      case executable:
+      case executableScript:
         return true;
       case isBUILDFile:
         if (myTargetSpecsBox.getSelectedIndices().length == 0) {
           throw new ConfigurationException(PantsBundle.message("pants.error.no.targets.are.selected"));
         }
+        break;
+      case isRecursiveDirectory:
         break;
       default:
         throw new ConfigurationException("Unexpected project file state: " + pathFileType);
@@ -242,13 +244,13 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   private ProjectPathFileType determinePathKind(VirtualFile projectFile) {
     if (projectFile == null) {
-      return ProjectPathFileType.nonExistent;
+      return ProjectPathFileType.isNonExistent;
     } else if (PantsUtil.isExecutable(projectFile.getPath())) {
-      return ProjectPathFileType.executable;
+      return ProjectPathFileType.executableScript;
     } else if (!PantsUtil.isPantsProjectFile(projectFile)) {
-      return ProjectPathFileType.nonPantsFile;
+      return ProjectPathFileType.isNonPantsFile;
     } else if (projectFile.isDirectory()) {
-      return ProjectPathFileType.recursiveDirectory;
+      return ProjectPathFileType.isRecursiveDirectory;
     } else {
       return ProjectPathFileType.isBUILDFile;
     }
