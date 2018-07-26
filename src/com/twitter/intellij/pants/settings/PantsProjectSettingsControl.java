@@ -39,6 +39,14 @@ import java.util.Set;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
 
+  private enum ProjectPathFileType {
+    nonExistent,
+    nonPantsFile,
+    recursiveDirectory,
+    executable,
+    isBUILDFile
+  }
+
   @VisibleForTesting
   protected CheckBoxList<String> myTargetSpecsBox = new CheckBoxList<>();
 
@@ -112,65 +120,84 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void resetExtraSettings(boolean isDefaultModuleCreation) {
+    // NB: This is called when a new run of the import wizard happens.
+    //     The values of all the settings are either their initial values,
+    //     or whatever they were last set to, so you can't reuse them.
+    lastPath = "";
+    myTargetSpecsBox.clear();
+    errors.clear();
   }
 
   public void onProjectPathChanged(@NotNull final String projectPath) {
+    // NB: onProjectPathChanged is called twice for each path. This guard ensures we only run it
+    //     once per set of calls.
     if (lastPath.equals(projectPath)) {
       return;
     }
     lastPath = projectPath;
+
     myTargetSpecsBox.clear();
     errors.clear();
 
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
-    if (file == null || !PantsUtil.isPantsProjectFile(file)) {
-      myTargetSpecsBox.setEnabled(true);
-      errors.add(String.format("Pants project not found given project path: %s", projectPath));
-      return;
-    }
+    ProjectPathFileType pathFileType = determinePathKind(file);
+    switch (pathFileType) {
+      case nonExistent:
+      case nonPantsFile:
+        myTargetSpecsBox.setEnabled(true);
+        errors.add(String.format("Pants project not found given project path: %s", projectPath));
+        break;
 
-    if (file.isDirectory()) {
-      myTargetSpecsBox.setEnabled(false);
-      Optional<String> relativeProjectPath = PantsUtil.getRelativeProjectPath(file.getPath());
-      if (!relativeProjectPath.isPresent()) {
-        errors.add(String.format("Fail to find relative path from %s to build root.", file.getPath()));
-        return;
-      }
-      String spec = relativeProjectPath.get() + "/::";
+      case recursiveDirectory:
+        myTargetSpecsBox.setEnabled(false);
+        Optional<String> relativeProjectPath = PantsUtil.getRelativeProjectPath(file.getPath());
 
-      myTargetSpecsBox.setEmptyText(spec);
-      myTargetSpecsBox.addItem(spec, spec, true);
+        if (relativeProjectPath.isPresent()) {
+          String spec = relativeProjectPath.get() + "/::";
 
-      myLibsWithSourcesCheckBox.setEnabled(true);
-    }
-    else if (PantsUtil.isExecutable(file.getPath())) {
-      myTargetSpecsBox.setEnabled(false);
-      myTargetSpecsBox.setEmptyText(file.getName());
+          myTargetSpecsBox.setEmptyText(spec);
+          myTargetSpecsBox.addItem(spec, spec, true);
 
-      myLibsWithSourcesCheckBox.setSelected(false);
-      myLibsWithSourcesCheckBox.setEnabled(false);
-    }
-    else {
-      myTargetSpecsBox.setEnabled(true);
-      myTargetSpecsBox.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
-      myLibsWithSourcesCheckBox.setEnabled(true);
+          myLibsWithSourcesCheckBox.setEnabled(true);
+        } else {
+          errors.add(String.format("Fail to find relative path from %s to build root.", file.getPath()));
+          return;
+        }
+        break;
 
-      ProgressManager.getInstance().run(new Task.Modal(getProject(), PantsBundle.message("pants.getting.target.list"), false) {
-        @Override
-        public void run(@NotNull ProgressIndicator indicator) {
-          try {
-            final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
-            UIUtil.invokeLaterIfNeeded(() -> {
+      case executable:
+        myTargetSpecsBox.setEnabled(false);
+        myTargetSpecsBox.setEmptyText(PantsUtil.getRelativeProjectPath(file.getPath()).orElse(file.getName()));
+
+        myLibsWithSourcesCheckBox.setSelected(false);
+        myLibsWithSourcesCheckBox.setEnabled(false);
+        break;
+
+      case isBUILDFile:
+        myTargetSpecsBox.setEnabled(true);
+        myTargetSpecsBox.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
+        myLibsWithSourcesCheckBox.setEnabled(true);
+
+        ProgressManager.getInstance().run(new Task.Modal(getProject(),
+            PantsBundle.message("pants.getting.target.list"), false) {
+          @Override
+          public void run(@NotNull ProgressIndicator indicator) {
+            try {
+              final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
+              UIUtil.invokeLaterIfNeeded(() -> {
                 targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
               });
-          } catch (RuntimeException e) {
-            UIUtil.invokeLaterIfNeeded((Runnable) () -> {
+            } catch (RuntimeException e) {
+              UIUtil.invokeLaterIfNeeded((Runnable) () -> {
                 Messages.showErrorDialog(getProject(), e.getMessage(), "Pants Failure");
                 Messages.createMessageDialogRemover(getProject()).run();
               });
+            }
           }
-        }
-      });
+        });
+        break;
+      default:
+        throw new ConfigurationException("unexpected state: " + pathFileType);
     }
   }
 
@@ -186,17 +213,21 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   public boolean validate(@NotNull PantsProjectSettings settings) throws ConfigurationException {
     final String projectUrl = VfsUtil.pathToUrl(settings.getExternalProjectPath());
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(projectUrl);
-    if (file == null) {
-      throw new ConfigurationException(PantsBundle.message("pants.error.file.not.exists", projectUrl));
-    }
-    if (PantsUtil.isExecutable(file.getPath())) {
-      return true;
-    }
-    if (!PantsUtil.isPantsProjectFile(file)) {
-      throw new ConfigurationException(PantsBundle.message("pants.error.not.build.file.path.or.directory"));
-    }
-    if (PantsUtil.isBUILDFileName(file.getName()) && myTargetSpecsBox.getSelectedIndices().length == 0) {
-      throw new ConfigurationException(PantsBundle.message("pants.error.no.targets.are.selected"));
+    ProjectPathFileType pathFileType = determinePathKind(file);
+    switch (pathFileType) {
+      case nonExistent:
+        throw new ConfigurationException(PantsBundle.message("pants.error.file.not.exists", projectUrl));
+      case nonPantsFile:
+        throw new ConfigurationException(PantsBundle.message("pants.error.not.build.file.path.or.directory"));
+      case executable:
+        return true;
+      case isBUILDFile:
+        if (myTargetSpecsBox.getSelectedIndices().length == 0) {
+          throw new ConfigurationException(PantsBundle.message("pants.error.no.targets.are.selected"));
+        }
+        break;
+      default:
+        throw new ConfigurationException("unexpected state: " + pathFileType);
     }
     if (!errors.isEmpty()) {
       String errorMessage = String.join("\n", errors);
@@ -204,5 +235,19 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       throw new ConfigurationException(errorMessage);
     }
     return true;
+  }
+
+  private ProjectPathFileType determinePathKind(VirtualFile projectFile) {
+    if (projectFile == null) {
+      return ProjectPathFileType.nonExistent;
+    } else if (PantsUtil.isExecutable(projectFile.getPath())) {
+      return ProjectPathFileType.executable;
+    } else if (!PantsUtil.isPantsProjectFile(projectFile)) {
+      return ProjectPathFileType.nonPantsFile;
+    } else if (projectFile.isDirectory()) {
+      return ProjectPathFileType.recursiveDirectory;
+    } else {
+      return ProjectPathFileType.isBUILDFile;
+    }
   }
 }
