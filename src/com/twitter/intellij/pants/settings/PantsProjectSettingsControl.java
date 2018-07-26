@@ -197,7 +197,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         });
         break;
       default:
-        throw new ConfigurationException("unexpected state: " + pathFileType);
+        UIUtil.invokeLaterIfNeeded((Runnable) () -> {
+          Messages.showErrorDialog(getProject(), "Unexpected project file state: " + pathFileType, "Pants Failure");
+          Messages.createMessageDialogRemover(getProject()).run();
+        });
     }
   }
 
@@ -227,7 +230,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         }
         break;
       default:
-        throw new ConfigurationException("unexpected state: " + pathFileType);
+        throw new ConfigurationException("Unexpected project file state: " + pathFileType);
     }
     if (!errors.isEmpty()) {
       String errorMessage = String.join("\n", errors);
