@@ -7,6 +7,8 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.IdeActions;
+import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
+import com.intellij.openapi.util.registry.Registry;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModuleAction;
 import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
@@ -28,6 +30,13 @@ public class PantsInitComponentImpl implements PantsInitComponent {
 
   @Override
   public void initComponent() {
+    // The Pants plugin doesn't do so many computations for building a project
+    // to start an external JVM each time.
+    // The plugin only calls `export` goal and parses JSON response.
+    // So it will be in process all the time.
+    final String key = PantsConstants.SYSTEM_ID.getId() + ExternalSystemConstants.USE_IN_PROCESS_COMMUNICATION_REGISTRY_KEY_SUFFIX;
+    Registry.get(key).setValue(true);
+
     registerPantsActions();
   }
 
