@@ -119,7 +119,6 @@
                      groupName="Pants" enabledByDefault="true"
                      implementationClass="com.twitter.intellij.pants.inspection.PythonPluginInspection"/>
 
-    <!--<compileServer.plugin classpath="intellij-pants-plugin-publish.jar"/>-->
     <buildProcess.parametersProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildProcessParametersProvider"/>
 
     <projectConfigurable groupId="build.tools" groupWeight="110" id="reference.settingsdialog.project.pants"
