@@ -59,9 +59,7 @@ append_intellij_jvm_options() {
     "-Didea.load.plugins.id=${load_plugins}"
     "-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME"
     "-Didea.home.path=$INTELLIJ_HOME"
-    "-Didea.external.build.development.plugins.dir=$CWD/.pants.d/compile/jvm/java"
-    "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/jps-model.jar"
-    #EAP build does not know its own build number, thus failing to tell plugin compatibility.
+    # EAP build does not know its own build number, thus failing to tell plugin compatibility.
     "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"
   )
