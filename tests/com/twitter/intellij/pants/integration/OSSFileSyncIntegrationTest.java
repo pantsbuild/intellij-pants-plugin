@@ -6,19 +6,10 @@ package com.twitter.intellij.pants.integration;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.search.FilenameIndex;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
-import com.twitter.intellij.pants.testFramework.PantsTestUtils;
 import com.twitter.intellij.pants.util.PantsUtil;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
 
 public class OSSFileSyncIntegrationTest extends OSSPantsIntegrationTest {

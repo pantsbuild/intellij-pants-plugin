@@ -7,7 +7,6 @@ import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.ExtensionPointName;
-import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 

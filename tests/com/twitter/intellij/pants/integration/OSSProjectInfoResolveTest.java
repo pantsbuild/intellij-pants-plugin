@@ -16,7 +16,6 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
