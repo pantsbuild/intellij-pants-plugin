@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="external-system-test-api">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/testData/external-system-test-api.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
