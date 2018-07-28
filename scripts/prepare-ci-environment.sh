@@ -10,8 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2018.1.5"
-export IJ_BUILD_NUMBER="181.5281.24"
+export IJ_VERSION="2018.2"
+export IJ_BUILD_NUMBER="182.3684.101"
 
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
@@ -24,20 +24,20 @@ get_md5(){
 if [[ "${IJ_ULTIMATE:-false}" == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="ca21652fdcbe81ed5ea60ae49a9394a5"
+  export EXPECTED_IJ_MD5="e613bbba7d73ba027012fe6d4c73d12b"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="578103a4e9fc96acf38c5e082f322f0f"
+  export PYTHON_PLUGIN_MD5="4e1a7a91e921e063492b5025a38833f6"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="621457c9147f285683b489d0368b60fc"
+  export EXPECTED_IJ_MD5="c05ee8abc50796cbb6bc6b65e6093ea5"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="7e6a7e48f7c01484115bfe2116d853dd"
+  export PYTHON_PLUGIN_MD5="7ebff66b548a41eb5a7d7c6e30ac0687"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="b69af0284c698d7ad086476d545c504a"
+export SCALA_PLUGIN_MD5="8d8d212c43b2b98875a4c3ff41c26e51"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
@@ -59,9 +59,7 @@ append_intellij_jvm_options() {
     "-Didea.load.plugins.id=${load_plugins}"
     "-Didea.plugins.path=$INTELLIJ_PLUGINS_HOME"
     "-Didea.home.path=$INTELLIJ_HOME"
-    "-Dpants.plugin.base.path=$CWD/.pants.d/compile/jvm/java"
-    "-Dpants.jps.plugin.classpath=$CWD/jps-plugin:$INTELLIJ_HOME/lib/jps-model.jar"
-    #EAP build does not know its own build number, thus failing to tell plugin compatibility.
+    # EAP build does not know its own build number, thus failing to tell plugin compatibility.
     "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"
   )
