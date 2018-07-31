@@ -76,6 +76,8 @@ if [ ! -d .cache/pants/.git ]; then
   git clone https://github.com/pantsbuild/pants
   echo "Bootstrapping Pants..."
   pushd pants
+  # Bootstrap Pants in the testing SHA so it won't cause
+  # tests to time out during Pants run.
   if [ -z ${PANTS_SHA+x} ]; then
     echo "Using the latest master..."
   else
