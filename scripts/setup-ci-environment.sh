@@ -76,6 +76,12 @@ if [ ! -d .cache/pants/.git ]; then
   git clone https://github.com/pantsbuild/pants
   echo "Bootstrapping Pants..."
   pushd pants
+  if [ -z ${PANTS_SHA+x} ]; then
+    echo "Using the latest master..."
+  else
+    echo "Using $PANTS_SHA..."
+    git reset --hard $PANTS_SHA
+  fi
   ./pants goals
   popd
   popd
