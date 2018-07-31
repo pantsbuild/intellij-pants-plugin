@@ -6,7 +6,6 @@ scala_library(
         '3rdparty/intellij:scala-plugin',
         '3rdparty/intellij:sdk',
         'common',
-        'jps-plugin',
     ],
     resources=[
         'resources',

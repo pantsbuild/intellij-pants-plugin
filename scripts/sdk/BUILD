@@ -44,7 +44,6 @@ jvm_binary(
     'tests:jvm-integration',
     'tests:py-integration',
     'tests:metrics',
-    'jps-plugin',
     'src:pants-intellij-plugin',
   ],
   deploy_excludes = [
@@ -58,7 +57,6 @@ jvm_binary(
   basename='intellij-pants-plugin-publish',
   dependencies=[
     'common',
-    'jps-plugin',
     'src:pants-intellij-plugin',
   ]
 )
