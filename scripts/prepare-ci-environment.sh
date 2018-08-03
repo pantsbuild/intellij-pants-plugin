@@ -13,6 +13,12 @@ export CWD=$(pwd)
 export IJ_VERSION="2018.2"
 export IJ_BUILD_NUMBER="182.3684.101"
 
+
+# This is for bootstrapping Pants, since this repo does not do Pants intensive operations,
+# we can optimize for build time.
+# https://github.com/pantsbuild/pants/blob/16bd8fffb6db89779f5862604a0fe8745c8e50c4/build-support/bin/native/bootstrap_code.sh#L27
+export MODE="debug"
+
 get_md5(){
   if [[ $OSTYPE == *"darwin"* ]]; then
     echo  $(md5 $1| awk '{print $NF}')
