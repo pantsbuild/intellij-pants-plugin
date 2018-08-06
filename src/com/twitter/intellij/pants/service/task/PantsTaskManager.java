@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.service.task;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.intellij.execution.ExecutionException;
@@ -27,8 +28,12 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.intellij.openapi.externalSystem.rt.execution.ForkedDebuggerHelper.DEBUG_FORK_SOCKET_PARAM;
 
 public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutionSettings> {
 
@@ -91,6 +96,15 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
     }
   }
 
+  /**
+   * Eliminate `DEBUG_FORK_SOCKET_PARAM`(-forkSocket) from debug setup parameters
+   */
+  @VisibleForTesting
+  protected static String getCleanedDebugSetup(String debugSetup) {
+    ArrayList<String> params = Lists.newArrayList(debugSetup.split(" "));
+    return params.stream().filter(s -> !s.contains(DEBUG_FORK_SOCKET_PARAM)).collect(Collectors.joining(" "));
+  }
+
   @Nullable
   public GeneralCommandLine constructCommandLine(
     @NotNull List<String> taskNames,
@@ -119,7 +133,7 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
       if (jvmOptionsFlag == null) {
         throw new ExternalSystemException(PantsBundle.message("pants.error.cannot.debug.task", goal));
       }
-      commandLine.addParameter(jvmOptionsFlag + "=" + debuggerSetup);
+      commandLine.addParameter(jvmOptionsFlag + "=" + getCleanedDebugSetup(debuggerSetup));
     }
     if (settings.isUseIdeaProjectJdk()) {
       try {
