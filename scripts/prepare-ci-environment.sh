@@ -32,7 +32,7 @@ if [[ "${IJ_ULTIMATE:-false}" == "true" ]]; then
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
   export EXPECTED_IJ_MD5="e86dfce06b011f391bf6c54fb25c22da"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="dc95316ebf798c56d8a1ec37077f3d51"
+  export PYTHON_PLUGIN_MD5="da185c1af07f9217bf7e155a74ebb14e"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
