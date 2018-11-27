@@ -32,13 +32,13 @@ if [[ "${IJ_ULTIMATE:-false}" == "true" ]]; then
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
   export EXPECTED_IJ_MD5="e86dfce06b011f391bf6c54fb25c22da"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="da185c1af07f9217bf7e155a74ebb14e"
+  export PYTHON_PLUGIN_MD5="3b6fdefd9027eebafe075734b3cc967e"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
   export EXPECTED_IJ_MD5="eff11907e5266b548e1d75b2ec29b3dd"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="1e506987f106e22af956d00bb664bf97"
+  export PYTHON_PLUGIN_MD5="da185c1af07f9217bf7e155a74ebb14e"
 fi
 
 # we will use Community ids to download plugins.
