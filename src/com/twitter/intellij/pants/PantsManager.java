@@ -40,11 +40,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.Icon;
-import java.net.URL;
-import java.util.List;
 import java.util.Optional;
 
-public class PantsManager implements
+public class  PantsManager implements
                           ExternalSystemConfigurableAware,
                           ExternalSystemUiAware,
                           StartupActivity,
@@ -181,10 +179,6 @@ public class PantsManager implements
     parameters.getVMParametersList().addProperty(
       ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, PantsConstants.SYSTEM_ID.getId()
     );
-  }
-
-  @Override
-  public void enhanceLocalProcessing(@NotNull List<URL> urls) {
   }
 
   @Override

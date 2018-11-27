@@ -7,9 +7,9 @@ import com.intellij.compiler.server.BuildProcessParametersProvider;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
-import org.fest.util.Lists;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PantsBuildProcessParametersProvider extends BuildProcessParametersProvider {
@@ -27,6 +27,6 @@ public class PantsBuildProcessParametersProvider extends BuildProcessParametersP
     if (PantsUtil.isPantsProject(myProject)) {
       throw new RuntimeException(PantsConstants.EXTERNAL_BUILDER_ERROR);
     }
-    return Lists.newArrayList();
+    return new ArrayList<>();
   }
 }

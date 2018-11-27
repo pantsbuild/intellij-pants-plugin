@@ -20,7 +20,6 @@ import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
@@ -223,13 +222,8 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   }
 
   @Override
-  protected boolean isApplicableFor(@NotNull RunConfigurationBase configuration) {
+  public boolean isApplicableFor(@NotNull RunConfigurationBase configuration) {
     return findPantsModule(configuration) != null;
   }
 
-  @Nullable
-  @Override
-  protected <T extends RunConfigurationBase> SettingsEditor<T> createEditor(@NotNull T configuration) {
-    return null;
-  }
 }

@@ -239,7 +239,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       myCompilerTester.tearDown();
     }
     final List<Module> allModules = Arrays.asList(ModuleManager.getInstance(myProject).getModules());
-    myCompilerTester = new CompilerTester(myProject, allModules);
+    myCompilerTester = new CompilerTester(myTestFixture, allModules);
     return myCompilerTester;
   }
 
