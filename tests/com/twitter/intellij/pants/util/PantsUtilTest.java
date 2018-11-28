@@ -4,7 +4,12 @@
 package com.twitter.intellij.pants.util;
 
 import com.google.common.collect.Lists;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.CapturingProcessHandler;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -12,10 +17,14 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PantsUtilTest extends OSSPantsImportIntegrationTest {
+
+  protected static final Logger LOG = Logger.getInstance(PantsUtilTest.class);
 
   public void testIsPantsProjectFile() {
     // Current project path should be under a Pants repo.
@@ -55,6 +64,38 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     // Make sure they are identical, meaning that no new JDK was created on the 2nd find.
     assertTrue(sdkA == sdkB);
     assertEquals(twoEntriesSameSdk, getSameJdks(sdkA));
+  }
+
+  protected String getPantsExecutablePath() {
+    return PantsUtil.findPantsExecutable(getParentPath()).get().getPath();
+  }
+
+  public void testNonUtf8LocaleSubprocessFails() throws ExecutionException {
+    final GeneralCommandLine command = PantsUtil.defaultCommandLine(getPantsExecutablePath());
+    command.addParameter("options");
+
+    final Map<String, String> localeOverrides = new HashMap<>();
+    final String badLocale = "en_US.US-ASCII";
+    localeOverrides.put("LANG", badLocale);
+    localeOverrides.put("LC_ALL", badLocale);
+
+    final Map<String, String> cmdEnv = command.getEnvironment();
+    cmdEnv.putAll(localeOverrides);
+
+    final ProcessOutput processOutput = PantsUtil.getCmdOutput(command, null);
+    assertFalse(processOutput.checkSuccess(LOG));
+
+    final String stderrString = processOutput.getStderr();
+    assertContainsSubstring(stderrString,
+                            "pants.bin.pants_loader.InvalidLocaleError: System preferred encoding is `US-ASCII`, but `UTF-8` is required.");
+  }
+
+  public void testSubprocessWithShellEnvSucceeds() throws ExecutionException {
+    final GeneralCommandLine command = PantsUtil.defaultCommandLine(getPantsExecutablePath());
+    command.addParameter("options");
+
+    final ProcessOutput processOutput = PantsUtil.getCmdOutput(command, null);
+    assertTrue(processOutput.checkSuccess(LOG));
   }
 
   public void testisBUILDFilePath() {

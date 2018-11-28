@@ -60,6 +60,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ArrayUtil;
+import com.intellij.util.EnvironmentUtil;
 import com.intellij.util.Function;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.PathUtil;
@@ -353,6 +354,15 @@ public class PantsUtil {
       pantsExecutable.getAbsolutePath()
     );
     commandLine.setExePath(pantsExecutablePath);
+
+    // Seed the subprocess invocation with the environment of a shell (TODO: which shell?).
+    try {
+      Map<String, String> shellEnv = new EnvironmentUtil.ShellEnvReader().readShellEnv();
+      Map<String, String> cmdEnv = commandLine.getEnvironment();
+      cmdEnv.putAll(shellEnv);
+    } catch (Exception e) {
+    }
+
     final String workingDir = pantsExecutable.getParentFile().getAbsolutePath();
     return commandLine.withWorkDirectory(workingDir);
   }
@@ -675,12 +685,9 @@ public class PantsUtil {
     @NotNull GeneralCommandLine command,
     @Nullable ProcessAdapter processAdapter
   ) throws ExecutionException {
-    final CapturingProcessHandler processHandler =
-      new CapturingProcessHandler(command.createProcess(), Charset.defaultCharset(), command.getCommandLineString());
-    if (processAdapter != null) {
-      processHandler.addProcessListener(processAdapter);
-    }
-    return processHandler.runProcess();
+    Process proc = command.createProcess();
+    String cmdString = command.getCommandLineString();
+    return getCmdOutput(proc, cmdString, processAdapter);
   }
 
   public static ProcessOutput getCmdOutput(
