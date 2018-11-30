@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.Icon;
 import java.util.Optional;
 
-public class  PantsManager implements
+public class PantsManager implements
                           ExternalSystemConfigurableAware,
                           ExternalSystemUiAware,
                           StartupActivity,
