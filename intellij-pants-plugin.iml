@@ -31,11 +31,11 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$APPLICATION_PLUGINS_DIR$/Scala/lib/scala-plugin.jar!/" />
+          <root url="jar://$APPLICATION_PLUGINS_DIR$/Scala/lib/scalaUltimate.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$APPLICATION_PLUGINS_DIR$/Scala/lib/scala-plugin.jar!/com/intellij/scala/play/projectTemplate/sbtintegr/skeleton260/app_java" />
+          <root url="jar://$APPLICATION_PLUGINS_DIR$/Scala/lib/scalaUltimate.jar!/com/intellij/scala/play/projectTemplate/sbtintegr/skeleton260/app_java" />
         </SOURCES>
       </library>
     </orderEntry>
