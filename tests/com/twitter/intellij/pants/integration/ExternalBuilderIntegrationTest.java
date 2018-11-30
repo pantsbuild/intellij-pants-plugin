@@ -10,8 +10,9 @@ import org.junit.Ignore;
 
 import java.util.List;
 
+@Ignore("Hang on dead lock: https://github.com/pantsbuild/intellij-pants-plugin/issues/382")
 public class ExternalBuilderIntegrationTest extends OSSPantsIntegrationTest {
-  @Ignore("Hang on dead lock: https://github.com/pantsbuild/intellij-pants-plugin/issues/382")
+
   public void testExternalBuilderError() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
 
