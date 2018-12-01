@@ -3,11 +3,11 @@
 
 package com.twitter.intellij.pants.compiler;
 
+import com.google.common.collect.Lists;
 import com.intellij.compiler.server.BuildProcessParametersProvider;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
-import org.fest.util.Lists;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

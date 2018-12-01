@@ -6,8 +6,6 @@ scala_library(
         '3rdparty/intellij:scala-plugin',
         '3rdparty/intellij:sdk',
         'common',
-    ],
-    resources=[
         'resources',
     ],
     sources=rglobs('*.scala', '*.java')

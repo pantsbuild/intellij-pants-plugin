@@ -239,7 +239,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       myCompilerTester.tearDown();
     }
     final List<Module> allModules = Arrays.asList(ModuleManager.getInstance(myProject).getModules());
-    myCompilerTester = new CompilerTester(myProject, allModules);
+    myCompilerTester = new CompilerTester(myTestFixture, allModules);
     return myCompilerTester;
   }
 
@@ -468,7 +468,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
    */
   @NotNull
   protected ScalaTestRunConfiguration generateScalaRunConfiguration(String moduleName, String className) {
-    final ConfigurationFactory factory = ScalaTestConfigurationType.CONFIGURATION_TYPE_EP.getExtensions()[0].getConfigurationFactories()[0];
+    ConfigurationFactory factory = Stream.of(ScalaTestConfigurationType.CONFIGURATION_TYPE_EP.getExtensions())
+      .filter(s -> s instanceof ScalaTestConfigurationType)
+      .findFirst()
+      .get()
+      .getConfigurationFactories()[0];
+
     final ScalaTestRunConfiguration runConfiguration = new ScalaTestRunConfiguration(myProject, factory, className);
     runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
     runConfiguration.setModule(getModule(moduleName));

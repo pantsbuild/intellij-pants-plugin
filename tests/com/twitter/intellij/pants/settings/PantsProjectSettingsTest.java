@@ -4,10 +4,10 @@
 package com.twitter.intellij.pants.settings;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
-import org.fest.util.Sets;
 
 import java.io.File;
 import java.util.stream.Collectors;
@@ -94,14 +94,12 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
     updateSettingsBasedOnGuiStates();
 
     // Now project setting should contain all the targets in the BUILD file.
-    assertEquals(
-      Sets.newLinkedHashSet(
-        "examples/src/java/org/pantsbuild/example/hello/main:main",
-        "examples/src/java/org/pantsbuild/example/hello/main:readme",
-        "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
-      ),
-      Sets.newHashSet(myFromPantsControl.getProjectSettings().getTargetSpecs())
-    );
+    assertEquals(Sets.newLinkedHashSet(Lists.newArrayList(
+      "examples/src/java/org/pantsbuild/example/hello/main:main",
+      "examples/src/java/org/pantsbuild/example/hello/main:readme",
+      "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
+                 ))
+      , Sets.newLinkedHashSet(myFromPantsControl.getProjectSettings().getTargetSpecs()));
   }
 
   public void testInvalidImportPath() {
