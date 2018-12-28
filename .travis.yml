@@ -4,9 +4,6 @@ dist: xenial
 language: python
 python: "2.7.15"
 
-jdk:
-  - oraclejdk8
-
 cache:
   directories:
     - ${HOME}/.cache/pants
@@ -26,8 +23,8 @@ addons:
 before_install:
   # Remove bad openjdk6 from trusty image, so
   # Pants will pick up oraclejdk6 from `packages` above.
-  - sudo rm -rf /usr/lib/jvm/java-1.6.0-openjdk-amd64
-  - sudo rm -rf /usr/lib/jvm/java-6-openjdk-amd64
+  - PATH="/usr/lib/jvm/java-8-openjdk-amd64/jre/bin":$PATH
+  - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 install: ./scripts/setup-ci-environment.sh
 
