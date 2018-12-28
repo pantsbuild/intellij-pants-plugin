@@ -795,7 +795,8 @@ public class PantsUtil {
 
   @NotNull
   public static Set<String> hydrateTargetAddresses(@NotNull String addresses) {
-    return gson.fromJson(addresses, TYPE_SET_STRING);
+    String tmp = addresses.replace("&quot;", "\"");
+    return gson.fromJson(tmp, TYPE_SET_STRING);
   }
 
   @NotNull
