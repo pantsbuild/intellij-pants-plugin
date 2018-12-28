@@ -517,7 +517,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       ApplicationManager.getApplication(),
       "BaseDataReader",
       "ProcessWaitFor",
-      "Timer"
+      "Timer",
+      "FileBasedIndex"
     );
     try {
       if (myCompilerTester != null) {
