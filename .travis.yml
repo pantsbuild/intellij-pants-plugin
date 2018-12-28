@@ -21,8 +21,6 @@ addons:
       - python-dev
 
 before_install:
-  # Remove bad openjdk6 from trusty image, so
-  # Pants will pick up oraclejdk6 from `packages` above.
   - PATH="/usr/lib/jvm/java-8-openjdk-amd64/jre/bin":$PATH
   - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
