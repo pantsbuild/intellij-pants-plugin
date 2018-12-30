@@ -141,6 +141,8 @@
 
     <externalSystemManager implementation="com.twitter.intellij.pants.PantsManager"/>
 
+    <applicationService serviceInterface="com.twitter.intellij.pants.metrics.PantsExternalMetricsListener" serviceImplementation="com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager" />
+
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsSettings"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>
 
