@@ -11,6 +11,9 @@ import com.intellij.ide.FileSelectInContext;
 import com.intellij.ide.SelectInContext;
 import com.intellij.ide.SelectInTarget;
 import com.intellij.ide.projectView.ProjectView;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
@@ -82,9 +85,25 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode =
       resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.isEnableIncrementalImport());
+
+    sendSuccessMessage(id);
     doViewSwitch(id, projectPath);
     task2executor.remove(id);
     return projectDataNode;
+  }
+
+  private void sendSuccessMessage(@NotNull ExternalSystemTaskId id) {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      // Messages.showInfoMessage(id.findProject(), "Pants project import/refresh succeeded.", "Success");
+      Notification myNotification = new Notification(
+        PantsConstants.PANTS,
+        "Success",
+        "Pants project import/refresh succeeded.",
+        NotificationType.INFORMATION,
+        null
+      );
+      Notifications.Bus.notify(myNotification, id.findProject());
+    });
   }
 
   private void doViewSwitch(@NotNull ExternalSystemTaskId id, @NotNull String projectPath) {
