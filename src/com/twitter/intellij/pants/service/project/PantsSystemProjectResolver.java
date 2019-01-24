@@ -94,7 +94,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
   private void sendSuccessMessage(@NotNull ExternalSystemTaskId id) {
     ApplicationManager.getApplication().invokeLater(() -> {
-      // Messages.showInfoMessage(id.findProject(), "Pants project import/refresh succeeded.", "Success");
       Notification myNotification = new Notification(
         PantsConstants.PANTS,
         "Success",
