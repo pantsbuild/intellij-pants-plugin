@@ -89,11 +89,16 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
   /**
    * Modifying a non BUILD file in project should not trigger refresh prompt.
    */
-  public void testNoRefreshPrompt() throws Throwable {
+  public void testNoRefreshPrompt() {
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
       @Override
       public void run() {
         doImport("examples/tests/java/org/pantsbuild/example/useproto");
+        // Remove the import success notification.
+        for (Notification notification : EventLog.getLogModel(myProject).getNotifications()) {
+          EventLog.getLogModel(myProject).removeNotification(notification);
+        }
+
         // Find a BUILD file in project.
         FileEditorManager.getInstance(myProject).openFile(firstMatchingVirtualFileInProject("UseProtoTest.java"), true);
         Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
