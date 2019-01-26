@@ -116,7 +116,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       super.setUp();
     }
     catch (Throwable throwable) {
-      // Discard error containing "Already disposed".
+      // Discard error containing "Leaked project found".
       if (!throwable.getMessage().contains("Leaked project found")) {
         throw throwable;
       }
