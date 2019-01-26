@@ -112,7 +112,15 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @Override
   public void setUp() throws Exception {
     cleanProjectIdeaDir();
-    super.setUp();
+    try {
+      super.setUp();
+    }
+    catch (Throwable throwable) {
+      // Discard error containing "Already disposed".
+      if (!throwable.getMessage().contains("Leaked project found")) {
+        throw throwable;
+      }
+    }
     VfsRootAccess.allowRootAccess("/");
     for (String pluginId : getRequiredPluginIds()) {
       final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
