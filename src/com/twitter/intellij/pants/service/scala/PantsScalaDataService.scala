@@ -64,7 +64,7 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
       properties.languageLevel = compilerVersion.toLanguageLevel.getOrElse(ScalaLanguageLevel.Default)
       properties.compilerClasspath = scalaData.getClasspath.asScala.toSeq.map(new File(_))
       val modifiableModelEx = modelsProvider.getModifiableLibraryModel(scalaLibrary).asInstanceOf[ModifiableModelEx]
-      modifiableModelEx.setKind(ScalaLibraryType.instance.getKind)
+      modifiableModelEx.setKind(ScalaLibraryType().getKind)
       modifiableModelEx.setProperties(properties)
     } else {
       LOG.debug(s"${scalaLibrary.getName} is already a Scala SDK")

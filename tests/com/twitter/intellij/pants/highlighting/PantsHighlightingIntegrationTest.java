@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
 abstract public class PantsHighlightingIntegrationTest extends OSSPantsIntegrationTest {
@@ -65,6 +66,7 @@ abstract public class PantsHighlightingIntegrationTest extends OSSPantsIntegrati
     final List<HighlightInfo> infos = codeAnalyzer.runPasses(file, editor.getDocument(), Lists.newArrayList(textEditor), new int[0], false, null);
     infos.addAll(DaemonCodeAnalyzerEx.getInstanceEx(myProject).getFileLevelHighlights(myProject, file));
     return infos;
+    return Collections.emptyList();
   }
 
   @Nullable
