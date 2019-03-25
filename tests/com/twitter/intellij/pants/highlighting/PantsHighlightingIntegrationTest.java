@@ -59,16 +59,6 @@ abstract public class PantsHighlightingIntegrationTest extends OSSPantsIntegrati
     return editor;
   }
 
-  @NotNull
-  public List<HighlightInfo> doHighlighting(@NotNull PsiFile file, @NotNull Editor editor) {
-    final DaemonCodeAnalyzerImpl codeAnalyzer = (DaemonCodeAnalyzerImpl)DaemonCodeAnalyzer.getInstance(myProject);
-    final TextEditor textEditor = TextEditorProvider.getInstance().getTextEditor(editor);
-    final List<HighlightInfo> infos = codeAnalyzer.runPasses(file, editor.getDocument(), Lists.newArrayList(textEditor), new int[0], false, null);
-    infos.addAll(DaemonCodeAnalyzerEx.getInstanceEx(myProject).getFileLevelHighlights(myProject, file));
-    return infos;
-    return Collections.emptyList();
-  }
-
   @Nullable
   protected HighlightInfo findInfo(List<HighlightInfo> infos, @Nls final String description) {
     return ContainerUtil.find(
