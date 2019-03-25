@@ -10,7 +10,7 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2019.1"
+export IJ_VERSION="191.6183.62"
 export IJ_BUILD_NUMBER="191.6183.62"
 
 
