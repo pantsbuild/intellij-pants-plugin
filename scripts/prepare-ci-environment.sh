@@ -27,24 +27,6 @@ get_md5(){
   fi
 }
 
-if [[ "${IJ_ULTIMATE:-false}" == "true" ]]; then
-  export IJ_BUILD="IU-${IJ_VERSION}"
-  export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="06dac318478f95335c142bebab586de5"
-  export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="6fbabbbc179b022c1b5fd6e37b645b45"
-else
-  export IJ_BUILD="IC-${IJ_VERSION}"
-  export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="7bf14969ca97b574ecb8eb3844d9816e"
-  export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="eb942096057c2c5dece681254d8abaf1"
-fi
-
-# we will use Community ids to download plugins.
-export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="11d0a202595bbbb49deff40712c13daf"
-
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
 export OSS_PANTS_HOME="$CWD/.cache/pants"
