@@ -34,12 +34,17 @@ matrix:
     - python: 3.7
       env: IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=0/1
 
+    - python: 2.7
+      env: PANTS_SHA="release_1.13.0" TEST_SET=jvm-integration
 
-#  - env:
-#    - PANTS_SHA="release_1.13.0" TEST_SET=jvm-integration
-#    - PANTS_SHA="release_1.10.0" TEST_SET=jvm-integration
-#    - PANTS_SHA="release_1.6.0" TEST_SET=jvm-integration
-#    - PANTS_SHA="release_1.2.1" TEST_SET=jvm-integration
+    - python: 2.7
+      env: PANTS_SHA="release_1.10.0" TEST_SET=jvm-integration
+
+    - python: 2.7
+      env: PANTS_SHA="release_1.6.0" TEST_SET=jvm-integration
+
+    - python: 2.7
+      env: PANTS_SHA="release_1.2.1" TEST_SET=jvm-integration
 
 script:
   # Test a single Java target without scala plugin
