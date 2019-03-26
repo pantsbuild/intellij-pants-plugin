@@ -42,6 +42,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.LibraryOrderEntry;
+import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
@@ -113,7 +114,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   public void setUp() throws Exception {
     cleanProjectIdeaDir();
     super.setUp();
-    VfsRootAccess.allowRootAccess("/");
+    VfsRootAccess.allowRootAccess(myProject, "/");
     for (String pluginId : getRequiredPluginIds()) {
       final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
       assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
@@ -247,24 +248,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertEquals(name, myProject.getName());
   }
 
-  protected void assertScalaLibrary(String moduleName) throws Exception {
-    // This is to match scala-platform used in pants repo across different releases,
-    // so we expect at least one of the versions should be found here.
-    ArrayList<String> expectedLibs =
-      Lists.newArrayList(
-        "Pants: org.scala-lang:scala-library:2.10.6",
-        "Pants: org.scala-lang:scala-library:2.11.8",
-        "Pants: org.scala-lang:scala-library:2.11.11",
-        "Pants: org.scala-lang:scala-library:2.11.12"
-      );
-    for (String libName : expectedLibs) {
-      LibraryOrderEntry libX = ContainerUtil.getFirstItem(this.getModuleLibDeps(moduleName, libName));
-      if (libX != null) {
-        assertModuleLibDep(moduleName, libName);
-        return;
-      }
-    }
-    fail(String.format("None of %s is found for module %s.", expectedLibs, moduleName));
+  protected void assertScalaLibrary(String moduleName) {
+    OrderEntry[] entries = getRootManager(moduleName).getOrderEntries();
+    List<String> libLists =
+      Arrays.stream(entries).filter(s -> s instanceof LibraryOrderEntry).map(s -> ((LibraryOrderEntry) s).getLibraryName())
+        .collect(Collectors.toList());
+    assertContainsSubstring(libLists, "Pants: org.scala-lang:scala-library:");
   }
 
   protected void assertManifestJarExists() throws Exception {
@@ -322,11 +311,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     myProjectSettings.setTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
     final String pantsExecutablePath = PantsUtil.findPantsExecutable(getProjectPath()).get().getPath();
     getDefaultJavaSdk(pantsExecutablePath).ifPresent(sdk -> {
-        ApplicationManager.getApplication().invokeAndWait(() -> {
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                NewProjectUtil.applyJdkToProject(myProject, sdk);
-            });
+      ApplicationManager.getApplication().invokeAndWait(() -> {
+        ApplicationManager.getApplication().runWriteAction(() -> {
+          NewProjectUtil.applyJdkToProject(myProject, sdk);
         });
+      });
     });
     importProject();
     PantsMetrics.markIndexEnd();
@@ -416,7 +405,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     try {
       final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
       assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
-    } catch (ExecutionException e){
+    }
+    catch (ExecutionException e) {
       fail(e.toString());
     }
   }
@@ -425,7 +415,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     try {
       final OSProcessHandler handler = runWithConfiguration(configuration);
       assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
-    } catch (ExecutionException e) {
+    }
+    catch (ExecutionException e) {
       fail(e.toString());
     }
   }
@@ -606,8 +597,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   protected void assertPantsInvocationSucceeds(final PantsExecuteTaskResult result, @NotNull String opTitle) throws Exception {
     String errorDescription = result.output.orElse("<no output>");
-    assertTrue(String.format("%s failed: '%s'", opTitle, errorDescription),
-               result.succeeded);
+    assertTrue(
+      String.format("%s failed: '%s'", opTitle, errorDescription),
+      result.succeeded
+    );
   }
 
   protected void assertPantsInvocationFails(final PantsExecuteTaskResult result, @NotNull String opTitle) throws Exception {
@@ -636,5 +629,27 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected PantsExecuteTaskResult pantsCompileModule(String... moduleNames) {
     PantsMakeBeforeRun runner = new PantsMakeBeforeRun(myProject);
     return runner.doPantsCompile(getModules(moduleNames));
+  }
+
+  protected void assertContainsSubstring(List<String> stringList, String expected) {
+    assertContainsSubstring(StringUtil.join(stringList, ""), expected);
+  }
+
+  protected void assertContainsSubstring(String s, String expected) {
+    if (s.contains(expected)) {
+      return;
+    }
+    fail(String.format("String '%s' does not contain expected substring '%s'.", s, expected));
+  }
+
+  protected void assertNotContainsSubstring(List<String> stringList, String unexpected) {
+    assertNotContainsSubstring(StringUtil.join(stringList, ""), unexpected);
+  }
+
+  protected void assertNotContainsSubstring(String s, String unexpected) {
+    if (!s.contains(unexpected)) {
+      return;
+    }
+    fail(String.format("String '%s' contains unexpected substring '%s'.", s, unexpected));
   }
 }
