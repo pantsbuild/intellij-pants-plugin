@@ -47,6 +47,7 @@ matrix:
       env: PANTS_SHA="release_1.2.1" TEST_SET=jvm-integration
 
 script:
+  - TEST_SET="idea-plugin-integration" ./scripts/run-tests-ci.sh
   # Test a single Java target without scala plugin
   - ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
   - ./scripts/run-tests-ci.sh

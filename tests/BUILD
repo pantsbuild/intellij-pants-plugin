@@ -50,6 +50,17 @@ junit_tests(
   )
 )
 
+# Single idea-plugin test because it will cause test framework to leak projects.
+junit_tests(
+  name='idea-plugin-integration',
+  dependencies=[
+    ':sources-and-libs',
+  ],
+  sources=globs(
+    'com/twitter/intellij/pants/integration/idea_plugin/*.java',
+  )
+)
+
 junit_tests(
   name='py-integration',
   dependencies=[
