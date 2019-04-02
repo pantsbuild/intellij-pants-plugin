@@ -50,7 +50,7 @@ junit_tests(
   )
 )
 
-# Single idea-plugin test because it will cause test framework to leak projects.
+# Single out idea-plugin test because it will cause test framework to leak projects.
 junit_tests(
   name='idea-plugin-integration',
   dependencies=[
