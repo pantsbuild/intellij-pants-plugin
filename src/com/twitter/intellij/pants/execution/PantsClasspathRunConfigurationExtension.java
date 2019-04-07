@@ -102,10 +102,9 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   private Set<String> calculatePathsAllowed(JavaParameters params) throws CantRunException {
 
     String homePath = PathManager.getHomePath();
-    String jdkPath = params.getJdkPath();
     String pluginPath = PathManager.getPluginsPath();
 
-    Set<String> pathsAllowed = Sets.newHashSet(jdkPath, homePath, pluginPath);
+    Set<String> pathsAllowed = Sets.newHashSet(homePath, pluginPath);
 
     if (ApplicationManager.getApplication().isUnitTestMode()) {
       pathsAllowed.add(
