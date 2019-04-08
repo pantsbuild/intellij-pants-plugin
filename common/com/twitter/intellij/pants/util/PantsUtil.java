@@ -200,8 +200,8 @@ public class PantsUtil {
     return findPantsExecutable(file).isPresent();
   }
 
-  public static boolean isScalaTestRunConfiguration(RunConfiguration rc) {
-    return rc.getClass().getPackage().getName().startsWith(PantsConstants.SCALA_PLUGIN_PACKAGE_TEST_SCALATEST);
+  public static boolean isScalaRelatedTestRunConfiguration(RunConfiguration rc) {
+    return rc.getClass().getPackage().getName().startsWith(PantsConstants.SCALA_PLUGIN_PACKAGE_TEST_PREFIX);
   }
 
   public static Optional<String> findPantsVersion(Optional<VirtualFile> workingDir) {

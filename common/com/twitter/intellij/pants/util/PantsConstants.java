@@ -70,6 +70,8 @@ public class PantsConstants {
   public static final String PANTS_TASK_EXPORT_CLASSPATH = "export-classpath";
   public static final String PANTS_TASK_LINT = "lint";
 
-  public static final String SCALA_PLUGIN_PACKAGE_TEST_SCALATEST =
-    "org.jetbrains.plugins.scala.testingSupport.test.scalatest";
+  // scalatest: org.jetbrains.plugins.scala.testingSupport.test.scalatest
+  // spec2: org.jetbrains.plugins.scala.testingSupport.test.spec2
+  public static final String SCALA_PLUGIN_PACKAGE_TEST_PREFIX =
+    "org.jetbrains.plugins.scala.testingSupport.test";
 }
