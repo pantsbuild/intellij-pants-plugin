@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.testFramework;
 
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.twitter.intellij.pants.testFramework.PantsTestUtils;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.File;

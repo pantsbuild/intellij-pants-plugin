@@ -795,7 +795,12 @@ public class PantsUtil {
 
   @NotNull
   public static Set<String> hydrateTargetAddresses(@NotNull String addresses) {
-    return gson.fromJson(addresses, TYPE_SET_STRING);
+    // There may be serialization behavior change on {@link com.intellij.openapi.module.Module.setOption}
+    // ["abc/efg"] will get serialized correctly by gson.toJson to "[\"abc/123\"]".
+    // However when data is read back from {@link com.intellij.openapi.module.Module.getOptionValue},
+    // it becomes "[&quot;abc/123&quot;]", then gson.fromJson would fail on it.
+    String tmp = addresses.replace("&quot;", "\"");
+    return gson.fromJson(tmp, TYPE_SET_STRING);
   }
 
   @NotNull

@@ -10,8 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="2018.3"
-export IJ_BUILD_NUMBER="183.4284.148"
+export IJ_VERSION="191.6183.62"
+export IJ_BUILD_NUMBER="191.6183.62"
 
 
 # This is for bootstrapping Pants, since this repo does not do Pants intensive operations,
@@ -30,20 +30,15 @@ get_md5(){
 if [[ "${IJ_ULTIMATE:-false}" == "true" ]]; then
   export IJ_BUILD="IU-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IU-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="e86dfce06b011f391bf6c54fb25c22da"
   export PYTHON_PLUGIN_ID="Pythonid"
-  export PYTHON_PLUGIN_MD5="3b6fdefd9027eebafe075734b3cc967e"
 else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
-  export EXPECTED_IJ_MD5="eff11907e5266b548e1d75b2ec29b3dd"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_MD5="da185c1af07f9217bf7e155a74ebb14e"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_MD5="9547227c38fc65e090b5b7bd40d6f99e"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"

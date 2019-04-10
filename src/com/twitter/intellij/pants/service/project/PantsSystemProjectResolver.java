@@ -264,7 +264,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
             @Override
             public void run() {
               ProjectView.getInstance(myProject).changeView(ProjectFilesViewPane.ID);
-              queueFocusOnImportDirectory();
+              // Disable directory focus as it may cause too much stress when
+              // there is heavy indexing load right after project import.
+              // https://youtrack.jetbrains.com/issue/IDEA-204959
+              // queueFocusOnImportDirectory();
             }
           });
         }

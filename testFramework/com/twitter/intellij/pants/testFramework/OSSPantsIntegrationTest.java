@@ -41,28 +41,6 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
     return Collections.singletonList(testProjects);
   }
 
-  protected void assertContainsSubstring(List<String> stringList, String expected) {
-    assertContainsSubstring(StringUtil.join(stringList, ""), expected);
-  }
-
-  protected void assertContainsSubstring(String s, String expected) {
-    if (s.contains(expected)) {
-      return;
-    }
-    fail(String.format("String '%s' does not contain expected substring '%s'.", s, expected));
-  }
-
-  protected void assertNotContainsSubstring(List<String> stringList, String unexpected) {
-    assertNotContainsSubstring(StringUtil.join(stringList, ""), unexpected);
-  }
-
-  protected void assertNotContainsSubstring(String s, String unexpected) {
-    if (!s.contains(unexpected)) {
-      return;
-    }
-    fail(String.format("String '%s' contains unexpected substring '%s'.", s, unexpected));
-  }
-
   private List<BeforeRunTask<?>> getBeforeRunTask(RunConfiguration configuration) {
     RunManagerImpl runManager = (RunManagerImpl) RunManager.getInstance(myProject);
     RunnerAndConfigurationSettingsImpl configurationSettings = new RunnerAndConfigurationSettingsImpl(runManager, configuration, true);

@@ -12,10 +12,10 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.11.0</version>
+  <version>1.12.1</version>
   <vendor>Twitter, Inc.</vendor>
 
-  <idea-version since-build="183.0" until-build="183.*"/>
+  <idea-version since-build="191.0" until-build="191.*"/>
 
   <!--Add gradle as a dep because of Pants runner requires it.-->
   <depends>org.jetbrains.plugins.gradle</depends>
@@ -140,6 +140,8 @@
     <externalSystemTaskNotificationListener implementation="com.twitter.intellij.pants.service.project.PantsProjectImportNotificationListener"/>
 
     <externalSystemManager implementation="com.twitter.intellij.pants.PantsManager"/>
+
+    <applicationService serviceInterface="com.twitter.intellij.pants.metrics.PantsExternalMetricsListener" serviceImplementation="com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager" />
 
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsSettings"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>

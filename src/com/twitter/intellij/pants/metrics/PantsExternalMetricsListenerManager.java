@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.metrics;
 
 import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -17,14 +18,11 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
 
   private static final Logger LOG = Logger.getInstance(PantsExternalMetricsListenerManager.class);
 
-
-  private static PantsExternalMetricsListenerManager instance = new PantsExternalMetricsListenerManager();
-
   private static ExtensionPointName<PantsExternalMetricsListener>
     EP_NAME = ExtensionPointName.create("com.intellij.plugins.pants.pantsExternalMetricsListener");
 
   public static PantsExternalMetricsListenerManager getInstance() {
-    return instance;
+    return (PantsExternalMetricsListenerManager) ServiceManager.getService(PantsExternalMetricsListener.class);
   }
 
   @Override
