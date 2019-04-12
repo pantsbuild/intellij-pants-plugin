@@ -25,6 +25,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
+import com.twitter.intellij.pants.execution.DefaultRunConfigurationSelector;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.LivePantsMetrics;
@@ -108,6 +109,8 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               PantsUtil.refreshAllProjects(myProject);
             }
           }
+          PantsSettings settings = PantsSettings.getInstance(myProject);
+          DefaultRunConfigurationSelector.registerConfigs(settings.getDefaultTestRunner());
         }
 
         /**

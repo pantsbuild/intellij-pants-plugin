@@ -8,10 +8,12 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemSettingsControl;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
 import com.intellij.openapi.externalSystem.util.PaintAwarePanel;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.updateSettings.impl.UpdateChecker;
 import com.intellij.openapi.updateSettings.impl.UpdateSettings;
 import com.intellij.ui.components.JBCheckBox;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.execution.DefaultRunConfigurationSelector;
 import org.jetbrains.annotations.NotNull;
 
 public class PantsSystemSettingsControl implements ExternalSystemSettingsControl<PantsSettings> {
@@ -20,6 +22,13 @@ public class PantsSystemSettingsControl implements ExternalSystemSettingsControl
   private static final String UPDATE_URL = "https://raw.githubusercontent.com/pantsbuild/intellij-pants-plugin/master/pants-beta-updates.xml";
 
   private JBCheckBox myUpdateChannel;
+  private ComboBox<DefaultRunConfigurationSelector.DefaultTestRunner> myTestRunner;
+  private PantsSettings mySettings;
+
+  public PantsSystemSettingsControl(PantsSettings settings) {
+    mySettings = settings;
+  }
+
 
   public boolean updaterContainsBetaChannel() {
     final UpdateSettings updateSettings = UpdateSettings.getInstance();
@@ -42,17 +51,22 @@ public class PantsSystemSettingsControl implements ExternalSystemSettingsControl
   @Override
   public void fillUi(@NotNull PaintAwarePanel content, int indentLevel) {
     myUpdateChannel = new JBCheckBox(PantsBundle.message("pants.settings.text.update.channel"));
+    myTestRunner =  new ComboBox<>(
+      DefaultRunConfigurationSelector.DefaultTestRunner.values(), 100);
     content.add(myUpdateChannel, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
+    content.add(myTestRunner, ExternalSystemUiUtil.getFillLineConstraints(indentLevel));
   }
 
   @Override
   public boolean isModified() {
-    return myUpdateChannel.isSelected() != updaterContainsBetaChannel();
+    return myUpdateChannel.isSelected() != updaterContainsBetaChannel() ||
+           myTestRunner.getSelectedItem() != mySettings.getDefaultTestRunner();
   }
 
   @Override
   public void reset() {
     myUpdateChannel.setSelected(updaterContainsBetaChannel());
+    myTestRunner.setSelectedItem(mySettings.getDefaultTestRunner());
   }
 
   @Override
@@ -63,10 +77,16 @@ public class PantsSystemSettingsControl implements ExternalSystemSettingsControl
     if (!myUpdateChannel.isSelected() && updaterContainsBetaChannel()) {
       removeBetaChannel();
     }
+    settings.setDefaultTestRunner((DefaultRunConfigurationSelector.DefaultTestRunner)myTestRunner.getSelectedItem());
+    DefaultRunConfigurationSelector.DefaultTestRunner runner = settings.getDefaultTestRunner();
+    DefaultRunConfigurationSelector.registerConfigs(runner);
   }
 
   @Override
   public boolean validate(@NotNull PantsSettings settings) throws ConfigurationException {
+    if(settings.getDefaultTestRunner() == null) {
+      return false;
+    }
     return true;
   }
 
