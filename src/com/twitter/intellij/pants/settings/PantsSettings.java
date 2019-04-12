@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.intellij.util.xmlb.annotations.AbstractCollection;
+import com.twitter.intellij.pants.execution.DefaultRunConfigurationSelector;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +29,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   protected boolean myUseIdeaProjectJdk = false;
   protected boolean myUsePantsMakeBeforeRun = true;
   protected int myResolverVersion = 0;
+  protected DefaultRunConfigurationSelector.DefaultTestRunner myDefaultTestRunner;
 
   public PantsSettings(@NotNull Project project) {
     super(PantsSettingsListener.TOPIC, project);
@@ -51,7 +53,8 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     PantsSettings other = (PantsSettings) obj;
     return Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk)
            && Objects.equals(myUsePantsMakeBeforeRun, other.myUsePantsMakeBeforeRun)
-           && Objects.equals(myResolverVersion, other.myResolverVersion);
+           && Objects.equals(myResolverVersion, other.myResolverVersion)
+           && Objects.equals(myDefaultTestRunner, other.myDefaultTestRunner);
   }
 
   public static PantsSettings copy(PantsSettings pantsSettings) {
@@ -88,6 +91,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     myResolverVersion = resolverVersion;
   }
 
+  public DefaultRunConfigurationSelector.DefaultTestRunner getDefaultTestRunner() {
+    return myDefaultTestRunner;
+  }
+
+  public void setDefaultTestRunner(DefaultRunConfigurationSelector.DefaultTestRunner defaultTestRunner) {
+    myDefaultTestRunner = defaultTestRunner;
+  }
+
   @NotNull
   public static PantsSettings getInstance(@NotNull Project project) {
     return ServiceManager.getService(project, PantsSettings.class);
@@ -102,6 +113,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   protected void copyExtraSettingsFrom(@NotNull PantsSettings settings) {
     setResolverVersion(settings.getResolverVersion());
     setUseIdeaProjectJdk(settings.isUseIdeaProjectJdk());
+    setDefaultTestRunner(settings.getDefaultTestRunner());
   }
 
   @Override
@@ -115,6 +127,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     final MyState state = new MyState();
     state.setResolverVersion(getResolverVersion());
     state.setUseIdeaProjectJdk(isUseIdeaProjectJdk());
+    state.setDefaultTestRunner(getDefaultTestRunner());
     fillState(state);
     return state;
   }
@@ -124,6 +137,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     super.loadState(state);
     setResolverVersion(state.getResolverVersion());
     setUseIdeaProjectJdk(state.isUseIdeaProjectJdk());
+    setDefaultTestRunner(state.getDefaultTestRunner());
   }
 
   public static class MyState implements State<PantsProjectSettings> {
@@ -131,6 +145,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     boolean myUseIdeaProjectJdk = false;
     int myResolverVersion = 0;
+    DefaultRunConfigurationSelector.DefaultTestRunner myDefaultTestRunner = DefaultRunConfigurationSelector.DefaultTestRunner.ALL;
 
     @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
     public Set<PantsProjectSettings> getLinkedExternalProjectsSettings() {
@@ -155,6 +170,14 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
     public void setResolverVersion(int resolverVersion) {
       myResolverVersion = resolverVersion;
+    }
+
+    public DefaultRunConfigurationSelector.DefaultTestRunner getDefaultTestRunner() {
+      return myDefaultTestRunner;
+    }
+
+    public void setDefaultTestRunner(DefaultRunConfigurationSelector.DefaultTestRunner defaultTestRunner) {
+      myDefaultTestRunner = defaultTestRunner;
     }
   }
 }
