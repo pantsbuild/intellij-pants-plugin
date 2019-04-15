@@ -4,11 +4,13 @@
 package com.twitter.intellij.pants.service.project.model.graph;
 
 
+import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.diagnostic.Logger;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -89,18 +91,36 @@ public class BuildGraph {
     }
   }
 
+  private Set<BuildGraphNode> expandAliasTargets(Set<BuildGraphNode> initialTargets) {
+    Set<BuildGraphNode> results = Sets.newHashSet();
+    ArrayDeque<BuildGraphNode> q = Queues.newArrayDeque(initialTargets);
+    while (!q.isEmpty()) {
+      BuildGraphNode curr = q.pop();
+      if (curr.isAliasTarget()) {
+        q.addAll(curr.getDependencies());
+      }
+      else {
+        results.add(curr);
+      }
+    }
+    return results;
+  }
+
   // level 0 - target roots
   // level 1 - target roots + direct deps
   // ...
   public Set<BuildGraphNode> getNodesUpToLevel(int level) {
     // Holds the current scope of build graph.
     Set<BuildGraphNode> results = getTargetRoots();
+    results.addAll(expandAliasTargets(results));
+
     for (int i = 0; i < level; i++) {
       Set<BuildGraphNode> dependencies = new HashSet<>();
       for (BuildGraphNode node : results) {
         dependencies.addAll(node.getDependencies());
       }
       results.addAll(dependencies);
+      results.addAll(expandAliasTargets(dependencies));
       // All nodes are in, no need to iterate more.
       if (results.size() == allNodes.size()) {
         break;

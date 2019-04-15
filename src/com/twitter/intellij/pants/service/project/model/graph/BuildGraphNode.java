@@ -48,6 +48,10 @@ public class BuildGraphNode {
     return myTargetInfo.getAddressInfos().stream().anyMatch(TargetAddressInfo::isTargetRoot);
   }
 
+  public boolean isAliasTarget() {
+    return myTargetInfo.getAddressInfos().stream().anyMatch(TargetAddressInfo::isTargetAlias);
+  }
+
   public void addDependency(BuildGraphNode node) {
     myDependencies.add(node);
   }
