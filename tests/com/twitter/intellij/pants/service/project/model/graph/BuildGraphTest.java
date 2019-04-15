@@ -152,12 +152,12 @@ public class BuildGraphTest extends TestCase {
     Map<String, TargetInfo> targets,
     String targetAddress,
     String targetType,
-    String internalPantsTypeType,
+    String internalPantsTargetType,
     boolean is_target_root,
     Optional<String> dependee
   ) {
     TargetInfo info = injectTargetInfo(targets, targetAddress, targetType, is_target_root, dependee);
-    info.getAddressInfos().stream().forEach(s -> s.setPantsTargetType(internalPantsTypeType));
+    info.getAddressInfos().stream().forEach(s -> s.setPantsTargetType(internalPantsTargetType));
   }
 
   private TargetInfo injectTargetInfo(
