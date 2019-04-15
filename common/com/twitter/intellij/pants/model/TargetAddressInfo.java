@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -79,6 +80,7 @@ public class TargetAddressInfo {
     return pants_target_type;
   }
 
+  @VisibleForTesting
   public void setPantsTargetType(@NotNull String type) {
     pants_target_type = type;
   }
@@ -96,4 +98,6 @@ public class TargetAddressInfo {
   public boolean isJarLibrary() {
     return StringUtil.equals("jar_library", getInternalPantsTargetType());
   }
+
+  public boolean isTargetAlias() { return pants_target_type != null && (pants_target_type.equals("alias") || pants_target_type.equals("target"));}
 }
