@@ -131,6 +131,7 @@ public class BuildGraphTest extends TestCase {
     // a (root) -> b, level 1
     assertEquals(1, new BuildGraph(targets).getMaxDepth());
     assertEquals(1, new BuildGraph(targets).getNodesUpToLevel(0).size());
+    assertEquals(2, new BuildGraph(targets).getNodesUpToLevel(1).size());
   }
 
   public void testTargetAliasExpansion4() {
