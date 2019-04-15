@@ -104,14 +104,70 @@ public class BuildGraphTest extends TestCase {
     }
   }
 
-  private void injectTargetInfo(
+  public void testTargetAliasExpansion1() {
+    // a -> b
+    injectTargetInfoWithInternalPantsTargetType(targets, "a", "source", "target", IS_TARGET_ROOT, Optional.empty());
+    injectTargetInfoWithInternalPantsTargetType(targets, "b", "source", "java_library", !IS_TARGET_ROOT, Optional.of("a"));
+    // a (root) -> b, level 1
+    assertEquals(1, new BuildGraph(targets).getMaxDepth());
+    // because 'a' is an alias, so its deps will automatically get expanded if 'a' is included.
+    assertEquals(2, new BuildGraph(targets).getNodesUpToLevel(0).size());
+  }
+
+  public void testTargetAliasExpansion2() {
+    // a -> b
+    injectTargetInfoWithInternalPantsTargetType(targets, "a", "source", "alias", IS_TARGET_ROOT, Optional.empty());
+    injectTargetInfoWithInternalPantsTargetType(targets, "b", "source", "java_library", !IS_TARGET_ROOT, Optional.of("a"));
+    // a (root) -> b, level 1
+    assertEquals(1, new BuildGraph(targets).getMaxDepth());
+    // because 'a' is an alias, so its deps will automatically get expanded if 'a' is included.
+    assertEquals(2, new BuildGraph(targets).getNodesUpToLevel(0).size());
+  }
+
+  public void testTargetAliasExpansion3() {
+    // a -> b
+    injectTargetInfoWithInternalPantsTargetType(targets, "a", "source", "java_library", IS_TARGET_ROOT, Optional.empty());
+    injectTargetInfoWithInternalPantsTargetType(targets, "b", "source", "target", !IS_TARGET_ROOT, Optional.of("a"));
+    // a (root) -> b, level 1
+    assertEquals(1, new BuildGraph(targets).getMaxDepth());
+    assertEquals(1, new BuildGraph(targets).getNodesUpToLevel(0).size());
+  }
+
+  public void testTargetAliasExpansion4() {
+    // a -> b -> c
+    //      b -> d
+    injectTargetInfoWithInternalPantsTargetType(targets, "a", "source", "java_library", IS_TARGET_ROOT, Optional.empty());
+    injectTargetInfoWithInternalPantsTargetType(targets, "b", "source", "target", !IS_TARGET_ROOT, Optional.of("a"));
+    injectTargetInfoWithInternalPantsTargetType(targets, "c", "source", "java_library", !IS_TARGET_ROOT, Optional.of("b"));
+    injectTargetInfoWithInternalPantsTargetType(targets, "d", "source", "java_library", !IS_TARGET_ROOT, Optional.of("b"));
+    // a (root) -> b, level 1
+    assertEquals(2, new BuildGraph(targets).getMaxDepth());
+    // depth 0 only has target 'a'
+    assertEquals(1, new BuildGraph(targets).getNodesUpToLevel(0).size());
+    // depth 1 initially has 'a' & 'b', but because 'b' is an alias, its deps 'c' & 'd' will be added'
+    assertEquals(4, new BuildGraph(targets).getNodesUpToLevel(1).size());
+  }
+
+  private void injectTargetInfoWithInternalPantsTargetType(
     Map<String, TargetInfo> targets,
     String targetAddress,
-    String type,
+    String targetType,
+    String internalPantsTypeType,
     boolean is_target_root,
     Optional<String> dependee
   ) {
-    TargetInfo source = TargetInfoTest.createTargetInfoWithTargetAddressInfo(type);
+    TargetInfo info = injectTargetInfo(targets, targetAddress, targetType, is_target_root, dependee);
+    info.getAddressInfos().stream().forEach(s -> s.setPantsTargetType(internalPantsTypeType));
+  }
+
+  private TargetInfo injectTargetInfo(
+    Map<String, TargetInfo> targets,
+    String targetAddress,
+    String targetType,
+    boolean is_target_root,
+    Optional<String> dependee
+  ) {
+    TargetInfo source = TargetInfoTest.createTargetInfoWithTargetAddressInfo(targetType);
     source.getAddressInfos().forEach(s -> s.setIsTargetRoot(is_target_root));
 
     //getTarget here is actually getting dependencies :/
@@ -124,5 +180,6 @@ public class BuildGraphTest extends TestCase {
     }
 
     targets.put(targetAddress, source);
+    return source;
   }
 }
