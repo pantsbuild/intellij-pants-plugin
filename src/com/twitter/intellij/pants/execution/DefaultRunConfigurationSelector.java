@@ -23,6 +23,9 @@ public class DefaultRunConfigurationSelector {
   }
 
   public static void registerConfigs(DefaultRunConfigurationSelector.DefaultTestRunner selectedItem) {
+    if(selectedItem == null) {
+      return;
+    }
     switch (selectedItem) {
       case ALL:
         DefaultRunConfigurationSelector.enableIdeaJUnitConfigurations();

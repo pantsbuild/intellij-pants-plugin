@@ -110,6 +110,9 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             }
           }
           PantsSettings settings = PantsSettings.getInstance(myProject);
+          if(settings.getDefaultTestRunner() == null) {
+            settings.setDefaultTestRunner(DefaultRunConfigurationSelector.DefaultTestRunner.ALL);
+          }
           DefaultRunConfigurationSelector.registerConfigs(settings.getDefaultTestRunner());
         }
 
