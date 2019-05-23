@@ -17,12 +17,14 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.junit.Ignore;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Optional;
 
 
+@Ignore("https://github.com/pantsbuild/intellij-pants-plugin/issues/402")
 public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTest {
 
   public void testPantsIdeaPluginGoal() throws Throwable {
