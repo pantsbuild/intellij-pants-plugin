@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -196,7 +197,7 @@ public class PantsCompileOptionsExecutor {
   }
 
   @NotNull
-  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer) {
+  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer) throws IOException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
 
     // Grab the import stage pants rc file for IntelliJ.
@@ -210,7 +211,21 @@ public class PantsCompileOptionsExecutor {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");
     }
-    commandLine.addParameters(getTargetSpecs());
+    // If there are a large number of target specs, pass them to pants via a
+    // file to avoid exceeding the OS command line length limit.
+    final List<String> targetSpecs = getTargetSpecs();
+    if (targetSpecs.size() > 100) {
+      final File targetSpecsFile = FileUtil.createTempFile("pants_target_specs", ".in");
+      try (FileWriter targetSpecsFileWriter = new FileWriter(targetSpecsFile)) {
+        for (String targetSpec : targetSpecs) {
+          targetSpecsFileWriter.write(targetSpec);
+          targetSpecsFileWriter.write('\n');
+        }
+      }
+      commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
+    } else {
+      commandLine.addParameters(targetSpecs);
+    }
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
     return commandLine;
   }
