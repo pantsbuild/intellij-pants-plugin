@@ -204,27 +204,21 @@ public class PantsCompileOptionsExecutor {
     Optional<String> rcArg = IJRC.getImportPantsRc(commandLine.getWorkDirectory().getPath());
     rcArg.ifPresent(commandLine::addParameter);
 
+    final File targetSpecsFile = FileUtil.createTempFile("pants_target_specs", ".in");
+    try (FileWriter targetSpecsFileWriter = new FileWriter(targetSpecsFile)) {
+      for (String targetSpec : getTargetSpecs()) {
+        targetSpecsFileWriter.write(targetSpec);
+        targetSpecsFileWriter.write('\n');
+      }
+    }
+    commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
+
     commandLine.addParameter("--no-quiet");
     commandLine.addParameter("export");
     commandLine.addParameter("--formatted"); // json outputs in a compact format
     if (myResolveSourcesAndDocsForJars) {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");
-    }
-    // If there are a large number of target specs, pass them to pants via a
-    // file to avoid exceeding the OS command line length limit.
-    final List<String> targetSpecs = getTargetSpecs();
-    if (targetSpecs.size() > 100) {
-      final File targetSpecsFile = FileUtil.createTempFile("pants_target_specs", ".in");
-      try (FileWriter targetSpecsFileWriter = new FileWriter(targetSpecsFile)) {
-        for (String targetSpec : targetSpecs) {
-          targetSpecsFileWriter.write(targetSpec);
-          targetSpecsFileWriter.write('\n');
-        }
-      }
-      commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
-    } else {
-      commandLine.addParameters(targetSpecs);
     }
     commandLine.addParameter("--export-output-file=" + outputFile.getPath());
     return commandLine;
