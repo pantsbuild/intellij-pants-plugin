@@ -598,12 +598,20 @@ public class PantsUtil {
     if (!isPantsProject(project) && !isSeedPantsProject(project)) {
       return;
     }
-    ApplicationManager.getApplication().runWriteAction(() -> FileDocumentManager.getInstance().saveAllDocuments());
-    final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
-    ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
-                                          ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
-    specBuilder.use(executionMode);
-    ExternalSystemUtil.refreshProjects(specBuilder);
+
+    // This code needs to run on the dispatch thread, but in some cases
+    // refreshAllProjects() is called on a non-dispatch thread; we use
+    // invokeLater() to run in the dispatch thread.
+    ApplicationManager.getApplication().invokeLater(
+      () -> {
+        ApplicationManager.getApplication().runWriteAction(() -> FileDocumentManager.getInstance().saveAllDocuments());
+
+        final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
+        ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
+                                              ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
+        specBuilder.use(executionMode);
+        ExternalSystemUtil.refreshProjects(specBuilder);
+      });
   }
 
   public static Optional<VirtualFile> findFileByAbsoluteOrRelativePath(
