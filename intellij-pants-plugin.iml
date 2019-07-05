@@ -35,6 +35,19 @@
         <JAVADOC />
         <SOURCES>
           <root url="jar://$APPLICATION_PLUGINS_DIR$/Scala/lib/scalaUltimate.jar!/com/intellij/scala/play/projectTemplate/sbtintegr/skeleton260/app_java" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/bsp/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/codeInsight/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/compiler-jps/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/compiler-shared/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/conversion/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/integration/devKit/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/integration/intellilang/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/nailgun/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/runners/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/scala-api/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/scala-impl/src" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/scala-impl/test" />
+          <root url="file://$MODULE_DIR$/../intellij-scala/scala/worksheet/src" />
         </SOURCES>
       </library>
     </orderEntry>
@@ -86,12 +99,13 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$APPLICATION_PLUGINS_DIR$/python-ce/lib/python-ce.jar!/" />
+          <root url="jar://$APPLICATION_PLUGINS_DIR$/python/lib/python.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" scope="PROVIDED" name="scala-sdk-2.12.8" level="project" />
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
@@ -101,6 +115,5 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" scope="PROVIDED" name="scala-sdk-2.12.8" level="project" />
   </component>
 </module>

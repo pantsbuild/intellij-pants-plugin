@@ -12,10 +12,10 @@
       </ul>
       ]]>
   </change-notes>
-  <version>1.12.1</version>
+  <version>1.12.2</version>
   <vendor>Twitter, Inc.</vendor>
 
-  <idea-version since-build="191.0" until-build="191.*"/>
+  <idea-version since-build="191.0" until-build="192.*"/>
 
   <!--Add gradle as a dep because of Pants runner requires it.-->
   <depends>org.jetbrains.plugins.gradle</depends>

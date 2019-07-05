@@ -466,11 +466,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       .getConfigurationFactories()[0];
 
     final ScalaTestRunConfiguration runConfiguration = new ScalaTestRunConfiguration(myProject, factory, className);
-    runConfiguration.setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
+    runConfiguration.testConfigurationData().setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
     runConfiguration.setupIntegrationTestClassPath();
-    runConfiguration.setTestConfigurationData(ClassTestData$.MODULE$.apply(runConfiguration, className));
+    runConfiguration.testConfigurationData_$eq(ClassTestData$.MODULE$.apply(runConfiguration, className));
     return runConfiguration;
   }
 
