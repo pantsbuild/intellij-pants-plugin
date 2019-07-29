@@ -26,7 +26,7 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
       new Runnable() {
         @Override
         public void run() {
-          final ModifiableRootModel modifiableRootModel = ModuleRootManager.getInstance(myModule).getModifiableModel();
+          final ModifiableRootModel modifiableRootModel = ModuleRootManager.getInstance(getModule()).getModifiableModel();
           for (ContentEntry contentEntry : modifiableRootModel.getContentEntries()) {
             final SourceFolder[] sourceFolders = contentEntry.getSourceFolders();
             for (SourceFolder sourceFolder : sourceFolders) {
@@ -48,7 +48,7 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
 
   @NotNull
   public VirtualFile getMainContentRoot() {
-    final VirtualFile result = ArrayUtil.getFirstElement(ModuleRootManager.getInstance(myModule).getContentRoots());
+    final VirtualFile result = ArrayUtil.getFirstElement(ModuleRootManager.getInstance(getModule()).getContentRoots());
     assertNotNull(result);
     return result;
   }
@@ -67,8 +67,8 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
       @Override
       public void run() {
         try {
-          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "bar"));
-          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "baz"));
+          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "bar"));
+          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "baz"));
           assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "baz")));
           assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "ba")));
           assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "bat")));
@@ -88,9 +88,9 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
       @Override
       public void run() {
         try {
-          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "abc"));
-          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "foo/bar"));
-          PsiTestUtil.addSourceRoot(myModule, VfsUtil.createDirectoryIfMissing(root, "foo/baz"));
+          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "abc"));
+          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "foo/bar"));
+          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "foo/baz"));
           assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "abc")));
           assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "foo")));
         }

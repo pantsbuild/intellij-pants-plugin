@@ -63,7 +63,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightCodeInsightFi
   protected void setUp() throws Exception {
     super.setUp();
 
-    myModule.setOption(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, PantsConstants.SYSTEM_ID.getId());
+    getModule().setOption(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, PantsConstants.SYSTEM_ID.getId());
 
     final String pyPluginId = "PythonCore";
     final IdeaPluginDescriptor pyPlugin = PluginManager.getPlugin(PluginId.getId(pyPluginId));
