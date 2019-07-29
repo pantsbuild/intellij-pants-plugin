@@ -10,8 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="191.6183.62"
-export IJ_BUILD_NUMBER="191.6183.62"
+export IJ_VERSION="192.5728.98"
+export IJ_BUILD_NUMBER="192.5728.98"
 
 
 # This is for bootstrapping Pants, since this repo does not do Pants intensive operations,
