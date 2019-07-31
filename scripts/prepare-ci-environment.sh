@@ -10,6 +10,8 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
+# Normally, IJ_VERSION is of the form YEAR.x[.y[.z]]
+# But for EAPs, set IJ_VERSION to the same as IJ_BUILD_NUMBER
 export IJ_VERSION="2019.2"
 export IJ_BUILD_NUMBER="192.5728.98"
 
