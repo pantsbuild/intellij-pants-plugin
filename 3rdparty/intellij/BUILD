@@ -173,6 +173,15 @@ jar_library(
     scope='compile test',
 )
 
+jar_library(
+    name = 'java-plugin',
+    jars = [
+        _intellij_plugin_jar('java', path) for path in _find_jars_blacklist(
+            _find_plugin_dir('java', builtin=True))
+    ],
+    scope='compile test',
+)
+
 
 jar_library(
     name = 'scala-plugin',
