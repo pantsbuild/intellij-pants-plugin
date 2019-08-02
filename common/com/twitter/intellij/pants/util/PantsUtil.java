@@ -602,7 +602,7 @@ public class PantsUtil {
     // This code needs to run on the dispatch thread, but in some cases
     // refreshAllProjects() is called on a non-dispatch thread; we use
     // invokeLater() to run in the dispatch thread.
-    ApplicationManager.getApplication().invokeLater(
+    ApplicationManager.getApplication().invokeAndWait(
       () -> {
         ApplicationManager.getApplication().runWriteAction(() -> FileDocumentManager.getInstance().saveAllDocuments());
 
