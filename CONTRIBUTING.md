@@ -189,24 +189,24 @@ With the [2019.2 upgrade](https://github.com/pantsbuild/intellij-pants-plugin/co
     2. Checkout the tag that corresponds to the new version. E.g. `idea/192.5728.98`
     3. Open the project in IntelliJ (takes some minutes for IntelliJ to auto import the project)
     4. Under the repo root, run the following:
-    ```
-    $ echo '<component name="ArtifactManager">
-      <artifact type="jar" name="external-system-test-api">
-        <output-path>$PROJECT_DIR$/out/artifacts/external_system_test_api</output-path>
-        <root id="archive" name="external-system-test-api.jar">
-          <element id="module-test-output" name="intellij.platform.externalSystem.impl" />
-          <element id="module-test-output" name="intellij.platform.externalSystem.tests" />
-        </root>
-      </artifact>
-    </component>
-    ' > .idea/artifacts/external_system_test_api.xml
-    ```
-    Make sure IntelliJ has picked up the change:
+        ```
+        $ echo '<component name="ArtifactManager">
+          <artifact type="jar" name="external-system-test-api">
+            <output-path>$PROJECT_DIR$/out/artifacts/external_system_test_api</output-path>
+            <root id="archive" name="external-system-test-api.jar">
+              <element id="module-test-output" name="intellij.platform.externalSystem.impl" />
+              <element id="module-test-output" name="intellij.platform.externalSystem.tests" />
+            </root>
+          </artifact>
+        </component>
+        ' > .idea/artifacts/external_system_test_api.xml
+        ```
+        Make sure IntelliJ has picked up the change:
 
-      * File -> Project Settings -> Artifacts
-      * You should see `external-system-test-api` configured as below:
+          * File -> Project Settings -> Artifacts
+          * You should see `external-system-test-api` configured as below:
 
-    ![](images/external-system-test-api_configure.png)
+        ![](images/external-system-test-api_configure.png)
     5. `Build` -> `Build Artifacts` -> `external-system-test-api`
     6. `external-system-test-api.jar` will be built at `<output-path>`, which is in this case `$repo_root/out/artifacts/external_system_test_api/external-system-test-api.jar`
 
