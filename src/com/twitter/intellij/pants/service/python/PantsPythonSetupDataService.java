@@ -64,27 +64,34 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
     }
 
     final Map<PythonInterpreterInfo, Sdk> interpreter2sdk = ContainerUtilRt.newHashMap();
-    ExternalSystemApiUtil.executeProjectChangeAction(false, new DisposeAwareProjectChange(project) {
-      @Override
-      public void execute() {
-        for (final PythonInterpreterInfo interpreterInfo : interpreters) {
-          //final String binFolder = PathUtil.getParentPath(interpreter);
-          //final String interpreterHome = PathUtil.getParentPath(binFolder);
-          final String interpreter = interpreterInfo.getBinary();
-          Sdk pythonSdk = PythonSdkType.findSdkByPath(interpreter);
-          if (pythonSdk == null) {
-            final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-            pythonSdk = jdkTable.createSdk(PathUtil.getFileName(interpreter), PythonSdkType.getInstance());
-            jdkTable.addJdk(pythonSdk);
-            final SdkModificator modificator = pythonSdk.getSdkModificator();
-            modificator.setHomePath(interpreter);
-            modificator.commitChanges();
-            PythonSdkType.getInstance().setupSdkPaths(pythonSdk);
-          }
-          interpreter2sdk.put(interpreterInfo, pythonSdk);
-        }
-      }
-    });
+
+    /**
+     * TODO(yic): to move it to a thread appropriate place.
+     *
+     *  1) testPyTestRunConfiguration(com.twitter.intellij.pants.execution.OSSPantsPythonRunConfigurationIntegrationTest)
+     *  com.intellij.testFramework.LoggedErrorProcessor$TestLoggerAssertionError: Can't update SDK under write action, not allowed in background
+     */
+    //ExternalSystemApiUtil.executeProjectChangeAction(false, new DisposeAwareProjectChange(project) {
+    //  @Override
+    //  public void execute() {
+    //    for (final PythonInterpreterInfo interpreterInfo : interpreters) {
+    //      //final String binFolder = PathUtil.getParentPath(interpreter);
+    //      //final String interpreterHome = PathUtil.getParentPath(binFolder);
+    //      final String interpreter = interpreterInfo.getBinary();
+    //      Sdk pythonSdk = PythonSdkType.findSdkByPath(interpreter);
+    //      if (pythonSdk == null) {
+    //        final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
+    //        pythonSdk = jdkTable.createSdk(PathUtil.getFileName(interpreter), PythonSdkType.getInstance());
+    //        jdkTable.addJdk(pythonSdk);
+    //        final SdkModificator modificator = pythonSdk.getSdkModificator();
+    //        modificator.setHomePath(interpreter);
+    //        modificator.commitChanges();
+    //        PythonSdkType.getInstance().setupSdkPaths(pythonSdk);
+    //      }
+    //      interpreter2sdk.put(interpreterInfo, pythonSdk);
+    //    }
+    //  }
+    //});
 
     for (DataNode<PythonSetupData> dataNode : toImport) {
       final PythonSetupData pythonSetupData = dataNode.getData();

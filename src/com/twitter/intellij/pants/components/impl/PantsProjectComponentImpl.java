@@ -72,10 +72,14 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
   @Override
   public void projectOpened() {
+
     PantsMetrics.initialize();
     PantsConsoleManager.registerConsole(myProject);
     if (PantsUtil.isPantsProject(myProject)) {
-      addPantsProjectIgnoredDirs();
+      // projectOpened() is called on the dispatch thread, while
+      // addPantsProjectIgnoreDirs() calls an external process,
+      // so it cannot be run on the dispatch thread.
+      ApplicationManager.getApplication().executeOnPooledThread(() -> addPantsProjectIgnoredDirs());
     }
 
     super.projectOpened();
@@ -86,10 +90,12 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
       new Runnable() {
         @Override
         public void run() {
-
           if (PantsUtil.isSeedPantsProject(myProject)) {
             convertToPantsProject();
-            addPantsProjectIgnoredDirs();
+            // projectOpened() is called on the dispatch thread, while
+            // addPantsProjectIgnoreDirs() calls an external process,
+            // so it cannot be run on the dispatch thread.
+            ApplicationManager.getApplication().executeOnPooledThread(() -> addPantsProjectIgnoredDirs());
           }
 
           subscribeToRunConfigurationAddition();

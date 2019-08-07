@@ -100,7 +100,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
      */
     if (PantsUtil.isScalaRelatedTestRunConfiguration(runConfiguration)) {
       if (buildRoot.isPresent()) {
-        ((AbstractTestRunConfiguration) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
+        ((AbstractTestRunConfiguration) runConfiguration).testConfigurationData().setWorkingDirectory(buildRoot.get().getPath());
       }
     }
     /**

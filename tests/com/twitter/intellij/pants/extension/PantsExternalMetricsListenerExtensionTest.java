@@ -93,7 +93,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
     // Register `TestMetricsListener` as one of the extension points of PantsExternalMetricsListener
     TestMetricsListener listener = new TestMetricsListener();
-    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener);
+    Extensions.getRootArea().getExtensionPoint(PantsExternalMetricsListener.EP_NAME).registerExtension(listener, myProject);
 
     doImport("examples/tests/scala/org/pantsbuild/example/hello");
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());

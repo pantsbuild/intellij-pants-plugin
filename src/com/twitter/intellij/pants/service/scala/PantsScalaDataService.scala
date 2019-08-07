@@ -9,7 +9,7 @@ import java.util.Collections
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.externalSystem.model.project.ProjectData
-import com.intellij.openapi.externalSystem.model.{DataNode, ExternalSystemException, ProjectKeys}
+import com.intellij.openapi.externalSystem.model.{DataNode, ExternalSystemException, Key, ProjectKeys}
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataService
 import com.intellij.openapi.project.Project
@@ -18,18 +18,17 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.util.Computable
 import org.jetbrains.plugins.scala.project.{LibraryExt, ScalaLanguageLevel, ScalaLibraryProperties, ScalaLibraryType, Version}
 
-import scala.collection.JavaConverters.asScalaSetConverter
-import scala.collection.JavaConverters.iterableAsScalaIterableConverter
+import scala.collection.JavaConverters.{asScalaSetConverter, iterableAsScalaIterableConverter}
 
 object PantsScalaDataService {
-  val LOG = Logger.getInstance(classOf[PantsScalaDataService])
+  val LOG: Logger = Logger.getInstance(classOf[PantsScalaDataService])
 }
 
 class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] {
 
   import PantsScalaDataService._
 
-  def getTargetDataKey = ScalaModelData.KEY
+  def getTargetDataKey: Key[ScalaModelData] = ScalaModelData.KEY
 
   override def importData(
     toImport: util.Collection[DataNode[ScalaModelData]],
@@ -53,15 +52,14 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
       .getOrElse(throw new ExternalSystemException("Cannot determine Scala compiler version for module " +
                                                    scalaNode.getData(ProjectKeys.MODULE).getExternalName))
 
-    val scalaLibrary = modelsProvider.getAllLibraries.find(_.getName.contains(scalaLibId))
+    val scalaLibrary: Library = modelsProvider.getAllLibraries.find(_.getName.contains(scalaLibId))
       .getOrElse(throw new ExternalSystemException("Cannot find project Scala library " +
                                                    compilerVersion.presentation +
                                                    " for module " +
                                                    scalaNode.getData(ProjectKeys.MODULE).getExternalName))
 
     if (!scalaLibrary.isScalaSdk) {
-      val properties = new ScalaLibraryProperties()
-      properties.languageLevel = compilerVersion.toLanguageLevel.getOrElse(ScalaLanguageLevel.Default)
+      val properties = ScalaLibraryProperties(Some(compilerVersion.presentation))
       properties.compilerClasspath = scalaData.getClasspath.asScala.toSeq.map(new File(_))
       val modifiableModelEx = modelsProvider.getModifiableLibraryModel(scalaLibrary).asInstanceOf[ModifiableModelEx]
       modifiableModelEx.setKind(ScalaLibraryType().getKind)

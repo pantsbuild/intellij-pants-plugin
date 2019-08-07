@@ -10,8 +10,10 @@ fi
 # Python plugin for Community and Ultimate Edition
 
 export CWD=$(pwd)
-export IJ_VERSION="191.6183.62"
-export IJ_BUILD_NUMBER="191.6183.62"
+# Normally, IJ_VERSION is of the form YEAR.x[.y[.z]]
+# But for EAPs, set IJ_VERSION to the same as IJ_BUILD_NUMBER
+export IJ_VERSION="2019.2"
+export IJ_BUILD_NUMBER="192.5728.98"
 
 
 # This is for bootstrapping Pants, since this repo does not do Pants intensive operations,
@@ -51,9 +53,9 @@ append_intellij_jvm_options() {
   cmd=""
 
   if [[ ${ENABLE_SCALA_PLUGIN:=true} == true ]]; then
-    load_plugins="-Didea.load.plugins.id=com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants"
+    load_plugins="-Didea.load.plugins.id=Junit,com.intellij.java,com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants"
   else
-    load_plugins="-Didea.load.plugins.id=com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,PythonCore,JUnit,com.intellij.plugins.pants"
+    load_plugins="-Didea.load.plugins.id=Junit,com.intellij.java,com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,PythonCore,JUnit,com.intellij.plugins.pants"
   fi
 
   INTELLIJ_JVM_OPTIONS=(
