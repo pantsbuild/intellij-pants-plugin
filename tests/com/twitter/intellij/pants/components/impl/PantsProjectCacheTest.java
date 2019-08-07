@@ -22,11 +22,11 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    cleanUpContentRoots();
+    cleanUpsourceFolders();
     PantsProjectCacheImpl.getInstance(getProject()).projectOpened();
   }
 
-  private void cleanUpContentRoots() {
+  private void cleanUpsourceFolders() {
     ApplicationManager.getApplication().runWriteAction(
       () -> {
         final ModifiableRootModel modifiableRootModel = ModuleRootManager.getInstance(getModule()).getModifiableModel();
@@ -43,7 +43,7 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
 
   @Override
   protected void tearDown() throws Exception {
-    cleanUpContentRoots();
+    cleanUpsourceFolders();
     PantsProjectCacheImpl.getInstance(getProject()).projectClosed();
     super.tearDown();
   }
