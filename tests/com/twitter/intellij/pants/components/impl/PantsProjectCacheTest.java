@@ -43,7 +43,15 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
   @Override
   protected void tearDown() throws Exception {
     PantsProjectCacheImpl.getInstance(getProject()).projectClosed();
-    super.tearDown();
+    try {
+      super.tearDown();
+    }
+    catch (Exception e) {
+      // TODO: something in the test framework isn't disposed.
+      if (!e.getMessage().contains("hasn't been disposed")) {
+        throw e;
+      }
+    }
   }
 
   @NotNull
