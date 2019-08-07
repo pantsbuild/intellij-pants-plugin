@@ -179,7 +179,7 @@ TEST_SET=jvm-integration  \
 
   This will bootstrap pants and resolve all the dependencies or else you will get an `ExecutionException` exception for exceeding 30s timeout.
 
-## Typical Major Release Upgrade notes
+## Typical Major Release Upgrade Procedures
 
 With the [2019.2 upgrade](https://github.com/pantsbuild/intellij-pants-plugin/commit/293f24969312f23219739505273bb177fca29283) as a reference:
 1. Bump the version range in `resources/META-INF/plugin.xml`, especially if the newer version is backward incompatible.
