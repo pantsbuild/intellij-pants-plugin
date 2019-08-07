@@ -22,36 +22,30 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
+    cleanUpContentRoots();
+    PantsProjectCacheImpl.getInstance(getProject()).projectOpened();
+  }
+
+  private void cleanUpContentRoots() {
     ApplicationManager.getApplication().runWriteAction(
-      new Runnable() {
-        @Override
-        public void run() {
-          final ModifiableRootModel modifiableRootModel = ModuleRootManager.getInstance(getModule()).getModifiableModel();
-          for (ContentEntry contentEntry : modifiableRootModel.getContentEntries()) {
-            final SourceFolder[] sourceFolders = contentEntry.getSourceFolders();
-            for (SourceFolder sourceFolder : sourceFolders) {
-              contentEntry.removeSourceFolder(sourceFolder);
-            }
+      () -> {
+        final ModifiableRootModel modifiableRootModel = ModuleRootManager.getInstance(getModule()).getModifiableModel();
+        for (ContentEntry contentEntry : modifiableRootModel.getContentEntries()) {
+          final SourceFolder[] sourceFolders = contentEntry.getSourceFolders();
+          for (SourceFolder sourceFolder : sourceFolders) {
+            contentEntry.removeSourceFolder(sourceFolder);
           }
-          modifiableRootModel.commit();
         }
+        modifiableRootModel.commit();
       }
     );
-    PantsProjectCacheImpl.getInstance(getProject()).projectOpened();
   }
 
   @Override
   protected void tearDown() throws Exception {
+    cleanUpContentRoots();
     PantsProjectCacheImpl.getInstance(getProject()).projectClosed();
-    try {
-      super.tearDown();
-    }
-    catch (Exception e) {
-      // TODO: something in the test framework isn't disposed.
-      if (!e.getMessage().contains("hasn't been disposed")) {
-        throw e;
-      }
-    }
+    super.tearDown();
   }
 
   @NotNull
@@ -66,7 +60,7 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
     assertFalse(cache.folderContainsSourceRoot(myFixture.getProject().getBaseDir()));
   }
 
-  public void testLastOne() throws IOException {
+  public void testLastOne() {
     final PantsProjectCache cache = PantsProjectCacheImpl.getInstance(myFixture.getProject());
     final VirtualFile root = getMainContentRoot();
 
@@ -88,23 +82,20 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
     });
   }
 
-  public void testFirstOne() throws IOException {
+  public void testFirstOne() {
     final PantsProjectCache cache = PantsProjectCacheImpl.getInstance(myFixture.getProject());
     final VirtualFile root = getMainContentRoot();
 
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "abc"));
-          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "foo/bar"));
-          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "foo/baz"));
-          assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "abc")));
-          assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "foo")));
-        }
-        catch (IOException e) {
-          fail(e.getMessage());
-        }
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      try {
+        PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "abc"));
+        PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "foo/bar"));
+        PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "foo/baz"));
+        assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "abc")));
+        assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "foo")));
+      }
+      catch (IOException e) {
+        fail(e.getMessage());
       }
     });
   }
