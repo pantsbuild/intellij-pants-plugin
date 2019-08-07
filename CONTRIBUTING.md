@@ -2,8 +2,8 @@ For contributing to the project, continue reading below.
 
 ### How the plugin works
 
-The plugin uses `pants resolve export <list of imported targets>` command to get an information
-about an imported project. `pants resolve export <list of imported targets>` command returns information
+The plugin uses `pants export <list of imported targets>` command to get an information
+about an imported project. `pants export <list of imported targets>` command returns information
 about all targets that are needed to be imported for the project in JSON format. It contains information about all dependencies of a target
 as well as the same information for each dependency. Then the plugin creates an IntelliJ module for each target, configures
 dependencies(modules and libraries) and source roots.
