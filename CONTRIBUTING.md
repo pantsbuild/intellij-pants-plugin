@@ -2,9 +2,8 @@ For contributing to the project, continue reading below.
 
 ### How the plugin works
 
-The plugin uses `pants export <list of imported targets>` command to get an information
-about an imported project. `pants export <list of imported targets>` command returns information
-about all targets that are needed to be imported for the project in JSON format. It contains information about all dependencies of a target
+The plugin uses `pants export <list of imported targets>` command to get the information about all targets to be imported
+for the project in JSON format. It contains the information about all dependencies of a target
 as well as the same information for each dependency. Then the plugin creates an IntelliJ module for each target, configures
 dependencies(modules and libraries) and source roots.
 
@@ -184,16 +183,32 @@ TEST_SET=jvm-integration  \
 With the [2019.2 upgrade](https://github.com/pantsbuild/intellij-pants-plugin/commit/293f24969312f23219739505273bb177fca29283) as a reference:
 1. Bump the version range in `resources/META-INF/plugin.xml`, especially if the newer version is backward incompatible.
 2. Bump the build number and version in `scripts/prepare-ci-environment.sh`, so tests can be run against the newer version.
-3. Update `testData/external-system-test-api.jar` (Not required if there's no breaking change). After this point, there should be no more compile errors.
+3. Update `testData/external-system-test-api.jar` (Not required if there's no breaking change). We need to build this jar because IntelliJ does not distribute its test framework by default. After this point, there should be no more compilation errors.
 
     1. Checkout https://github.com/JetBrains/intellij-community
     2. Checkout the tag that corresponds to the new version. E.g. `idea/192.5728.98`
     3. Open the project in IntelliJ (takes some minutes for IntelliJ to auto import the project)
-    4. Configure an `external-system-test-api` artifact like this
+    4. Under the repo root, run the following:
+    ```
+    $ echo '<component name="ArtifactManager">
+      <artifact type="jar" name="external-system-test-api">
+        <output-path>$PROJECT_DIR$/out/artifacts/external_system_test_api</output-path>
+        <root id="archive" name="external-system-test-api.jar">
+          <element id="module-test-output" name="intellij.platform.externalSystem.impl" />
+          <element id="module-test-output" name="intellij.platform.externalSystem.tests" />
+        </root>
+      </artifact>
+    </component>
+    ' > .idea/artifacts/external_system_test_api.xml
+    ```
+    Make sure IntelliJ has picked up the change:
+
+      * File -> Project Settings -> Artifacts
+      * You should see `external-system-test-api` configured as below:
+
     ![](images/external-system-test-api_configure.png)
     5. `Build` -> `Build Artifacts` -> `external-system-test-api`
-    6. `external-system-test-api.jar` will appear under the project compiler output dir:
-    ![](images/compiler_output_dir.png)
+    6. `external-system-test-api.jar` will be built at `<output-path>`, which is in this case `$repo_root/out/artifacts/external_system_test_api/external-system-test-api.jar`
 
 4. Fix any breaking tests.
 
