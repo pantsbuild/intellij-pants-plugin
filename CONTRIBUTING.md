@@ -183,8 +183,8 @@ TEST_SET=jvm-integration  \
 
 With the [2019.2 upgrade](https://github.com/pantsbuild/intellij-pants-plugin/commit/293f24969312f23219739505273bb177fca29283) as a reference:
 1. Bump the version range in `resources/META-INF/plugin.xml`, especially if the newer version is backward incompatible.
-2. Bump the build number and version in `scripts/prepare-ci-environment.sh`, so tests can be run against the newer version
-3. Update `testData/external-system-test-api.jar` (Not required if there's no breaking change). At this point, there should be no more compile errors.
+2. Bump the build number and version in `scripts/prepare-ci-environment.sh`, so tests can be run against the newer version.
+3. Update `testData/external-system-test-api.jar` (Not required if there's no breaking change). After this point, there should be no more compile errors.
 
     1. Checkout https://github.com/JetBrains/intellij-community
     2. Checkout the tag that corresponds to the new version. E.g. `idea/192.5728.98`
