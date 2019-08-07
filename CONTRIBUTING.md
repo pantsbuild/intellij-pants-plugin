@@ -189,7 +189,7 @@ With the [2019.2 upgrade](https://github.com/pantsbuild/intellij-pants-plugin/co
     1. Checkout https://github.com/JetBrains/intellij-community
     2. Checkout the tag that corresponds to the new version. E.g. `idea/192.5728.98`
     3. Open the project in IntelliJ (takes some minutes for IntelliJ to auto import the project)
-    4. Configure an artifact like this
+    4. Configure an `external-system-test-api` artifact like this
     ![](images/external-system-test-api_configure.png)
     5. `Build` -> `Build Artifacts` -> `external-system-test-api`
     6. `external-system-test-api.jar` will appear under the project compiler output dir:
