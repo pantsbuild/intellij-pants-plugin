@@ -98,15 +98,13 @@ if __name__ == "__main__":
 
     # Reference: https://www.jetbrains.org/intellij/sdk/docs/plugin_repository/api/plugin_upload.html
     upload_cmd = 'curl -v -i ' \
-                 '-F userName="{username}" ' \
-                 '-F password="{password}" ' \
+                 '--header "Authorization: Bearer {token}" ' \
                  '-F pluginId="{plugin_id}" ' \
                  '-F file=@{zip} ' \
                  '-F channel="{channel}" ' \
                  'https://plugins.jetbrains.com/plugin/uploadPlugin ' \
       .format(channel=channel,
-              username=os.environ['USERNAME'],
-              password=os.environ['PASSWORD'],
+              token=os.environ['TOKEN'],
               plugin_id=PLUGIN_ID,
               zip=zip_name)
 
