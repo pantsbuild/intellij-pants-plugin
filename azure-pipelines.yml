@@ -12,6 +12,11 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+strategy:
+  matrix:
+    jdk8:
+      jdk_version: "1.8"
+
 steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
