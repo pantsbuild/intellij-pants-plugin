@@ -16,6 +16,12 @@ strategy:
   matrix:
     jdk8:
       jdk_version: "1.8"
+      # Use Python version
+      # Use the specified version of Python from the tool cache, optionally adding it to the PATH
+      - task: UsePythonVersion@0
+        inputs:
+        versionSpec: '3.7'
+        addToPath: true
 
 steps:
 - script: echo Hello, world!
