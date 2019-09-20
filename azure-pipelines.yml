@@ -9,7 +9,7 @@ trigger:
       - "*"
 
 jobs:
-  - job: test job
+  - job: test_job
     timeoutInMinutes: 90
 
     pool:
