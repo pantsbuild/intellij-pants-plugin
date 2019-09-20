@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.settings;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.service.settings.ExternalSystemSettingsControlCustomizer;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
@@ -183,10 +184,24 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
           @Override
           public void run(@NotNull ProgressIndicator indicator) {
             try {
-              final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
-              UIUtil.invokeLaterIfNeeded(() -> {
-                targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
+              ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                  // Remove if https://youtrack.jetbrains.com/issue/IDEA-223191 works towards our favor
+                  String error = "Importing from a BUILD file has been disabled due to " +
+                                 "https://youtrack.jetbrains.com/issue/IDEA-223191." +
+                                 "\nPlease import a directory instead, or use " +
+                                 "`./pants idea-plugin (targets)` in the meantime.";
+                  String title = "Pants Support Plugin Error";
+                  Messages.showErrorDialog(getProject(), error, title);
+                  Messages.createMessageDialogRemover(getProject()).run();
+                }
               });
+
+              //final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
+              //UIUtil.invokeLaterIfNeeded(() -> {
+              //  targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
+              //});
             } catch (RuntimeException e) {
               UIUtil.invokeLaterIfNeeded((Runnable) () -> {
                 Messages.showErrorDialog(getProject(), e.getMessage(), "Pants Failure");
