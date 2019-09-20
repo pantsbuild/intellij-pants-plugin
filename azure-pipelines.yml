@@ -54,7 +54,7 @@ jobs:
     - script: |
         ./scripts/setup-ci-environment.sh
       displayName: 'Set up'
-    - script:
-        - ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
-        - ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
+    - script: |
+        ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
+        ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
       displayName: 'Run tests'
