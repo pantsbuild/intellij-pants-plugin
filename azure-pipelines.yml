@@ -18,20 +18,12 @@ jobs:
 
     strategy:
       matrix:
+        shard0:
+          IJ_ULTIMATE: false
+          PANTS_TEST_JUNIT_TEST_SHARD: 0/2
         shard1:
-          - IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=1/2
-        shard2:
-          - IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=0/2
-        shard3:
-          - IJ_ULTIMATE=true TEST_SET=jvm-integration
-        shard4:
-          - PANTS_SHA="release_1.13.0" TEST_SET=jvm-integration
-        shard5:
-          - PANTS_SHA="release_1.10.0" TEST_SET=jvm-integration
-        shard6:
-          - PANTS_SHA="release_1.6.0" TEST_SET=jvm-integration
-        shard7:
-          - PANTS_SHA="release_1.2.1" TEST_SET=jvm-integration
+          IJ_ULTIMATE: false
+          PANTS_TEST_JUNIT_TEST_SHARD: 1/2
 
     steps:
     - task: UsePythonVersion@0
