@@ -8,7 +8,6 @@ import com.google.common.collect.Sets;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
-import org.junit.Ignore;
 
 import java.io.File;
 import java.util.stream.Collectors;
@@ -67,7 +66,8 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
     );
   }
 
-  public void testBuildFileAsImportProjectPath() {
+  // https://github.com/pantsbuild/intellij-pants-plugin/pull/415/
+  public void ignoreTestBuildFileAsImportProjectPath() {
     myFromPantsControl.onLinkedProjectPathChange(
       getProjectPath() + File.separator +
       "examples/src/java/org/pantsbuild/example/hello/main/BUILD"
@@ -103,8 +103,8 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
       , Sets.newLinkedHashSet(myFromPantsControl.getProjectSettings().getTargetSpecs()));
   }
 
-  @Ignore("https://github.com/pantsbuild/intellij-pants-plugin/pull/415/")
-  public void testInvalidImportPath() {
+  // https://github.com/pantsbuild/intellij-pants-plugin/pull/415/
+  public void ignoreTestInvalidImportPath() {
     myFromPantsControl.onLinkedProjectPathChange(pantsIniFilePath);
     updateSettingsBasedOnGuiStates();
     assertPantsProjectNotFound();
