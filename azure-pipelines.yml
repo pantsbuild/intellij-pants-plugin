@@ -16,15 +16,12 @@ strategy:
   matrix:
     jdk8:
       jdk_version: "1.8"
-      # Use Python version
-      # Use the specified version of Python from the tool cache, optionally adding it to the PATH
-      - task: UsePythonVersion@0
-        inputs:
-        versionSpec: '3.7'
-        addToPath: true
 
 steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.7'
+    addToPath: true
 - script: |
-    ./scripts/setup-ci-environment.sh
-    ./scripts/run-tests-ci.sh
-  displayName: 'Run a multi-line script'
+    ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
+  displayName: 'Run test'
