@@ -11,7 +11,6 @@ trigger:
 jobs:
   - job: test_job
     timeoutInMinutes: 90
-    jdk_version: "1.8"
 
     pool:
       vmImage: 'ubuntu-latest'
@@ -19,9 +18,11 @@ jobs:
     strategy:
       matrix:
         shard0:
+          jdk_version: "1.8"
           IJ_ULTIMATE: false
           PANTS_TEST_JUNIT_TEST_SHARD: 0/2
         shard1:
+          jdk_version: "1.8"
           IJ_ULTIMATE: false
           PANTS_TEST_JUNIT_TEST_SHARD: 1/2
 
