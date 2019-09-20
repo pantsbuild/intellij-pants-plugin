@@ -53,6 +53,11 @@ jobs:
         inputs:
           versionSpec: '$(python_version)'
           addToPath: true
+      - task: CacheBeta@0
+        inputs:
+          key: pants_intellij_cache | $(Agent.OS)
+          path: $(Pipeline.Workspace)/.cache
+        displayName: Cache Yarn packages
       - script: |
           ./scripts/setup-ci-environment.sh
         displayName: 'Set up'
