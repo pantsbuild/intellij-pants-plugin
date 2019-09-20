@@ -4,9 +4,10 @@
 # https://aka.ms/yaml
 trigger:
   batch: true
-  branches:
-    include:
-      - "*"
+#  branches:
+#    include:
+#      - "*"
+  branches: none
 
 jobs:
   - job: test_job
