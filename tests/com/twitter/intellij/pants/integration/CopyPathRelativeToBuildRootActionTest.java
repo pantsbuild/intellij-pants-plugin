@@ -14,6 +14,7 @@ import com.intellij.testFramework.MapDataContext;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.ui.CopyPathRelativeToBuildRootAction;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Ignore;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
@@ -21,6 +22,8 @@ import java.io.File;
 import java.util.HashMap;
 
 public class CopyPathRelativeToBuildRootActionTest extends OSSPantsIntegrationTest {
+
+  @Ignore("https://github.com/pantsbuild/intellij-pants-plugin/pull/415/")
   public void testCompileTargetsInSelectedEditor() throws Throwable {
     String projectFolderPath = "examples/tests/scala/org/pantsbuild/example";
     doImport(projectFolderPath);
