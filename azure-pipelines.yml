@@ -2,28 +2,29 @@
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
+jobs:
+  - job: test job
+    timeoutInMinutes: 90
+    trigger:
+      batch: true
+      branches:
+        include:
+        - "*"
 
-trigger:
-  batch: true
-  branches:
-    include:
-    - "*"
+    pool:
+      vmImage: 'ubuntu-latest'
 
-pool:
-  vmImage: 'ubuntu-latest'
 
-timeoutInMinutes: 90
+    strategy:
+      matrix:
+        jdk8:
+          jdk_version: "1.8"
 
-strategy:
-  matrix:
-    jdk8:
-      jdk_version: "1.8"
-
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.7'
-    addToPath: true
-- script: |
-    ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
-  displayName: 'Run test'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: |
+        ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
+      displayName: 'Run test'
