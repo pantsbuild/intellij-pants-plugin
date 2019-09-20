@@ -54,6 +54,10 @@ jobs:
           TEST_SET: "jvm-integration"
 
     steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "${python_version}"
+          addToPath: true
     - script: |
         ./scripts/setup-ci-environment.sh
       displayName: 'Set up'
