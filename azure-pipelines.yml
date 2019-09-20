@@ -7,7 +7,7 @@ trigger:
   batch: true
   branches:
     include:
-    - *
+    - "*"
 
 pool:
   vmImage: 'ubuntu-latest'
