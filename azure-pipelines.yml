@@ -34,18 +34,13 @@ jobs:
           TEST_SET: "jvm-integration"
         shard3:
           jdk_version: "1.8"
-          python_version: "2.7.15"
-          PANTS_SHA: "release_1.13.0"
+          python_version: "3.7"
+          PANTS_SHA: "release_1.19.0"
           TEST_SET: "jvm-integration"
         shard4:
           jdk_version: "1.8"
-          python_version: "2.7.15"
-          PANTS_SHA: "release_1.10.0"
-          TEST_SET: "jvm-integration"
-        shard5:
-          jdk_version: "1.8"
-          python_version: "2.7.15"
-          PANTS_SHA: "release_1.6.0"
+          python_version: "3.7"
+          PANTS_SHA: "release_1.18.0"
           TEST_SET: "jvm-integration"
         shard6:
           jdk_version: "1.8"
@@ -58,10 +53,10 @@ jobs:
         inputs:
           versionSpec: '$(python_version)'
           addToPath: true
-    - script: |
-        ./scripts/setup-ci-environment.sh
-      displayName: 'Set up'
-    - script: |
-        ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
-        ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
-      displayName: 'Run tests'
+      - script: |
+          ./scripts/setup-ci-environment.sh
+        displayName: 'Set up'
+      - script: |
+          ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
+          ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
+        displayName: 'Run tests'
