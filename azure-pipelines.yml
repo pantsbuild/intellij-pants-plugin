@@ -17,5 +17,6 @@ steps:
   displayName: 'Run a one-line script'
 
 - script: |
+    ./scripts/setup-ci-environment.sh
     ./scripts/run-tests-ci.sh
   displayName: 'Run a multi-line script'
