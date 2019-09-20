@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.testFramework;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.execution.BeforeRunTask;
@@ -72,9 +71,9 @@ import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.scala.testingSupport.test.ClassTestData$;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestConfigurationType;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
+import org.jetbrains.plugins.scala.testingSupport.test.testdata.SingleTestData;
 
 import java.io.File;
 import java.io.IOException;
@@ -469,7 +468,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
     runConfiguration.setupIntegrationTestClassPath();
-    runConfiguration.testConfigurationData_$eq(ClassTestData$.MODULE$.apply(runConfiguration, className));
+
+    SingleTestData data = new SingleTestData(runConfiguration);
+    data.setTestClassPath(className);
+    runConfiguration.testConfigurationData_$eq(data);
     runConfiguration.testConfigurationData().setWorkingDirectory(PantsUtil.findBuildRoot(getModule(moduleName)).get().getCanonicalPath());
     return runConfiguration;
   }
