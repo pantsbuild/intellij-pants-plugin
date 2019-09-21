@@ -17,31 +17,31 @@ jobs:
 
     strategy:
       matrix:
-#        shard0:
-#          jdk_version: "1.8"
-#          python_version: "3.7"
-#          IJ_ULTIMATE: false
-#          PANTS_TEST_JUNIT_TEST_SHARD: 0/2
-#        shard1:
-#          jdk_version: "1.8"
-#          python_version: "3.7"
-#          IJ_ULTIMATE: false
-#          PANTS_TEST_JUNIT_TEST_SHARD: 1/2
-#        shard2:
-#          jdk_version: "1.8"
-#          python_version: "3.7"
-#          IJ_ULTIMATE: true
-#          TEST_SET: "jvm-integration"
-#        shard3:
-#          jdk_version: "1.8"
-#          python_version: "3.7"
-#          PANTS_SHA: "release_1.19.0"
-#          TEST_SET: "jvm-integration"
-#        shard4:
-#          jdk_version: "1.8"
-#          python_version: "3.7"
-#          PANTS_SHA: "release_1.18.0"
-#          TEST_SET: "jvm-integration"
+        shard0:
+          jdk_version: "1.8"
+          python_version: "3.7"
+          IJ_ULTIMATE: false
+          PANTS_TEST_JUNIT_TEST_SHARD: 0/2
+        shard1:
+          jdk_version: "1.8"
+          python_version: "3.7"
+          IJ_ULTIMATE: false
+          PANTS_TEST_JUNIT_TEST_SHARD: 1/2
+        shard2:
+          jdk_version: "1.8"
+          python_version: "3.7"
+          IJ_ULTIMATE: true
+          TEST_SET: "jvm-integration"
+        shard3:
+          jdk_version: "1.8"
+          python_version: "3.7"
+          PANTS_SHA: "release_1.19.0"
+          TEST_SET: "jvm-integration"
+        shard4:
+          jdk_version: "1.8"
+          python_version: "3.7"
+          PANTS_SHA: "release_1.18.0"
+          TEST_SET: "jvm-integration"
         shard5:
           jdk_version: "1.8"
           python_version: "2.7.16"
@@ -53,16 +53,10 @@ jobs:
         inputs:
           versionSpec: '$(python_version)'
           addToPath: true
-      - task: CacheBeta@0
-        inputs:
-          key: pants_intellij_cache | $(Agent.OS)
-          path: '.cache'
-        displayName: Cache Pants and IntelliJ artifacts
       - script: |
           ./scripts/setup-ci-environment.sh
         displayName: 'Set up'
       - script: |
-          echo 'hello'
-#          ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
-#          ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
+          ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
+          ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
         displayName: 'Run tests'
