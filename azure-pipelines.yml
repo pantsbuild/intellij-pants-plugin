@@ -6,7 +6,7 @@ trigger:
   batch: true
   branches:
     include:
-      - master
+      - '*'
 
 jobs:
   - job: test_job
