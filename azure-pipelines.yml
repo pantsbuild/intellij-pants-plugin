@@ -56,12 +56,13 @@ jobs:
       - task: CacheBeta@0
         inputs:
           key: pants_intellij_cache | $(Agent.OS)
-          path: '$(Pipeline.Workspace)/.cache'
+          path: '.cache'
         displayName: Cache Pants and IntelliJ artifacts
       - script: |
           ./scripts/setup-ci-environment.sh
         displayName: 'Set up'
       - script: |
-          ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
-          ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
+          echo 'hello'
+#          ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
+#          ./scripts/setup-ci-environment.sh && ./scripts/run-tests-ci.sh
         displayName: 'Run tests'
