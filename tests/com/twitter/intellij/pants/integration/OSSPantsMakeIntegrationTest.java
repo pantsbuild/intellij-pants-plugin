@@ -10,7 +10,7 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
 
   public void testPantsMake() throws Throwable {
-    doImport("testprojects/tests/java/org/pantsbuild/testproject/");
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
 
 
     JUnitConfiguration runConfiguration = generateJUnitConfiguration(
