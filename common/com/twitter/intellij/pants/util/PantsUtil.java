@@ -16,10 +16,10 @@ import com.intellij.ide.SaveAndSyncHandler;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.impl.EditorImpl;
@@ -43,9 +43,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
-import com.intellij.openapi.projectRoots.impl.JavaSdkImpl;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
@@ -850,13 +848,6 @@ public class PantsUtil {
       .findFirst();
 
     if (sdkForPants.isPresent()) {
-      SdkModificator modificator = sdkForPants.get().getSdkModificator();
-      JavaSdkImpl.attachJdkAnnotations(modificator);
-      ApplicationManager.getApplication().invokeAndWait(() -> {
-          ApplicationManager.getApplication().runWriteAction(() -> {
-              modificator.commitChanges();
-          });
-      });
       return sdkForPants;
     }
 
