@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.components.impl;
 
 import com.intellij.ProjectTopics;
+import com.intellij.codeInspection.magicConstant.MagicConstantInspection;
 import com.intellij.execution.RunManagerListener;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.ide.impl.NewProjectUtil;
@@ -225,11 +226,12 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         return;
       }
 
-      Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath(), null);
+      Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath(), myProject);
       if (!sdk.isPresent()) {
         return;
       }
 
+      MagicConstantInspection.getAttachAnnotationsJarFix(myProject).run();
       NewProjectUtil.applyJdkToProject(myProject, sdk.get());
     });
   }
