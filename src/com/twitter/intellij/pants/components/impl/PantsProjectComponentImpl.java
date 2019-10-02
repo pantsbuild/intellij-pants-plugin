@@ -231,7 +231,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         return;
       }
 
-      MagicConstantInspection.getAttachAnnotationsJarFix(myProject).run();
+      Optional.ofNullable(MagicConstantInspection.getAttachAnnotationsJarFix(myProject)).ifPresent(Runnable::run);
       NewProjectUtil.applyJdkToProject(myProject, sdk.get());
     });
   }
