@@ -91,7 +91,7 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
       // https://github.com/JetBrains/intellij-community/blob/master/platform/external-system-impl/src/com/intellij/openapi/externalSystem/service/remote/wrapper/ExternalSystemTaskManagerWrapper.java#L54-L57
       // explicitly expects ExternalSystemException for the task to fail, so we are now throwing it upon non-zero exit.
       if (exitCode != 0) {
-        throw new ExecutionException(String.join(" ", textOutputs));
+        throw new ExecutionException(String.join("", textOutputs));
       }
     }
     catch (ExecutionException | InterruptedException e) {
