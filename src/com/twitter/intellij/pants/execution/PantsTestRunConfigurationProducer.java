@@ -4,7 +4,8 @@
 package com.twitter.intellij.pants.execution;
 
 import com.intellij.execution.actions.ConfigurationContext;
-import com.intellij.execution.actions.RunConfigurationProducer;
+import com.intellij.execution.actions.LazyRunConfigurationProducer;
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.openapi.externalSystem.model.execution.ExternalSystemTaskExecutionSettings;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration;
 import com.intellij.openapi.util.Ref;
@@ -13,9 +14,12 @@ import com.intellij.psi.PsiElement;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class PantsTestRunConfigurationProducer extends RunConfigurationProducer<ExternalSystemRunConfiguration> {
-  protected PantsTestRunConfigurationProducer() {
-    super(PantsExternalTaskConfigurationType.getInstance());
+public abstract class PantsTestRunConfigurationProducer extends LazyRunConfigurationProducer<ExternalSystemRunConfiguration> {
+
+  @NotNull
+  @Override
+  public ConfigurationFactory getConfigurationFactory() {
+    return PantsExternalTaskConfigurationType.getInstance().getFactory();
   }
 
   @Override

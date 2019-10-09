@@ -68,6 +68,7 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
     listener.onTaskOutput(id, commandLine.getCommandLineString(PantsConstants.PANTS), true);
     try {
       final Process process = commandLine.createProcess();
+      List<String> textOutputs = Lists.newArrayList();
       myCancellationMap.put(id, process);
       PantsUtil.getCmdOutput(
         process,
@@ -81,12 +82,19 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
           @Override
           public void onTextAvailable(ProcessEvent event, Key outputType) {
             super.onTextAvailable(event, outputType);
+            textOutputs.add(event.getText());
             listener.onTaskOutput(id, event.getText(), outputType == ProcessOutputTypes.STDOUT);
           }
         }
       );
+      int exitCode = process.waitFor();
+      // https://github.com/JetBrains/intellij-community/blob/master/platform/external-system-impl/src/com/intellij/openapi/externalSystem/service/remote/wrapper/ExternalSystemTaskManagerWrapper.java#L54-L57
+      // explicitly expects ExternalSystemException for the task to fail, so we are now throwing it upon non-zero exit.
+      if (exitCode != 0) {
+        throw new ExecutionException(String.join("", textOutputs));
+      }
     }
-    catch (ExecutionException e) {
+    catch (ExecutionException | InterruptedException e) {
       throw new ExternalSystemException(e);
     }
     finally {
