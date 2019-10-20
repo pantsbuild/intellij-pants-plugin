@@ -126,7 +126,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   protected String[] getRequiredPluginIds() {
     return new String[]{
-      "org.jetbrains.plugins.gradle",
+      "com.intellij.gradle",
       PantsConstants.PLUGIN_ID
     };
   }

@@ -18,7 +18,7 @@
   <idea-version since-build="193.0" until-build="193.*"/>
 
   <!--Add gradle as a dep because of Pants runner requires it.-->
-  <depends>org.jetbrains.plugins.gradle</depends>
+  <depends>com.intellij.gradle</depends>
 
   <depends optional="true" config-file="pants-scala.xml">org.intellij.scala</depends>
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
