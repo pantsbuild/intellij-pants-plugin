@@ -51,21 +51,22 @@ export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
 append_intellij_jvm_options() {
   scope=$1
 
-  plugins=('com.intellij.properties'
-       'JUnit'
-       'org.intellij.groovy'
-       'com.intellij.java'
-       'org.intellij.intelliLang'
-       'PythonCore'
-       'com.intellij.modules.python-core-capable'
-       'com.intellij.plugins.pants'
-       )
+  plugins=(
+    'com.intellij.properties'
+    'JUnit'
+    'org.intellij.groovy'
+    'com.intellij.java'
+    'org.intellij.intelliLang'
+    'PythonCore'
+    'com.intellij.modules.python-core-capable'
+    'com.intellij.plugins.pants'
+  )
 
   if [[ ${ENABLE_SCALA_PLUGIN:=true} == true ]]; then
     plugins+=('org.intellij.scala')
   fi
 
-  load_plugins=$(printf "%s," "${foo[@]}")
+  load_plugins=$(printf "%s," "${plugins[@]}")
 
   INTELLIJ_JVM_OPTIONS=(
     "-Didea.load.plugins.id=${load_plugins}"
