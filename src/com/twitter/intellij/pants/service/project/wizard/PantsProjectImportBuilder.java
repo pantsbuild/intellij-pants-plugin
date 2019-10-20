@@ -20,14 +20,14 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
+import javax.swing.Icon;
 import java.io.File;
 import java.util.List;
 
 public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuilder<ImportFromPantsControl> {
 
-  public PantsProjectImportBuilder(@NotNull ProjectDataManager dataManager) {
-    super(dataManager, new ImportFromPantsControl(), PantsConstants.SYSTEM_ID);
+  public PantsProjectImportBuilder() {
+    super(ProjectDataManager.getInstance(), ImportFromPantsControl::new, PantsConstants.SYSTEM_ID);
   }
 
   @NotNull
