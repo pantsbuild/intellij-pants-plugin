@@ -21,8 +21,8 @@ import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileAllTargetsInModuleAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsCompileTargetAction;
-import com.twitter.intellij.pants.compiler.actions.PantsLintTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsRebuildAction;
+import com.twitter.intellij.pants.compiler.actions.PantsLintTargetAction;
 import com.twitter.intellij.pants.compiler.actions.PantsTaskActionBase;
 import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
@@ -141,8 +141,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     assertActionSucceeds(compileAllTargetsInModuleAction, expectedTargets);
   }
 
-  // https://github.com/pantsbuild/intellij-pants-plugin/pull/415/
-  public void ignoreTestCompileTargetsInSelectedEditor() throws Throwable {
+  public void testCompileTargetsInSelectedEditor() throws Throwable {
     doImport("examples/tests/scala/org/pantsbuild/example");
     ArrayList<Pair<String, String>> testClassAndTarget = Lists.newArrayList(
       // Pair of class reference and its containing target

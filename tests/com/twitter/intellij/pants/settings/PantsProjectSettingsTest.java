@@ -66,8 +66,7 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
     );
   }
 
-  // https://github.com/pantsbuild/intellij-pants-plugin/pull/415/
-  public void ignoreTestBuildFileAsImportProjectPath() {
+  public void testBuildFileAsImportProjectPath() {
     myFromPantsControl.onLinkedProjectPathChange(
       getProjectPath() + File.separator +
       "examples/src/java/org/pantsbuild/example/hello/main/BUILD"
@@ -103,8 +102,7 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
       , Sets.newLinkedHashSet(myFromPantsControl.getProjectSettings().getTargetSpecs()));
   }
 
-  // https://github.com/pantsbuild/intellij-pants-plugin/pull/415/
-  public void ignoreTestInvalidImportPath() {
+  public void testInvalidImportPath() {
     myFromPantsControl.onLinkedProjectPathChange(pantsIniFilePath);
     updateSettingsBasedOnGuiStates();
     assertPantsProjectNotFound();
