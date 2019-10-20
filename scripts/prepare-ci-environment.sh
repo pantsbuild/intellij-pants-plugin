@@ -50,13 +50,22 @@ export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
 
 append_intellij_jvm_options() {
   scope=$1
-  cmd=""
+
+  plugins=('com.intellij.properties'
+       'JUnit'
+       'org.intellij.groovy'
+       'com.intellij.java'
+       'org.intellij.intelliLang'
+       'PythonCore'
+       'com.intellij.modules.python-core-capable'
+       'com.intellij.plugins.pants'
+       )
 
   if [[ ${ENABLE_SCALA_PLUGIN:=true} == true ]]; then
-    load_plugins="-Didea.load.plugins.id=Junit,com.intellij.java,com.intellij.properties,org.intellij.groovy,org.intellij.gradle,org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants"
-  else
-    load_plugins="-Didea.load.plugins.id=Junit,com.intellij.java,com.intellij.properties,org.intellij.groovy,org.intellij.gradle,PythonCore,JUnit,com.intellij.plugins.pants"
+    plugins+=('org.intellij.scala')
   fi
+
+  load_plugins=$(printf "%s," "${foo[@]}")
 
   INTELLIJ_JVM_OPTIONS=(
     "-Didea.load.plugins.id=${load_plugins}"
@@ -66,6 +75,8 @@ append_intellij_jvm_options() {
     "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"
   )
+
+  cmd=""
   for jvm_option in ${INTELLIJ_JVM_OPTIONS[@]}
   do
       cmd="$cmd --jvm-$scope-options=$jvm_option"

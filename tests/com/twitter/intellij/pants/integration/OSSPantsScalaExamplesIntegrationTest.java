@@ -16,7 +16,7 @@ public class OSSPantsScalaExamplesIntegrationTest extends OSSPantsIntegrationTes
   protected String[] getRequiredPluginIds() {
     return new String[]{
       "org.intellij.scala",
-      "org.intellij.gradle",
+      "com.intellij.gradle",
       PantsConstants.PLUGIN_ID
     };
   }
