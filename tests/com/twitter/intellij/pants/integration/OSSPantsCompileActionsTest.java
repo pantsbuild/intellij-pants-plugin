@@ -173,7 +173,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       Set<String> currentTargets = compileCurrentTargetAction
         .getTargets(getPantsActionEvent(), myProject)
         .collect(Collectors.toSet());
-      assertEquals(Sets.newHashSet(target), currentTargets);
+      assertContainsElements(currentTargets, target);
       assertActionSucceeds(compileCurrentTargetAction, currentTargets);
     }
   }
