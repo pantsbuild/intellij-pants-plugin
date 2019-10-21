@@ -295,9 +295,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   @NotNull
   protected PsiClass findClassAndAssert(@NonNls @NotNull String qualifiedName) {
     final PsiClass[] classes = JavaPsiFacade.getInstance(myProject).findClasses(qualifiedName, GlobalSearchScope.allScope(myProject));
-    assertTrue("Several classes with the same qualified name " + qualifiedName, classes.length < 2);
-    assertTrue(qualifiedName + " class not found!", classes.length > 0);
-    return classes[0];
+    Set<PsiClass> deduppedClasses = Stream.of(classes).collect(Collectors.toSet());
+    assertTrue("Several classes with the same qualified name " + qualifiedName, deduppedClasses.size() < 2);
+    assertFalse(qualifiedName + " class not found!", deduppedClasses.isEmpty());
+    return deduppedClasses.iterator().next();
   }
 
   protected Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutablePath) {
