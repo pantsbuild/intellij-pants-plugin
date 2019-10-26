@@ -12,8 +12,8 @@ fi
 export CWD=$(pwd)
 # Normally, IJ_VERSION is of the form YEAR.x[.y[.z]]
 # But for EAPs, set IJ_VERSION to the same as IJ_BUILD_NUMBER
-export IJ_VERSION="2019.2"
-export IJ_BUILD_NUMBER="192.5728.98"
+export IJ_VERSION="193.4697.15"
+export IJ_BUILD_NUMBER="193.4697.15"
 
 
 # This is for bootstrapping Pants, since this repo does not do Pants intensive operations,
@@ -50,13 +50,23 @@ export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
 
 append_intellij_jvm_options() {
   scope=$1
-  cmd=""
+
+  plugins=(
+    'com.intellij.properties'
+    'JUnit'
+    'org.intellij.groovy'
+    'com.intellij.java'
+    'org.intellij.intelliLang'
+    'PythonCore'
+    'com.intellij.modules.python-core-capable'
+    'com.intellij.plugins.pants'
+  )
 
   if [[ ${ENABLE_SCALA_PLUGIN:=true} == true ]]; then
-    load_plugins="-Didea.load.plugins.id=Junit,com.intellij.java,com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,org.intellij.scala,PythonCore,JUnit,com.intellij.plugins.pants"
-  else
-    load_plugins="-Didea.load.plugins.id=Junit,com.intellij.java,com.intellij.properties,org.intellij.groovy,org.jetbrains.plugins.gradle,PythonCore,JUnit,com.intellij.plugins.pants"
+    plugins+=('org.intellij.scala')
   fi
+
+  load_plugins=$(printf "%s," "${plugins[@]}")
 
   INTELLIJ_JVM_OPTIONS=(
     "-Didea.load.plugins.id=${load_plugins}"
@@ -66,6 +76,8 @@ append_intellij_jvm_options() {
     "-Didea.plugins.compatible.build=$IJ_BUILD_NUMBER"
     # "-Dcompiler.process.debug.port=5006"
   )
+
+  cmd=""
   for jvm_option in ${INTELLIJ_JVM_OPTIONS[@]}
   do
       cmd="$cmd --jvm-$scope-options=$jvm_option"
