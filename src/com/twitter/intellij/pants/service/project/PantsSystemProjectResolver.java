@@ -40,6 +40,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
+import com.twitter.intellij.pants.model.JdkRef;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
@@ -165,6 +166,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
     PantsUtil.findPantsExecutable(executor.getProjectPath())
       .flatMap(file -> PantsUtil.getDefaultJavaSdk(file.getPath(), null))
+      .map(JdkRef::fromSdk)
       .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {

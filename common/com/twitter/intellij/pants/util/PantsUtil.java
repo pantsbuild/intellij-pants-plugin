@@ -879,17 +879,24 @@ public class PantsUtil {
 
     // Finally if we need to create a new JDK, it needs to be registered in the `ProjectJdkTable` on the IDE level
     // before it can be used.
-    Sdk jdk = JavaSdk.getInstance().createJdk(jdkName, jdkHome.get());
-    ApplicationManager.getApplication().invokeAndWait(() -> {
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            if (parentDisposable == null) {
-              ProjectJdkTable.getInstance().addJdk(jdk);
-            } else {
-              ProjectJdkTable.getInstance().addJdk(jdk, parentDisposable);
-            }
-        });
-    });
+    Sdk jdk = createJdk(jdkName, jdkHome.get(), parentDisposable);
     return Optional.of(jdk);
+  }
+
+  public static Sdk createJdk(String name, String home, Disposable disposable) {
+    Sdk jdk = JavaSdk.getInstance().createJdk(name, home);
+    ApplicationManager.getApplication().invokeAndWait(() -> {
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        if (disposable == null) {
+          ProjectJdkTable.getInstance().addJdk(jdk);
+        }
+        else {
+          ProjectJdkTable.getInstance().addJdk(jdk, disposable);
+        }
+      });
+    });
+
+    return jdk;
   }
 
   /**

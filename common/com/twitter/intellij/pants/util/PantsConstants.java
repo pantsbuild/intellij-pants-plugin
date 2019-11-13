@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.util;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
-import com.intellij.openapi.projectRoots.Sdk;
+import com.twitter.intellij.pants.model.JdkRef;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -41,7 +41,7 @@ public class PantsConstants {
   public static final String PANTS_OPTION_ASYNC_CLEAN_ALL = "clean-all.async";
 
   // Used to initialize project sdk therefore use project processing weight, i.e, the highest.
-  public static final Key<Sdk> SDK_KEY = Key.create(Sdk.class, ProjectKeys.PROJECT.getProcessingWeight());
+  public static final Key<JdkRef> SDK_KEY = Key.create(JdkRef.class, ProjectKeys.PROJECT.getProcessingWeight());
 
   public static final String PANTS_CLI_OPTION_EXPORT_OUTPUT_FILE = "--export-output-file";
   public static final String PANTS_CLI_OPTION_LIST_OUTPUT_FILE = "--list-output-file";
