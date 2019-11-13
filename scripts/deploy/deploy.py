@@ -26,7 +26,7 @@ def get_head_sha():
     logger.error("{} failed.".format(cmd))
     exit(1)
 
-  return output.strip()
+  return output.decode().strip()
 
 
 if __name__ == "__main__":
