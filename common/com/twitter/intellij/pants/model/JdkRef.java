@@ -23,8 +23,8 @@ public final class JdkRef {
   private JdkRef(String myName, String myHome) {
     this.myName = myName;
     this.myHome = myHome;
+  }
 
-}
   public Sdk toSdk() {
     JavaSdk javaSdk = JavaSdk.getInstance();
     return ProjectJdkTable.getInstance().getSdksOfType(javaSdk).stream()
