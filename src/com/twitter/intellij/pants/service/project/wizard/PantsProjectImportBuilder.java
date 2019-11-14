@@ -64,7 +64,7 @@ public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuil
 
     final DataNode<JdkRef> sdkNode = ExternalSystemApiUtil.find(node, PantsConstants.SDK_KEY);
     if (sdkNode != null) {
-      Sdk pantsSdk = sdkNode.getData().toSdk();
+      Sdk pantsSdk = sdkNode.getData().toSdk(context.getDisposable());
       context.setProjectJdk(pantsSdk);
     }
   }

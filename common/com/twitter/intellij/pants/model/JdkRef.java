@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.model;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -25,13 +26,13 @@ public final class JdkRef {
     this.myHome = myHome;
   }
 
-  public Sdk toSdk() {
+  public Sdk toSdk(Disposable disposable) {
     JavaSdk javaSdk = JavaSdk.getInstance();
     return ProjectJdkTable.getInstance().getSdksOfType(javaSdk).stream()
       .filter(sdk -> myHome.equals(sdk.getHomePath()))
       .filter(sdk -> myName.equals(sdk.getName()))
       .findFirst()
-      .orElseGet(() -> PantsUtil.createJdk(myName, myHome, null));
+      .orElseGet(() -> PantsUtil.createJdk(myName, myHome, disposable));
   }
 
   @Override
