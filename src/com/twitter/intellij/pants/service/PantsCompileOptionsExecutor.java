@@ -214,13 +214,14 @@ public class PantsCompileOptionsExecutor {
     commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
 
     commandLine.addParameter("--no-quiet");
-    commandLine.addParameter("export");
+    //commandLine.addParameter("export");
+    commandLine.addParameter("export-dep-as-jar");
+    commandLine.addParameter("--output-file=" + outputFile.getPath());
     commandLine.addParameter("--formatted"); // json outputs in a compact format
     if (myResolveSourcesAndDocsForJars) {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");
     }
-    commandLine.addParameter("--export-output-file=" + outputFile.getPath());
     return commandLine;
   }
 
