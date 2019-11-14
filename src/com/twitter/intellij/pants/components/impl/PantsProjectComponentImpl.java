@@ -32,6 +32,7 @@ import com.twitter.intellij.pants.metrics.LivePantsMetrics;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsOptions;
+import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
@@ -231,7 +232,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         return;
       }
 
-      Optional<Sdk> sdk = PantsUtil.getDefaultJavaSdk(pantsExecutable.get().getPath(), myProject);
+      Optional<Sdk> sdk = PantsSdkUtil.getDefaultJavaSdk(pantsExecutable.get().getPath(), myProject);
       if (!sdk.isPresent()) {
         return;
       }

@@ -10,6 +10,7 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.MockSdk;
 import com.intellij.util.containers.MultiMap;
 import com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase;
+import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.util.Set;
@@ -18,7 +19,7 @@ public class JdkRefTest extends PantsIntegrationTestCase {
   private static final String SDK_NAME = "mySDK";
 
   public void testResolvesToExistingSdk() {
-    Sdk originalSdk = PantsUtil.createJdk(SDK_NAME, "myHome", getTestRootDisposable());
+    Sdk originalSdk = PantsSdkUtil.createAndRegisterJdk(SDK_NAME, "myHome", getTestRootDisposable());
     JdkRef ref = JdkRef.fromSdk(originalSdk);
 
     Sdk resolvedSdk = ref.toSdk(getTestRootDisposable());

@@ -23,11 +23,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.twitter.intellij.pants.file.ProjectRefreshListener.NOTIFICATION_TITLE;
+
+
 public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
 
   private static List<Notification> findAllExistingRefreshNotification(Project project) {
     ArrayList<Notification> notifications = EventLog.getLogModel(project).getNotifications();
-    return notifications.stream().filter(s -> s.getContent().contains(FileChangeTracker.REFRESH_PANTS_PROJECT_DISPLAY))
+    return notifications.stream()
+      .filter(s -> s.getTitle().contains(NOTIFICATION_TITLE))
       .collect(Collectors.toList());
   }
 

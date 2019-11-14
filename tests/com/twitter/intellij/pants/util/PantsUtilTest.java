@@ -67,8 +67,8 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     // manually adding the same jdk to the table should result in two identical
     // entries
     ApplicationManager.getApplication().runWriteAction(() -> {
-        // no need to use disposable here, because this should not add a new jdk
-        ProjectJdkTable.getInstance().addJdk(sdkA);
+      // no need to use disposable here, because this should not add a new jdk
+      ProjectJdkTable.getInstance().addJdk(sdkA);
     });
     assertEquals(twoEntriesSameSdk, getSameJdks(sdkA));
 
@@ -87,20 +87,14 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     assertEmpty(classesOf(staleJdk));
 
     Sdk recreatedJdk = getDefaultJavaSdk(executable.getPath()).get();
-    Optional<VirtualFile> runtime = classesOf(recreatedJdk).stream()
-      .filter(file -> file.getName().equals("rt.jar"))
-      .findFirst();
-    assertTrue(runtime.isPresent());
-
-    HashSet<Sdk> allJdks = Sets.newHashSet(ProjectJdkTable.getInstance().getAllJdks());
-    assertTrue(allJdks.contains(recreatedJdk)); // recreated jdk gets added
-    assertFalse(allJdks.contains(staleJdk)); // stale Jdk gets removed
+    assertSame(staleJdk, recreatedJdk);
+    assertNotEmpty(classesOf(staleJdk));
   }
 
   private Sdk createStaleJdk(File pantsExecutable) throws IOException {
-    String name = String.format(PantsUtil.JDK_NAME_FORMAT, "1.8", pantsExecutable.getPath());
+    String name = String.format(PantsSdkUtil.JDK_NAME_FORMAT, "1.8", pantsExecutable.getPath());
     Path jdkHome = Files.createTempDirectory("stale-jdk");
-    return PantsUtil.registerNewJdk(name, jdkHome.toString(), getTestRootDisposable());
+    return PantsSdkUtil.createAndRegisterJdk(name, jdkHome.toString(), getTestRootDisposable());
   }
 
   private Set<VirtualFile> classesOf(Sdk sdk) {

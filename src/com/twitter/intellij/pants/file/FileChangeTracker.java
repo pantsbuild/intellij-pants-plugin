@@ -6,13 +6,9 @@ package com.twitter.intellij.pants.file;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import com.intellij.notification.EventLog;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -22,20 +18,17 @@ import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
-import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.settings.PantsSettings;
-import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.event.HyperlinkEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -50,7 +43,6 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 public class FileChangeTracker {
   private static final Logger LOG = Logger.getInstance(FileChangeTracker.class);
   public static final String HREF_REFRESH = "refresh";
-  public static final String REFRESH_PANTS_PROJECT_DISPLAY = "Refresh Pants Project";
 
   private static FileChangeTracker instance = new FileChangeTracker();
 
@@ -112,49 +104,55 @@ public class FileChangeTracker {
   private static void markDirty(@NotNull VirtualFile file, @NotNull VirtualFileListener listener) {
     Project project = listenToProjectMap.get(listener);
 
-    boolean inProject = ProjectRootManager.getInstance(project).getFileIndex().getContentRootForFile(file) != null;
-    LOG.debug(String.format("Changed: %s. In project: %s", file.getPath(), inProject));
-    if (inProject) {
-      markDirty(project);
-      notifyProjectRefreshIfNecessary(file, project);
-    }
-  }
-
-  private static boolean hasExistingRefreshNotification(Project project) {
-    ArrayList<Notification> notifications = EventLog.getLogModel(project).getNotifications();
-    return notifications.stream().anyMatch(s -> s.getContent().contains(REFRESH_PANTS_PROJECT_DISPLAY));
-  }
-
-  /**
-   * Template came from maven plugin:
-   * https://github.com/JetBrains/intellij-community/blob/b5d046018b9a82fccd86bc9c1f1da2e28068440a/plugins/maven/src/main/java/org/jetbrains/idea/maven/utils/MavenImportNotifier.java#L92-L108
-   */
-  private static void notifyProjectRefreshIfNecessary(@NotNull VirtualFile file, final Project project) {
-    // If there is standing refresh notification, do not proceed to issue another notification.
-    if (hasExistingRefreshNotification(project)) {
+    ChangeType changeType = detectChangeType(project, file);
+    LOG.debug(String.format("Changed: %s. In project: %s", file.getPath(), changeType));
+    if (changeType == ChangeType.UNRELATED) {
       return;
     }
 
-    NotificationListener.Adapter refreshAction = new NotificationListener.Adapter() {
-      @Override
-      protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
-        if (HREF_REFRESH.equals(event.getDescription())) {
-          PantsUtil.refreshAllProjects(project);
-        }
-        notification.expire();
-      }
-    };
+    markDirty(project);
 
-    if (PantsUtil.isFileUnderPantsRepo(file) && PantsUtil.isBUILDFileName(file.getName())) {
-      Notification myNotification = new Notification(
-        PantsConstants.PANTS,
-        PantsBundle.message("pants.project.build.files.changed"),
-        "<a href='" + HREF_REFRESH + "'>" + REFRESH_PANTS_PROJECT_DISPLAY + "</a> ",
-        NotificationType.INFORMATION,
-        refreshAction
-      );
-      Notifications.Bus.notify(myNotification, project);
+    if (changeType == ChangeType.BUILD) {
+      ProjectRefreshListener.notify(project);
     }
+    else if (changeType == ChangeType.SDK) {
+      ModifiedSdkNotificationProvider.notifySdkModified(project);
+    }
+  }
+
+  enum ChangeType {
+    UNRELATED,
+    BUILD,
+    SDK,
+    OTHER;
+  }
+
+  private static ChangeType detectChangeType(Project project, @NotNull VirtualFile file) {
+    ProjectRootManager rootManager = ProjectRootManager.getInstance(project);
+
+    if (rootManager.getFileIndex().getContentRootForFile(file) != null) {
+      boolean isBuildFile = PantsUtil.isBUILDFileName(file.getName());
+      boolean isUnderPantsRepo = PantsUtil.isFileUnderPantsRepo(file);
+      if (isUnderPantsRepo && isBuildFile) {
+        return ChangeType.BUILD;
+      }
+
+      return ChangeType.OTHER;
+    }
+
+    // detect changes made to the project sdk
+    Sdk sdk = rootManager.getProjectSdk();
+    if (sdk != null) {
+      String sdkHome = StringUtils.defaultString(sdk.getHomePath());
+      String filePath = StringUtils.appendIfMissing(file.getPath(), File.separator);
+      String sdkPath = StringUtils.appendIfMissing(sdkHome, File.separator);
+
+      if (filePath.startsWith(sdkPath)) {
+        return ChangeType.SDK;
+      }
+    }
+
+    return ChangeType.UNRELATED;
   }
 
   public static void markDirty(@NotNull Project project) {
@@ -232,7 +230,7 @@ public class FileChangeTracker {
       || (!snapshot.equals(previousSnapshot.get()))
       // if manifest is not valid any more.
       || !isManifestJarValid(project)
-      ) {
+    ) {
       resetProjectState(project, snapshot);
       return true;
     }
