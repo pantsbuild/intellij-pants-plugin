@@ -32,7 +32,7 @@ public final class JdkRef {
       .filter(sdk -> myHome.equals(sdk.getHomePath()))
       .filter(sdk -> myName.equals(sdk.getName()))
       .findFirst()
-      .orElseGet(() -> PantsUtil.createJdk(myName, myHome, disposable));
+      .orElseGet(() -> PantsUtil.registerNewJdk(myName, myHome, disposable));
   }
 
   @Override

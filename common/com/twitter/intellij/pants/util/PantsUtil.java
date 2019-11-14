@@ -46,6 +46,7 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
@@ -99,6 +100,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -132,6 +134,7 @@ public class PantsUtil {
    */
   private static final String PANTS_IDEA_PLUGIN_VERESION_MIN = "0.0.1";
   private static final String PANTS_IDEA_PLUGIN_VERESION_MAX = "0.1.0";
+  static final String JDK_NAME_FORMAT = "%s_from_%s";
 
   /**
    * @param vFile a virtual file pointing at either a file or a directory
@@ -862,15 +865,48 @@ public class PantsUtil {
    * one, which mutates global state (protected by a read/write lock).
    */
   public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable, @Nullable final Disposable parentDisposable) {
-    Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
+    Optional<Sdk> existingSdk = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
       // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
       .filter(sdk -> sdk.getName().contains(pantsExecutable) && sdk.getSdkType() instanceof JavaSdk)
       .findFirst();
 
-    if (sdkForPants.isPresent()) {
-      return sdkForPants;
+    if (existingSdk.isPresent()) {
+      updateStaleSdk(existingSdk.get(), () -> createPantsJdk(pantsExecutable, parentDisposable))
+      return existingSdk;
     }
 
+    return createPantsJdk(pantsExecutable, parentDisposable);
+  }
+
+  private static void updateStaleSdk(Sdk sdk, Supplier<Optional<Sdk>> pantsSdkSupplier) {
+    if (isStale(sdk)) {
+      pantsSdkSupplier.get().ifPresent(pantsSdk -> updateJdk(sdk, pantsSdk));
+    }
+  }
+
+  private static boolean isStale(Sdk sdk) {
+    VirtualFile[] classes = sdk.getRootProvider().getFiles(OrderRootType.CLASSES);
+    // TODO there is no rt.jar since Java 9
+    Optional<VirtualFile> javaRuntime = Arrays.stream(classes)
+      .filter(file -> file.getName().equals("rt.jar"))
+      .findFirst();
+
+    return javaRuntime.isPresent();
+  }
+
+  private static void updateJdk(Sdk sdk, Sdk foo) {
+    ApplicationManager.getApplication().invokeAndWait(() -> {
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        ProjectJdkTable.getInstance().updateJdk(sdk, foo);
+      });
+    });
+  }
+
+  @NotNull
+  private static Optional<Sdk> createPantsJdk(
+    @NotNull String pantsExecutable,
+    @Nullable Disposable parentDisposable
+  ) {
     final SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
     if (versionCompare(exportResult.getVersion(), "1.0.7") < 0) {
       return Optional.empty();
@@ -888,7 +924,7 @@ public class PantsUtil {
       // Using IJ's framework to detect jdk version. so jdkInfo.getVersion() returns `java version "1.8.0_121"`
       for (String version : ContainerUtil.newArrayList("1.6", "1.7", "1.8", "1.9")) {
         if (jdkInfo.version.toString().contains(version)) {
-          jdkName = String.format("%s_from_%s", version, pantsExecutable);
+          jdkName = String.format(JDK_NAME_FORMAT, version, pantsExecutable);
           break;
         }
       }
@@ -899,12 +935,12 @@ public class PantsUtil {
 
     // Finally if we need to create a new JDK, it needs to be registered in the `ProjectJdkTable` on the IDE level
     // before it can be used.
-    Sdk jdk = createJdk(jdkName, jdkHome.get(), parentDisposable);
+    Sdk jdk = registerNewJdk(jdkName, jdkHome.get(), parentDisposable);
     return Optional.of(jdk);
   }
 
-  public static Sdk createJdk(String name, String home, Disposable disposable) {
-    Sdk jdk = JavaSdk.getInstance().createJdk(name, home);
+  public static Sdk registerNewJdk(String name, String home, Disposable disposable) {
+    Sdk jdk = createJdk(name, home);
     ApplicationManager.getApplication().invokeAndWait(() -> {
       ApplicationManager.getApplication().runWriteAction(() -> {
         if (disposable == null) {
@@ -917,6 +953,11 @@ public class PantsUtil {
     });
 
     return jdk;
+  }
+
+  @NotNull
+  private static Sdk createJdk(String name, String home) {
+    return JavaSdk.getInstance().createJdk(name, home, false);
   }
 
   /**

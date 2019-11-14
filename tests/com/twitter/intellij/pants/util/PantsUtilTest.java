@@ -4,15 +4,24 @@
 package com.twitter.intellij.pants.util;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PantsUtilTest extends OSSPantsImportIntegrationTest {
@@ -69,6 +78,33 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     // Make sure they are identical, meaning that no new JDK was created on the 2nd find.
     assertTrue(sdkA == sdkB);
     assertEquals(twoEntriesSameSdk, getSameJdks(sdkA));
+  }
+
+  public void testRecreatesJdkIfRuntimeIsMissing() throws IOException {
+    final File executable = PantsUtil.findPantsExecutable(getProjectFolder()).get();
+
+    Sdk staleJdk = createStaleJdk(executable);
+    assertEmpty(classesOf(staleJdk));
+
+    Sdk recreatedJdk = getDefaultJavaSdk(executable.getPath()).get();
+    Optional<VirtualFile> runtime = classesOf(recreatedJdk).stream()
+      .filter(file -> file.getName().equals("rt.jar"))
+      .findFirst();
+    assertTrue(runtime.isPresent());
+
+    HashSet<Sdk> allJdks = Sets.newHashSet(ProjectJdkTable.getInstance().getAllJdks());
+    assertTrue(allJdks.contains(recreatedJdk)); // recreated jdk gets added
+    assertFalse(allJdks.contains(staleJdk)); // stale Jdk gets removed
+  }
+
+  private Sdk createStaleJdk(File pantsExecutable) throws IOException {
+    String name = String.format(PantsUtil.JDK_NAME_FORMAT, "1.8", pantsExecutable.getPath());
+    Path jdkHome = Files.createTempDirectory("stale-jdk");
+    return PantsUtil.registerNewJdk(name, jdkHome.toString(), getTestRootDisposable());
+  }
+
+  private Set<VirtualFile> classesOf(Sdk sdk) {
+    return Sets.newHashSet(sdk.getRootProvider().getFiles(OrderRootType.CLASSES));
   }
 
   public void testisBUILDFilePath() {
