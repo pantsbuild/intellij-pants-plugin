@@ -12,11 +12,18 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+
 public class BUILDFileTypeDetector implements FileTypeRegistry.FileTypeDetector {
   @Nullable
   @Override
   public FileType detect(@NotNull VirtualFile file, @NotNull ByteSequence firstBytes, @Nullable CharSequence firstCharsIfText) {
     return PantsUtil.isBUILDFileName(file.getName()) ? PythonFileType.INSTANCE : null;
+  }
+
+  @Nullable
+  public Collection<? extends FileType> getDetectedFileTypes() {
+    return null;
   }
 
   @Override
