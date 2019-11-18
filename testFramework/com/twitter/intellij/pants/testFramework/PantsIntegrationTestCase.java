@@ -533,7 +533,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
     catch (Throwable throwable) {
       // Discard error containing "Already disposed".
-      if (!throwable.getMessage().contains("Already disposed")) {
+      if (throwable.getMessage() == null || !throwable.getMessage().contains("Already disposed")) {
         throw throwable;
       }
     }
