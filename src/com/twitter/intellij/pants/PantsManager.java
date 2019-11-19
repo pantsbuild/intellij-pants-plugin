@@ -132,6 +132,7 @@ public class PantsManager implements
             pantsProjectSettings.getTargetSpecs(),
             pantsProjectSettings.isLibsWithSources(),
             pantsProjectSettings.isUseIdeaProjectJdk(),
+            pantsProjectSettings.isExportDepAsJar(),
             pantsProjectSettings.isEnableIncrementalImport()
           );
         }

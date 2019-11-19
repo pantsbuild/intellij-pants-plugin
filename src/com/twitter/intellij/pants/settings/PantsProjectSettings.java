@@ -14,6 +14,7 @@ import java.util.Objects;
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
   private boolean myLibsWithSources;
+  private boolean myEnableExportDepAsJar;
   private boolean myEnableIncrementalImport;
   private boolean myUseIdeaProjectJdk;
 
@@ -29,12 +30,14 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     String externalProjectPath,
     boolean libsWithSources,
     boolean isEnableIncrementalImport,
+    boolean isEnableExportDepAsJar,
     boolean isUseIdeaProjectJdk
   ) {
     setExternalProjectPath(externalProjectPath);
     myTargetSpecs = targetSpecs;
     myLibsWithSources = libsWithSources;
     myEnableIncrementalImport = isEnableIncrementalImport;
+    myEnableExportDepAsJar = isEnableExportDepAsJar;
     myUseIdeaProjectJdk = isUseIdeaProjectJdk;
   }
 
@@ -98,6 +101,11 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
 
   public boolean isEnableIncrementalImport() {
     return myEnableIncrementalImport;
+  }
+
+  @Override
+  public boolean isExportDepAsJar() {
+    return myEnableExportDepAsJar;
   }
 
   public void setEnableIncrementalImport(boolean enableIncrementalImport) {
