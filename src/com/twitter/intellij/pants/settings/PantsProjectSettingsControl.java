@@ -112,6 +112,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       getInitialSettings().getExternalProjectPath(),
       myLibsWithSourcesCheckBox.isSelected(),
       myEnableIncrementalImportCheckBox.isSelected(),
+      false,
       myUseIdeaProjectJdkCheckBox.isSelected()
     );
 
