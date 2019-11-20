@@ -192,7 +192,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               if (!PantsUtil.isPantsProject(myProject) && !PantsUtil.isSeedPantsProject(myProject)) {
                 return;
               }
-              PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, settings);
+              //PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, settings);
             }
           });
         }
