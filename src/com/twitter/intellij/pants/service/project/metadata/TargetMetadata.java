@@ -7,6 +7,7 @@ import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
+import com.intellij.serialization.PropertyMapping;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,6 +27,7 @@ public class TargetMetadata extends AbstractExternalEntityData {
   private Set<String> myTargetAddresses = Collections.emptySet();
   private Set<TargetAddressInfo> myTargetAddressInfoSet = Collections.emptySet();
 
+  @PropertyMapping({"systemId", "moduleName"})
   public TargetMetadata(ProjectSystemId systemId, @NotNull String moduleName) {
     super(systemId);
     myModuleName = moduleName;

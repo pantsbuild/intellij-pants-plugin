@@ -72,14 +72,14 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     );
 
 
-    actionManager.unregisterAction(PantsConstants.ACTION_MAKE_PROJECT_ID);
-    actionManager.unregisterAction(IdeActions.ACTION_MAKE_MODULE);
-    actionManager.unregisterAction(IdeActions.ACTION_COMPILE);
-    actionManager.unregisterAction(IdeActions.ACTION_COMPILE_PROJECT);
+    //actionManager.unregisterAction(PantsConstants.ACTION_MAKE_PROJECT_ID);
+    //actionManager.unregisterAction(IdeActions.ACTION_MAKE_MODULE);
+    //actionManager.unregisterAction(IdeActions.ACTION_COMPILE);
+    //actionManager.unregisterAction(IdeActions.ACTION_COMPILE_PROJECT);
 
-    actionManager.registerAction(PantsConstants.ACTION_MAKE_PROJECT_ID, pantsCompileAllTargetAction);
-    actionManager.registerAction(IdeActions.ACTION_MAKE_MODULE, pantsMakeModuleAction);
-    actionManager.registerAction(IdeActions.ACTION_COMPILE, pantsDisableCompileAction);
-    actionManager.registerAction(IdeActions.ACTION_COMPILE_PROJECT, pantsRebuildAction);
+    //actionManager.registerAction(PantsConstants.ACTION_MAKE_PROJECT_ID, pantsCompileAllTargetAction);
+    //actionManager.registerAction(IdeActions.ACTION_MAKE_MODULE, pantsMakeModuleAction);
+    //actionManager.registerAction(IdeActions.ACTION_COMPILE, pantsDisableCompileAction);
+    //actionManager.registerAction(IdeActions.ACTION_COMPILE_PROJECT, pantsRebuildAction);
   }
 }

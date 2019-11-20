@@ -24,9 +24,9 @@ public class PantsBuildProcessParametersProvider extends BuildProcessParametersP
   @NotNull
   @Override
   public List<String> getClassPath() {
-    if (PantsUtil.isPantsProject(myProject)) {
-      throw new RuntimeException(PantsConstants.EXTERNAL_BUILDER_ERROR);
-    }
+    //if (PantsUtil.isPantsProject(myProject)) {
+    //  throw new RuntimeException(PantsConstants.EXTERNAL_BUILDER_ERROR);
+    //}
     return Lists.newArrayList();
   }
 }

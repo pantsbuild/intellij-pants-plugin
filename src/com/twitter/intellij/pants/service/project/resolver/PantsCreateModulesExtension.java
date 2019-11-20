@@ -66,10 +66,10 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
     }
 
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
+      final String targetName = entry.getKey();
       if (targetInfoWithinLevel != null && !targetInfoWithinLevel.contains(entry.getValue())) {
         continue;
       }
-      final String targetName = entry.getKey();
       if (StringUtil.startsWith(targetName, ":scala-library")) {
         // we already have it in libs
         continue;
