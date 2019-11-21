@@ -19,6 +19,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testIntegration.TestIntegrationUtils;
+import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
@@ -77,6 +78,8 @@ public class PantsJUnitTestRunConfigurationProducer extends PantsTestRunConfigur
 
     final PsiClass psiClass = TestIntegrationUtils.findOuterClass(psiLocation);
     final PsiMethod psiMethod = PsiTreeUtil.getParentOfType(psiLocation, PsiMethod.class, false);
+    final Optional<String> rcIterate = IJRC.getIteratePantsRc(buildRoot.getPath());
+    rcIterate.map(scriptParameters::add);
 
     if (psiMethod != null) {
       sourceElement.set(psiMethod);
