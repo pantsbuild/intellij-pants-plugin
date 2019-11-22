@@ -72,11 +72,11 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   @Override
   protected void fillExtraControls(@NotNull PaintAwarePanel content, int indentLevel) {
 
-    myLibsWithSourcesCheckBox.setSelected(mySettings.isLibsWithSources());
+    myLibsWithSourcesCheckBox.setSelected(mySettings.libsWithSources);
     myEnableIncrementalImportCheckBox.setSelected(mySettings.isEnableIncrementalImport());
-    myUseIdeaProjectJdkCheckBox.setSelected(mySettings.isUseIdeaProjectJdk());
+    myUseIdeaProjectJdkCheckBox.setSelected(mySettings.useIdeaProjectJdk);
     myImportSourceDepsAsJarsCheckBox.setSelected(mySettings.isImportSourceDepsAsJars());
-    myUseIntellijCompilerCheckBox.setSelected(mySettings.isUseIntellijCompiler());
+    myUseIntellijCompilerCheckBox.setSelected(mySettings.useIntellijCompiler);
 
     mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
 
@@ -214,12 +214,12 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
-    settings.setLibsWithSources(myLibsWithSourcesCheckBox.isSelected());
-    settings.setEnableIncrementalImport(myEnableIncrementalImportCheckBox.isSelected());
-    settings.setUseIdeaProjectJdk(myUseIdeaProjectJdkCheckBox.isSelected());
+    settings.libsWithSources  = myLibsWithSourcesCheckBox.isSelected();
+    settings.enableIncrementalImport = myEnableIncrementalImportCheckBox.isSelected();
+    settings.useIdeaProjectJdk = myUseIdeaProjectJdkCheckBox.isSelected();
     settings.setTargetSpecs(getSelectedTargetSpecsFromBoxes());
-    settings.setImportSourceDepsAsJars(myImportSourceDepsAsJarsCheckBox.isSelected());
-    settings.setUseIntellijCompiler(myUseIntellijCompilerCheckBox.isSelected());
+    settings.importSourceDepsAsJars = myImportSourceDepsAsJarsCheckBox.isSelected();
+    settings.useIntellijCompiler = myUseIntellijCompilerCheckBox.isSelected();
   }
 
   @Override
