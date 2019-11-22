@@ -14,9 +14,9 @@ import java.util.Objects;
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
   private boolean myLibsWithSources;
-  private boolean myEnableExportDepAsJar;
   private boolean myEnableIncrementalImport;
   private boolean myUseIdeaProjectJdk;
+  private boolean myImportSourceDepsAsJars;
 
   /**
    * @param targetSpecs               targets explicted listed from `pants idea-plugin` goal.
@@ -24,21 +24,22 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
    * @param libsWithSources           whether to import sources and docs when resolving for jars.
    * @param isEnableIncrementalImport whether to enabled incremental import.
    * @param isUseIdeaProjectJdk       whether use IDEA project JDK to compile Pants project.
+   * @param isImportSourceDepsAsJars  whether to import source dependencies as frozen jars.
    */
   public PantsProjectSettings(
     List<String> targetSpecs,
     String externalProjectPath,
     boolean libsWithSources,
     boolean isEnableIncrementalImport,
-    boolean isEnableExportDepAsJar,
-    boolean isUseIdeaProjectJdk
+    boolean isUseIdeaProjectJdk,
+    boolean isImportSourceDepsAsJars
   ) {
     setExternalProjectPath(externalProjectPath);
     myTargetSpecs = targetSpecs;
     myLibsWithSources = libsWithSources;
     myEnableIncrementalImport = isEnableIncrementalImport;
-    myEnableExportDepAsJar = isEnableExportDepAsJar;
     myUseIdeaProjectJdk = isUseIdeaProjectJdk;
+    myImportSourceDepsAsJars = isImportSourceDepsAsJars;
   }
 
   public PantsProjectSettings() {
@@ -57,7 +58,8 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     return Objects.equals(myLibsWithSources, other.myLibsWithSources)
            && Objects.equals(myEnableIncrementalImport, other.myEnableIncrementalImport)
            && Objects.equals(myTargetSpecs, other.myTargetSpecs)
-           && Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk);
+           && Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk)
+           && Objects.equals(myImportSourceDepsAsJars, other.myImportSourceDepsAsJars);
   }
 
   @NotNull
@@ -76,6 +78,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
       ((PantsProjectSettings) receiver).setTargetSpecs(getTargetSpecs());
       ((PantsProjectSettings) receiver).setEnableIncrementalImport(isEnableIncrementalImport());
       ((PantsProjectSettings) receiver).setUseIdeaProjectJdk(isUseIdeaProjectJdk());
+      ((PantsProjectSettings) receiver).setImportSourceDepsAsJars(isImportSourceDepsAsJars());
     }
   }
 
@@ -103,11 +106,6 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     return myEnableIncrementalImport;
   }
 
-  @Override
-  public boolean isExportDepAsJar() {
-    return myEnableExportDepAsJar;
-  }
-
   public void setEnableIncrementalImport(boolean enableIncrementalImport) {
     myEnableIncrementalImport = enableIncrementalImport;
   }
@@ -118,5 +116,13 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
 
   public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
     myUseIdeaProjectJdk = useIdeaProjectJdk;
+  }
+
+  public boolean isImportSourceDepsAsJars() {
+    return myImportSourceDepsAsJars;
+  }
+
+  public void setImportSourceDepsAsJars(boolean importSourceDepsAsJars) {
+    myImportSourceDepsAsJars = importSourceDepsAsJars;
   }
 }
