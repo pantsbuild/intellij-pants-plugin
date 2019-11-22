@@ -54,6 +54,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private JBCheckBox myEnableIncrementalImportCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
   private JBCheckBox myUseIdeaProjectJdkCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.jdk.enforcement"));
   private JBCheckBox myImportSourceDepsAsJarsCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.import.deps.as.jars"));
+  private JBCheckBox myUseIntellijCompilerCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.use.intellij.compiler"));
 
   @VisibleForTesting
   protected Set<String> errors = new HashSet<>();
@@ -75,6 +76,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myEnableIncrementalImportCheckBox.setSelected(mySettings.isEnableIncrementalImport());
     myUseIdeaProjectJdkCheckBox.setSelected(mySettings.isUseIdeaProjectJdk());
     myImportSourceDepsAsJarsCheckBox.setSelected(mySettings.isImportSourceDepsAsJars());
+    myUseIntellijCompilerCheckBox.setSelected(mySettings.isUseIntellijCompiler());
 
     mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
 
@@ -83,6 +85,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myEnableIncrementalImportCheckBox,
       myUseIdeaProjectJdkCheckBox,
       myImportSourceDepsAsJarsCheckBox,
+      myUseIntellijCompilerCheckBox,
       new JBLabel(PantsBundle.message("pants.settings.text.targets")),
       new JBScrollPane(myTargetSpecsBox)
     );
@@ -116,7 +119,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myLibsWithSourcesCheckBox.isSelected(),
       myEnableIncrementalImportCheckBox.isSelected(),
       myUseIdeaProjectJdkCheckBox.isSelected(),
-      myImportSourceDepsAsJarsCheckBox.isSelected()
+      myImportSourceDepsAsJarsCheckBox.isSelected(),
+      myUseIntellijCompilerCheckBox.isSelected()
     );
 
     return !newSettings.equals(getInitialSettings());
@@ -215,6 +219,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     settings.setUseIdeaProjectJdk(myUseIdeaProjectJdkCheckBox.isSelected());
     settings.setTargetSpecs(getSelectedTargetSpecsFromBoxes());
     settings.setImportSourceDepsAsJars(myImportSourceDepsAsJarsCheckBox.isSelected());
+    settings.setUseIntellijCompiler(myUseIntellijCompilerCheckBox.isSelected());
   }
 
   @Override
