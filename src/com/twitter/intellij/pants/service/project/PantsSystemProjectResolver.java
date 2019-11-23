@@ -100,17 +100,17 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       return;
     }
 
-    MessageBusConnection messageBusConnection = ideProject.getMessageBus().connect();
-    messageBusConnection.subscribe(
-      ProjectTopics.PROJECT_ROOTS,
-      new ModuleRootListener() {
-        @Override
-        public void rootsChanged(ModuleRootEvent event) {
-          // Initiate view switch only when project modules have been created.
-          new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
-        }
-      }
-    );
+    //MessageBusConnection messageBusConnection = ideProject.getMessageBus().connect();
+    //messageBusConnection.subscribe(
+    //  ProjectTopics.PROJECT_ROOTS,
+    //  new ModuleRootListener() {
+    //    @Override
+    //    public void rootsChanged(ModuleRootEvent event) {
+    //      // Initiate view switch only when project modules have been created.
+    //      new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
+    //    }
+    //  }
+    //);
   }
 
   /**
