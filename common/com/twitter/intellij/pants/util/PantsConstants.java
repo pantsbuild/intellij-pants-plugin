@@ -39,6 +39,7 @@ public class PantsConstants {
   public static final String PANTS_OPTION_PANTS_WORKDIR = "pants_workdir";
   public static final String PANTS_OPTION_LINKED_PROJECT_PATH = "pants.linked.project.path";
   public static final String PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION = "test.junit.strict_jvm_version";
+  public static final String PANTS_OPTION_TEST_JUNIT_OPTIONS = "jvm.test.junit.options";
   public static final String PANTS_OPTION_ASYNC_CLEAN_ALL = "clean-all.async";
 
 

@@ -6,7 +6,9 @@ package com.twitter.intellij.pants.model;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import junit.framework.TestCase;
+import org.junit.Assert;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 
@@ -58,5 +60,21 @@ public class PantsOptionsTest extends TestCase {
     catch (PantsException ignored) {
 
     }
+  }
+
+  public static final String PANTS_OPTION_TEST_JUNIT_OPTIONS = "jvm.test.junit.options";
+
+  public void testEmptyListSetting() {
+    PantsOptions options = new PantsOptions("jvm.test.junit.options = [] (from HARDCODED)");
+    Optional<String[]> jvmOptions = options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS);
+    assertTrue(jvmOptions.isPresent());
+    assertEquals(0, jvmOptions.get().length);
+  }
+
+  public void testNonEmptyListSetting() {
+    PantsOptions options = new PantsOptions("jvm.test.junit.options = [\"-Doption1=1\",\"-Doption2=2\"] (from HARDCODED)");
+    Optional<String[]> jvmOptions = options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS);
+    assertTrue(jvmOptions.isPresent());
+    Assert.assertArrayEquals(new String[]{"-Doption1=1", "-Doption2=2"}, jvmOptions.get());
   }
 }
