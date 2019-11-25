@@ -13,5 +13,5 @@ public interface PantsExecutionOptions {
   List<String> getTargetSpecs();
 
   boolean isEnableIncrementalImport();
-  boolean isExportDepAsJar();
+  boolean isImportSourceDepsAsJars();
 }

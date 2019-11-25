@@ -213,12 +213,12 @@ public class PantsCompileOptionsExecutor {
     }
     commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
     commandLine.addParameter("--no-quiet");
-    //if (getOptions().isExportDepAsJar()) {
+    if (getOptions().isImportSourceDepsAsJars()) {
       commandLine.addParameter("export-dep-as-jar");
-    //}
-    //else {
-    //  commandLine.addParameter("export");
-    //}
+    }
+    else {
+      commandLine.addParameter("export");
+    }
     commandLine.addParameter("--output-file=" + outputFile.getPath());
     commandLine.addParameter("--formatted"); // json outputs in a compact format
     if (myResolveSourcesAndDocsForJars) {
@@ -278,8 +278,8 @@ public class PantsCompileOptionsExecutor {
     }
 
     @Override
-    public boolean isExportDepAsJar() {
-      return myExecutionOptions.isExportDepAsJar();
+    public boolean isImportSourceDepsAsJars() {
+      return myExecutionOptions.isImportSourceDepsAsJars();
     }
   }
 }

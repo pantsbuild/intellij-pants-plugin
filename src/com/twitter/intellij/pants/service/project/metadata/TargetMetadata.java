@@ -27,7 +27,7 @@ public class TargetMetadata extends AbstractExternalEntityData {
   private Set<String> myTargetAddresses = Collections.emptySet();
   private Set<TargetAddressInfo> myTargetAddressInfoSet = Collections.emptySet();
 
-  @PropertyMapping({"systemId", "moduleName"})
+  @PropertyMapping({"owner" , "myModuleName"})
   public TargetMetadata(ProjectSystemId systemId, @NotNull String moduleName) {
     super(systemId);
     myModuleName = moduleName;

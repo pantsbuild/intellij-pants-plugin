@@ -14,9 +14,10 @@ import java.util.Objects;
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
   private boolean myLibsWithSources;
-  private boolean myEnableExportDepAsJar;
   private boolean myEnableIncrementalImport;
   private boolean myUseIdeaProjectJdk;
+  private boolean myImportSourceDepsAsJars;
+  private boolean myUseIntellijCompiler;
 
   /**
    * @param targetSpecs               targets explicted listed from `pants idea-plugin` goal.
@@ -24,21 +25,25 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
    * @param libsWithSources           whether to import sources and docs when resolving for jars.
    * @param isEnableIncrementalImport whether to enabled incremental import.
    * @param isUseIdeaProjectJdk       whether use IDEA project JDK to compile Pants project.
+   * @param isImportSourceDepsAsJars  whether to import source dependencies as frozen jars.
+   * @param isUseIntellijCompiler     whether to use the IntelliJ compiler to compile the project (as opposed to using pants).
    */
   public PantsProjectSettings(
     List<String> targetSpecs,
     String externalProjectPath,
     boolean libsWithSources,
     boolean isEnableIncrementalImport,
-    boolean isEnableExportDepAsJar,
-    boolean isUseIdeaProjectJdk
+    boolean isUseIdeaProjectJdk,
+    boolean isImportSourceDepsAsJars,
+    boolean isUseIntellijCompiler
   ) {
     setExternalProjectPath(externalProjectPath);
     myTargetSpecs = targetSpecs;
     myLibsWithSources = libsWithSources;
     myEnableIncrementalImport = isEnableIncrementalImport;
-    myEnableExportDepAsJar = isEnableExportDepAsJar;
     myUseIdeaProjectJdk = isUseIdeaProjectJdk;
+    myImportSourceDepsAsJars = isImportSourceDepsAsJars;
+    myUseIdeaProjectJdk = isUseIntellijCompiler;
   }
 
   public PantsProjectSettings() {
@@ -57,7 +62,9 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     return Objects.equals(myLibsWithSources, other.myLibsWithSources)
            && Objects.equals(myEnableIncrementalImport, other.myEnableIncrementalImport)
            && Objects.equals(myTargetSpecs, other.myTargetSpecs)
-           && Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk);
+           && Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk)
+           && Objects.equals(myImportSourceDepsAsJars, other.myImportSourceDepsAsJars)
+           && Objects.equals(myUseIntellijCompiler, other.myUseIntellijCompiler);
   }
 
   @NotNull
@@ -76,8 +83,11 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
       ((PantsProjectSettings) receiver).setTargetSpecs(getTargetSpecs());
       ((PantsProjectSettings) receiver).setEnableIncrementalImport(isEnableIncrementalImport());
       ((PantsProjectSettings) receiver).setUseIdeaProjectJdk(isUseIdeaProjectJdk());
+      ((PantsProjectSettings) receiver).setImportSourceDepsAsJars(isImportSourceDepsAsJars());
+      ((PantsProjectSettings) receiver).setUseIntellijCompiler(isUseIntellijCompiler());
     }
   }
+
 
   /**
    * Get the target specs used to launched `pants idea-plugin`.
@@ -103,11 +113,6 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     return myEnableIncrementalImport;
   }
 
-  @Override
-  public boolean isExportDepAsJar() {
-    return myEnableExportDepAsJar;
-  }
-
   public void setEnableIncrementalImport(boolean enableIncrementalImport) {
     myEnableIncrementalImport = enableIncrementalImport;
   }
@@ -118,5 +123,21 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
 
   public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
     myUseIdeaProjectJdk = useIdeaProjectJdk;
+  }
+
+  public boolean isImportSourceDepsAsJars() {
+    return myImportSourceDepsAsJars;
+  }
+
+  public void setImportSourceDepsAsJars(boolean importSourceDepsAsJars) {
+    myImportSourceDepsAsJars = importSourceDepsAsJars;
+  }
+
+  public boolean isUseIntellijCompiler() {
+    return myUseIntellijCompiler;
+  }
+
+  public void setUseIntellijCompiler(boolean useIntellijCompiler) {
+    myUseIntellijCompiler = useIntellijCompiler;
   }
 }
