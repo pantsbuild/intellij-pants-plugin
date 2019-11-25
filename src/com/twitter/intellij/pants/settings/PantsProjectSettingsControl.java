@@ -53,6 +53,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private JBCheckBox myLibsWithSourcesCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.sources.and.docs"));
   private JBCheckBox myEnableIncrementalImportCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
   private JBCheckBox myUseIdeaProjectJdkCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.jdk.enforcement"));
+  private JBCheckBox myImportSourceDepsAsJarsCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.import.deps.as.jars"));
+  private JBCheckBox myUseIntellijCompilerCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.use.intellij.compiler"));
 
   @VisibleForTesting
   protected Set<String> errors = new HashSet<>();
@@ -73,6 +75,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myLibsWithSourcesCheckBox.setSelected(mySettings.isLibsWithSources());
     myEnableIncrementalImportCheckBox.setSelected(mySettings.isEnableIncrementalImport());
     myUseIdeaProjectJdkCheckBox.setSelected(mySettings.isUseIdeaProjectJdk());
+    myImportSourceDepsAsJarsCheckBox.setSelected(mySettings.isImportSourceDepsAsJars());
+    myUseIntellijCompilerCheckBox.setSelected(mySettings.isUseIntellijCompiler());
 
     mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
 
@@ -80,6 +84,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myLibsWithSourcesCheckBox,
       myEnableIncrementalImportCheckBox,
       myUseIdeaProjectJdkCheckBox,
+      myImportSourceDepsAsJarsCheckBox,
+      myUseIntellijCompilerCheckBox,
       new JBLabel(PantsBundle.message("pants.settings.text.targets")),
       new JBScrollPane(myTargetSpecsBox)
     );
@@ -112,7 +118,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       getInitialSettings().getExternalProjectPath(),
       myLibsWithSourcesCheckBox.isSelected(),
       myEnableIncrementalImportCheckBox.isSelected(),
-      myUseIdeaProjectJdkCheckBox.isSelected()
+      myUseIdeaProjectJdkCheckBox.isSelected(),
+      myImportSourceDepsAsJarsCheckBox.isSelected(),
+      myUseIntellijCompilerCheckBox.isSelected()
     );
 
     return !newSettings.equals(getInitialSettings());
@@ -210,6 +218,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     settings.setEnableIncrementalImport(myEnableIncrementalImportCheckBox.isSelected());
     settings.setUseIdeaProjectJdk(myUseIdeaProjectJdkCheckBox.isSelected());
     settings.setTargetSpecs(getSelectedTargetSpecsFromBoxes());
+    settings.setImportSourceDepsAsJars(myImportSourceDepsAsJarsCheckBox.isSelected());
+    settings.setUseIntellijCompiler(myUseIntellijCompilerCheckBox.isSelected());
   }
 
   @Override

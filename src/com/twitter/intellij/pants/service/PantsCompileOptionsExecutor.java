@@ -212,15 +212,19 @@ public class PantsCompileOptionsExecutor {
       }
     }
     commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
-
     commandLine.addParameter("--no-quiet");
-    commandLine.addParameter("export");
+    if (getOptions().isImportSourceDepsAsJars()) {
+      commandLine.addParameter("export-dep-as-jar");
+    }
+    else {
+      commandLine.addParameter("export");
+    }
+    commandLine.addParameter("--output-file=" + outputFile.getPath());
     commandLine.addParameter("--formatted"); // json outputs in a compact format
     if (myResolveSourcesAndDocsForJars) {
       commandLine.addParameter("--export-libraries-sources");
       commandLine.addParameter("--export-libraries-javadocs");
     }
-    commandLine.addParameter("--export-output-file=" + outputFile.getPath());
     return commandLine;
   }
 
@@ -271,6 +275,11 @@ public class PantsCompileOptionsExecutor {
 
     public boolean isEnableIncrementalImport() {
       return myExecutionOptions.isEnableIncrementalImport();
+    }
+
+    @Override
+    public boolean isImportSourceDepsAsJars() {
+      return myExecutionOptions.isImportSourceDepsAsJars();
     }
   }
 }
