@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.model;
 
+import com.google.gson.Gson;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessOutput;
@@ -43,6 +44,12 @@ public class PantsOptions {
     return Optional.ofNullable(options.get(optionName));
   }
 
+  public Optional<String[]> getList(String optionName) {
+    Optional<String> option = get(optionName);
+    Gson gson = new Gson();
+    return option.map(o ->  gson.fromJson(o, String[].class));
+  }
+  
   public static Optional<PantsOptions> getPantsOptions(final Project myProject) {
     return PantsUtil.findPantsExecutable(myProject).map(file -> getPantsOptions(file.getPath()));
   }
