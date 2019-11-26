@@ -19,7 +19,6 @@ import java.util.ArrayList;
 
 import static com.twitter.intellij.pants.file.FileChangeTracker.HREF_REFRESH;
 
-
 public final class ProjectRefreshListener extends NotificationListener.Adapter {
   public static final String NOTIFICATION_TITLE = PantsBundle.message("pants.project.build.files.changed");
   private static final String NOTIFICATION_BUTTON_TITLE = "Refresh Pants Project";

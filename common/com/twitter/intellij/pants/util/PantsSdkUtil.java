@@ -3,14 +3,12 @@
 
 package com.twitter.intellij.pants.util;
 
-import com.google.common.collect.Lists;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -20,7 +18,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JdkVersionDetector;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -50,7 +47,6 @@ public final class PantsSdkUtil {
       .findFirst();
 
     if (existingSdk.isPresent()) {
-      updateStaleSdk(existingSdk.get(), pantsExecutable);
       return existingSdk;
     }
 
@@ -59,21 +55,6 @@ public final class PantsSdkUtil {
     // before it can be used.
     pantsJdk.ifPresent(jdk -> registerJdk(jdk, parentDisposable));
     return pantsJdk;
-  }
-
-  private static void updateStaleSdk(Sdk originalSdk, String pantsExecutable) {
-    if (isStale(originalSdk)) {
-      createPantsJdk(pantsExecutable)
-        .ifPresent(sdk -> updateJdk(originalSdk, sdk));
-    }
-  }
-
-  private static boolean isStale(Sdk sdk) {
-    List<VirtualFile> runtime = Lists.newArrayList(sdk.getRootProvider().getFiles(OrderRootType.CLASSES));
-    if (runtime.isEmpty()) {
-      return true;
-    }
-    return runtime.stream().anyMatch(file -> !file.exists());
   }
 
   private static void updateJdk(Sdk original, Sdk modified) {
@@ -94,22 +75,23 @@ public final class PantsSdkUtil {
       });
   }
 
-  public static void updateJdk(Project project, Sdk originalSdk) {
+  public static void updateJdk(Project project, Sdk originalSdk, Disposable disposable) {
     String pantsExecutable = PantsUtil.findPantsExecutable(project)
       .map(VirtualFile::getPath)
       .orElse(null);
+
     if (pantsExecutable == null) {
       return;
     }
 
-    if (originalSdk.getName().endsWith(pantsExecutable)) {
+    if (originalSdk != null && originalSdk.getName().endsWith(pantsExecutable)) {
       PantsSdkUtil.createPantsJdk(pantsExecutable)
         .ifPresent(newSdk -> PantsSdkUtil.updateJdk(originalSdk, newSdk));
     }
     else {
       ApplicationManager.getApplication().runWriteAction(() -> {
         ProjectRootManagerEx rootManager = ProjectRootManagerEx.getInstanceEx(project);
-        PantsSdkUtil.getDefaultJavaSdk(pantsExecutable, null)
+        PantsSdkUtil.getDefaultJavaSdk(pantsExecutable, disposable)
           .ifPresent(rootManager::setProjectSdk);
       });
     }

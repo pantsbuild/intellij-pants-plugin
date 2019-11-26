@@ -115,15 +115,11 @@ public class FileChangeTracker {
     if (changeType == ChangeType.BUILD) {
       ProjectRefreshListener.notify(project);
     }
-    else if (changeType == ChangeType.SDK) {
-      ModifiedSdkNotificationProvider.notifySdkModified(project);
-    }
   }
 
   enum ChangeType {
     UNRELATED,
     BUILD,
-    SDK,
     OTHER;
   }
 
@@ -138,18 +134,6 @@ public class FileChangeTracker {
       }
 
       return ChangeType.OTHER;
-    }
-
-    // detect changes made to the project sdk
-    Sdk sdk = rootManager.getProjectSdk();
-    if (sdk != null) {
-      String sdkHome = StringUtils.defaultString(sdk.getHomePath());
-      String filePath = StringUtils.appendIfMissing(file.getPath(), File.separator);
-      String sdkPath = StringUtils.appendIfMissing(sdkHome, File.separator);
-
-      if (filePath.startsWith(sdkPath)) {
-        return ChangeType.SDK;
-      }
     }
 
     return ChangeType.UNRELATED;

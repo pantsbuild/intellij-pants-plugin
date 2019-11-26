@@ -50,6 +50,10 @@
               class="com.twitter.intellij.pants.ui.PantsProjectRefreshAction"
               text="Refresh Pants project">
       </action>
+      <action id="com.twitter.intellij.pants.ui.PantsSdkRefreshAction"
+              class="com.twitter.intellij.pants.ui.PantsSdkRefreshAction"
+              text="Refresh Pants Project SDK">
+      </action>
       <action id="com.twitter.intellij.pants.ui.PantsOptionsInvalidationAction"
               class="com.twitter.intellij.pants.ui.PantsOptionsInvalidationAction"
               text="Invalidate Pants plugin caches">

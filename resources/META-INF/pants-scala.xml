@@ -5,7 +5,6 @@
   <extensions defaultExtensionNs="com.intellij">
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService" order="last"/>
     <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantsScalaHighlightVisitor"/>
-    <editorNotificationProvider implementation="com.twitter.intellij.pants.file.ModifiedSdkNotificationProvider"/>
   </extensions>
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
     <projectResolver implementation="com.twitter.intellij.pants.service.scala.ScalaSdkResolver"/>

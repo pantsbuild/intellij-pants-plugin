@@ -80,27 +80,6 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     assertEquals(twoEntriesSameSdk, getSameJdks(sdkA));
   }
 
-  public void testRecreatesJdkIfRuntimeIsMissing() throws IOException {
-    final File executable = PantsUtil.findPantsExecutable(getProjectFolder()).get();
-
-    Sdk staleJdk = createStaleJdk(executable);
-    assertEmpty(classesOf(staleJdk));
-
-    Sdk recreatedJdk = getDefaultJavaSdk(executable.getPath()).get();
-    assertSame(staleJdk, recreatedJdk);
-    assertNotEmpty(classesOf(staleJdk));
-  }
-
-  private Sdk createStaleJdk(File pantsExecutable) throws IOException {
-    String name = String.format(PantsSdkUtil.JDK_NAME_FORMAT, "1.8", pantsExecutable.getPath());
-    Path jdkHome = Files.createTempDirectory("stale-jdk");
-    return PantsSdkUtil.createAndRegisterJdk(name, jdkHome.toString(), getTestRootDisposable());
-  }
-
-  private Set<VirtualFile> classesOf(Sdk sdk) {
-    return Sets.newHashSet(sdk.getRootProvider().getFiles(OrderRootType.CLASSES));
-  }
-
   public void testisBUILDFilePath() {
     assertFalse("pants.ini file should not be interpreted as a BUILD file",
                 PantsUtil.isBUILDFilePath(pantsIniFilePath));
