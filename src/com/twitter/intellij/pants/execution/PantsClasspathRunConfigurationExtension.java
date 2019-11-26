@@ -19,6 +19,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.util.InvalidDataException;
@@ -30,6 +31,7 @@ import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
+import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jdom.Element;
@@ -63,11 +65,16 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     JavaParameters params,
     RunnerSettings runnerSettings
   ) throws ExecutionException {
-    //final Module module = findPantsModule(configuration);
-    //if (module == null) {
-    //  return;
-    //}
-    //
+    final Module module = findPantsModule(configuration);
+    if (module == null) {
+      return;
+    }
+
+    //module.getProject()
+
+    final PantsSettings pantsSettings = (PantsSettings) ExternalSystemApiUtil.getSettings(configuration.getProject(), PantsConstants.SYSTEM_ID);
+
+
     //Set<String> pathsAllowed = calculatePathsAllowed(params);
     //
     //final PathsList classpath = params.getClassPath();

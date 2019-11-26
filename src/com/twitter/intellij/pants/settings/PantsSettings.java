@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.settings;
 
+import com.google.common.collect.Sets;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
@@ -12,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.intellij.util.xmlb.annotations.AbstractCollection;
+import com.intellij.util.xmlb.annotations.XCollection;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,6 +29,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
   protected boolean myUseIdeaProjectJdk = false;
   protected boolean myUsePantsMakeBeforeRun = true;
+  public boolean myUseIntellijCompiler = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
@@ -51,7 +54,8 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     PantsSettings other = (PantsSettings) obj;
     return Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk)
            && Objects.equals(myUsePantsMakeBeforeRun, other.myUsePantsMakeBeforeRun)
-           && Objects.equals(myResolverVersion, other.myResolverVersion);
+           && Objects.equals(myResolverVersion, other.myResolverVersion)
+           && Objects.equals(myUseIntellijCompiler, other.myUseIntellijCompiler);
   }
 
   public static PantsSettings copy(PantsSettings pantsSettings) {
@@ -115,6 +119,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     final MyState state = new MyState();
     state.setResolverVersion(getResolverVersion());
     state.setUseIdeaProjectJdk(isUseIdeaProjectJdk());
+    state.myUseIntellijCompiler = myUseIntellijCompiler;
     fillState(state);
     return state;
   }
@@ -124,15 +129,18 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     super.loadState(state);
     setResolverVersion(state.getResolverVersion());
     setUseIdeaProjectJdk(state.isUseIdeaProjectJdk());
+    myUseIntellijCompiler = state.myUseIntellijCompiler;
   }
 
   public static class MyState implements State<PantsProjectSettings> {
-    Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
+    Set<PantsProjectSettings> myLinkedExternalProjectsSettings = Sets.newTreeSet();
 
     boolean myUseIdeaProjectJdk = false;
+    public boolean myUseIntellijCompiler = false;
     int myResolverVersion = 0;
 
-    @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
+    //@AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
+    @XCollection(elementTypes = {PantsProjectSettings.class})
     public Set<PantsProjectSettings> getLinkedExternalProjectsSettings() {
       return myLinkedExternalProjectsSettings;
     }

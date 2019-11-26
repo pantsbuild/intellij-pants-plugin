@@ -30,6 +30,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTask;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
+import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -123,9 +125,13 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
      * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.
      * Therefore we want to overwrite it with {@link PantsMakeBeforeRun}.
      */
-    BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
-    pantsMakeTask.setEnabled(true);
-    runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask), false);
+
+    final PantsSettings pantsSettings = (PantsSettings) ExternalSystemApiUtil.getSettings(project, PantsConstants.SYSTEM_ID);
+    if (!pantsSettings.myUseIntellijCompiler) {
+      BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
+      pantsMakeTask.setEnabled(true);
+      runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask));
+    }
   }
 
   public static void terminatePantsProcess(Project project) {

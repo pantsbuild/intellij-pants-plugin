@@ -13,11 +13,11 @@ import java.util.Objects;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
-  private boolean myLibsWithSources;
-  private boolean myEnableIncrementalImport;
-  private boolean myUseIdeaProjectJdk;
-  private boolean myImportSourceDepsAsJars;
-  private boolean myUseIntellijCompiler;
+  public boolean myLibsWithSources;
+  public boolean myEnableIncrementalImport;
+  public boolean myUseIdeaProjectJdk;
+  public boolean myImportSourceDepsAsJars;
+  public boolean myUseIntellijCompiler;
 
   /**
    * @param targetSpecs               targets explicted listed from `pants idea-plugin` goal.
