@@ -15,6 +15,7 @@ import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOp
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.impl.RunManagerImpl;
+import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
@@ -105,6 +106,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       if (buildRoot.isPresent()) {
         ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
       }
+
+      if(runConfiguration instanceof JUnitConfiguration) {
+        Optional<String[]> os = PantsOptions.getPantsOptions(project)
+          .flatMap(options -> options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS));
+        String optionsString = String.join(" ", os.orElse(new String[]{}));
+        ((JUnitConfiguration)runConfiguration).setVMParameters(optionsString);
+      }
+
     }
   }
 

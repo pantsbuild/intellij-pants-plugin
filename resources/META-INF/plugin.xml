@@ -21,6 +21,7 @@
   <!--Add gradle as a dep because of Pants runner requires it.-->
   <depends>com.intellij.gradle</depends>
 
+  <depends optional="true" config-file="pants-junit.xml">JUnit</depends>
   <depends optional="true" config-file="pants-scala.xml">org.intellij.scala</depends>
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
@@ -33,10 +34,6 @@
   </application-components>
 
   <project-components>
-    <component>
-      <interface-class>com.twitter.intellij.pants.components.PantsProjectComponent</interface-class>
-      <implementation-class>com.twitter.intellij.pants.components.impl.PantsProjectComponentImpl</implementation-class>
-    </component>
     <component>
       <interface-class>com.twitter.intellij.pants.components.PantsProjectCache</interface-class>
       <implementation-class>com.twitter.intellij.pants.components.impl.PantsProjectCacheImpl</implementation-class>

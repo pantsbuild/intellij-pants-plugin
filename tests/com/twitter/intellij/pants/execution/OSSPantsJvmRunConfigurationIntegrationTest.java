@@ -9,6 +9,8 @@ import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.junit.JUnitConfiguration;
+import com.intellij.execution.junit.TestInClassConfigurationProducer;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
@@ -104,6 +106,8 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
       "--test-junit-test=" + classReference
     );
     assertEquals(expectedFinalRunCommandlineParameters, finalRunCommandline.getParametersList().getParameters());
+
+
   }
 
   @NotNull
@@ -122,6 +126,19 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     );
     assertNotNull(commandLine);
     return commandLine;
+  }
+
+  public void testJunitMethodRunConfiguration() throws Throwable {
+    doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
+
+    String classReference = "org.pantsbuild.testproject.testjvms.TestSix";
+    PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
+    ConfigurationContext context = createContext(testClass, new MapDataContext());
+    ConfigurationFromContext runConfiguration = getJunitConfigurationFromContext(context);
+    PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, runConfiguration.getConfigurationSettings());
+    JUnitConfiguration jconf = (JUnitConfiguration) runConfiguration.getConfigurationSettings().getConfiguration();
+    assertEquals("-Djava.awt.headless=true -Xmx1g", jconf.getVMParameters());
+
   }
 
   public void testMethodRunConfiguration() throws Throwable {
@@ -167,16 +184,28 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     return (ExternalSystemRunConfiguration) myPantsConfigurationFromContext.getConfiguration();
   }
 
-  private ConfigurationFromContext getPantsJunitConfigurationFromContext(ConfigurationContext context) {
+  /**
+   *  Find configurationProducer of type `producerType` among all run configuration producers available for the project
+   *  and createConfiguration using that producer.
+   */
+  private<T> ConfigurationFromContext getConfigurationFromContext(ConfigurationContext context, Class<T> producerType) {
     assertNotNull(context);
     List<RunConfigurationProducer<?>> producers = RunConfigurationProducer.getProducers(myProject);
     assertTrue(producers.size() > 0);
     for (RunConfigurationProducer producer : producers) {
-      if (producer instanceof PantsJUnitTestRunConfigurationProducer) {
+      if (producerType.isInstance(producer)) {
         return producer.createConfigurationFromContext(context);
       }
     }
     return null;
+  }
+
+  private ConfigurationFromContext getJunitConfigurationFromContext(ConfigurationContext context) {
+    return getConfigurationFromContext(context, TestInClassConfigurationProducer.class);
+  }
+
+  private ConfigurationFromContext getPantsJunitConfigurationFromContext(ConfigurationContext context) {
+    return getConfigurationFromContext(context, PantsJUnitTestRunConfigurationProducer.class);
   }
 
   private ConfigurationContext createContext(@NotNull PsiElement psiClass, @NotNull MapDataContext dataContext) {
