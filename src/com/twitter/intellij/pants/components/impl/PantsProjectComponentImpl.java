@@ -137,7 +137,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
             PropertiesComponent.getInstance(myProject).getValue("incremental_import") != null;
 
           final boolean enableExportDepAsJar =
-            PropertiesComponent.getInstance(myProject).getValue("dep_as_jar") != null;
+            Boolean.parseBoolean(Optional.ofNullable(PropertiesComponent.getInstance(myProject).getValue("dep_as_jar")).orElse("false"));
 
           /**
            * Generate the import spec for the next refresh.
@@ -148,7 +148,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           final boolean useIntellijCompiler = false;
           final PantsProjectSettings pantsProjectSettings =
             new PantsProjectSettings(
-              targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, enableExportDepAsJar, useIdeaProjectJdk, useIntellijCompiler);
+              targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk, enableExportDepAsJar, useIntellijCompiler);
 
           /**
            * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
