@@ -91,10 +91,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
 
     if(runConfiguration instanceof JUnitConfiguration) {
-      Optional<String[]> os = PantsOptions.getPantsOptions(project)
-        .flatMap(options -> options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS));
-      String optionsString = String.join(" ", os.orElse(new String[]{}));
-      ((JUnitConfiguration)runConfiguration).setVMParameters(optionsString);
+      setVMParameters(project, (JUnitConfiguration) runConfiguration);
     }
 
     /**
@@ -128,6 +125,13 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
     pantsMakeTask.setEnabled(true);
     runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask));
+  }
+
+  private static void setVMParameters(@NotNull Project project, JUnitConfiguration runConfiguration) {
+    Optional<String[]> os = PantsOptions.getPantsOptions(project)
+      .flatMap(options -> options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS));
+    String optionsString = String.join(" ", os.orElse(new String[]{}));
+    runConfiguration.setVMParameters(optionsString);
   }
 
   public static void terminatePantsProcess(Project project) {
