@@ -126,12 +126,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
      * Therefore we want to overwrite it with {@link PantsMakeBeforeRun}.
      */
 
-    final PantsSettings pantsSettings = (PantsSettings) ExternalSystemApiUtil.getSettings(project, PantsConstants.SYSTEM_ID);
-    if (!pantsSettings.myUseIntellijCompiler) {
-      BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
-      pantsMakeTask.setEnabled(true);
-      runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask));
-    }
+    //final PantsSettings pantsSettings = (PantsSettings) ExternalSystemApiUtil.getSettings(project, PantsConstants.SYSTEM_ID);
+    //if (!pantsSettings.myUseIntellijCompiler) {
+    //  BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
+    //  pantsMakeTask.setEnabled(true);
+    //  runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask));
+    //}
   }
 
   public static void terminatePantsProcess(Project project) {

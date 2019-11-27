@@ -4,12 +4,14 @@
 package com.twitter.intellij.pants.service.project.modifier;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.io.FileUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
-import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.ContentRoot;
+import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.apache.commons.compress.utils.Sets;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -37,7 +39,46 @@ public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtens
     if (folderContainsOnlyRoots(new File(packageRoot), sourceRoots)) {
       return Collections.singleton(new ContentRoot(packageRoot, ""));
     }
-    return roots;
+    Set<File> files = rootDirs(sourceRoots);
+    return files.stream().map(s -> new ContentRoot(s.getPath(), "")).collect(Collectors.toSet());
+  }
+
+  private Set<File> rootDirs( Set<File> candidates) {
+    Set<File> results = Sets.newHashSet();
+    results.addAll(candidates);
+
+    // TODO(yic): the algorithm is n^2, but typically a target would not have more than 5 content roots, and most of the time it only has 1.
+    // Like bubble sort, n^2 is not always bad.
+    for (File x: candidates) {
+      for (File y: candidates) {
+        if (FileUtil.filesEqual(x, y)) {
+          continue;
+        }
+        if (isYSubDirectoryOfX(x, y)) {
+          results.remove(y);
+        }
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Checks, whether the child directory is a subdirectory of the base
+   * directory.
+   *
+   * @param base the base directory.
+   * @param child the suspected child directory.
+   * @return true, if the child is a subdirectory of the base directory.
+   */
+  public boolean isYSubDirectoryOfX(File base, File child){
+    File parentFile = child;
+    while (parentFile != null) {
+      if (FileUtil.filesEqual(base, parentFile)) {
+        return true;
+      }
+      parentFile = parentFile.getParentFile();
+    }
+    return false;
   }
 
   private boolean folderContainsOnlyRoots(@NotNull File root, Set<File> foldersWithSources) {
