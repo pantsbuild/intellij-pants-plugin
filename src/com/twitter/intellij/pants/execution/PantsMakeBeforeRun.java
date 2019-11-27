@@ -89,6 +89,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   public static void setRunConfigurationWorkingDirectory(@NotNull RunConfiguration runConfiguration) {
     Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(runConfiguration.getProject());
 
+
+    if(runConfiguration instanceof JUnitConfiguration) {
+      Optional<String[]> os = PantsOptions.getPantsOptions(project)
+        .flatMap(options -> options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS));
+      String optionsString = String.join(" ", os.orElse(new String[]{}));
+      ((JUnitConfiguration)runConfiguration).setVMParameters(optionsString);
+    }
+
     /**
      /**
      * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
@@ -106,14 +114,6 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       if (buildRoot.isPresent()) {
         ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
       }
-
-      if(runConfiguration instanceof JUnitConfiguration) {
-        Optional<String[]> os = PantsOptions.getPantsOptions(project)
-          .flatMap(options -> options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS));
-        String optionsString = String.join(" ", os.orElse(new String[]{}));
-        ((JUnitConfiguration)runConfiguration).setVMParameters(optionsString);
-      }
-
     }
   }
 
