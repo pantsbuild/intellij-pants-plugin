@@ -134,7 +134,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
       Optional<String[]> os = PantsOptions.getPantsOptions(project)
         .flatMap(options -> options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS));
-      String optionsString = String.join("", os.orElse(new String[]{}));
+      String optionsString = String.join(" ", os.orElse(new String[]{}));
       runConfiguration.setVMParameters(optionsString);
     }, "Getting Pants options ...", false, project);
   }
