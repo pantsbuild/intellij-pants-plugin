@@ -215,6 +215,9 @@ public class PantsCompileOptionsExecutor {
     commandLine.addParameter("--no-quiet");
     if (getOptions().isImportSourceDepsAsJars()) {
       commandLine.addParameter("export-dep-as-jar");
+      if (myResolveSourcesAndDocsForJars) {
+        commandLine.addParameter("--sources");
+      }
     }
     else {
       commandLine.addParameter("export");
