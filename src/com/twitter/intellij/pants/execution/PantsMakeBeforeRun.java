@@ -41,6 +41,7 @@ import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
+import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.ui.PantsConsoleManager;
@@ -252,6 +253,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         return PantsExecuteTaskResult.emptyFailure();
       }
     }
+
+    /* Add `.ic.iterate.rc` file */
+    final Optional<String> rcIterate = IJRC.getIteratePantsRc(commandLine.getWorkDirectory().getPath());
+    rcIterate.ifPresent(commandLine::addParameter);
 
     /* Goals and targets section. */
     commandLine.addParameters(tasks);

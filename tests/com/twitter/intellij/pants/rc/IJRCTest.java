@@ -12,28 +12,28 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class IJRCTest extends UsefulTestCase {
-  private File temp;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    temp = new File(getHomePath(), IJRC.IMPORT_RC_FILENAME);
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
+  public void testInvalidPath() {
+    File temp = new File(getHomePath(), IJRC.IMPORT_RC_FILENAME);
+    assertFalse(IJRC.getImportPantsRc("/invalid/").isPresent());
     temp.delete();
   }
 
-  public void testInvalidPath() {
-    assertFalse(IJRC.getImportPantsRc("/invalid/").isPresent());
-  }
-
   public void testRcPickup() throws IOException {
+    File temp = new File(getHomePath(), IJRC.IMPORT_RC_FILENAME);
     FileUtil.writeToFile(temp, "123");
     Optional<String> rc = IJRC.getImportPantsRc(temp.getParent());
     assertTrue(rc.isPresent());
     assertEquals(String.format("--pantsrc-files=%s", temp.getPath()), rc.get());
+    temp.delete();
+  }
+
+  public void testIterateRcPickup() throws IOException {
+    File temp = new File(getHomePath(), IJRC.ITERATE_RC_FILENAME);
+    FileUtil.writeToFile(temp, "123");
+    Optional<String> rc = IJRC.getIteratePantsRc(temp.getParent());
+    assertTrue(rc.isPresent());
+    assertEquals(String.format("--pantsrc-files=%s", temp.getPath()), rc.get());
+    temp.delete();
   }
 }

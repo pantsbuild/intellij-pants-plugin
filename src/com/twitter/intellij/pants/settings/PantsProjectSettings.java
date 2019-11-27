@@ -88,6 +88,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     }
   }
 
+
   /**
    * Get the target specs used to launched `pants idea-plugin`.
    */
@@ -108,5 +109,21 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   @Override
   public boolean isImportSourceDepsAsJars() {
     return importSourceDepsAsJars;
+  }
+
+  public boolean isImportSourceDepsAsJars() {
+    return myImportSourceDepsAsJars;
+  }
+
+  public void setImportSourceDepsAsJars(boolean importSourceDepsAsJars) {
+    myImportSourceDepsAsJars = importSourceDepsAsJars;
+  }
+
+  public boolean isUseIntellijCompiler() {
+    return myUseIntellijCompiler;
+  }
+
+  public void setUseIntellijCompiler(boolean useIntellijCompiler) {
+    myUseIntellijCompiler = useIntellijCompiler;
   }
 }
