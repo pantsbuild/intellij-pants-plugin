@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Pants" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" singleton="true">
     <module name="intellij-pants-plugin" />
-    <option name="VM_PARAMETERS" value="-Xmx3096m -Xms256m -ea -Didea.is.internal=true -Dpants.metrics.enable=true -Dvcs.log.index.git=false" />
+    <option name="VM_PARAMETERS" value="-Xmx4096m -Xms256m -ea -Didea.is.internal=true -Dpants.metrics.enable=true -Dvcs.log.index.git=false" />
     <option name="PROGRAM_PARAMETERS" value="" />
     <log_file alias="IDEA LOG" path="$USER_HOME$/Library/Caches/IdeaIC2016.1/plugins-sandbox/system/log/idea.log" />
     <RunnerSettings RunnerId="Debug">
