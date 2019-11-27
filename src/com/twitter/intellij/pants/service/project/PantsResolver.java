@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.service.project;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
@@ -20,6 +21,7 @@ import com.twitter.intellij.pants.model.SimpleExportResult;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -100,6 +102,7 @@ public class PantsResolver {
 
     Optional<BuildGraph> buildGraph = constructBuildGraph(projectInfoDataNode);
 
+    PropertiesComponent.getInstance().setValues(PantsConstants.PANTS_AVAILABLE_TARGETS_KEY, myProjectInfo.getAvailableTargetTypes());
     final Map<String, DataNode<ModuleData>> modules = new HashMap<>();
     for (PantsResolverExtension resolver : PantsResolverExtension.EP_NAME.getExtensions()) {
       resolver.resolve(myProjectInfo, myExecutor, projectInfoDataNode, modules, buildGraph);

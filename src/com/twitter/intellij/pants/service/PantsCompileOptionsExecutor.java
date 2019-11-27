@@ -196,8 +196,22 @@ public class PantsCompileOptionsExecutor {
     return processOutput;
   }
 
+  private boolean isAtLeastPantsVersion(int major, int minor) throws ExecutionException {
+    String pantsVersion = getPantsVersion();
+    String[] splitVersion = pantsVersion.trim().split("\\.");
+    return splitVersion.length >= 3 && Integer.parseInt(splitVersion[0]) >= major && Integer.parseInt(splitVersion[1]) >= minor;
+  }
+
   @NotNull
-  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer) throws IOException {
+  private String getPantsVersion() throws ExecutionException {
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
+    commandLine.addParameter("--version");
+    return getProcessOutput(commandLine).getStdout();
+  }
+
+  @NotNull
+  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer)
+    throws IOException, ExecutionException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
 
     // Grab the import stage pants rc file for IntelliJ.
@@ -213,6 +227,11 @@ public class PantsCompileOptionsExecutor {
     }
     commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
     commandLine.addParameter("--no-quiet");
+
+    boolean exportAvailableTypes = isAtLeastPantsVersion(1, 23);
+    if (exportAvailableTypes) {
+      commandLine.addParameter("--export-available-target-types");
+    }
     if (getOptions().isImportSourceDepsAsJars()) {
       commandLine.addParameter("export-dep-as-jar");
     }
