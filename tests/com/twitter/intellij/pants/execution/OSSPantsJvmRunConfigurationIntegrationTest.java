@@ -106,8 +106,6 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
       "--test-junit-test=" + classReference
     );
     assertEquals(expectedFinalRunCommandlineParameters, finalRunCommandline.getParametersList().getParameters());
-
-
   }
 
   @NotNull
