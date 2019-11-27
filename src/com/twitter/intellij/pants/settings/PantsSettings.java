@@ -77,7 +77,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   public void setEnableIncrementalImport(boolean enableIncrementalImport) {
-    getLinkedProjectsSettings().forEach(s -> s.enableIncrementalImport  = enableIncrementalImport);
+    getLinkedProjectsSettings().forEach(s -> s.setEnableIncrementalImport(enableIncrementalImport));
   }
 
   public int getResolverVersion() {

@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
-  private List<String> targetSpecs = ContainerUtilRt.newArrayList();
-  public boolean libsWithSources;
-  public boolean enableIncrementalImport;
-  public boolean useIdeaProjectJdk;
-  public boolean importSourceDepsAsJars;
-  public boolean useIntellijCompiler;
+  private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
+  private boolean myLibsWithSources;
+  private boolean myEnableIncrementalImport;
+  private boolean myUseIdeaProjectJdk;
+  private boolean myImportSourceDepsAsJars;
+  private boolean myUseIntellijCompiler;
 
   /**
    * @param targetSpecs               targets explicted listed from `pants idea-plugin` goal.
@@ -38,12 +38,12 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     boolean isUseIntellijCompiler
   ) {
     setExternalProjectPath(externalProjectPath);
-    this.targetSpecs = targetSpecs;
-    this.libsWithSources = libsWithSources;
-    enableIncrementalImport = isEnableIncrementalImport;
-    useIdeaProjectJdk = isUseIdeaProjectJdk;
-    importSourceDepsAsJars = isImportSourceDepsAsJars;
-    useIdeaProjectJdk = isUseIntellijCompiler;
+    myTargetSpecs = targetSpecs;
+    myLibsWithSources = libsWithSources;
+    myEnableIncrementalImport = isEnableIncrementalImport;
+    myUseIdeaProjectJdk = isUseIdeaProjectJdk;
+    myImportSourceDepsAsJars = isImportSourceDepsAsJars;
+    myUseIdeaProjectJdk = isUseIntellijCompiler;
   }
 
   public PantsProjectSettings() {
@@ -59,12 +59,12 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
       return false;
     }
     PantsProjectSettings other = (PantsProjectSettings) obj;
-    return Objects.equals(libsWithSources, other.libsWithSources)
-           && Objects.equals(enableIncrementalImport, other.enableIncrementalImport)
-           && Objects.equals(targetSpecs, other.targetSpecs)
-           && Objects.equals(useIdeaProjectJdk, other.useIdeaProjectJdk)
-           && Objects.equals(importSourceDepsAsJars, other.importSourceDepsAsJars)
-           && Objects.equals(useIntellijCompiler, other.useIntellijCompiler);
+    return Objects.equals(myLibsWithSources, other.myLibsWithSources)
+           && Objects.equals(myEnableIncrementalImport, other.myEnableIncrementalImport)
+           && Objects.equals(myTargetSpecs, other.myTargetSpecs)
+           && Objects.equals(myUseIdeaProjectJdk, other.myUseIdeaProjectJdk)
+           && Objects.equals(myImportSourceDepsAsJars, other.myImportSourceDepsAsJars)
+           && Objects.equals(myUseIntellijCompiler, other.myUseIntellijCompiler);
   }
 
   @NotNull
@@ -79,12 +79,12 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   protected void copyTo(@NotNull ExternalProjectSettings receiver) {
     super.copyTo(receiver);
     if (receiver instanceof PantsProjectSettings) {
-      ((PantsProjectSettings) receiver).libsWithSources = libsWithSources;
+      ((PantsProjectSettings) receiver).setLibsWithSources(isLibsWithSources());
       ((PantsProjectSettings) receiver).setTargetSpecs(getTargetSpecs());
-      ((PantsProjectSettings) receiver).enableIncrementalImport = enableIncrementalImport;
-      ((PantsProjectSettings) receiver).useIdeaProjectJdk = useIdeaProjectJdk;
-      ((PantsProjectSettings) receiver).importSourceDepsAsJars = importSourceDepsAsJars;
-      ((PantsProjectSettings) receiver).useIntellijCompiler = useIntellijCompiler;
+      ((PantsProjectSettings) receiver).setEnableIncrementalImport(isEnableIncrementalImport());
+      ((PantsProjectSettings) receiver).setUseIdeaProjectJdk(isUseIdeaProjectJdk());
+      ((PantsProjectSettings) receiver).setImportSourceDepsAsJars(isImportSourceDepsAsJars());
+      ((PantsProjectSettings) receiver).setUseIntellijCompiler(isUseIntellijCompiler());
     }
   }
 
@@ -94,21 +94,35 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
    */
   @NotNull
   public List<String> getTargetSpecs() {
-    return targetSpecs;
+    return myTargetSpecs;
   }
 
   public void setTargetSpecs(List<String> targetSpecs) {
-    this.targetSpecs = targetSpecs;
+    myTargetSpecs = targetSpecs;
   }
 
-  @Override
+  public boolean isLibsWithSources() {
+    return myLibsWithSources;
+  }
+
+  public void setLibsWithSources(boolean libsWithSources) {
+    myLibsWithSources = libsWithSources;
+  }
+
   public boolean isEnableIncrementalImport() {
-    return enableIncrementalImport;
+    return myEnableIncrementalImport;
   }
 
-  @Override
-  public boolean isImportSourceDepsAsJars() {
-    return importSourceDepsAsJars;
+  public void setEnableIncrementalImport(boolean enableIncrementalImport) {
+    myEnableIncrementalImport = enableIncrementalImport;
+  }
+
+  public boolean isUseIdeaProjectJdk() {
+    return myUseIdeaProjectJdk;
+  }
+
+  public void setUseIdeaProjectJdk(boolean useIdeaProjectJdk) {
+    myUseIdeaProjectJdk = useIdeaProjectJdk;
   }
 
   public boolean isImportSourceDepsAsJars() {
