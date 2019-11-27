@@ -35,6 +35,8 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -63,6 +65,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -128,10 +131,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   private static void setVMParameters(@NotNull Project project, JUnitConfiguration runConfiguration) {
-    Optional<String[]> os = PantsOptions.getPantsOptions(project)
-      .flatMap(options -> options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS));
-    String optionsString = String.join(" ", os.orElse(new String[]{}));
-    runConfiguration.setVMParameters(optionsString);
+    ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
+      Optional<String[]> os = PantsOptions.getPantsOptions(project)
+        .flatMap(options -> options.getList(PantsConstants.PANTS_OPTION_TEST_JUNIT_OPTIONS));
+      String optionsString = String.join("", os.orElse(new String[]{}));
+      runConfiguration.setVMParameters(optionsString);
+    }, "Getting Pants options ...", false, project);
   }
 
   public static void terminatePantsProcess(Project project) {
