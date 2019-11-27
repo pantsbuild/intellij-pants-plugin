@@ -75,7 +75,7 @@ public final class PantsSdkUtil {
       });
   }
 
-  public static void updateJdk(Project project, Sdk originalSdk, Disposable disposable) {
+  public static void refreshJdk(Project project, Sdk originalSdk, Disposable disposable) {
     String pantsExecutable = PantsUtil.findPantsExecutable(project)
       .map(VirtualFile::getPath)
       .orElse(null);
@@ -89,10 +89,12 @@ public final class PantsSdkUtil {
         .ifPresent(newSdk -> PantsSdkUtil.updateJdk(originalSdk, newSdk));
     }
     else {
-      ApplicationManager.getApplication().runWriteAction(() -> {
-        ProjectRootManagerEx rootManager = ProjectRootManagerEx.getInstanceEx(project);
-        PantsSdkUtil.getDefaultJavaSdk(pantsExecutable, disposable)
-          .ifPresent(rootManager::setProjectSdk);
+      ApplicationManager.getApplication().invokeAndWait(() -> {
+        ApplicationManager.getApplication().runWriteAction(() -> {
+          ProjectRootManagerEx rootManager = ProjectRootManagerEx.getInstanceEx(project);
+          PantsSdkUtil.getDefaultJavaSdk(pantsExecutable, disposable)
+            .ifPresent(rootManager::setProjectSdk);
+        });
       });
     }
   }

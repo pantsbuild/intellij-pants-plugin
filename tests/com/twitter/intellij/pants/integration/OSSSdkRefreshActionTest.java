@@ -36,7 +36,7 @@ public class OSSSdkRefreshActionTest extends OSSPantsIntegrationTest {
   private final DataContext PANTS_PROJECT_DATA = s -> s.equals("project") ? myProject : null;
 
   public void testRefreshSdkWhenNotSet() {
-    doImport("examples/tests/java/org/pantsbuild/example/useproto");
+    doImport("examples/src/java/org/pantsbuild/example/hello");
 
     ApplicationManager.getApplication().runWriteAction(() -> {
       ProjectRootManager.getInstance(myProject).setProjectSdk(null);
@@ -53,7 +53,7 @@ public class OSSSdkRefreshActionTest extends OSSPantsIntegrationTest {
     Sdk sdk = createDummySdk("1.8_from_" + pantsExecutable());
     String originalSdkPath = sdk.getHomePath();
 
-    doImport("examples/tests/java/org/pantsbuild/example/useproto");
+    doImport("examples/src/java/org/pantsbuild/example/hello");
     assertEquals(originalSdkPath, rootManager.getProjectSdk().getHomePath());
 
     refreshProjectSdk();
@@ -72,7 +72,7 @@ public class OSSSdkRefreshActionTest extends OSSPantsIntegrationTest {
 
       Sdk customSdk = createDummySdk(customJdkName);
 
-      doImport("examples/tests/java/org/pantsbuild/example/useproto");
+      doImport("examples/src/java/org/pantsbuild/example/hello");
 
       // set custom SDK
       application.runWriteAction(() -> {
