@@ -89,13 +89,14 @@ public final class PantsSdkUtil {
         .ifPresent(newSdk -> PantsSdkUtil.updateJdk(originalSdk, newSdk));
     }
     else {
-      ApplicationManager.getApplication().invokeAndWait(() -> {
-        ApplicationManager.getApplication().runWriteAction(() -> {
-          ProjectRootManagerEx rootManager = ProjectRootManagerEx.getInstanceEx(project);
-          PantsSdkUtil.getDefaultJavaSdk(pantsExecutable, disposable)
-            .ifPresent(rootManager::setProjectSdk);
+      PantsSdkUtil.getDefaultJavaSdk(pantsExecutable, disposable)
+        .ifPresent(defaultSdk -> {
+          ApplicationManager.getApplication().invokeAndWait(() -> {
+            ApplicationManager.getApplication().runWriteAction(() -> {
+              ProjectRootManagerEx.getInstanceEx(project).setProjectSdk(defaultSdk);
+            });
+          });
         });
-      });
     }
   }
 
