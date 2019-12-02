@@ -43,7 +43,7 @@ public class PantsInitComponentImpl implements PantsInitComponent {
   @Override
   public void disposeComponent() {
     PantsUtil.scheduledThreadPool.shutdown();
-    PantsMetrics.indexThreadPool.shutdown();
+    PantsMetrics.globalCleanup();
   }
 
   //  Registers the rebuild action to Pants rebuild action.

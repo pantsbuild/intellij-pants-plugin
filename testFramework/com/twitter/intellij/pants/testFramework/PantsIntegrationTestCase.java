@@ -514,7 +514,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       "Timer",
       "FileBasedIndex"
     );
-    try {
       if (myCompilerTester != null) {
         myCompilerTester.tearDown();
       }
@@ -530,13 +529,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       // fail with leaky sdk errors, broaden this to include the leaked sdks.
       removeJdks(jdk -> jdk.getName().contains("pants"));
       super.tearDown();
-    }
-    catch (Throwable throwable) {
-      // Discard error containing "Already disposed".
-      if (throwable.getMessage() == null || !throwable.getMessage().contains("Already disposed")) {
-        throw throwable;
-      }
-    }
   }
 
   @Override

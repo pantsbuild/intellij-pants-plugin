@@ -361,7 +361,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   private void prepareIDE(Project project) {
-    ApplicationManager.getApplication().invokeLater(new Runnable() {
+    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
       @Override
       public void run() {
         /* Clear message window. */

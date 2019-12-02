@@ -106,15 +106,19 @@ public class PantsMetrics {
     }, 0, 1, TimeUnit.SECONDS);
   }
 
+  public static void globalCleanup() {
+    // Thread related things.
+    if (indexThreadPool != null && !indexThreadPool.isShutdown()) {
+      indexThreadPool.shutdown();
+    }
+  }
+
   public static void initialize() {
     timers.put(METRIC_EXPORT, Stopwatch.createUnstarted());
     timers.put(METRIC_LOAD, Stopwatch.createUnstarted());
     timers.put(METRIC_INDEXING, Stopwatch.createUnstarted());
 
-    // Thread related things.
-    if (indexThreadPool != null && !indexThreadPool.isShutdown()) {
-      indexThreadPool.shutdown();
-    }
+    globalCleanup();
     indexThreadPool = Executors.newSingleThreadScheduledExecutor(
       new ThreadFactory() {
         @Override
