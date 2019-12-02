@@ -7,6 +7,7 @@ import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.serialization.PropertyMapping;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +21,7 @@ public class ScalaModelData extends AbstractExternalEntityData {
   private final String myScalaLibId;
   private final Set<String> myClasspath;
 
+  @PropertyMapping({"myScalaLibId" , "myClasspath"})
   public ScalaModelData(@NotNull String scalaLibId, @NotNull Set<String> classpath) {
     super(PantsConstants.SYSTEM_ID);
     myScalaLibId = scalaLibId;
