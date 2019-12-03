@@ -11,8 +11,6 @@ import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettin
 import com.intellij.openapi.externalSystem.settings.ExternalSystemSettingsListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.util.containers.ContainerUtilRt;
-import com.intellij.util.xmlb.annotations.AbstractCollection;
 import com.intellij.util.xmlb.annotations.XCollection;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +27,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
 
   protected boolean myUseIdeaProjectJdk = false;
   protected boolean myUsePantsMakeBeforeRun = true;
-  public boolean myUseIntellijCompiler = false;
+  protected boolean myUseIntellijCompiler = false;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {
@@ -136,10 +134,9 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     Set<PantsProjectSettings> myLinkedExternalProjectsSettings = Sets.newTreeSet();
 
     boolean myUseIdeaProjectJdk = false;
-    public boolean myUseIntellijCompiler = false;
+    boolean myUseIntellijCompiler = false;
     int myResolverVersion = 0;
 
-    //@AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
     @XCollection(elementTypes = {PantsProjectSettings.class})
     public Set<PantsProjectSettings> getLinkedExternalProjectsSettings() {
       return myLinkedExternalProjectsSettings;
