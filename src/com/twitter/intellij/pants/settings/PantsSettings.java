@@ -25,8 +25,8 @@ import java.util.Set;
 public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings, PantsProjectSettings, PantsSettingsListener>
   implements PersistentStateComponent<PantsSettings.MyState> {
 
-  public boolean myUseIdeaProjectJdk = false;
-  public boolean myUsePantsMakeBeforeRun = true;
+  protected boolean myUseIdeaProjectJdk = false;
+  protected boolean myUsePantsMakeBeforeRun = true;
   protected int myResolverVersion = 0;
 
   public PantsSettings(@NotNull Project project) {

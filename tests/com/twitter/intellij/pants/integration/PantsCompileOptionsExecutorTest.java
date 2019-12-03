@@ -22,7 +22,7 @@ public class PantsCompileOptionsExecutorTest extends OSSPantsIntegrationTest {
       false, // use idea project jdk. does not matter here.
       false, // pants qexport dep as jar
       false, // incremental imports. does not matter here.
-      false
+      false // use intellij compiler
     );
 
     PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(

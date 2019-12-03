@@ -3,10 +3,8 @@
 
 package com.twitter.intellij.pants.file;
 
-import com.google.common.collect.Lists;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeRegistry;
-import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.util.io.ByteSequence;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.python.PythonFileType;
@@ -25,7 +23,7 @@ public class BUILDFileTypeDetector implements FileTypeRegistry.FileTypeDetector 
 
   @Nullable
   public Collection<? extends FileType> getDetectedFileTypes() {
-    return Lists.newArrayList(PlainTextFileType.INSTANCE, PythonFileType.INSTANCE);
+    return null;
   }
 
   @Override

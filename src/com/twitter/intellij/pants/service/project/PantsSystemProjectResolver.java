@@ -83,7 +83,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode =
       resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.isEnableIncrementalImport());
-    doViewSwitch(id, projectPath);
+    if (settings.isImportSourceDepsAsJars()) {
+      doViewSwitch(id, projectPath);
+    }
     task2executor.remove(id);
     return projectDataNode;
   }
@@ -100,17 +102,17 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       return;
     }
 
-    //MessageBusConnection messageBusConnection = ideProject.getMessageBus().connect();
-    //messageBusConnection.subscribe(
-    //  ProjectTopics.PROJECT_ROOTS,
-    //  new ModuleRootListener() {
-    //    @Override
-    //    public void rootsChanged(ModuleRootEvent event) {
-    //      // Initiate view switch only when project modules have been created.
-    //      new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
-    //    }
-    //  }
-    //);
+    MessageBusConnection messageBusConnection = ideProject.getMessageBus().connect();
+    messageBusConnection.subscribe(
+      ProjectTopics.PROJECT_ROOTS,
+      new ModuleRootListener() {
+        @Override
+        public void rootsChanged(ModuleRootEvent event) {
+          // Initiate view switch only when project modules have been created.
+          new ViewSwitchProcessor(ideProject, projectPath).asyncViewSwitch();
+        }
+      }
+    );
   }
 
   /**
