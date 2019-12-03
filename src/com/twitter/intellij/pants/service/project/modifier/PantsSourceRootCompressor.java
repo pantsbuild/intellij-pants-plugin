@@ -39,11 +39,33 @@ public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtens
     if (folderContainsOnlyRoots(new File(packageRoot), sourceRoots)) {
       return Collections.singleton(new ContentRoot(packageRoot, ""));
     }
-    Set<File> files = rootDirs(sourceRoots);
+    Set<File> files = findAncestors(sourceRoots);
     return files.stream().map(s -> new ContentRoot(s.getPath(), "")).collect(Collectors.toSet());
   }
 
-  private Set<File> rootDirs(Set<File> candidates) {
+  /***
+   * Find the top level path ancestors that cover all the path.
+   *
+   * For example.
+   * Input:
+   * a/b/c
+   * a/b/c/d
+   * a/b/c/e
+   * a/b/c/f/g
+   * Output: a/b/c
+   *
+   * Input:
+   * a/b/c
+   * a/b/c/d
+   * a/b/e
+   * Output:
+   * a/b/c
+   * a/b/e
+   *
+   * @param candidates a set of `File`s
+   * @return the top ancestors among the candidates
+   */
+  private Set<File> findAncestors(Set<File> candidates) {
     Set<File> results = Sets.newHashSet();
     results.addAll(candidates);
 
