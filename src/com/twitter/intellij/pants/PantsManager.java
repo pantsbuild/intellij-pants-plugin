@@ -130,10 +130,10 @@ public class PantsManager implements
           PantsProjectSettings pantsProjectSettings = (PantsProjectSettings) projectSettings;
           return new PantsExecutionSettings(
             pantsProjectSettings.getTargetSpecs(),
-            pantsProjectSettings.isLibsWithSources(),
-            pantsProjectSettings.isUseIdeaProjectJdk(),
-            pantsProjectSettings.isImportSourceDepsAsJars(),
-            pantsProjectSettings.isEnableIncrementalImport()
+            pantsProjectSettings.libsWithSources,
+            pantsProjectSettings.useIdeaProjectJdk,
+            pantsProjectSettings.importSourceDepsAsJars,
+            pantsProjectSettings.enableIncrementalImport
           );
         }
         else {
