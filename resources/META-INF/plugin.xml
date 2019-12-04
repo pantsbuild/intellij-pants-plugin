@@ -120,8 +120,6 @@
                      groupName="Pants" enabledByDefault="true"
                      implementationClass="com.twitter.intellij.pants.inspection.PythonPluginInspection"/>
 
-    <buildProcess.parametersProvider implementation="com.twitter.intellij.pants.compiler.PantsBuildProcessParametersProvider"/>
-
     <projectConfigurable groupId="build.tools" groupWeight="110" id="reference.settingsdialog.project.pants"
                          instance="com.twitter.intellij.pants.settings.PantsConfigurable"
                          key="pants.name" bundle="com.twitter.intellij.pants.PantsBundle"/>
