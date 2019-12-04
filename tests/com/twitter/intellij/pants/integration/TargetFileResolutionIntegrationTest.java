@@ -10,6 +10,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -17,16 +18,19 @@ import java.util.Collection;
 public class TargetFileResolutionIntegrationTest extends OSSPantsIntegrationTest {
 
   public void testAvailableTargetTypes() throws IOException {
-    doImport("examples/src/scala/org/pantsbuild/example/hello/");
-    VirtualFile vfile  = myProjectRoot.findFileByRelativePath("BUILD");
-    assertNotNull(vfile);
-    PsiFile build = PsiManager.getInstance(myProject).findFile(vfile);
-    String input = new String(myProjectRoot.findFileByRelativePath("BUILD").contentsToByteArray());
-    final PsiReference reference = build.findReferenceAt(input.indexOf("files(") + 1);
-    assertNotNull("no reference", reference);
-    final Collection<PsiElement> elements = TargetElementUtil.getInstance().getTargetCandidates(reference);
-    assertNotNull(elements);
-    assertEquals(1, elements.size());
+    String helloProjectPath = "examples/src/scala/org/pantsbuild/example/hello/";
+    doImport(helloProjectPath);
+    // should be only tested with pants versions above 1.24.0
+    if (PantsUtil.isCompatiblePantsVersion(myProjectRoot.getPath(), "1.24.0")) {
+      VirtualFile vfile = myProjectRoot.findFileByRelativePath(helloProjectPath + "BUILD");
+      assertNotNull(vfile);
+      String input = new String(vfile.contentsToByteArray());
+      PsiFile build = PsiManager.getInstance(myProject).findFile(vfile);
+      final PsiReference reference = build.findReferenceAt(input.indexOf("target(") + 1);
+      assertNotNull("no reference", reference);
+      final Collection<PsiElement> elements = TargetElementUtil.getInstance().getTargetCandidates(reference);
+      assertNotNull(elements);
+      assertEquals(1, elements.size());
+    }
   }
-
 }

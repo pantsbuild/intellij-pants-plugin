@@ -9,9 +9,6 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.twitter.intellij.pants.model.JdkRef;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
-
 public class PantsConstants {
   public static final String PANTS = "pants";
   public static final String PANTS_CONSOLE_NAME = "Pants Console";

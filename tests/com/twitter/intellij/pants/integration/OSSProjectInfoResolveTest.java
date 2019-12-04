@@ -31,14 +31,6 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     assertTrue(String.format("%s is not found in path %s", jarName, path), path.endsWith(jarName));
   }
 
-  private boolean isMinimalVersion(String version, int major, int minor, int patch) {
-    String[] split = version.split("\\.");
-    return split.length >= 3 &&
-           Integer.parseInt(split[0]) >= major &&
-           Integer.parseInt(split[1]) >= minor &&
-           Integer.parseInt(split[2]) >= patch;
-  }
-
   @NotNull
   private ProjectInfo resolveProjectInfo(@NotNull String targetSpec) {
     final boolean libsWithSourcesAndDocs = true;
@@ -77,9 +69,8 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     final ProjectInfo info = resolveProjectInfo("examples/src/scala/org/pantsbuild/example/hello/");
 
     // this should be only tested after export version 1.0.13
-    if (isMinimalVersion(info.getVersion(), 1, 0,13)) {
+    if (PantsUtil.isCompatibleVersion(info.getVersion(), "1.0.13")) {
       final List<String> availableTargetTypes = Arrays.asList(info.getAvailableTargetTypes());
-      assertNotNull(availableTargetTypes);
       assertNotEmpty(availableTargetTypes);
       assertContain(availableTargetTypes, "scala_library", "java_library");
     }

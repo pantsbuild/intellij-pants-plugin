@@ -20,6 +20,7 @@ import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
@@ -196,22 +197,9 @@ public class PantsCompileOptionsExecutor {
     return processOutput;
   }
 
-  private boolean isAtLeastPantsVersion(int major, int minor) throws ExecutionException {
-    String pantsVersion = getPantsVersion();
-    String[] splitVersion = pantsVersion.trim().split("\\.");
-    return splitVersion.length >= 3 && Integer.parseInt(splitVersion[0]) >= major && Integer.parseInt(splitVersion[1]) >= minor;
-  }
-
-  @NotNull
-  private String getPantsVersion() throws ExecutionException {
-    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
-    commandLine.addParameter("--version");
-    return getProcessOutput(commandLine).getStdout();
-  }
-
   @NotNull
   private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer)
-    throws IOException, ExecutionException {
+    throws IOException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
 
     // Grab the import stage pants rc file for IntelliJ.
@@ -228,10 +216,10 @@ public class PantsCompileOptionsExecutor {
     commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
     commandLine.addParameter("--no-quiet");
 
-    boolean exportAvailableTypes = isAtLeastPantsVersion(1, 23);
-    if (exportAvailableTypes) {
+    if (PantsUtil.isCompatiblePantsVersion(getProjectPath(), "1.24.0")) {
       commandLine.addParameter("--export-available-target-types");
     }
+
     if (getOptions().isImportSourceDepsAsJars()) {
       commandLine.addParameter("export-dep-as-jar");
     }

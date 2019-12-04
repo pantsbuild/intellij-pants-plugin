@@ -43,6 +43,11 @@ public class ProjectInfo {
   // name to info
   protected Map<String, TargetInfo> targets;
 
+  /* This might need to be expanded to show all properties that
+   * a target type can contain like:
+   *
+   * {"java_library" : [{ "dependencies" : "list(str)" }]}
+   */
   @SerializedName("available_target_types")
   protected String[] availableTargetTypes = {};
 
@@ -59,7 +64,7 @@ public class ProjectInfo {
   private static <T> List<Map.Entry<String, T>> getSortedEntries(Map<String, T> map) {
     return ContainerUtil.sorted(
       map.entrySet(),
-      new Comparator<Map.Entry<String,T>>() {
+      new Comparator<Map.Entry<String, T>>() {
         @Override
         public int compare(Map.Entry<String, T> o1, Map.Entry<String, T> o2) {
           return StringUtil.naturalCompare(o1.getKey(), o2.getKey());
@@ -92,6 +97,7 @@ public class ProjectInfo {
     this.targets = targets;
   }
 
+  @NotNull
   public String[] getAvailableTargetTypes() {
     return availableTargetTypes;
   }
