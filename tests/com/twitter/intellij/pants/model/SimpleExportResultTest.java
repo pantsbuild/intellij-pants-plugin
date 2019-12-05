@@ -100,12 +100,12 @@ public class SimpleExportResultTest extends LightPlatformTestCase {
   }
 
   public void testExportCache() {
-    SimpleExportResult export_a = SimpleExportResult.getExportResult("./pants");
-    SimpleExportResult export_b = SimpleExportResult.getExportResult("./pants");
+    SimpleExportResult export_a = SimpleExportResult.getExportResult("./.cache/pants/pants");
+    SimpleExportResult export_b = SimpleExportResult.getExportResult("./.cache/pants/pants");
     // export_b should be cached result, so identical to export_a
     assertTrue(export_a == export_b);
     SimpleExportResult.clearCache();
-    SimpleExportResult export_c = SimpleExportResult.getExportResult("./pants");
+    SimpleExportResult export_c = SimpleExportResult.getExportResult("./.cache/pants/pants");
     assertTrue(export_a != export_c);
   }
 

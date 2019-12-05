@@ -63,7 +63,7 @@ abstract public class OSSPantsIntegrationTest extends PantsIntegrationTestCase {
    * Assert Project has the right JDK and language level (JVM project only).
    */
   protected void assertProjectJdkAndLanguageLevel() {
-    final String pantsExecutablePath = PantsUtil.findPantsExecutable(getParentPath()).get().getPath();
+    final String pantsExecutablePath = PantsUtil.findPantsExecutable(getProjectPath()).get().getPath();
     assertEquals(
       ProjectRootManager.getInstance(myProject).getProjectSdk().getHomePath(),
       getDefaultJavaSdk(pantsExecutablePath).get().getHomePath()
