@@ -20,6 +20,7 @@ import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
@@ -197,7 +198,8 @@ public class PantsCompileOptionsExecutor {
   }
 
   @NotNull
-  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer) throws IOException {
+  private GeneralCommandLine getPantsExportCommand(final File outputFile, @NotNull Consumer<String> statusConsumer)
+    throws IOException {
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(getProjectPath());
 
     // Grab the import stage pants rc file for IntelliJ.
@@ -213,6 +215,11 @@ public class PantsCompileOptionsExecutor {
     }
     commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
     commandLine.addParameter("--no-quiet");
+
+    if (PantsUtil.isCompatiblePantsVersion(getProjectPath(), "1.24.0")) {
+      commandLine.addParameter("--export-available-target-types");
+    }
+
     if (getOptions().isImportSourceDepsAsJars()) {
       commandLine.addParameter("export-dep-as-jar");
     }

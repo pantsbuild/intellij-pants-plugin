@@ -9,7 +9,6 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.twitter.intellij.pants.model.JdkRef;
 import org.jetbrains.annotations.NotNull;
 
-
 public class PantsConstants {
   public static final String PANTS = "pants";
   public static final String PANTS_CONSOLE_NAME = "Pants Console";
@@ -43,6 +42,7 @@ public class PantsConstants {
   // Used to initialize project sdk therefore use project processing weight, i.e, the highest.
   public static final Key<JdkRef> SDK_KEY = Key.create(JdkRef.class, ProjectKeys.PROJECT.getProcessingWeight());
 
+  public static final String PANTS_AVAILABLE_TARGETS_KEY = "available_targets";
   public static final String PANTS_CLI_OPTION_EXPORT_OUTPUT_FILE = "--export-output-file";
   public static final String PANTS_CLI_OPTION_LIST_OUTPUT_FILE = "--list-output-file";
   public static final String PANTS_CLI_OPTION_EXPORT_CLASSPATH_MANIFEST_JAR = "--export-classpath-manifest-jar-only";

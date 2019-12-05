@@ -16,8 +16,10 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   private static Consumer<String> STRING_CONSUMER = new Consumer<String>() {
@@ -61,6 +63,17 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     final TargetInfo greetTarget = info.getTarget("examples/src/java/org/pantsbuild/example/hello/greet:greet");
     assertNotNull(greetTarget);
     assertFalse(greetTarget.isScalaTarget());
+  }
+
+  public void testAvailableTargetTypes() {
+    final ProjectInfo info = resolveProjectInfo("examples/src/scala/org/pantsbuild/example/hello/");
+
+    // this should be only tested after export version 1.0.13
+    if (PantsUtil.isCompatibleVersion(info.getVersion(), "1.0.13")) {
+      final List<String> availableTargetTypes = Arrays.asList(info.getAvailableTargetTypes());
+      assertNotEmpty(availableTargetTypes);
+      assertContain(availableTargetTypes, "scala_library", "java_library");
+    }
   }
 
   public void testTargetJars() {

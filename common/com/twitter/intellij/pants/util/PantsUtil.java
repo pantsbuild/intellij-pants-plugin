@@ -105,9 +105,12 @@ import java.util.stream.Stream;
 
 public class PantsUtil {
   public static final Gson gson = new Gson();
-  public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {}.getType();
-  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {}.getType();
-  public static final Type TYPE_MAP_STRING_INTEGER = new TypeToken<Map<String, Integer>>() {}.getType();
+  public static final Type TYPE_LIST_STRING = new TypeToken<List<String>>() {
+  }.getType();
+  public static final Type TYPE_SET_STRING = new TypeToken<Set<String>>() {
+  }.getType();
+  public static final Type TYPE_MAP_STRING_INTEGER = new TypeToken<Map<String, Integer>>() {
+  }.getType();
   public static final ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor(
     new ThreadFactory() {
       @Override
@@ -209,6 +212,18 @@ public class PantsUtil {
 
   public static Optional<VirtualFile> findPantsIniFile(Optional<VirtualFile> workingDir) {
     return workingDir.map(file -> file.findChild(PantsConstants.PANTS_INI));
+  }
+
+  public static boolean isCompatiblePantsVersion(String projectPath, String minVersion) {
+    return PantsUtil.findPantsExecutable(projectPath)
+      .flatMap(exec -> PantsOptions.getPantsOptions(exec.getPath()).get("pants_version"))
+      .map(version -> PantsUtil.isCompatibleVersion(version, minVersion))
+      .orElse(false);
+  }
+
+  public static boolean isCompatibleVersion(String current, String minimum) {
+    String currentVersion = current.replaceAll("rc.+", "").trim();
+    return versionCompare(currentVersion, minimum) >= 0;
   }
 
   private static Optional<String> findVersionInFile(@NotNull VirtualFile file) {
@@ -376,13 +391,16 @@ public class PantsUtil {
       }
       else {
         List<String> errorLogs = Lists.newArrayList(
-          String.format("Could not list targets: Pants exited with status %d",
-                        processOutput.getExitCode()),
+          String.format(
+            "Could not list targets: Pants exited with status %d",
+            processOutput.getExitCode()
+          ),
           String.format("argv: '%s'", cmd.getCommandLineString()),
           "stdout:",
           processOutput.getStdout(),
           "stderr:",
-          processOutput.getStderr());
+          processOutput.getStderr()
+        );
         final String errorMessage = String.join("\n", errorLogs);
         LOG.warn(errorMessage);
         throw new PantsException(errorMessage);
@@ -390,9 +408,11 @@ public class PantsUtil {
     }
     catch (IOException | ExecutionException e) {
       final String processCreationFailureMessage =
-        String.format("Could not execute command: '%s' due to error: '%s'",
-                      cmd.getCommandLineString(),
-                      e.getMessage());
+        String.format(
+          "Could not execute command: '%s' due to error: '%s'",
+          cmd.getCommandLineString(),
+          e.getMessage()
+        );
       LOG.warn(processCreationFailureMessage, e);
       throw new PantsException(processCreationFailureMessage);
     }
@@ -506,7 +526,7 @@ public class PantsUtil {
     }
     if (versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MIN) < 0 ||
         versionCompare(version, PANTS_IDEA_PLUGIN_VERESION_MAX) > 0
-      ) {
+    ) {
       Messages.showInfoMessage(project, PantsBundle.message("pants.idea.plugin.goal.version.unsupported"), "Version Error");
       return false;
     }
@@ -829,15 +849,15 @@ public class PantsUtil {
   }
 
   /**
-   * @param pantsExecutable path to the pants executable file for the
-   * project. This function will return erroneous output if you use a directory path. The
-   * pants executable can be found from a project path with {@link #findPantsExecutable(String)}.
+   * @param pantsExecutable  path to the pants executable file for the
+   *                         project. This function will return erroneous output if you use a directory path. The
+   *                         pants executable can be found from a project path with {@link #findPantsExecutable(String)}.
    * @param parentDisposable Disposable object to use if a new JDK is added to
-   * the project jdk table (otherwise null). Integration tests should use getTestRootDisposable() for
-   * this argument to avoid exceptions during teardown.
+   *                         the project jdk table (otherwise null). Integration tests should use getTestRootDisposable() for
+   *                         this argument to avoid exceptions during teardown.
    * @return The default Sdk object to use for the project at the given pants
    * executable path.
-   *
+   * <p>
    * This method will add a JDK to the project JDK table if it needs to create
    * one, which mutates global state (protected by a read/write lock).
    */
