@@ -3,8 +3,6 @@
 
 package com.twitter.intellij.pants.integration;
 
-import com.intellij.execution.junit.JUnitConfiguration;
-import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 
@@ -12,28 +10,20 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
 
   public void testPantsMake() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
-
-
-    JUnitConfiguration runConfiguration = generateJUnitConfiguration(
-      "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher", "org.pantsbuild.testproject.matcher.MatcherTest", null);
-
-    assertAndRunPantsMake(runConfiguration);
-    assertSuccessfulTest(runConfiguration);
+    assertSuccessfulTest(
+      "testprojects_tests_java_org_pantsbuild_testproject_matcher_matcher",
+      "org.pantsbuild.testproject.matcher.MatcherTest"
+    );
   }
 
   public void testCompileAll() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
     doImport("testprojects/tests/java/org/pantsbuild/testproject/cwdexample");
 
-
-    JUnitConfiguration runConfiguration = generateJUnitConfiguration(
+    assertSuccessfulTest(
       "testprojects_tests_java_org_pantsbuild_testproject_annotation_annotation",
       "org.pantsbuild.testproject.annotation.AnnotationTest",
-      null
-    );
-
-    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-    assertSuccessfulTest(runConfiguration);
+      );
   }
 
   /**
@@ -44,13 +34,9 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
   public void testIntelliJTestRunnerClasspath() throws Throwable {
     doImport("intellij-integration/tests/java/org/pantsbuild/cp_print/");
 
-    JUnitConfiguration runConfiguration = generateJUnitConfiguration(
+    assertSuccessfulTest(
       "intellij-integration_tests_java_org_pantsbuild_cp_print_cp_print",
       "org.pantsbuild.testproject.cp_print.AppTest",
-      null
-    );
-    PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, runConfiguration);
-    assertSuccessfulTest(runConfiguration);
+      );
   }
-
 }

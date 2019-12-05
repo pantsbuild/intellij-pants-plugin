@@ -70,14 +70,10 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
     doImport("testprojects/tests/java/org/pantsbuild/testproject/annotation");
 
-    JUnitConfiguration runConfiguration = generateJUnitConfiguration(
+    assertSuccessfulTest(
       "testprojects_tests_java_org_pantsbuild_testproject_annotation_annotation",
       "org.pantsbuild.testproject.annotation.AnnotationTest",
-      null
     );
-
-    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
-    assertSuccessfulTest(runConfiguration);
     assertEquals(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER, listener.lastRun);
   }
 

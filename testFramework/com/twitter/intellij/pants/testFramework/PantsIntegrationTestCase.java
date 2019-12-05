@@ -411,22 +411,13 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     }
   }
 
-  public void assertSuccessfulTest(RunConfiguration configuration) {
-    try {
-      final OSProcessHandler handler = runWithConfiguration(configuration);
-      assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
-    }
-    catch (ExecutionException e) {
-      fail(e.toString());
-    }
-  }
-
   public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) throws ExecutionException {
     return runWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
   }
 
   @NotNull
   protected OSProcessHandler runWithConfiguration(RunConfiguration configuration) throws ExecutionException {
+    PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, configuration);
     final PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
       new PantsJUnitRunnerAndConfigurationSettings(configuration);
     final ExecutionEnvironmentBuilder environmentBuilder =
@@ -514,21 +505,21 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
       "Timer",
       "FileBasedIndex"
     );
-      if (myCompilerTester != null) {
-        myCompilerTester.tearDown();
-      }
+    if (myCompilerTester != null) {
+      myCompilerTester.tearDown();
+    }
 
-      // Kill nailgun after usage as memory on travis is limited, at a cost of slower later builds.
-      killNailgun();
-      cleanProjectRoot();
-      Messages.setTestDialog(TestDialog.DEFAULT);
+    // Kill nailgun after usage as memory on travis is limited, at a cost of slower later builds.
+    killNailgun();
+    cleanProjectRoot();
+    Messages.setTestDialog(TestDialog.DEFAULT);
 
-      // TODO(cosmicexplorer): after updating from 172.4343.14 to 173.3531.6,
-      // intellij's provided test class sometimes yells about a leaky jdk
-      // table. i don't think this indicates any problems, so for now if tests
-      // fail with leaky sdk errors, broaden this to include the leaked sdks.
-      removeJdks(jdk -> jdk.getName().contains("pants"));
-      super.tearDown();
+    // TODO(cosmicexplorer): after updating from 172.4343.14 to 173.3531.6,
+    // intellij's provided test class sometimes yells about a leaky jdk
+    // table. i don't think this indicates any problems, so for now if tests
+    // fail with leaky sdk errors, broaden this to include the leaked sdks.
+    removeJdks(jdk -> jdk.getName().contains("pants"));
+    super.tearDown();
   }
 
   @Override
