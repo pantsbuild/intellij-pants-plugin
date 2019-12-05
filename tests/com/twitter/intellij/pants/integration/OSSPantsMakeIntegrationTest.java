@@ -22,7 +22,7 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
 
     assertSuccessfulTest(
       "testprojects_tests_java_org_pantsbuild_testproject_annotation_annotation",
-      "org.pantsbuild.testproject.annotation.AnnotationTest",
+      "org.pantsbuild.testproject.annotation.AnnotationTest"
       );
   }
 
@@ -36,7 +36,7 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
 
     assertSuccessfulTest(
       "intellij-integration_tests_java_org_pantsbuild_cp_print_cp_print",
-      "org.pantsbuild.testproject.cp_print.AppTest",
+      "org.pantsbuild.testproject.cp_print.AppTest"
       );
   }
 }

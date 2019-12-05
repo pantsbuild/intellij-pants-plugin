@@ -72,7 +72,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
 
     assertSuccessfulTest(
       "testprojects_tests_java_org_pantsbuild_testproject_annotation_annotation",
-      "org.pantsbuild.testproject.annotation.AnnotationTest",
+      "org.pantsbuild.testproject.annotation.AnnotationTest"
     );
     assertEquals(PantsExternalMetricsListener.TestRunnerType.JUNIT_RUNNER, listener.lastRun);
   }
