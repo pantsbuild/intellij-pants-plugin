@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.components.impl;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.IdeActions;
@@ -17,6 +16,7 @@ import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.ui.PantsOverrideAction;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -52,34 +52,30 @@ public class PantsInitComponentImpl implements PantsInitComponent {
   private void registerPantsActions() {
     ActionManager actionManager = ActionManager.getInstance();
 
+    String pantsRebuildActionName = IdeActions.ACTION_COMPILE_PROJECT + "Pants";
+    String pantsCompileModuleActionName = IdeActions.ACTION_MAKE_MODULE + "Pants";
+    String pantsCompileProjectActionName = PantsConstants.ACTION_MAKE_PROJECT_ID + "Pants";
+
     AnAction pantsCompileAllTargetAction = new PantsOverrideAction(
       PantsConstants.ACTION_MAKE_PROJECT_ID,
       PantsConstants.ACTION_MAKE_PROJECT_DESCRIPTION,
       new PantsCompileAllTargetsAction(),
-      AllIcons.Actions.Compile
+      PantsIcons.Icon
     );
+
     AnAction pantsMakeModuleAction = new PantsOverrideAction(
-      IdeActions.ACTION_MAKE_MODULE,
+      pantsCompileModuleActionName,
       new PantsCompileAllTargetsInModuleAction(Optional.empty())
     );
-    //  Disables compile option (not applicable in Pants).
-    AnAction pantsDisableCompileAction = PantsOverrideAction.createDisabledEmptyAction(IdeActions.ACTION_COMPILE);
 
     AnAction pantsRebuildAction = new PantsOverrideAction(
-      IdeActions.ACTION_COMPILE_PROJECT,
+      pantsRebuildActionName,
       PantsConstants.REBUILD_PROJECT_DESCRIPTION,
       new PantsRebuildAction()
     );
 
-
-    //actionManager.unregisterAction(PantsConstants.ACTION_MAKE_PROJECT_ID);
-    //actionManager.unregisterAction(IdeActions.ACTION_MAKE_MODULE);
-    //actionManager.unregisterAction(IdeActions.ACTION_COMPILE);
-    //actionManager.unregisterAction(IdeActions.ACTION_COMPILE_PROJECT);
-
-    //actionManager.registerAction(PantsConstants.ACTION_MAKE_PROJECT_ID, pantsCompileAllTargetAction);
-    //actionManager.registerAction(IdeActions.ACTION_MAKE_MODULE, pantsMakeModuleAction);
-    //actionManager.registerAction(IdeActions.ACTION_COMPILE, pantsDisableCompileAction);
-    //actionManager.registerAction(IdeActions.ACTION_COMPILE_PROJECT, pantsRebuildAction);
+    actionManager.registerAction(pantsCompileProjectActionName, pantsCompileAllTargetAction);
+    actionManager.registerAction(pantsCompileModuleActionName, pantsMakeModuleAction);
+    actionManager.registerAction(pantsRebuildActionName, pantsRebuildAction);
   }
 }
