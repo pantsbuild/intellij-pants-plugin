@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.integration;
 
 import com.intellij.execution.junit.JUnitConfiguration;
+import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 
@@ -48,8 +49,7 @@ public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
       "org.pantsbuild.testproject.cp_print.AppTest",
       null
     );
-
-    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
+    PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, runConfiguration);
     assertSuccessfulTest(runConfiguration);
   }
 

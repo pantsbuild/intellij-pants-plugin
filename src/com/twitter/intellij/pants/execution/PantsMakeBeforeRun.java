@@ -30,7 +30,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTask;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
-import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
@@ -91,9 +90,12 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     if (!(runManager instanceof RunManagerImpl)) {
       return;
     }
-    RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
     RunConfiguration runConfiguration = settings.getConfiguration();
+    replaceDefaultMakeWithPantsMake(project, runConfiguration);
+  }
 
+
+  public static void replaceDefaultMakeWithPantsMake(@NotNull Project project, @NotNull RunConfiguration runConfiguration) {
     Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(project);
 
     /**
@@ -128,6 +130,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
     final PantsSettings pantsSettings = (PantsSettings) ExternalSystemApiUtil.getSettings(project, PantsConstants.SYSTEM_ID);
     if (!pantsSettings.isUseIntellijCompiler()) {
+      RunManager runManager = RunManager.getInstance(project);
+      RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
       BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
       pantsMakeTask.setEnabled(true);
       runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask));
