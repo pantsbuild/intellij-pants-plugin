@@ -73,20 +73,18 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void fillExtraControls(@NotNull PaintAwarePanel content, int indentLevel) {
-    LinkLabel<?> intellijCompilerHelpMessage = LinkLabel.create(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge"), new Runnable() {
-      @Override
-      public void run() {
-        BrowserUtil.browse(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge.link"));
-      }
-    });
-    intellijCompilerHelpMessage.setMaximumSize(myUseIntellijCompilerCheckBox.getSize());
-    //myUseIntellijCompilerCheckBox.add(label);
 
     myLibsWithSourcesCheckBox.setSelected(mySettings.libsWithSources);
     myEnableIncrementalImportCheckBox.setSelected(mySettings.enableIncrementalImport);
     myUseIdeaProjectJdkCheckBox.setSelected(mySettings.useIdeaProjectJdk);
     myImportSourceDepsAsJarsCheckBox.setSelected(mySettings.importSourceDepsAsJars);
     myUseIntellijCompilerCheckBox.setSelected(mySettings.useIntellijCompiler);
+    LinkLabel<?> intellijCompilerHelpMessage = LinkLabel.create(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge"), new Runnable() {
+      @Override
+      public void run() {
+        BrowserUtil.browse(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge.link"));
+      }
+    });
 
     mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
 
