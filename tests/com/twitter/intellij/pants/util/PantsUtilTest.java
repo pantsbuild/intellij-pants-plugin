@@ -30,6 +30,20 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
       .collect(Collectors.toList());
   }
 
+  public void testIsCompatibleVersion() {
+    assertTrue(PantsUtil.isCompatibleVersion("2.2.3", "1.2.3"));
+    assertTrue(PantsUtil.isCompatibleVersion("1.4.4", "1.2.3"));
+    assertTrue(PantsUtil.isCompatibleVersion("1.2.4", "1.2.3"));
+    assertTrue(PantsUtil.isCompatibleVersion("1.2.4rc0", "1.2.3"));
+    assertTrue(PantsUtil.isCompatibleVersion("1.2.4.dev0", "1.2.3"));
+    assertTrue(PantsUtil.isCompatibleVersion("1.2.3", "1.2.3"));
+
+    assertFalse(PantsUtil.isCompatibleVersion("1.2.0rc122", "1.2.3"));
+    assertFalse(PantsUtil.isCompatibleVersion("2.34.43", "2.34.44"));
+    assertFalse(PantsUtil.isCompatibleVersion("2.33.44", "2.34.44"));
+    assertFalse(PantsUtil.isCompatibleVersion("1.34.44", "2.34.44"));
+  }
+
   public void testFindJdk() {
     final File executable = PantsUtil.findPantsExecutable(getProjectFolder()).get();
     assertEquals(Lists.newArrayList(), getAllJdks().collect(Collectors.toList()));
