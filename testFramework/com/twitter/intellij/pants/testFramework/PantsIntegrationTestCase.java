@@ -417,7 +417,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   @NotNull
   protected OSProcessHandler runWithConfiguration(RunConfiguration configuration) throws ExecutionException {
-    PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, configuration);
+    PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(configuration);
+    PantsMakeBeforeRun.setRunConfigurationWorkingDirectory(configuration);
     final PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
       new PantsJUnitRunnerAndConfigurationSettings(configuration);
     final ExecutionEnvironmentBuilder environmentBuilder =

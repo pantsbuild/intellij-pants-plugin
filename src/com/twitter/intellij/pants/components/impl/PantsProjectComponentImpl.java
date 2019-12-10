@@ -196,9 +196,9 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               }
               final PantsSettings pantsSettings = (PantsSettings) ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
               if (!pantsSettings.isUseIntellijCompiler()) {
-                PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(myProject, settings.getConfiguration());
+                PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(settings.getConfiguration());
               }
-              PantsMakeBeforeRun.setRunConfigurationWorkingDirectory(myProject, settings);
+              PantsMakeBeforeRun.setRunConfigurationWorkingDirectory(settings.getConfiguration());
             }
           });
         }

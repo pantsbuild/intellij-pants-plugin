@@ -85,9 +85,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     super(PantsConstants.SYSTEM_ID, project, ID);
   }
 
-  public static void setRunConfigurationWorkingDirectory(@NotNull Project project, @NotNull RunnerAndConfigurationSettings settings) {
-    Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(project);
-    RunConfiguration runConfiguration = settings.getConfiguration();
+  public static void setRunConfigurationWorkingDirectory(@NotNull RunConfiguration runConfiguration) {
+    Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(runConfiguration.getProject());
 
     /**
      /**
@@ -109,8 +108,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
   }
 
-  public static void replaceDefaultMakeWithPantsMake(@NotNull Project project, @NotNull RunConfiguration runConfiguration) {
-    RunManager runManager = RunManager.getInstance(project);
+  public static void replaceDefaultMakeWithPantsMake(@NotNull RunConfiguration runConfiguration) {
+    RunManager runManager = RunManager.getInstance(runConfiguration.getProject());
     RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
     BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
     pantsMakeTask.setEnabled(true);
