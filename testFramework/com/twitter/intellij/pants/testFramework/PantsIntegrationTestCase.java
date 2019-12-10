@@ -64,6 +64,7 @@ import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsOptions;
+import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -302,7 +303,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   protected Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutablePath) {
-    return PantsUtil.getDefaultJavaSdk(pantsExecutablePath, getTestRootDisposable());
+    return PantsSdkUtil.getDefaultJavaSdk(pantsExecutablePath, getTestRootDisposable());
   }
 
   protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {

@@ -16,7 +16,6 @@ import com.intellij.ide.SaveAndSyncHandler;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
@@ -40,8 +39,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.JavaSdk;
-import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ContentEntry;
@@ -76,7 +73,6 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.JpsProject;
-import org.jetbrains.jps.model.java.JdkVersionDetector;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
 import org.jetbrains.jps.model.library.impl.sdk.JpsSdkImpl;
@@ -849,77 +845,6 @@ public class PantsUtil {
   }
 
   /**
-   * @param pantsExecutable  path to the pants executable file for the
-   *                         project. This function will return erroneous output if you use a directory path. The
-   *                         pants executable can be found from a project path with {@link #findPantsExecutable(String)}.
-   * @param parentDisposable Disposable object to use if a new JDK is added to
-   *                         the project jdk table (otherwise null). Integration tests should use getTestRootDisposable() for
-   *                         this argument to avoid exceptions during teardown.
-   * @return The default Sdk object to use for the project at the given pants
-   * executable path.
-   * <p>
-   * This method will add a JDK to the project JDK table if it needs to create
-   * one, which mutates global state (protected by a read/write lock).
-   */
-  public static Optional<Sdk> getDefaultJavaSdk(@NotNull final String pantsExecutable, @Nullable final Disposable parentDisposable) {
-    Optional<Sdk> sdkForPants = Arrays.stream(ProjectJdkTable.getInstance().getAllJdks())
-      // If a JDK belongs to this particular `pantsExecutable`, then its name will contain the path to Pants.
-      .filter(sdk -> sdk.getName().contains(pantsExecutable) && sdk.getSdkType() instanceof JavaSdk)
-      .findFirst();
-
-    if (sdkForPants.isPresent()) {
-      return sdkForPants;
-    }
-
-    final SimpleExportResult exportResult = SimpleExportResult.getExportResult(pantsExecutable);
-    if (versionCompare(exportResult.getVersion(), "1.0.7") < 0) {
-      return Optional.empty();
-    }
-
-    boolean strict = PantsOptions.getPantsOptions(pantsExecutable).usesStrictJvmVersionForJUnit();
-    Optional<String> jdkHome = exportResult.getJdkHome(strict);
-    if (!jdkHome.isPresent()) {
-      return Optional.empty();
-    }
-
-    String jdkName = null;
-    JdkVersionDetector.JdkVersionInfo jdkInfo = JdkVersionDetector.getInstance().detectJdkVersionInfo(jdkHome.get());
-    if (jdkInfo != null) {
-      // Using IJ's framework to detect jdk version. so jdkInfo.getVersion() returns `java version "1.8.0_121"`
-      for (String version : ContainerUtil.newArrayList("1.6", "1.7", "1.8", "1.9")) {
-        if (jdkInfo.version.toString().contains(version)) {
-          jdkName = String.format("%s_from_%s", version, pantsExecutable);
-          break;
-        }
-      }
-    }
-    if (jdkName == null) {
-      jdkName = String.format("1.x_from_%s", pantsExecutable);
-    }
-
-    // Finally if we need to create a new JDK, it needs to be registered in the `ProjectJdkTable` on the IDE level
-    // before it can be used.
-    Sdk jdk = createJdk(jdkName, jdkHome.get(), parentDisposable);
-    return Optional.of(jdk);
-  }
-
-  public static Sdk createJdk(String name, String home, Disposable disposable) {
-    Sdk jdk = JavaSdk.getInstance().createJdk(name, home);
-    ApplicationManager.getApplication().invokeAndWait(() -> {
-      ApplicationManager.getApplication().runWriteAction(() -> {
-        if (disposable == null) {
-          ProjectJdkTable.getInstance().addJdk(jdk);
-        }
-        else {
-          ProjectJdkTable.getInstance().addJdk(jdk, disposable);
-        }
-      });
-    });
-
-    return jdk;
-  }
-
-  /**
    * Copied from: http://stackoverflow.com/questions/6701948/efficient-way-to-compare-version-strings-in-java
    * Compares two version strings.
    * <p/>
@@ -987,7 +912,7 @@ public class PantsUtil {
 
   private static Optional<VirtualFile> findPantsExecutable(@Nullable VirtualFile file) {
     if (file == null) return Optional.empty();
-    if (file.isDirectory()) {
+    if (file.exists() && file.isDirectory()) {
       final VirtualFile pantsFile = file.findChild(PantsConstants.PANTS);
       if (pantsFile != null && !pantsFile.isDirectory()) {
         return Optional.of(pantsFile);

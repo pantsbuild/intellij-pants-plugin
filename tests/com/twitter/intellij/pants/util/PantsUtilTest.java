@@ -4,15 +4,24 @@
 package com.twitter.intellij.pants.util;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PantsUtilTest extends OSSPantsImportIntegrationTest {
@@ -58,8 +67,8 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     // manually adding the same jdk to the table should result in two identical
     // entries
     ApplicationManager.getApplication().runWriteAction(() -> {
-        // no need to use disposable here, because this should not add a new jdk
-        ProjectJdkTable.getInstance().addJdk(sdkA);
+      // no need to use disposable here, because this should not add a new jdk
+      ProjectJdkTable.getInstance().addJdk(sdkA);
     });
     assertEquals(twoEntriesSameSdk, getSameJdks(sdkA));
 

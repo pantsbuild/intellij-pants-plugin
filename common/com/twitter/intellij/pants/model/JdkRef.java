@@ -8,7 +8,7 @@ import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.serialization.PropertyMapping;
-import com.twitter.intellij.pants.util.PantsUtil;
+import com.twitter.intellij.pants.util.PantsSdkUtil;
 
 import java.util.Objects;
 
@@ -32,7 +32,7 @@ public final class JdkRef {
       .filter(sdk -> myHome.equals(sdk.getHomePath()))
       .filter(sdk -> myName.equals(sdk.getName()))
       .findFirst()
-      .orElseGet(() -> PantsUtil.createJdk(myName, myHome, disposable));
+      .orElseGet(() -> PantsSdkUtil.createAndRegisterJdk(myName, myHome, disposable));
   }
 
   @Override

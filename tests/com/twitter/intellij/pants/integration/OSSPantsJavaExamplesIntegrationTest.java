@@ -148,8 +148,8 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertFirstSourcePartyModules(
       "examples_src_java_org_pantsbuild_example_hello_greet_greet"
-    );
 
+    );
     PantsSettings settings = PantsSettings.getInstance(myProject);
     settings.setUseIdeaProjectJdk(true);
     PantsExecuteTaskResult result = pantsCompileProject();
