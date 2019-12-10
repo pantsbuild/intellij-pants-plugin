@@ -40,7 +40,12 @@ public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtens
       return Collections.singleton(new ContentRoot(packageRoot, ""));
     }
     Set<File> files = findAncestors(sourceRoots);
-    return files.stream().map(s -> new ContentRoot(s.getPath(), "")).collect(Collectors.toSet());
+    Set<ContentRoot> collect = files.stream().map(s -> {
+      String packagePrefix =
+        String.join(".", new File(packageRoot).toURI().relativize(files.iterator().next().toURI()).toString().split(File.separator));
+      return new ContentRoot(s.getPath(), packagePrefix);
+    }).collect(Collectors.toSet());
+    return collect;
   }
 
   /***
