@@ -22,6 +22,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public class PantsInitComponentImpl implements PantsInitComponent {
+
+  public static final String PANTS_REBUILD_ACTION_NAME = IdeActions.ACTION_COMPILE_PROJECT + "Pants";
+  public static final String PANTS_COMPILE_MODULE_ACTION_NAME = IdeActions.ACTION_MAKE_MODULE + "Pants";
+  public static final String PANTS_COMPILE_PROJECT_ACTION_NAME = PantsConstants.ACTION_MAKE_PROJECT_ID + "Pants";
+
   @NotNull
   @Override
   public String getComponentName() {
@@ -52,10 +57,6 @@ public class PantsInitComponentImpl implements PantsInitComponent {
   private void registerPantsActions() {
     ActionManager actionManager = ActionManager.getInstance();
 
-    String pantsRebuildActionName = IdeActions.ACTION_COMPILE_PROJECT + "Pants";
-    String pantsCompileModuleActionName = IdeActions.ACTION_MAKE_MODULE + "Pants";
-    String pantsCompileProjectActionName = PantsConstants.ACTION_MAKE_PROJECT_ID + "Pants";
-
     AnAction pantsCompileAllTargetAction = new PantsOverrideAction(
       PantsConstants.ACTION_MAKE_PROJECT_ID,
       PantsConstants.ACTION_MAKE_PROJECT_DESCRIPTION,
@@ -64,18 +65,18 @@ public class PantsInitComponentImpl implements PantsInitComponent {
     );
 
     AnAction pantsMakeModuleAction = new PantsOverrideAction(
-      pantsCompileModuleActionName,
+      PANTS_COMPILE_MODULE_ACTION_NAME,
       new PantsCompileAllTargetsInModuleAction(Optional.empty())
     );
 
     AnAction pantsRebuildAction = new PantsOverrideAction(
-      pantsRebuildActionName,
+      PANTS_REBUILD_ACTION_NAME,
       PantsConstants.REBUILD_PROJECT_DESCRIPTION,
       new PantsRebuildAction()
     );
 
-    actionManager.registerAction(pantsCompileProjectActionName, pantsCompileAllTargetAction);
-    actionManager.registerAction(pantsCompileModuleActionName, pantsMakeModuleAction);
-    actionManager.registerAction(pantsRebuildActionName, pantsRebuildAction);
+    actionManager.registerAction(PANTS_COMPILE_PROJECT_ACTION_NAME, pantsCompileAllTargetAction);
+    actionManager.registerAction(PANTS_COMPILE_MODULE_ACTION_NAME, pantsMakeModuleAction);
+    actionManager.registerAction(PANTS_REBUILD_ACTION_NAME, pantsRebuildAction);
   }
 }
