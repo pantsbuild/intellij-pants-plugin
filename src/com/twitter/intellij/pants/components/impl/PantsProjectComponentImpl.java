@@ -135,8 +135,8 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           }
           // TODO: This is actually an integer value: if we replaced the incremental import
           // checkbox with an integer optional, we could propagate this value through.
-          final boolean enableIncrementalImport =
-            PropertiesComponent.getInstance(myProject).getValue("incremental_import") != null;
+          final Optional<Integer> enableIncrementalImport =
+            Optional.ofNullable(PropertiesComponent.getInstance(myProject).getValue("incremental_import")).map(Integer::parseInt);
 
           final boolean enableExportDepAsJar =
             Boolean.parseBoolean(Optional.ofNullable(PropertiesComponent.getInstance(myProject).getValue("dep_as_jar")).orElse("false"));
@@ -150,7 +150,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           final boolean useIntellijCompiler = false;
           final PantsProjectSettings pantsProjectSettings =
             new PantsProjectSettings(
-              targetSpecs, new ArrayList<>(), projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk, enableExportDepAsJar, useIntellijCompiler);
+              targetSpecs, new ArrayList<>(), projectPath, loadLibsAndSources, enableIncrementalImport.isPresent(), enableIncrementalImport.orElse(0), useIdeaProjectJdk, enableExportDepAsJar, useIntellijCompiler);
 
           /**
            * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
