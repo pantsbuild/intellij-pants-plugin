@@ -19,7 +19,9 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.util.Collections;
@@ -129,7 +132,15 @@ public class FileChangeTracker {
     if (rootManager.getFileIndex().getContentRootForFile(file) != null) {
       boolean isBuildFile = PantsUtil.isBUILDFileName(file.getName());
       boolean isUnderPantsRepo = PantsUtil.isFileUnderPantsRepo(file);
-      if (isUnderPantsRepo && isBuildFile) {
+
+      Path filePath = Paths.get(file.getPath());
+      boolean shouldBeIgnored =
+        PantsOptions.getPantsOptions(project)
+          .flatMap(options -> options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR))
+          .map(workdir -> filePath.startsWith(Paths.get(workdir).toAbsolutePath()))
+          .orElse(filePath.toUri().toString().contains("/.pants.d/"));
+
+      if (isUnderPantsRepo && isBuildFile && !shouldBeIgnored) {
         return ChangeType.BUILD;
       }
 
