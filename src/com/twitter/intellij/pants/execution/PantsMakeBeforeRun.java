@@ -109,6 +109,16 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   public static void replaceDefaultMakeWithPantsMake(@NotNull RunConfiguration runConfiguration) {
+    /**
+     /**
+     * Scala related run/test configuration inherit {@link AbstractTestRunConfiguration}
+     * Use string test on class name due to scala plugin can be optional and it is hard to separate this logic.
+     */
+    if (!PantsUtil.isScalaRelatedTestRunConfiguration(runConfiguration) ||
+        !(runConfiguration instanceof CommonProgramRunConfigurationParameters)) {
+      return;
+    }
+
     RunManager runManager = RunManager.getInstance(runConfiguration.getProject());
     RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
     BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
