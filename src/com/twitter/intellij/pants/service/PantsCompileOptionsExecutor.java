@@ -44,6 +44,7 @@ public class PantsCompileOptionsExecutor {
   private final PantsCompileOptions myOptions;
   private final File myBuildRoot;
   private final boolean myResolveSourcesAndDocsForJars;
+  private final Optional<Integer> myIncrementalImportDepth;
 
   @NotNull
   public static PantsCompileOptionsExecutor create(
@@ -62,7 +63,8 @@ public class PantsCompileOptionsExecutor {
     return new PantsCompileOptionsExecutor(
       buildRoot.get(),
       options,
-      executionOptions.isLibsWithSourcesAndDocs()
+      executionOptions.isLibsWithSourcesAndDocs(),
+      executionOptions.isEnableIncrementalImport()
     );
   }
 
@@ -72,7 +74,8 @@ public class PantsCompileOptionsExecutor {
     return new PantsCompileOptionsExecutor(
       new File("/"),
       new MyPantsCompileOptions("", PantsExecutionSettings.createDefault()),
-      true
+      true,
+      Optional.of(1)
     ) {
     };
   }
@@ -80,15 +83,22 @@ public class PantsCompileOptionsExecutor {
   private PantsCompileOptionsExecutor(
     @NotNull File buildRoot,
     @NotNull PantsCompileOptions compilerOptions,
-    boolean resolveSourcesAndDocsForJars
+    boolean resolveSourcesAndDocsForJars,
+    @NotNull Optional<Integer> incrementalImportDepth
   ) {
     myBuildRoot = buildRoot;
     myOptions = compilerOptions;
     myResolveSourcesAndDocsForJars = resolveSourcesAndDocsForJars;
+    myIncrementalImportDepth = incrementalImportDepth;
   }
 
   public String getProjectRelativePath() {
     return PantsUtil.getRelativeProjectPath(getBuildRoot(), getProjectPath()).get();
+  }
+
+  @NotNull
+  public Optional<Integer> getIncrementalImportDepth() {
+    return myIncrementalImportDepth;
   }
 
   @NotNull
@@ -279,7 +289,7 @@ public class PantsCompileOptionsExecutor {
       return myExecutionOptions.getSelectedTargetSpecs();
     }
 
-    public boolean isEnableIncrementalImport() {
+    public Optional<Integer> isEnableIncrementalImport() {
       return myExecutionOptions.isEnableIncrementalImport();
     }
 

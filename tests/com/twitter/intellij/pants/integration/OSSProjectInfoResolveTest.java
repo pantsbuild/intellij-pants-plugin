@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
   private static Consumer<String> STRING_CONSUMER = new Consumer<String>() {
@@ -36,7 +37,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     final boolean libsWithSourcesAndDocs = true;
     final boolean useIdeaProjectJdk = false;
     final boolean isExportDepAsJar = false;
-    final boolean isEnableIncrementalImport = false;
+    final Optional<Integer> isEnableIncrementalImport = Optional.empty();
     PantsExecutionSettings settings = new PantsExecutionSettings(
       Collections.singletonList(targetSpec),
       libsWithSourcesAndDocs,

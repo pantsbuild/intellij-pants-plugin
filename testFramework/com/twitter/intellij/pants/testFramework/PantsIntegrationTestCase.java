@@ -98,6 +98,11 @@ import java.util.stream.Stream;
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
 
   private final boolean readOnly;
+
+  public void setProjectSettings(PantsProjectSettings projectSettings) {
+    myProjectSettings = projectSettings;
+  }
+
   private PantsProjectSettings myProjectSettings;
   private String myRelativeProjectPath = null;
   private CompilerTester myCompilerTester;

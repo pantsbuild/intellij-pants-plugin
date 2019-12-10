@@ -10,18 +10,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class PantsExecutionSettings extends ExternalSystemExecutionSettings implements PantsExecutionOptions {
   private final boolean myLibsWithSourcesAndDocs;
   private final boolean myUseIdeaProjectJdk;
-  private final boolean myEnableIncrementalImport;
+  private final Optional<Integer> myEnableIncrementalImport;
   private final boolean myImportSourceDepsAsJars;
   private final List<String> myTargetSpecs;
 
   private static final List<String> DEFAULT_TARGET_SPECS = Collections.emptyList();
   private static final boolean DEFAULT_WITH_SOURCES_AND_DOCS = true;
   private static final boolean DEFAULT_USE_IDEA_PROJECT_SDK = false;
-  private static final boolean DEFAULT_ENABLE_INCREMENTAL_IMPORT = false;
+  private static final Optional<Integer> DEFAULT_ENABLE_INCREMENTAL_IMPORT = Optional.empty();
   private static final boolean DEFAULT_IMPORT_SOURCE_DEPS_AS_JARS = false;
 
   public static PantsExecutionSettings createDefault() {
@@ -45,7 +46,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     boolean libsWithSourcesAndDocs,
     boolean useIdeaProjectJdk,
     boolean importSourceDepsAsJars,
-    boolean enableIncrementalImport
+    Optional<Integer> enableIncrementalImport
   ) {
     myTargetSpecs = targetSpecs;
     myLibsWithSourcesAndDocs = libsWithSourcesAndDocs;
@@ -67,7 +68,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     return myUseIdeaProjectJdk;
   }
 
-  public boolean isEnableIncrementalImport() {
+  public Optional<Integer> isEnableIncrementalImport() {
     return myEnableIncrementalImport;
   }
 
