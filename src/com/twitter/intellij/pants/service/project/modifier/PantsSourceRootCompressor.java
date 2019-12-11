@@ -73,7 +73,7 @@ public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtens
    * @param candidates a set of `File`s
    * @return the top ancestors among the candidates
    */
-  private Set<File> findAncestors(Set<File> candidates) {
+  protected static Set<File> findAncestors(Set<File> candidates) {
     Set<File> results = Sets.newHashSet();
     results.addAll(candidates);
 
@@ -100,7 +100,7 @@ public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtens
    * @param child the suspected child directory.
    * @return true, if the child is a subdirectory of the base directory.
    */
-  public boolean isYSubDirectoryOfX(File base, File child) {
+  public static boolean isYSubDirectoryOfX(File base, File child) {
     File parentFile = child;
     while (parentFile != null) {
       if (FileUtil.filesEqual(base, parentFile)) {
