@@ -129,7 +129,7 @@ public class PantsManager implements
         if (projectSettings instanceof PantsProjectSettings) {
           PantsProjectSettings pantsProjectSettings = (PantsProjectSettings) projectSettings;
           return new PantsExecutionSettings(
-            pantsProjectSettings.getTargetSpecs(),
+            pantsProjectSettings.getSelectedTargetSpecs(),
             pantsProjectSettings.libsWithSources,
             pantsProjectSettings.useIdeaProjectJdk,
             pantsProjectSettings.importSourceDepsAsJars,

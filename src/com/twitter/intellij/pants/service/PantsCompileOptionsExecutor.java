@@ -20,7 +20,6 @@ import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
-import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
@@ -112,7 +111,7 @@ public class PantsCompileOptionsExecutor {
   @Nls
   public String getProjectName() {
     final String buildRootName = getBuildRoot().getName();
-    List<String> buildRootPrefixedSpecs = myOptions.getTargetSpecs().stream()
+    List<String> buildRootPrefixedSpecs = myOptions.getSelectedTargetSpecs().stream()
       .map(s -> buildRootName + File.separator + s)
       .collect(Collectors.toList());
     String candidateName = String.join("__", buildRootPrefixedSpecs).replaceAll(File.separator, ".");
@@ -238,7 +237,7 @@ public class PantsCompileOptionsExecutor {
   @NotNull
   private List<String> getTargetSpecs() {
     // If project is opened via pants cli, the targets are in specs.
-    return Collections.unmodifiableList(getOptions().getTargetSpecs());
+    return Collections.unmodifiableList(getOptions().getSelectedTargetSpecs());
   }
 
   /**
@@ -276,8 +275,8 @@ public class PantsCompileOptionsExecutor {
     }
 
     @NotNull
-    public List<String> getTargetSpecs() {
-      return myExecutionOptions.getTargetSpecs();
+    public List<String> getSelectedTargetSpecs() {
+      return myExecutionOptions.getSelectedTargetSpecs();
     }
 
     public boolean isEnableIncrementalImport() {
