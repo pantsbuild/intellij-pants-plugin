@@ -15,6 +15,7 @@ import org.apache.commons.compress.utils.Sets;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,12 +41,14 @@ public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtens
       return Collections.singleton(new ContentRoot(packageRoot, ""));
     }
     Set<File> files = findAncestors(sourceRoots);
-    Set<ContentRoot> collect = files.stream().map(s -> {
-      String packagePrefix =
-        String.join(".", new File(packageRoot).toURI().relativize(files.iterator().next().toURI()).toString().split(File.separator));
-      return new ContentRoot(s.getPath(), packagePrefix);
-    }).collect(Collectors.toSet());
-    return collect;
+    Set<ContentRoot> finalContentRoots = files.stream()
+      .map(filePath -> {
+        String packagePrefix =
+          String.join(".", new File(packageRoot).toURI().relativize(filePath.toURI()).toString().split(File.separator));
+        return new ContentRoot(filePath.getPath(), packagePrefix);
+      })
+      .collect(Collectors.toSet());
+    return finalContentRoots;
   }
 
   /***
