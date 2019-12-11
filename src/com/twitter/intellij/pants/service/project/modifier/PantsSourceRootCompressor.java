@@ -40,8 +40,8 @@ public class PantsSourceRootCompressor implements PantsProjectInfoModifierExtens
     if (folderContainsOnlyRoots(new File(packageRoot), sourceRoots)) {
       return Collections.singleton(new ContentRoot(packageRoot, ""));
     }
-    Set<File> files = findAncestors(sourceRoots);
-    Set<ContentRoot> finalContentRoots = files.stream()
+    Set<File> ancestorContentRootPaths = findAncestors(sourceRoots);
+    Set<ContentRoot> finalContentRoots = ancestorContentRootPaths.stream()
       .map(filePath -> {
         String packagePrefix =
           String.join(".", new File(packageRoot).toURI().relativize(filePath.toURI()).toString().split(File.separator));
