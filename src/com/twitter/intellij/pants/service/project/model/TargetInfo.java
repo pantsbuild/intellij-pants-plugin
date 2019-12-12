@@ -157,7 +157,10 @@ public class TargetInfo {
   }
 
   public boolean isScalaTarget() {
-    return getAddressInfos().stream().anyMatch(TargetAddressInfo::isScala);
+    return getAddressInfos().stream().anyMatch(TargetAddressInfo::isScala) ||
+           // TODO(yic): have Pants export `pants_target_type` correctly
+           // because `thrift-scala` also has the type `java_thrift_library`
+           getAddressInfos().stream().anyMatch(s -> s.getTargetAddress().endsWith("-scala"));
   }
 
   public boolean isPythonTarget() {

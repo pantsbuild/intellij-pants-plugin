@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.settings;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.service.settings.ExternalSystemSettingsControlCustomizer;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
@@ -21,6 +22,7 @@ import com.intellij.ui.CheckBoxList;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.StatusText;
@@ -77,6 +79,12 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myUseIdeaProjectJdkCheckBox.setSelected(mySettings.useIdeaProjectJdk);
     myImportSourceDepsAsJarsCheckBox.setSelected(mySettings.importSourceDepsAsJars);
     myUseIntellijCompilerCheckBox.setSelected(mySettings.useIntellijCompiler);
+    LinkLabel<?> intellijCompilerHelpMessage = LinkLabel.create(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge"), new Runnable() {
+      @Override
+      public void run() {
+        BrowserUtil.browse(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge.link"));
+      }
+    });
 
     mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
 
@@ -86,6 +94,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myUseIdeaProjectJdkCheckBox,
       myImportSourceDepsAsJarsCheckBox,
       myUseIntellijCompilerCheckBox,
+      intellijCompilerHelpMessage,
       new JBLabel(PantsBundle.message("pants.settings.text.targets")),
       new JBScrollPane(myTargetSpecsBox)
     );

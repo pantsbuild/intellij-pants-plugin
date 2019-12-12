@@ -15,6 +15,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private final boolean myLibsWithSourcesAndDocs;
   private final boolean myUseIdeaProjectJdk;
   private final boolean myEnableIncrementalImport;
+  private final boolean myUseIntellijCompiler;
   private final boolean myImportSourceDepsAsJars;
   private final List<String> myTargetSpecs;
 
@@ -23,6 +24,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private static final boolean DEFAULT_USE_IDEA_PROJECT_SDK = false;
   private static final boolean DEFAULT_ENABLE_INCREMENTAL_IMPORT = false;
   private static final boolean DEFAULT_IMPORT_SOURCE_DEPS_AS_JARS = false;
+  private static final boolean DEFAULT_USE_INTELLIJ_COMPILER = false;
 
   public static PantsExecutionSettings createDefault() {
     return new PantsExecutionSettings(
@@ -30,7 +32,8 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
       DEFAULT_WITH_SOURCES_AND_DOCS,
       DEFAULT_USE_IDEA_PROJECT_SDK,
       DEFAULT_IMPORT_SOURCE_DEPS_AS_JARS,
-      DEFAULT_ENABLE_INCREMENTAL_IMPORT
+      DEFAULT_ENABLE_INCREMENTAL_IMPORT,
+      DEFAULT_USE_INTELLIJ_COMPILER
     );
   }
 
@@ -45,13 +48,15 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     boolean libsWithSourcesAndDocs,
     boolean useIdeaProjectJdk,
     boolean importSourceDepsAsJars,
-    boolean enableIncrementalImport
+    boolean enableIncrementalImport,
+    boolean useIntellijCompiler
   ) {
     myTargetSpecs = targetSpecs;
     myLibsWithSourcesAndDocs = libsWithSourcesAndDocs;
     myUseIdeaProjectJdk = useIdeaProjectJdk;
     myImportSourceDepsAsJars = importSourceDepsAsJars;
     myEnableIncrementalImport = enableIncrementalImport;
+    myUseIntellijCompiler = useIntellijCompiler;
   }
 
   @NotNull
@@ -85,6 +90,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     PantsExecutionSettings settings = (PantsExecutionSettings) o;
     return Objects.equals(myUseIdeaProjectJdk, settings.myUseIdeaProjectJdk) &&
            Objects.equals(myEnableIncrementalImport, settings.myEnableIncrementalImport) &&
+           Objects.equals(myUseIntellijCompiler, settings.myUseIntellijCompiler) &&
            Objects.equals(myLibsWithSourcesAndDocs, settings.myLibsWithSourcesAndDocs) &&
            Objects.equals(myTargetSpecs, settings.myTargetSpecs);
   }
@@ -95,7 +101,8 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
       myTargetSpecs,
       myLibsWithSourcesAndDocs,
       myUseIdeaProjectJdk,
-      myEnableIncrementalImport
+      myEnableIncrementalImport,
+      myUseIntellijCompiler
     );
   }
 }

@@ -6,14 +6,17 @@ package com.twitter.intellij.pants.execution;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.CantRunException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
+import com.intellij.execution.RunManager;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunConfigurationModule;
 import com.intellij.execution.configurations.RunnerSettings;
+import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
@@ -63,6 +66,13 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     JavaParameters params,
     RunnerSettings runnerSettings
   ) throws ExecutionException {
+    List<BeforeRunTask<?>> tasks = ((RunManagerImpl) RunManager.getInstance(configuration.getProject())).getBeforeRunTasks(configuration);
+    boolean builtByPants = tasks.stream().anyMatch(s -> s.getProviderId().equals(PantsMakeBeforeRun.ID));
+    // Not built by Pants means it was built by IntelliJ, in which case we don't need to change the classpath.
+    if (!builtByPants) {
+      return;
+    }
+
     final Module module = findPantsModule(configuration);
     if (module == null) {
       return;

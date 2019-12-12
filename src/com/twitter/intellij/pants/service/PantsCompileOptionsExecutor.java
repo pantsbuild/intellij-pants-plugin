@@ -222,6 +222,7 @@ public class PantsCompileOptionsExecutor {
 
     if (getOptions().isImportSourceDepsAsJars()) {
       commandLine.addParameter("export-dep-as-jar");
+      commandLine.addParameter("--sources");
     }
     else {
       commandLine.addParameter("export");

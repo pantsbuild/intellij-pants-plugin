@@ -82,14 +82,7 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
       }
     });
 
-    JUnitConfiguration runConfiguration = generateJUnitConfiguration(
-      PantsUtil.getCanonicalModuleName(targetToImport),
-      "org.pantsbuild.testproject.matcher.MatcherTest",
-      null
-    );
-
-    assertAndRunPantsMake(runConfiguration);
-    assertSuccessfulTest(runConfiguration);
+    assertSuccessfulTest(PantsUtil.getCanonicalModuleName(targetToImport), "org.pantsbuild.testproject.matcher.MatcherTest");
     assertTrue(ProjectUtil.closeAndDispose(myProject));
   }
 }

@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.settings;
 
+import com.google.common.collect.Sets;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
@@ -10,8 +11,7 @@ import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettin
 import com.intellij.openapi.externalSystem.settings.ExternalSystemSettingsListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.util.containers.ContainerUtilRt;
-import com.intellij.util.xmlb.annotations.AbstractCollection;
+import com.intellij.util.xmlb.annotations.XCollection;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -76,6 +76,10 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
     return getLinkedProjectsSettings().stream().anyMatch(PantsProjectSettings::isEnableIncrementalImport);
   }
 
+  public boolean isUseIntellijCompiler() {
+    return getLinkedProjectsSettings().stream().anyMatch(s -> s.useIntellijCompiler);
+  }
+
   public void setEnableIncrementalImport(boolean enableIncrementalImport) {
     getLinkedProjectsSettings().forEach(s -> s.enableIncrementalImport = enableIncrementalImport);
   }
@@ -127,12 +131,12 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   public static class MyState implements State<PantsProjectSettings> {
-    Set<PantsProjectSettings> myLinkedExternalProjectsSettings = ContainerUtilRt.newTreeSet();
+    Set<PantsProjectSettings> myLinkedExternalProjectsSettings = Sets.newTreeSet();
 
     boolean myUseIdeaProjectJdk = false;
     int myResolverVersion = 0;
 
-    @AbstractCollection(surroundWithTag = false, elementTypes = {PantsProjectSettings.class})
+    @XCollection(elementTypes = {PantsProjectSettings.class})
     public Set<PantsProjectSettings> getLinkedExternalProjectsSettings() {
       return myLinkedExternalProjectsSettings;
     }

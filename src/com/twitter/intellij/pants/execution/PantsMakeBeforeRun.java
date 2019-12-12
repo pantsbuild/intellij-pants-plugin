@@ -30,6 +30,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTask;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -84,15 +85,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     super(PantsConstants.SYSTEM_ID, project, ID);
   }
 
-  public static void replaceDefaultMakeWithPantsMake(@NotNull Project project, @NotNull RunnerAndConfigurationSettings settings) {
-    RunManager runManager = RunManager.getInstance(project);
-    if (!(runManager instanceof RunManagerImpl)) {
-      return;
-    }
-    RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
-    RunConfiguration runConfiguration = settings.getConfiguration();
-
-    Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(project);
+  public static void setRunConfigurationWorkingDirectory(@NotNull RunConfiguration runConfiguration) {
+    Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(runConfiguration.getProject());
 
     /**
      /**
@@ -112,20 +106,19 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
         ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
       }
     }
-    /**
-     * If neither applies (e.g. Pants or pytest configuration), do not continue.
-     */
-    else {
+  }
+
+  public static void replaceDefaultMakeWithPantsMake(@NotNull RunConfiguration runConfiguration) {
+    if (!PantsUtil.isScalaRelatedTestRunConfiguration(runConfiguration) &&
+        !(runConfiguration instanceof CommonProgramRunConfigurationParameters)) {
       return;
     }
 
-    /**
-     * Every time a new configuration is created, 'Make' is by default added to the "Before launch" tasks.
-     * Therefore we want to overwrite it with {@link PantsMakeBeforeRun}.
-     */
+    RunManager runManager = RunManager.getInstance(runConfiguration.getProject());
+    RunManagerImpl runManagerImpl = (RunManagerImpl) runManager;
     BeforeRunTask pantsMakeTask = new ExternalSystemBeforeRunTask(ID, PantsConstants.SYSTEM_ID);
     pantsMakeTask.setEnabled(true);
-    runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask), false);
+    runManagerImpl.setBeforeRunTasks(runConfiguration, Collections.singletonList(pantsMakeTask));
   }
 
   public static void terminatePantsProcess(Project project) {
