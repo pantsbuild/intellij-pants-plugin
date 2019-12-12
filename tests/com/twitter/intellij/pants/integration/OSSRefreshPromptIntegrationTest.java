@@ -12,12 +12,16 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
+import com.twitter.intellij.pants.file.ProjectRefreshListener;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 import javax.swing.event.HyperlinkEvent;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -98,19 +102,35 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
       @Override
       public void run() {
         doImport("examples/tests/java/org/pantsbuild/example/useproto");
-        // Find a BUILD file in project.
         FileEditorManager.getInstance(myProject).openFile(firstMatchingVirtualFileInProject("UseProtoTest.java"), true);
         Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
-        // Add a newline to the BUILD file.
         editor.getDocument().setText(editor.getDocument().getText() + "\n");
-        // Save the BUILD file. Then the refresh notification should be triggered.
         FileDocumentManager.getInstance().saveAllDocuments();
-        // Verify the notification is triggered.
         ArrayList<Notification> notifications = EventLog.getLogModel(myProject).getNotifications();
         assertEquals("There should not be any notifications, but there is", 0, notifications.size());
       }
     });
   }
+
+  public void testNoRefreshPromptPantsd() throws Throwable {
+    doImport("examples/tests/java/org/pantsbuild/example/useproto");
+    String workdir = Paths.get(this.getProjectPath() ).relativize(Paths.get(myProjectRoot.getPath())).toString() + "/.pants.d/";
+    createProjectSubDir(workdir);
+    VirtualFile buildHtml = createProjectSubFile(workdir + "build.html");
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        FileEditorManager.getInstance(myProject).openFile(buildHtml, true);
+        Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
+        editor.getDocument().setText(editor.getDocument().getText() + "\n");
+        FileDocumentManager.getInstance().saveAllDocuments();
+        ArrayList<Notification> notifications = EventLog.getLogModel(myProject).getNotifications();
+        notifications
+          .forEach(notification -> assertNotSame(notification.getTitle(), NOTIFICATION_TITLE));
+      }
+    });
+  }
+
 
   public void testNotificationQuantity() throws Throwable {
     ApplicationManager.getApplication().runWriteAction(new Runnable() {
