@@ -120,6 +120,9 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <macro implementation="com.twitter.intellij.pants.macro.FilePathRelativeToBuiltRootMacro"/>
+    <localInspection bundle="com.twitter.intellij.pants.PantsBundle" key="pants.info.python.facet.missing"
+                     groupName="Pants" enabledByDefault="true"
+                     implementationClass="com.twitter.intellij.pants.inspection.PythonFacetInspection"/>
     <localInspection bundle="com.twitter.intellij.pants.PantsBundle" key="pants.info.python.plugin.missing"
                      groupName="Pants" enabledByDefault="true"
                      implementationClass="com.twitter.intellij.pants.inspection.PythonPluginInspection"/>
