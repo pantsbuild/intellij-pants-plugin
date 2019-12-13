@@ -60,7 +60,7 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
 
     final GeneralCommandLine commandLine =
       constructCommandLine(
-        taskNames, projectPath, settings, Lists.newArrayList(settings.getVmOptions()), settings.getArguments(), jvmAgentSetup);
+        taskNames, projectPath, settings, Lists.newArrayList(settings.getJvmArguments()), settings.getArguments(), jvmAgentSetup);
     if (commandLine == null) {
       return;
     }
@@ -143,7 +143,7 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
       }
       commandLine.addParameter(jvmOptionsFlag + "=" + getCleanedDebugSetup(debuggerSetup));
     }
-    if (settings.isUseIdeaProjectJdk()) {
+    if (settings.useIdeaProjectJdk()) {
       try {
         commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
       }

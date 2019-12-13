@@ -63,7 +63,7 @@ public class PantsCompileOptionsExecutor {
     return new PantsCompileOptionsExecutor(
       buildRoot.get(),
       options,
-      executionOptions.isLibsWithSourcesAndDocs()
+      executionOptions.libsWithSourcesAndDocs()
     );
   }
 
