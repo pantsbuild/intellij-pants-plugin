@@ -39,6 +39,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ContentEntry;
@@ -67,11 +68,13 @@ import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.model.SimpleExportResult;
+import org.bouncycastle.math.raw.Mod;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.incremental.ModuleLevelBuilder;
 import org.jetbrains.jps.model.JpsProject;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
@@ -90,6 +93,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -611,6 +615,14 @@ public class PantsUtil {
   public static void refreshAllProjects(@NotNull Project project) {
     if (!isPantsProject(project) && !isSeedPantsProject(project)) {
       return;
+    }
+
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+
+    for (Module module : modules) {
+      if(Objects.equals(ExternalSystemModulePropertyManager.getInstance(module).getExternalModuleType(), PantsConstants.PANTS_TARGET_MODULE_TYPE)) {
+        ModuleManager.getInstance(project).disposeModule(module);
+      }
     }
 
     // This code needs to run on the dispatch thread, but in some cases
