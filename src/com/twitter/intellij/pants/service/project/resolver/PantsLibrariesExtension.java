@@ -37,7 +37,7 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
   ) {
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
       final TargetInfo targetInfo = entry.getValue();
-      if (!targetInfo.isJarLibrary()) {
+      if (!targetInfo.isScalaTarget()) {
         continue;
       }
 
