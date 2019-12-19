@@ -38,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PantsProjectSettingsControl extends AbstractExternalProjectSettingsControl<PantsProjectSettings> {
 
@@ -86,7 +88,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       }
     });
 
-    mySettings.getTargetSpecs().forEach(spec -> myTargetSpecsBox.addItem(spec, spec, true));
+    myTargetSpecsBox.setItems( mySettings.getAllAvailableTargetSpecs(), x->x);
+    mySettings.getSelectedTargetSpecs().forEach(spec -> myTargetSpecsBox.setItemSelected(spec, true));
 
     List<JComponent> boxes = ContainerUtil.newArrayList(
       myLibsWithSourcesCheckBox,
@@ -123,6 +126,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
     PantsProjectSettings newSettings = new PantsProjectSettings(
       getSelectedTargetSpecsFromBoxes(),
+      getAllTargetSpecsFromBoxes(),
       // Project path is not visible to user, so it will stay the same.
       getInitialSettings().getExternalProjectPath(),
       myLibsWithSourcesCheckBox.isSelected(),
@@ -141,7 +145,6 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     //     The values of all the settings are either their initial values,
     //     or whatever they were last set to, so you can't reuse them.
     lastPath = "";
-    myTargetSpecsBox.clear();
     errors.clear();
   }
 
@@ -223,12 +226,19 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
-    settings.setTargetSpecs(getSelectedTargetSpecsFromBoxes());
+    settings.setSelectedTargetSpecs(getSelectedTargetSpecsFromBoxes());
+    settings.setAllAvailableTargetSpecs(getAllTargetSpecsFromBoxes());
     settings.libsWithSources = myLibsWithSourcesCheckBox.isSelected();
     settings.enableIncrementalImport = myEnableIncrementalImportCheckBox.isSelected();
     settings.useIdeaProjectJdk = myUseIdeaProjectJdkCheckBox.isSelected();
     settings.importSourceDepsAsJars = myImportSourceDepsAsJarsCheckBox.isSelected();
     settings.useIntellijCompiler = myUseIntellijCompilerCheckBox.isSelected();
+  }
+
+  @NotNull
+  private List<String> getAllTargetSpecsFromBoxes() {
+    return IntStream.range(0, myTargetSpecsBox.getItemsCount()).mapToObj(i -> myTargetSpecsBox.getItemAt(i)).collect(
+      Collectors.toList());
   }
 
   @Override
