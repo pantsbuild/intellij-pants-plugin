@@ -84,7 +84,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode =
       resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.isEnableIncrementalImport());
-    doViewSwitch(id, projectPath);
+    if (!settings.isImportSourceDepsAsJars()) {
+      doViewSwitch(id, projectPath);
+    }
     task2executor.remove(id);
     return projectDataNode;
   }
