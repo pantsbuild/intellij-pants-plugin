@@ -84,7 +84,11 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode =
       resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.isEnableIncrementalImport());
-    doViewSwitch(id, projectPath);
+    // We do not want to repeatedly force switching to 'Project Files Tree' view if
+    // user decides to use import dep as jar and wants to use the more focused 'Project' view.
+    if (!settings.isImportSourceDepsAsJars()) {
+      doViewSwitch(id, projectPath);
+    }
     task2executor.remove(id);
     return projectDataNode;
   }
