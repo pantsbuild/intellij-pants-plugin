@@ -37,7 +37,11 @@ public class PantsLibrariesExtension implements PantsResolverExtension {
   ) {
     for (Map.Entry<String, TargetInfo> entry : projectInfo.getSortedTargets()) {
       final TargetInfo targetInfo = entry.getValue();
-      if (!targetInfo.isScalaTarget()) {
+
+      // TODO We only actually want to do this if we are in export-dep-as-jar mode,
+      // but I'm not quite sure how to check it.
+      // If we are not in export-dep-as-jar, we should set this to the original `if (!targetInfo.isJarLibrary())`
+      if (targetInfo.isPythonTarget()) {
         continue;
       }
 
