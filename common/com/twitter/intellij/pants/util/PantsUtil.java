@@ -622,8 +622,6 @@ public class PantsUtil {
     // invokeLater() to run in the dispatch thread.
     ApplicationManager.getApplication().invokeAndWait(
       () -> {
-        clearPantsProjects(project);
-
         ApplicationManager.getApplication().runWriteAction(() -> FileDocumentManager.getInstance().saveAllDocuments());
 
         final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
@@ -632,24 +630,6 @@ public class PantsUtil {
         specBuilder.use(executionMode);
         ExternalSystemUtil.refreshProjects(specBuilder);
       });
-  }
-
-  private static void clearPantsProjects(@NotNull Project project) {
-    ApplicationManager
-      .getApplication()
-      .runWriteAction(() ->
-                      {
-                        Module[] modules = ModuleManager.getInstance(project).getModules();
-                        for (Module module : modules) {
-                          if (Objects
-                            .equals(
-                              ExternalSystemModulePropertyManager.getInstance(module)
-                                .getExternalModuleType(), PantsConstants.PANTS_TARGET_MODULE_TYPE)) {
-                            ModuleManager.getInstance(project).disposeModule(module);
-                          }
-                        }
-                      }
-      );
   }
 
   public static Optional<VirtualFile> findFileByAbsoluteOrRelativePath(

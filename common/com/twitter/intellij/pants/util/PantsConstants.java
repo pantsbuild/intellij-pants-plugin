@@ -37,8 +37,10 @@ public class PantsConstants {
   public static final String PANTS_TARGET_MODULE_TYPE =  "pants.module";
 
   public static final String PANTS_OPTION_PANTS_WORKDIR = "pants_workdir";
+  public static final String PANTS_OPTION_LINKED_PROJECT_PATH = "pants.linked.project.path";
   public static final String PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION = "test.junit.strict_jvm_version";
   public static final String PANTS_OPTION_ASYNC_CLEAN_ALL = "clean-all.async";
+
 
   // Used to initialize project sdk therefore use project processing weight, i.e, the highest.
   public static final Key<JdkRef> SDK_KEY = Key.create(JdkRef.class, ProjectKeys.PROJECT.getProcessingWeight());

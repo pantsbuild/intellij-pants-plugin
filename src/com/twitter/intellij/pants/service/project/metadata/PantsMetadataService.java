@@ -49,6 +49,7 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
         module.setOption(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY, PantsUtil.dehydrateTargetAddresses(metadata.getLibraryExcludes()));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY, PantsUtil.dehydrateTargetAddresses(metadata.getTargetAddresses()));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY, gson.toJson(metadata.getTargetAddressInfoSet()));
+        module.setOption(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH, projectData.getLinkedExternalProjectPath());
         ExternalSystemModulePropertyManager.getInstance(module).setExternalModuleType(PantsConstants.PANTS_TARGET_MODULE_TYPE);
       }
     }
