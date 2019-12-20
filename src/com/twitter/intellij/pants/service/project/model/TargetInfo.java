@@ -152,6 +152,10 @@ public class TargetInfo {
     return PantsSourceType.SOURCE;
   }
 
+  public boolean isJarLibrary() {
+    return getAddressInfos().stream().allMatch(TargetAddressInfo::isJarLibrary);
+  }
+
   public boolean isScalaTarget() {
     return getAddressInfos().stream().anyMatch(TargetAddressInfo::isScala) ||
            // TODO(yic): have Pants export `pants_target_type` correctly

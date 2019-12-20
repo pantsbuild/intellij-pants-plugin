@@ -95,5 +95,9 @@ public class TargetAddressInfo {
            getGlobs().hasFileExtension("py");
   }
 
+  public boolean isJarLibrary() {
+    return StringUtil.equals("jar_library", getInternalPantsTargetType());
+  }
+
   public boolean isTargetAlias() { return pants_target_type != null && (pants_target_type.equals("alias") || pants_target_type.equals("target"));}
 }
