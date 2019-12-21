@@ -36,6 +36,9 @@ public class PantsResolver {
   /**
    * Bump this version if project resolve changes. It will prompt user to refresh.
    * E.g. more modules are created or their relationship changes.
+   *
+   * 16: with 'import dep as jar', allow all target types (except Python targets) to depend on libraries directly.
+   *     Previously only JarLibrary targets can depend on libraries.
    */
   public static final int VERSION = 16;
 
