@@ -115,7 +115,7 @@ public class PantsResolver {
 
   private Optional<BuildGraph> constructBuildGraph(@NotNull DataNode<ProjectData> projectInfoDataNode) {
     Optional<BuildGraph> buildGraph;
-    if (myExecutor.getOptions().isEnableIncrementalImport()) {
+    if (myExecutor.getOptions().incrementalImportDepth().isPresent()) {
       Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(projectInfoDataNode.getData().getLinkedExternalProjectPath());
       SimpleExportResult result = SimpleExportResult.getExportResult(pantsExecutable.get().getPath());
       if (PantsUtil.versionCompare(result.getVersion(), "1.0.9") < 0) {
