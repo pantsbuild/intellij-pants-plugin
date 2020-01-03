@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.service.project.metadata;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
@@ -11,7 +12,11 @@ import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataSer
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.twitter.intellij.pants.file.FileChangeTracker;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.service.project.PantsResolver;
+import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -19,8 +24,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 
 public class PantsMetadataService implements ProjectDataService<TargetMetadata, Module> {
