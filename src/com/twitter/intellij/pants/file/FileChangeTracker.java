@@ -104,10 +104,10 @@ public class FileChangeTracker {
     return instance;
   }
 
-  private static void markDirty(@NotNull VirtualFile file, @NotNull VirtualFileListener listener) {
+  private static void markDirty(@NotNull VirtualFile file,final PantsOptions pantsOptions, @NotNull VirtualFileListener listener) {
     Project project = listenToProjectMap.get(listener);
 
-    ChangeType changeType = detectChangeType(project, file);
+    ChangeType changeType = detectChangeType(project, pantsOptions, file);
     LOG.debug(String.format("Changed: %s. In project: %s", file.getPath(), changeType));
     if (changeType == ChangeType.UNRELATED) {
       return;
@@ -126,7 +126,7 @@ public class FileChangeTracker {
     OTHER;
   }
 
-  private static ChangeType detectChangeType(Project project, @NotNull VirtualFile file) {
+  private static ChangeType detectChangeType(Project project,final PantsOptions pantsOptions, @NotNull VirtualFile file) {
     ProjectRootManager rootManager = ProjectRootManager.getInstance(project);
 
     if (rootManager.getFileIndex().getContentRootForFile(file) != null) {
@@ -135,8 +135,7 @@ public class FileChangeTracker {
 
       Path filePath = Paths.get(file.getPath());
       boolean shouldBeIgnored =
-        PantsOptions.getPantsOptions(project)
-          .flatMap(options -> options.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR))
+          pantsOptions.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR)
           .map(workdir -> filePath.startsWith(Paths.get(workdir).toAbsolutePath()))
           .orElse(filePath.toUri().toString().contains("/.pants.d/"));
 
@@ -278,8 +277,8 @@ public class FileChangeTracker {
     projectStates.put(project, new ProjectState(isDirty, LocalTime.now(), Optional.of(snapshot)));
   }
 
-  public static void registerProject(@NotNull Project project) {
-    VirtualFileListener listener = getNewListener();
+  public static void registerProject(@NotNull Project project, final PantsOptions pantsOptions) {
+    VirtualFileListener listener = getNewListener(pantsOptions);
     LocalFileSystem.getInstance().addVirtualFileListener(listener);
     listenToProjectMap.put(listener, project);
   }
@@ -298,36 +297,41 @@ public class FileChangeTracker {
       });
   }
 
-  private static VirtualFileListener getNewListener() {
+  private static VirtualFileListener getNewListener(final PantsOptions pantsOptions) {
     return new VirtualFileListener() {
+
+      void markDirty(VirtualFile file) {
+        FileChangeTracker.markDirty(file, pantsOptions, this);
+      }
+
       @Override
       public void propertyChanged(@NotNull VirtualFilePropertyEvent event) {
-        FileChangeTracker.markDirty(event.getFile(), this);
+        markDirty(event.getFile());
       }
 
       @Override
       public void contentsChanged(@NotNull VirtualFileEvent event) {
-        FileChangeTracker.markDirty(event.getFile(), this);
+        markDirty(event.getFile());
       }
 
       @Override
       public void fileCreated(@NotNull VirtualFileEvent event) {
-        FileChangeTracker.markDirty(event.getFile(), this);
+        markDirty(event.getFile());
       }
 
       @Override
       public void fileDeleted(@NotNull VirtualFileEvent event) {
-        FileChangeTracker.markDirty(event.getFile(), this);
+        markDirty(event.getFile());
       }
 
       @Override
       public void fileMoved(@NotNull VirtualFileMoveEvent event) {
-        FileChangeTracker.markDirty(event.getFile(), this);
+        markDirty(event.getFile());
       }
 
       @Override
       public void fileCopied(@NotNull VirtualFileCopyEvent event) {
-        FileChangeTracker.markDirty(event.getFile(), this);
+        markDirty(event.getFile());
       }
 
       @Override
