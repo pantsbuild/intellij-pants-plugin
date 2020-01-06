@@ -309,7 +309,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected void doImport(@NotNull String projectFolderPathToImport, String... targetNames) {
     System.out.println("Import: " + projectFolderPathToImport);
     myRelativeProjectPath = projectFolderPathToImport;
-    myProjectSettings.setSelectedTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
+    myProjectSettings.setTargetSpecs(PantsUtil.convertToTargetSpecs(projectFolderPathToImport, Arrays.asList(targetNames)));
     final String pantsExecutablePath = PantsUtil.findPantsExecutable(getProjectPath()).get().getPath();
     getDefaultJavaSdk(pantsExecutablePath).ifPresent(sdk -> {
       ApplicationManager.getApplication().invokeAndWait(() -> {

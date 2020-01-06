@@ -4,16 +4,15 @@
 package com.twitter.intellij.pants.settings;
 
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
+import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
-  private List<String> mySelectedTargetSpecs = new ArrayList<>();
-  private List<String> myAllAvailableTargetSpecs = new ArrayList<>();
+  private List<String> myTargetSpecs = ContainerUtilRt.newArrayList();
   public boolean libsWithSources;
   public boolean enableIncrementalImport;
   public boolean useIdeaProjectJdk;
@@ -21,8 +20,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   public boolean useIntellijCompiler;
 
   /**
-   * @param allAvailableTargetSpecs   targets explicted listed from `pants idea-plugin` goal.
-   * @param selectedTargetSpecs       targets selected by the user to import
+   * @param targetSpecs               targets explicted listed from `pants idea-plugin` goal.
    * @param externalProjectPath       path to the Pants project.
    * @param libsWithSources           whether to import sources and docs when resolving for jars.
    * @param isEnableIncrementalImport whether to enabled incremental import.
@@ -31,8 +29,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
    * @param isUseIntellijCompiler     whether to use the IntelliJ compiler to compile the project (as opposed to using pants).
    */
   public PantsProjectSettings(
-    List<String> allAvailableTargetSpecs,
-    List<String> selectedTargetSpecs,
+    List<String> targetSpecs,
     String externalProjectPath,
     boolean libsWithSources,
     boolean isEnableIncrementalImport,
@@ -41,8 +38,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     boolean isUseIntellijCompiler
   ) {
     setExternalProjectPath(externalProjectPath);
-    mySelectedTargetSpecs = selectedTargetSpecs;
-    myAllAvailableTargetSpecs = allAvailableTargetSpecs;
+    myTargetSpecs = targetSpecs;
     this.libsWithSources = libsWithSources;
     enableIncrementalImport = isEnableIncrementalImport;
     useIdeaProjectJdk = isUseIdeaProjectJdk;
@@ -64,9 +60,8 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     }
     PantsProjectSettings other = (PantsProjectSettings) obj;
     return Objects.equals(libsWithSources, other.libsWithSources)
-           && Objects.equals(myAllAvailableTargetSpecs, other.myAllAvailableTargetSpecs)
            && Objects.equals(enableIncrementalImport, other.enableIncrementalImport)
-           && Objects.equals(mySelectedTargetSpecs, other.mySelectedTargetSpecs)
+           && Objects.equals(myTargetSpecs, other.myTargetSpecs)
            && Objects.equals(useIdeaProjectJdk, other.useIdeaProjectJdk)
            && Objects.equals(importSourceDepsAsJars, other.importSourceDepsAsJars)
            && Objects.equals(useIntellijCompiler, other.useIntellijCompiler);
@@ -84,8 +79,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   protected void copyTo(@NotNull ExternalProjectSettings receiver) {
     super.copyTo(receiver);
     if (receiver instanceof PantsProjectSettings) {
-      ((PantsProjectSettings) receiver).setSelectedTargetSpecs(getSelectedTargetSpecs());
-      ((PantsProjectSettings) receiver).setAllAvailableTargetSpecs(getAllAvailableTargetSpecs());
+      ((PantsProjectSettings) receiver).setTargetSpecs(getTargetSpecs());
       ((PantsProjectSettings) receiver).libsWithSources = libsWithSources;
       ((PantsProjectSettings) receiver).enableIncrementalImport = enableIncrementalImport;
       ((PantsProjectSettings) receiver).useIdeaProjectJdk = useIdeaProjectJdk;
@@ -95,25 +89,16 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   }
 
 
-
-  public List<String> getAllAvailableTargetSpecs() {
-    return myAllAvailableTargetSpecs;
-  }
-
-  public void setAllAvailableTargetSpecs(List<String> allAvailableTargetSpecs) {
-    this.myAllAvailableTargetSpecs = allAvailableTargetSpecs;
-  }
-
   /**
    * Get the target specs used to launched `pants idea-plugin`.
    */
   @NotNull
-  public List<String> getSelectedTargetSpecs() {
-    return mySelectedTargetSpecs;
+  public List<String> getTargetSpecs() {
+    return myTargetSpecs;
   }
 
-  public void setSelectedTargetSpecs(List<String> selectedTargetSpecs) {
-    mySelectedTargetSpecs = selectedTargetSpecs;
+  public void setTargetSpecs(List<String> targetSpecs) {
+    myTargetSpecs = targetSpecs;
   }
 
   @Override

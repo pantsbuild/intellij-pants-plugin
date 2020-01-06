@@ -34,7 +34,6 @@ public class PantsConstants {
   public static final String PANTS_LIBRARY_EXCLUDES_KEY = "pants.library.excludes";
   public static final String PANTS_TARGET_ADDRESSES_KEY = "pants.target.addresses";
   public static final String PANTS_TARGET_ADDRESS_INFOS_KEY = "pants.target.address.infos";
-  public static final String PANTS_TARGET_MODULE_TYPE =  "pants.module";
 
   public static final String PANTS_OPTION_PANTS_WORKDIR = "pants_workdir";
   public static final String PANTS_OPTION_TEST_JUNIT_STRICT_JVM_VERSION = "test.junit.strict_jvm_version";

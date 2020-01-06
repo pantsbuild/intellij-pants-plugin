@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.service.project.metadata;
 
-import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
@@ -49,7 +48,6 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
         module.setOption(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY, PantsUtil.dehydrateTargetAddresses(metadata.getLibraryExcludes()));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY, PantsUtil.dehydrateTargetAddresses(metadata.getTargetAddresses()));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY, gson.toJson(metadata.getTargetAddressInfoSet()));
-        ExternalSystemModulePropertyManager.getInstance(module).setExternalModuleType(PantsConstants.PANTS_TARGET_MODULE_TYPE);
       }
     }
   }

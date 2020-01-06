@@ -60,7 +60,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   }
 
   @NotNull
-  public List<String> getSelectedTargetSpecs() {
+  public List<String> getTargetSpecs() {
     return myTargetSpecs;
   }
 
