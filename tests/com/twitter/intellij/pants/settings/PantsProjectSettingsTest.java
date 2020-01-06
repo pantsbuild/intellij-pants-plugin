@@ -5,7 +5,6 @@ package com.twitter.intellij.pants.settings;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.intellij.openapi.externalSystem.util.PaintAwarePanel;
 import com.intellij.ui.CheckBoxList;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
@@ -49,7 +48,7 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
   private void assertNoTargets() {
     assertEquals("no target specs should be specified",
                  Lists.newArrayList(),
-                 myFromPantsControl.getProjectSettings().getSelectedTargetSpecs());
+                 myFromPantsControl.getProjectSettings().getTargetSpecs());
     assertTrue("no target should be listed as a check box in the gui",
                getTargetSpecCheckBoxList().isEmpty());
   }
@@ -63,7 +62,7 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
 
     assertEquals(
       ContainerUtil.newArrayList("examples/src/java/org/pantsbuild/example/hello/::"),
-      myFromPantsControl.getProjectSettings().getSelectedTargetSpecs()
+      myFromPantsControl.getProjectSettings().getTargetSpecs()
     );
   }
 
@@ -79,7 +78,7 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
     assertEquals(
       "None of the target specs should be selected, but some are.",
       ContainerUtil.emptyList(),
-      myFromPantsControl.getProjectSettings().getSelectedTargetSpecs()
+      myFromPantsControl.getProjectSettings().getTargetSpecs()
     );
 
     CheckBoxList<String> checkBoxList = getTargetSpecCheckBoxList();
@@ -100,28 +99,7 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
       "examples/src/java/org/pantsbuild/example/hello/main:readme",
       "examples/src/java/org/pantsbuild/example/hello/main:main-bin"
                  ))
-      , Sets.newLinkedHashSet(myFromPantsControl.getProjectSettings().getSelectedTargetSpecs()));
-  }
-
-  public void testSettingsEdition() {
-    myFromPantsControl.onLinkedProjectPathChange(
-      getProjectPath() + File.separator +
-      "examples/src/java/org/pantsbuild/example/hello/main/BUILD"
-    );
-
-    updateSettingsBasedOnGuiStates();
-    PantsProjectSettingsControl pantsSettingsControl = (PantsProjectSettingsControl)
-      myFromPantsControl.getProjectSettingsControl();
-
-    pantsSettingsControl.myTargetSpecsBox.setItemSelected(pantsSettingsControl.myTargetSpecsBox.getItemAt(1), true);
-    updateSettingsBasedOnGuiStates();
-    pantsSettingsControl.fillExtraControls((PaintAwarePanel) this.myFromPantsControl.getComponent(), 0);
-    pantsSettingsControl.resetExtraSettings(false);
-
-    assertEquals(pantsSettingsControl.myTargetSpecsBox.getItemsCount(), 3);
-    assertFalse(pantsSettingsControl.myTargetSpecsBox.isItemSelected(0));
-    assertTrue(pantsSettingsControl.myTargetSpecsBox.isItemSelected(1));
-    assertFalse(pantsSettingsControl.myTargetSpecsBox.isItemSelected(2));
+      , Sets.newLinkedHashSet(myFromPantsControl.getProjectSettings().getTargetSpecs()));
   }
 
   public void testInvalidImportPath() {

@@ -20,6 +20,7 @@ import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import com.twitter.intellij.pants.model.PantsExecutionOptions;
+import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.Nls;
@@ -44,7 +45,6 @@ public class PantsCompileOptionsExecutor {
   private final PantsCompileOptions myOptions;
   private final File myBuildRoot;
   private final boolean myResolveSourcesAndDocsForJars;
-  private final Optional<Integer> myIncrementalImportDepth;
 
   @NotNull
   public static PantsCompileOptionsExecutor create(
@@ -63,8 +63,7 @@ public class PantsCompileOptionsExecutor {
     return new PantsCompileOptionsExecutor(
       buildRoot.get(),
       options,
-      executionOptions.isLibsWithSourcesAndDocs(),
-      executionOptions.incrementalImportDepth()
+      executionOptions.isLibsWithSourcesAndDocs()
     );
   }
 
@@ -74,8 +73,7 @@ public class PantsCompileOptionsExecutor {
     return new PantsCompileOptionsExecutor(
       new File("/"),
       new MyPantsCompileOptions("", PantsExecutionSettings.createDefault()),
-      true,
-      Optional.of(1)
+      true
     ) {
     };
   }
@@ -83,22 +81,15 @@ public class PantsCompileOptionsExecutor {
   private PantsCompileOptionsExecutor(
     @NotNull File buildRoot,
     @NotNull PantsCompileOptions compilerOptions,
-    boolean resolveSourcesAndDocsForJars,
-    @NotNull Optional<Integer> incrementalImportDepth
+    boolean resolveSourcesAndDocsForJars
   ) {
     myBuildRoot = buildRoot;
     myOptions = compilerOptions;
     myResolveSourcesAndDocsForJars = resolveSourcesAndDocsForJars;
-    myIncrementalImportDepth = incrementalImportDepth;
   }
 
   public String getProjectRelativePath() {
     return PantsUtil.getRelativeProjectPath(getBuildRoot(), getProjectPath()).get();
-  }
-
-  @NotNull
-  public Optional<Integer> getIncrementalImportDepth() {
-    return myIncrementalImportDepth;
   }
 
   @NotNull
@@ -121,7 +112,7 @@ public class PantsCompileOptionsExecutor {
   @Nls
   public String getProjectName() {
     final String buildRootName = getBuildRoot().getName();
-    List<String> buildRootPrefixedSpecs = myOptions.getSelectedTargetSpecs().stream()
+    List<String> buildRootPrefixedSpecs = myOptions.getTargetSpecs().stream()
       .map(s -> buildRootName + File.separator + s)
       .collect(Collectors.toList());
     String candidateName = String.join("__", buildRootPrefixedSpecs).replaceAll(File.separator, ".");
@@ -248,7 +239,7 @@ public class PantsCompileOptionsExecutor {
   @NotNull
   private List<String> getTargetSpecs() {
     // If project is opened via pants cli, the targets are in specs.
-    return Collections.unmodifiableList(getOptions().getSelectedTargetSpecs());
+    return Collections.unmodifiableList(getOptions().getTargetSpecs());
   }
 
   /**
@@ -286,12 +277,12 @@ public class PantsCompileOptionsExecutor {
     }
 
     @NotNull
-    public List<String> getSelectedTargetSpecs() {
-      return myExecutionOptions.getSelectedTargetSpecs();
+    public List<String> getTargetSpecs() {
+      return myExecutionOptions.getTargetSpecs();
     }
 
-    public Optional<Integer> incrementalImportDepth() {
-      return myExecutionOptions.incrementalImportDepth();
+    public boolean isEnableIncrementalImport() {
+      return myExecutionOptions.isEnableIncrementalImport();
     }
 
     @Override

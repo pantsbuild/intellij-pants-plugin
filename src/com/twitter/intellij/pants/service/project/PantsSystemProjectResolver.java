@@ -82,11 +82,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
-
-    Optional<Integer> incrementalImportDepth = settings.incrementalImportDepth();
-
     final DataNode<ProjectData> projectDataNode =
-      resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.incrementalImportDepth());
+      resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.isEnableIncrementalImport());
     // We do not want to repeatedly force switching to 'Project Files Tree' view if
     // user decides to use import dep as jar and wants to use the more focused 'Project' view.
     if (!settings.isImportSourceDepsAsJars()) {
@@ -152,7 +149,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     @NotNull final PantsCompileOptionsExecutor executor,
     @NotNull ExternalSystemTaskNotificationListener listener,
     boolean isPreviewMode,
-    Optional<Integer> isEnableIncrementalImport
+    boolean isEnableIncrementalImport
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
     // todo(fkorotkov): add ability to choose a name for a project
     final ProjectData projectData = new ProjectData(
@@ -178,7 +175,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {
-      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(isEnableIncrementalImport.isPresent());
+      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(isEnableIncrementalImport);
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {

@@ -6,13 +6,12 @@ package com.twitter.intellij.pants.model;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface PantsExecutionOptions {
 
   @NotNull
-  List<String> getSelectedTargetSpecs();
+  List<String> getTargetSpecs();
 
-  Optional<Integer> incrementalImportDepth();
+  boolean isEnableIncrementalImport();
   boolean isImportSourceDepsAsJars();
 }

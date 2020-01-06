@@ -129,11 +129,11 @@ public class PantsManager implements
         if (projectSettings instanceof PantsProjectSettings) {
           PantsProjectSettings pantsProjectSettings = (PantsProjectSettings) projectSettings;
           return new PantsExecutionSettings(
-            pantsProjectSettings.getSelectedTargetSpecs(),
+            pantsProjectSettings.getTargetSpecs(),
             pantsProjectSettings.libsWithSources,
             pantsProjectSettings.useIdeaProjectJdk,
             pantsProjectSettings.importSourceDepsAsJars,
-            pantsProjectSettings.incrementalImportEnabled ? Optional.of(pantsProjectSettings.incrementalImportDepth) : Optional.empty(),
+            pantsProjectSettings.enableIncrementalImport,
             pantsProjectSettings.useIntellijCompiler
           );
         }
