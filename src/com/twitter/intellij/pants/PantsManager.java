@@ -133,7 +133,7 @@ public class PantsManager implements
             pantsProjectSettings.libsWithSources,
             pantsProjectSettings.useIdeaProjectJdk,
             pantsProjectSettings.importSourceDepsAsJars,
-            pantsProjectSettings.incrementalImportEnabled ? Optional.of(pantsProjectSettings.incrementalImportDepth) : Optional.empty(),
+            pantsProjectSettings.enableIncrementalImport,
             pantsProjectSettings.useIntellijCompiler
           );
         }
