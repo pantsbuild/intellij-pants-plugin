@@ -16,7 +16,7 @@ import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyReferenceExpression;
 import com.jetbrains.python.psi.PyStatement;
 import com.jetbrains.python.psi.PyStringLiteralExpression;
-import com.twitter.intellij.pants.index.PantsBuildFileIndex;
+import com.twitter.intellij.pants.index.PantsAddressesIndex;
 import com.twitter.intellij.pants.index.PantsTargetIndex;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -70,7 +70,7 @@ public class PantsCompletionContributor extends CompletionContributor {
       }
 
       if (isDependenciesString(parameters)) {
-        Collection<String> addresses = PantsBuildFileIndex.getFiles(psiFile);
+        Collection<String> addresses = PantsAddressesIndex.getAddresses(psiFile);
         for (String address : addresses) {
           set.addElement(LookupElementBuilder.create(address).withIcon(AllIcons.Nodes.Module));
         }
@@ -80,7 +80,7 @@ public class PantsCompletionContributor extends CompletionContributor {
     private boolean isDependenciesString(@NotNull CompletionParameters parameters) {
       PsiElement position = parameters.getPosition();
       PsiElement stringLiteral = position.getParent();
-      if (stringLiteral == null || !(stringLiteral instanceof PyStringLiteralExpression)) return false;
+      if (!(stringLiteral instanceof PyStringLiteralExpression)) return false;
       if (stringLiteral.getParent() == null) return false;
       PsiElement dependencies = stringLiteral.getParent().getParent();
       return dependencies != null && dependencies.getText().startsWith("dependencies");
@@ -118,12 +118,9 @@ public class PantsCompletionContributor extends CompletionContributor {
     LookupElement createAvailableTypeElement(String targetType) {
       return LookupElementBuilder
         .create(targetType + "(")
-        .withInsertHandler(new InsertHandler<LookupElement>() {
-          @Override
-          public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement element1) {
-            context.getDocument().insertString(context.getSelectionEndOffset(), ")");
-            context.commitDocument();
-          }
+        .withInsertHandler((context, element1) -> {
+          context.getDocument().insertString(context.getSelectionEndOffset(), ")");
+          context.commitDocument();
         })
         .withIcon(AllIcons.Nodes.Method)
         .withTailText(")");
@@ -132,7 +129,7 @@ public class PantsCompletionContributor extends CompletionContributor {
     private boolean isTopLevelExpression(@NotNull CompletionParameters parameters) {
       PsiElement position = parameters.getPosition();
       PsiElement expression = position.getParent();
-      if (expression == null || !(expression instanceof PyExpression)) return false;
+      if (!(expression instanceof PyExpression)) return false;
       PsiElement statement = expression.getParent();
       if (!(statement instanceof PyStatement)) return false;
       PsiElement file = statement.getParent();

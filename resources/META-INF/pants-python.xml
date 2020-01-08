@@ -29,7 +29,7 @@
     <psi.referenceContributor implementation="com.twitter.intellij.pants.psi.reference.PantsReferenceContributor"/>
 
     <fileBasedIndex implementation="com.twitter.intellij.pants.index.PantsTargetIndex"/>
-    <fileBasedIndex implementation="com.twitter.intellij.pants.index.PantsBuildFileIndex"/>
+    <fileBasedIndex implementation="com.twitter.intellij.pants.index.PantsAddressesIndex"/>
 
     <!--We need python plugin to insert a dependency to a proper BUILD file-->
     <codeInsight.unresolvedReferenceQuickFixProvider

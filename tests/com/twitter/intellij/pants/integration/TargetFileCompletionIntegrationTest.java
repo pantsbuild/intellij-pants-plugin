@@ -8,15 +8,13 @@ import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupManager;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiReference;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 
@@ -48,14 +46,17 @@ public class TargetFileCompletionIntegrationTest extends OSSPantsIntegrationTest
     String toComplete = "scala_library(    dependencies = [\"example" + CURSOR + "\"])";
     String[] expected = {
       "examples",
-      "examples/src/resources/org/pantsbuild/example/jaxb",
-      "examples/src/scala/org/pantsbuild/example/hello/welcome",
-      "examples/src/resources/org/pantsbuild/example/hello",
-      "examples/src/java/org/pantsbuild/example/hello/greet",
-      "examples/src/resources/org/pantsbuild/example/names",
-      "examples/src/resources/org/pantsbuild/example",
-      "examples/src/scala/org/pantsbuild/example/hello/exe",
-      "examples/src/scala/org/pantsbuild/example/hello"
+      "examples/src/scala/org/pantsbuild/example/hello:hello",
+      "examples/src/scala/org/pantsbuild/example/hello/exe:exe",
+      "examples/src/scala/org/pantsbuild/example/hello/welcome:welcome",
+      "examples/src/java/org/pantsbuild/example/hello/greet:greet",
+      "examples/src/resources/org/pantsbuild/example/hello:hello",
+      "examples/src/resources/org/pantsbuild/example:example",
+      "examples/src/resources/org/pantsbuild/example/jaxb:jaxb",
+      "examples/src/resources/org/pantsbuild/example/names:names",
+      "examples/src/resources/org/pantsbuild/example:hello_directory",
+      "examples/src/resources/org/pantsbuild/example:jaxb_directory",
+      "examples/src/resources/org/pantsbuild/example:names_directory",
     };
     completionTest(toComplete, expected);
   }
@@ -95,10 +96,13 @@ public class TargetFileCompletionIntegrationTest extends OSSPantsIntegrationTest
       assertNotNull(vfile);
 
       Document doc = FileDocumentManager.getInstance().getDocument(vfile);
+
+      String originalContent = doc.getText();
+
       int offset = doc.getText().length() + fullStringToComplete.indexOf(CURSOR);
-      write(doc, fullStringToComplete.replace(CURSOR, ""));
-      String text = doc.getText();
-      assertNotNull(text);
+
+      append(doc, fullStringToComplete.replace(CURSOR, ""));
+      assertNotNull(doc.getText());
 
       Editor editor = EditorFactory.getInstance().createEditor(doc, myProject);
       editor.getCaretModel().moveToOffset(offset);
@@ -115,12 +119,14 @@ public class TargetFileCompletionIntegrationTest extends OSSPantsIntegrationTest
         .map(LookupElement::getLookupString)
         .collect(Collectors.toList());
 
+      WriteAction.runAndWait(() -> doc.setText(originalContent));
+
       assertSameElements(actual, expected);
       EditorFactory.getInstance().releaseEditor(editor);
     }
   }
 
-  private void write(Document doc, String addition) {
+  private void append(Document doc, String addition) {
     WriteCommandAction.runWriteCommandAction(
       myProject,
       () -> doc.insertString(doc.getTextLength(), addition)
