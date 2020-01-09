@@ -1,6 +1,7 @@
 BASIC 1 EQUALS
 bar
+bar:bar
 bar-segment
-bar-segment/path/with/bz
-some/long/path/containing/bar
-another-long/path/with/baz
+bar-segment/path/with/bz:bz
+some/long/path/containing/bar:bar
+another-long/path/with/baz:baz
