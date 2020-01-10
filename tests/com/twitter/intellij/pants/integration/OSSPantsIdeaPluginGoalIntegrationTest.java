@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 
-@Ignore("https://github.com/pantsbuild/intellij-pants-plugin/issues/402")
+//@Ignore("https://github.com/pantsbuild/intellij-pants-plugin/issues/402")
 public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTest {
 
   public void testPantsIdeaPluginGoal() throws Throwable {
@@ -56,7 +56,7 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
     assertEquals(commandLine.toString() + " failed", 0, cmdOutput.getExitCode());
     // `outputFile` contains the path to the project directory.
-    String projectDir = FileUtil.loadFile(outputFile);
+    String projectDir = FileUtil.loadFile(outputFile).trim();
 
     // Search the directory for ipr file.
     File[] files = new File(projectDir).listFiles();
@@ -82,6 +82,7 @@ public class OSSPantsIdeaPluginGoalIntegrationTest extends OSSPantsIntegrationTe
       }
     });
 
+    assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
     assertSuccessfulTest(PantsUtil.getCanonicalModuleName(targetToImport), "org.pantsbuild.testproject.matcher.MatcherTest");
     assertTrue(ProjectUtil.closeAndDispose(myProject));
   }
