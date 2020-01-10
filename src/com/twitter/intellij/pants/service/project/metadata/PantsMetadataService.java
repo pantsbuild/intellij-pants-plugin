@@ -47,15 +47,6 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
     @NotNull Project project,
     @NotNull IdeModifiableModelsProvider modelsProvider
   ) {
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      if(projectData != null) {
-        PantsUtil.findPantsExecutable(projectData.getLinkedExternalProjectPath()).ifPresent(pantsExecutable -> {
-          PantsOptions pantsOptions = PantsOptions.getPantsOptions(pantsExecutable.getPath());
-          FileChangeTracker.registerProject(project, pantsOptions);
-        });
-      }
-    });
-
     // for existing projects. for new projects PantsSettings.defaultSettings will provide the version.
     PantsSettings.getInstance(project).setResolverVersion(PantsResolver.VERSION);
     for (DataNode<TargetMetadata> node : toImport) {
