@@ -150,7 +150,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           final boolean useIntellijCompiler = false;
           final PantsProjectSettings pantsProjectSettings =
             new PantsProjectSettings(
-              targetSpecs, new ArrayList<>(), projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk, enableExportDepAsJar, useIntellijCompiler);
+              targetSpecs, targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk, enableExportDepAsJar, useIntellijCompiler);
 
           /**
            * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
