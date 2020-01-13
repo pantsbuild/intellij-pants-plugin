@@ -196,20 +196,20 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
 
         /**
          * VSF tracker implementation requires PantsOptions object, that cannot be constructed in
-         * the Event Dispatch Thread. What is more, it can't be constructed if the project contain
+         * the Event Dispatch Thread. What is more, it can't be constructed if the project contains
          * no modules, and cannot be registered twice. Hence, there are two cases when VFS tracker is
          * needed:
-         *   1. When the Pants project is opened and it already contains modules - then we can register tracker immediately
-         *   2. When the Pants project is opened, but modules are not loaded yet - then we have to wait until a module is loaded
-         * @param project
+         * 1. When the Pants project is opened and it already contains modules - then we can register tracker immediately
+         * 2. When the Pants project is opened, but modules are not loaded yet - then we have to wait until a module is loaded
          */
         private void registerVfsListener(Project project) {
-          if(ModuleManager.getInstance(project).getModules().length > 0) {
+          if (ModuleManager.getInstance(project).getModules().length > 0) {
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
               Optional<PantsOptions> pantsOptions = PantsOptions.getPantsOptions(project);
               pantsOptions.ifPresent(po -> FileChangeTracker.registerProject(project, po));
             });
-          } else {
+          }
+          else {
             project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
               boolean done = false;
 

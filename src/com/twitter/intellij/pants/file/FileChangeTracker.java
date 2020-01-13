@@ -104,7 +104,7 @@ public class FileChangeTracker {
     return instance;
   }
 
-  private static void markDirty(@NotNull VirtualFile file,final PantsOptions pantsOptions, @NotNull VirtualFileListener listener) {
+  private static void markDirty(@NotNull VirtualFile file, final PantsOptions pantsOptions, @NotNull VirtualFileListener listener) {
     Project project = listenToProjectMap.get(listener);
 
     ChangeType changeType = detectChangeType(project, pantsOptions, file);
@@ -300,7 +300,7 @@ public class FileChangeTracker {
   private static VirtualFileListener getNewListener(final PantsOptions pantsOptions) {
     return new VirtualFileListener() {
 
-      void markDirty(VirtualFile file) {
+      private void markDirty(VirtualFile file) {
         FileChangeTracker.markDirty(file, pantsOptions, this);
       }
 
