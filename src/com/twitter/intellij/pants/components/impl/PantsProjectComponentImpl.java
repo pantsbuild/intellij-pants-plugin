@@ -216,7 +216,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
               @Override
               public void moduleAdded(@NotNull Project p, @NotNull Module m) {
                 PantsUtil
-                  .findPantsExecutable(p)
+                  .findPantsExecutable(project)
                   .ifPresent(pantsExecutable ->
                              {
                                if (!done) {
