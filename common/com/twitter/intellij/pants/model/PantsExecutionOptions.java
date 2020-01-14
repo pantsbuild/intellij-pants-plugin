@@ -10,7 +10,7 @@ import java.util.List;
 public interface PantsExecutionOptions {
 
   @NotNull
-  List<String> getTargetSpecs();
+  List<String> getSelectedTargetSpecs();
 
   boolean isEnableIncrementalImport();
   boolean isImportSourceDepsAsJars();

@@ -13,6 +13,7 @@ import com.intellij.ide.SelectInTarget;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -25,6 +26,7 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotifica
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.service.project.ExternalSystemProjectResolver;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
@@ -55,6 +57,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
@@ -65,6 +68,23 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
   private final Map<ExternalSystemTaskId, PantsCompileOptionsExecutor> task2executor =
     new ConcurrentHashMap<>();
+
+  private static void clearPantsModules(@NotNull Project project, String projectPath) {
+    ApplicationManager.getApplication().invokeAndWait(() -> {
+      ApplicationManager
+        .getApplication()
+        .runWriteAction(() ->
+                        {
+                          Module[] modules = ModuleManager.getInstance(project).getModules();
+                          for (Module module : modules) {
+                            if (Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), projectPath)) {
+                              ModuleManager.getInstance(project).disposeModule(module);
+                            }
+                          }
+                        }
+        );
+    });
+  }
 
   @Nullable
   @Override
@@ -78,8 +98,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     if (projectPath.startsWith(".pants.d")) {
       return null;
     }
-    checkForDifferentPantsExecutables(id, projectPath);
 
+    checkForDifferentPantsExecutables(id, projectPath);
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode =
@@ -90,6 +110,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       doViewSwitch(id, projectPath);
     }
     task2executor.remove(id);
+    // Removing the existing modules right before returning to minimize the time user observes
+    // that the old modules are gone.
+    Optional.ofNullable(id.findProject()).ifPresent(p -> clearPantsModules(p, projectPath));
     return projectDataNode;
   }
 
