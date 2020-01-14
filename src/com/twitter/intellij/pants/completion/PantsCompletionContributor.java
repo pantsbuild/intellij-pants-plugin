@@ -4,12 +4,21 @@
 package com.twitter.intellij.pants.completion;
 
 import com.intellij.codeInsight.completion.*;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
+import com.jetbrains.python.psi.PyExpression;
+import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyReferenceExpression;
-import com.twitter.intellij.pants.index.PantsBuildFileIndex;
+import com.jetbrains.python.psi.PyStatement;
+import com.jetbrains.python.psi.PyStringLiteralExpression;
+import com.twitter.intellij.pants.index.PantsAddressesIndex;
 import com.twitter.intellij.pants.index.PantsTargetIndex;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,7 +51,6 @@ public class PantsCompletionContributor extends CompletionContributor {
    * <li>some/nested/tool/BUILD</li>
    * <li>another/far/away/tool/BUILD</li>
    * </ul>
-   *
    * This provider will add these two suggestions (regardless of the input):
    * <ul>
    * <li>`some/nested/tool`</li>
@@ -55,14 +63,27 @@ public class PantsCompletionContributor extends CompletionContributor {
     protected void addCompletions(
       @NotNull CompletionParameters parameters, ProcessingContext context, @NotNull CompletionResultSet set
     ) {
+
       final PsiFile psiFile = parameters.getOriginalFile();
       if (!PantsUtil.isBUILDFileName(psiFile.getName())) {
         return;
       }
-      Collection<String> addresses = PantsBuildFileIndex.getFiles(psiFile);
-      for (String address : addresses) {
-        set.addElement(LookupElementBuilder.create(address));
+
+      if (isDependenciesString(parameters)) {
+        Collection<String> addresses = PantsAddressesIndex.getAddresses(psiFile);
+        for (String address : addresses) {
+          set.addElement(LookupElementBuilder.create(address).withIcon(AllIcons.Nodes.Module));
+        }
       }
+    }
+
+    private boolean isDependenciesString(@NotNull CompletionParameters parameters) {
+      PsiElement position = parameters.getPosition();
+      PsiElement stringLiteral = position.getParent();
+      if (!(stringLiteral instanceof PyStringLiteralExpression)) return false;
+      if (stringLiteral.getParent() == null) return false;
+      PsiElement dependencies = stringLiteral.getParent().getParent();
+      return dependencies != null && dependencies.getText().startsWith("dependencies");
     }
   }
 
@@ -74,16 +95,45 @@ public class PantsCompletionContributor extends CompletionContributor {
     @Override
     protected void addCompletions(
       @NotNull CompletionParameters parameters,
-      ProcessingContext context,
+      @NotNull ProcessingContext context,
       @NotNull CompletionResultSet result
     ) {
-      final PsiFile psiFile = parameters.getOriginalFile();
-      if (!PantsUtil.isBUILDFileName(psiFile.getName())) {
-        return;
+      if (isTopLevelExpression(parameters)) {
+        final PsiFile psiFile = parameters.getOriginalFile();
+        if (!PantsUtil.isBUILDFileName(psiFile.getName())) {
+          return;
+        }
+        for (String alias : PantsTargetIndex.getTargets(psiFile.getProject())) {
+          result.addElement(LookupElementBuilder.create(alias));
+        }
+        String[] allBuildTypes = PropertiesComponent.getInstance().getValues(PantsConstants.PANTS_AVAILABLE_TARGETS_KEY);
+        if (allBuildTypes != null) {
+          for (String targetType : allBuildTypes) {
+            result.addElement(createAvailableTypeElement(targetType));
+          }
+        }
       }
-      for (String alias : PantsTargetIndex.getTargets(psiFile.getProject())) {
-        result.addElement(LookupElementBuilder.create(alias));
-      }
+    }
+
+    LookupElement createAvailableTypeElement(String targetType) {
+      return LookupElementBuilder
+        .create(targetType + "(")
+        .withInsertHandler((context, element1) -> {
+          context.getDocument().insertString(context.getSelectionEndOffset(), ")");
+          context.commitDocument();
+        })
+        .withIcon(AllIcons.Nodes.Method)
+        .withTailText(")");
+    }
+
+    private boolean isTopLevelExpression(@NotNull CompletionParameters parameters) {
+      PsiElement position = parameters.getPosition();
+      PsiElement expression = position.getParent();
+      if (!(expression instanceof PyExpression)) return false;
+      PsiElement statement = expression.getParent();
+      if (!(statement instanceof PyStatement)) return false;
+      PsiElement file = statement.getParent();
+      return file instanceof PyFile;
     }
   }
 }

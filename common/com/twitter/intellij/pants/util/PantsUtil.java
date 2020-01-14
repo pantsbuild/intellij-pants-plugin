@@ -39,6 +39,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ContentEntry;
@@ -67,11 +68,13 @@ import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.model.SimpleExportResult;
+import org.bouncycastle.math.raw.Mod;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.incremental.ModuleLevelBuilder;
 import org.jetbrains.jps.model.JpsProject;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
@@ -90,6 +93,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -820,8 +824,10 @@ public class PantsUtil {
     // There may be serialization behavior change on {@link com.intellij.openapi.module.Module.setOption}
     // ["abc/efg"] will get serialized correctly by gson.toJson to "[\"abc/123\"]".
     // However when data is read back from {@link com.intellij.openapi.module.Module.getOptionValue},
-    // it becomes "[&quot;abc/123&quot;]", then gson.fromJson would fail on it.
-    String tmp = addresses.replace("&quot;", "\"");
+    // it becomes "[&amp;quot;abc/123&amp;quot;]", then gson.fromJson would fail on it.
+    String tmp = addresses
+      .replace("&amp;", "&")
+      .replace("&quot;", "\"");
     return gson.fromJson(tmp, TYPE_SET_STRING);
   }
 
