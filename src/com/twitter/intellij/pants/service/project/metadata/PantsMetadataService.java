@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.service.project.metadata;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
