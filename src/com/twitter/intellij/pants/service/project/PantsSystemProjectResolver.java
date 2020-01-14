@@ -99,10 +99,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       return null;
     }
 
-    Optional.ofNullable(id.findProject()).ifPresent(p -> clearPantsModules(p, projectPath));
-
     checkForDifferentPantsExecutables(id, projectPath);
-
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode =
@@ -113,6 +110,9 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       doViewSwitch(id, projectPath);
     }
     task2executor.remove(id);
+    // Removing the existing modules right before returning to minimize the time user observes
+    // that the old modules are gone.
+    Optional.ofNullable(id.findProject()).ifPresent(p -> clearPantsModules(p, projectPath));
     return projectDataNode;
   }
 
