@@ -15,7 +15,8 @@ public enum PantsSourceType {
   SOURCE(ExternalSystemSourceType.SOURCE),
   TEST(ExternalSystemSourceType.TEST),
   RESOURCE(ExternalSystemSourceType.RESOURCE),
-  TEST_RESOURCE(ExternalSystemSourceType.TEST_RESOURCE);
+  TEST_RESOURCE(ExternalSystemSourceType.TEST_RESOURCE),
+  SOURCE_GENERATED(ExternalSystemSourceType.SOURCE_GENERATED);
 
   private ExternalSystemSourceType myExternalType;
 

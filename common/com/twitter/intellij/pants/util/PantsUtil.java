@@ -539,8 +539,11 @@ public class PantsUtil {
   }
 
   @NotNull
-  public static PantsSourceType getSourceTypeForTargetType(@Nullable String targetType) {
+  public static PantsSourceType getSourceTypeForTargetType(@Nullable String targetType, Boolean isCodeGen) {
     try {
+      if(isCodeGen && targetType != null) {
+        return PantsSourceType.SOURCE_GENERATED;
+      }
       return targetType == null ? PantsSourceType.SOURCE :
              PantsSourceType.valueOf(StringUtil.toUpperCase(targetType));
     }
