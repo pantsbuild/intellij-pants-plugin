@@ -3,35 +3,26 @@
 
 package com.twitter.intellij.pants.highlighting;
 
-import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.QuickFix;
-import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.util.ArrayUtil;
-import com.jetbrains.python.facet.PythonFacet;
 import com.jetbrains.python.sdk.PyDetectedSdk;
-import com.jetbrains.python.sdk.PythonSdkType;
-import com.jetbrains.python.sdk.PythonSdkUtil;
 import com.twitter.intellij.pants.inspection.PythonFacetInspection;
-import com.twitter.intellij.pants.quickfix.AddPantsTargetDependencyFix;
 import com.twitter.intellij.pants.quickfix.AddPythonFacetQuickFix;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsPythonSdkUtil;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AddPythonFacetQuickFixTest extends OSSPantsIntegrationTest {
 
@@ -44,6 +35,10 @@ public class AddPythonFacetQuickFixTest extends OSSPantsIntegrationTest {
     PsiFile build = PsiManager.getInstance(myProject).findFile(vfile);
     PythonFacetInspection inspection = new PythonFacetInspection();
     InspectionManager manager = InspectionManager.getInstance(myProject);
+
+    boolean noSdkInModules = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
+      .allMatch(PantsPythonSdkUtil::hasNoPythonSdk);
+    assertTrue(noSdkInModules);
 
     // We should not have any interpreter selected for the BUILD file
     ProblemDescriptor[] problems = inspection.checkFile(build, manager, false);
@@ -69,14 +64,11 @@ public class AddPythonFacetQuickFixTest extends OSSPantsIntegrationTest {
 
     ProblemDescriptor[] problemsAfterFix = inspection.checkFile(build, manager, false);
     assertNull(problemsAfterFix);
-    final Module module = ModuleUtil.findModuleForPsiElement(build);
-    FacetManager facetManager = FacetManager.getInstance(module);
 
-    Optional<PythonFacet> pythonFacet = facetManager
-      .getFacetsByType(PythonFacet.ID)
-      .stream().filter(facet -> facet.getConfiguration().getSdk() != null)
-      .findFirst();
+    List<Module> modulesWithoutSdk = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
+      .filter(PantsPythonSdkUtil::hasNoPythonSdk)
+      .collect(Collectors.toList());
 
-    assertTrue(pythonFacet.isPresent());
+    assertEmpty(modulesWithoutSdk);
   }
 }

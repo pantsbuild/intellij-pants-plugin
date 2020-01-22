@@ -8,13 +8,12 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemHighlightType;
-import com.intellij.facet.FacetManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.python.facet.PythonFacet;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.quickfix.AddPythonFacetQuickFix;
+import com.twitter.intellij.pants.util.PantsPythonSdkUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,9 +22,7 @@ public class PythonFacetInspection extends LocalInspectionTool {
   @Override
   @Nullable
   public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
-    if (PantsUtil.isBUILDFileName(file.getName()) &&
-        !isPythonInModule(file) &&
-        PantsUtil.isPantsProject(file.getProject())) {
+    if (shouldAddPythonSdk(file)) {
       LocalQuickFix[] fixes = new LocalQuickFix[]{new AddPythonFacetQuickFix()};
       ProblemDescriptor descriptor = manager.createProblemDescriptor(
         file.getNavigationElement(),
@@ -40,12 +37,20 @@ public class PythonFacetInspection extends LocalInspectionTool {
     return null;
   }
 
-  private boolean isPythonInModule(@NotNull PsiFile file) {
-    final Module module = ModuleUtil.findModuleForPsiElement(file);
-    if (module != null) {
-      PythonFacet facet = FacetManager.getInstance(module).getFacetByType(PythonFacet.ID);
-      return facet != null && facet.getConfiguration().getSdk() != null;
+  private boolean shouldAddPythonSdk(@NotNull PsiFile file) {
+    if (!PantsUtil.isPantsProject(file.getProject())) {
+      return false;
     }
-    return false;
+
+    if (!PantsUtil.isBUILDFileName(file.getName())) {
+      return false;
+    }
+
+    final Module module = ModuleUtil.findModuleForPsiElement(file);
+    if (module == null) {
+      return false;
+    }
+
+    return PantsPythonSdkUtil.hasNoPythonSdk(module);
   }
 }

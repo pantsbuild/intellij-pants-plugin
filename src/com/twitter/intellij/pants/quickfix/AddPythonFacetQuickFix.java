@@ -4,55 +4,36 @@
 package com.twitter.intellij.pants.quickfix;
 
 import com.intellij.codeInspection.ProblemDescriptor;
-import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
-import com.intellij.facet.FacetModel;
 import com.intellij.facet.ModifiableFacetModel;
-import com.intellij.facet.ProjectFacetManager;
-import com.intellij.ide.util.projectWizard.SdkSettingsStep;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
-import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkModificator;
-import com.intellij.openapi.roots.ui.configuration.ProjectJdksConfigurable;
-import com.intellij.openapi.roots.ui.configuration.ProjectSettingsService;
-import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.python.configuration.PyConfigurableInterpreterList;
 import com.jetbrains.python.facet.PythonFacet;
 import com.jetbrains.python.facet.PythonFacetConfiguration;
 import com.jetbrains.python.facet.PythonFacetType;
-import com.jetbrains.python.sdk.PySdkSettings;
 import com.jetbrains.python.sdk.PythonSdkType;
 import com.jetbrains.python.sdk.add.PyAddSdkDialog;
-import com.jetbrains.python.testing.TestRunnerService;
-import com.twitter.intellij.pants.PantsManager;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsPythonSdkUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.scala.project.external.SdkUtils;
-import org.jetbrains.plugins.scala.project.template.SdkChoice;
-import org.jetbrains.plugins.scala.project.template.SdkChoice$;
-import org.jetbrains.plugins.scala.project.template.SdkTableModel;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class AddPythonFacetQuickFix extends PantsQuickFix {
 
@@ -85,54 +66,69 @@ public class AddPythonFacetQuickFix extends PantsQuickFix {
 
   @Override
   public void invoke(@NotNull final Project project, Editor editor, PsiFile psiFile) {
-    final Module module = ModuleUtil.findModuleForPsiElement(psiFile);
-    if (module != null) {
-      final AtomicReference<Sdk> pythonSdk = new AtomicReference<>();
-      final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-      List<Sdk> sdks = jdkTable.getSdksOfType(PythonSdkType.getInstance());
-      // if there are no created SDK, we need to setup one
-      if (sdks.size() == 0) {
-        PyAddSdkDialog.show(project, module, sdks, pythonSdk::set);
-        if (pythonSdk.get() != null) {
-          ApplicationManager.getApplication().runWriteAction(() -> {
-            jdkTable.addJdk(pythonSdk.get());
-          });
-        }
-      }
-      else {
-        pythonSdk.set(sdks.get(0));
-      }
+    Sdk sdk = resolveSdk(project, psiFile);
+    if (sdk == null) {
+      displayError();
+    }
+    else {
+      setPythonSdkToAllApplicableModules(project, sdk);
+    }
+  }
 
+  @Nullable
+  private Sdk resolveSdk(Project project, PsiFile file) {
+    final AtomicReference<Sdk> pythonSdk = new AtomicReference<>();
+    final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
+    List<Sdk> sdks = jdkTable.getSdksOfType(PythonSdkType.getInstance());
 
+    if (sdks.isEmpty()) {
+      final Module module = ModuleUtil.findModuleForPsiElement(file);
+      PyAddSdkDialog.show(project, module, sdks, pythonSdk::set);
       if (pythonSdk.get() != null) {
-        String facetName = module.getName() + "-python";
-        FacetManager facetManager = FacetManager.getInstance(module);
-
-        Optional<PythonFacet> emptyFacet = facetManager
-          .getFacetsByType(PythonFacet.ID)
-          .stream().filter(facet -> facet.getConfiguration().getSdk() == null)
-          .findFirst();
-
         ApplicationManager.getApplication().runWriteAction(() -> {
-          /* Remove existing facets if python interpreter is not selected
-           * this is a more resilient method than just adding sdk.
-           */
-          if (emptyFacet.isPresent()) {
-            ModifiableFacetModel facetModel = facetManager.createModifiableModel();
-            facetModel.removeFacet(emptyFacet.get());
-            facetModel.commit();
-          }
-          final ModifiableFacetModel model = facetManager.createModifiableModel();
-          PythonFacetType type = PythonFacetType.getInstance();
-          PythonFacetConfiguration conf = type.createDefaultConfiguration();
-          PythonFacet facet = type.createFacet(module, facetName, conf, null);
-          model.addFacet(facet);
-          model.commit();
+          jdkTable.addJdk(pythonSdk.get());
         });
       }
-      else {
-        displayError();
-      }
+
+      return pythonSdk.get();
+    }
+    else {
+      return sdks.get(0);
+    }
+  }
+
+  private void setPythonSdkToAllApplicableModules(Project project, Sdk sdk) {
+    List<Module> modules = Arrays.stream(ModuleManager.getInstance(project).getModules())
+      .filter(PantsPythonSdkUtil::hasNoPythonSdk)
+      .collect(Collectors.toList());
+
+    for (Module module : modules) {
+      FacetManager facetManager = FacetManager.getInstance(module);
+      Optional<PythonFacet> facetWithoutSdk = facetManager
+        .getFacetsByType(PythonFacet.ID)
+        .stream().filter(facet -> facet.getConfiguration().getSdk() == null)
+        .findFirst();
+
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        /* Remove existing facets if python interpreter is not selected
+         * this is a more resilient method than just adding sdk.
+         */
+        ModifiableFacetModel model = facetManager.createModifiableModel();
+        facetWithoutSdk.ifPresent(facet -> {
+          model.removeFacet(facet);
+          model.commit();
+        });
+
+        PythonFacetType type = PythonFacetType.getInstance();
+        PythonFacetConfiguration conf = type.createDefaultConfiguration();
+        conf.setSdk(sdk);
+
+        String facetName = module.getName() + "-default-python";
+        PythonFacet facet = type.createFacet(module, facetName, conf, null);
+
+        model.addFacet(facet);
+        model.commit();
+      });
     }
   }
 
