@@ -79,6 +79,13 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
       return;
     }
 
+    // TODO this uses the hacky roots_copy field, which we shouldn't do.
+    Set<String> absolutePathsToAllTheRoots =
+      targetInfo
+        .roots_copy.stream()
+        .map( root -> {return root.getRawSourceRoot();})
+        .collect(Collectors.toSet());
+
     for (String baseRoot : findBaseRoots(targetInfo, roots)) {
       final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, baseRoot);
       moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
@@ -86,47 +93,23 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
         targetInfo.getSourcesType().toExternalSystemSourceType(),
         baseRoot
       );
-      //for (ContentRoot sourceRoot : roots) {
-      //  final String sourceRootPathToAdd = getSourceRootRegardingTargetType(targetInfo, sourceRoot);
-      //  if (FileUtil.isAncestor(baseRoot, sourceRootPathToAdd, false)) {
-      //    try {
-      //
-      //    }
-      //    catch (IllegalArgumentException e) {
-      //      LOG.warn(e);
-      //      // todo(fkorotkov): log and investigate exceptions from ContentRootData.storePath(ContentRootData.java:94)
-      //    }
-      //  }
-      //}
 
       if (targetInfo.getAddressInfos().stream().anyMatch(TargetAddressInfo::isScala)) {
-        Set<String> allRoots = targetInfo.roots_copy.stream().map( root -> {return root.getRawSourceRoot();}).collect(Collectors.toSet());
-        for (ContentRoot sourceRoot : targetInfo.roots_copy) {
-          File baseRootFile = new File(baseRoot);
-          List<File> subdirs = Arrays.asList(baseRootFile.listFiles());
-          for (File subdir : subdirs) {
-            ContentRootData.SourceRoot subdirPath = new ContentRootData.SourceRoot(subdir.getPath(), "");
-            if (subdir.isDirectory()) {
-              if (contentRoot.getPaths(ExternalSystemSourceType.SOURCE).contains(subdirPath) ||
-                  contentRoot.getPaths(ExternalSystemSourceType.TEST).contains(subdirPath)) {
-                // Don't store them as sources or tests, because intellij will report a double-entry in the classpath
-                //contentRoot.storePath(
-                //  ExternalSystemSourceType.Re
-                //);
-                continue;
-              } else if (!contentRoot.getPaths(ExternalSystemSourceType.RESOURCE).contains(subdirPath) &&
-                         !contentRoot.getPaths(ExternalSystemSourceType.RESOURCE).contains(subdirPath)) {
-                if (!allRoots.contains(subdir.getAbsolutePath())) {
-                  contentRoot.storePath(
-                    ExternalSystemSourceType.EXCLUDED,
-                    subdir.getPath()
-                  );
-                }
-              }
-            }
-          }
-        }
+        excludeSubfoldersThatAreNotContentRoots(baseRoot, contentRoot, absolutePathsToAllTheRoots);
       }
+    }
+  }
+
+  private void excludeSubfoldersThatAreNotContentRoots(@NotNull final String rootToExcludeFrom, ContentRootData contentRootData, @NotNull final Set<String> absolutPathsToAllTheRoots) {
+    File baseRootFile = new File(rootToExcludeFrom);
+    List<File> subdirs = Arrays.asList(baseRootFile.listFiles());
+    for (File subdir : subdirs) {
+      ContentRootData.SourceRoot subdirPath = new ContentRootData.SourceRoot(subdir.getPath(), "");
+      if (subdir.isDirectory() && !absolutPathsToAllTheRoots.contains(subdir.getAbsolutePath()))
+        contentRootData.storePath(
+          ExternalSystemSourceType.EXCLUDED,
+          subdir.getPath()
+        );
     }
   }
 
