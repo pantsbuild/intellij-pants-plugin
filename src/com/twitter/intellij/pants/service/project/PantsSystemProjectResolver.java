@@ -78,7 +78,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
                         {
                           Module[] modules = ModuleManager.getInstance(project).getModules();
                           for (Module module : modules) {
-                            if (Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), projectPath)) {
+                            if (Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), Paths.get(projectPath).normalize().toString())) {
                               ModuleManager.getInstance(project).disposeModule(module);
                             }
                           }
