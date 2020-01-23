@@ -52,16 +52,16 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
     // This happens when a project is imported, the module creation starts after opening then. 
     project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener {
       var done = false
+
       override def moduleAdded(project: Project,
-                               module: Module): Unit =  {
-        if(!done) {
+                               module: Module): Unit = {
+        if (!done) {
           if (PantsUtil.isPantsModule(module)) {
             ScalaCompilerReferenceService(project).projectOpened()
             done = true;
           }
         }
       }
-
     });
 
   }
