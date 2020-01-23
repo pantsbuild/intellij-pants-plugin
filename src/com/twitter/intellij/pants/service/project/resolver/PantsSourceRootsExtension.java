@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.service.project.resolver;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.ContentRootData;
+import com.intellij.openapi.externalSystem.model.project.ExternalSystemSourceType;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.util.io.FileUtil;
@@ -13,6 +14,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.ContentRoot;
@@ -22,6 +24,8 @@ import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +96,26 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
           catch (IllegalArgumentException e) {
             LOG.warn(e);
             // todo(fkorotkov): log and investigate exceptions from ContentRootData.storePath(ContentRootData.java:94)
+          }
+        }
+      }
+
+      if (targetInfo.getAddressInfos().stream().anyMatch(TargetAddressInfo::isScala)) {
+        for (ContentRoot sourceRoot : targetInfo.roots_copy) {
+          File baseRootFile = new File(baseRoot);
+          List<File> subdirs = Arrays.asList(baseRootFile.listFiles());
+          for (File subdir : subdirs) {
+            ContentRootData.SourceRoot subdirPath = new ContentRootData.SourceRoot(subdir.getPath(), "");
+            if (subdir.isDirectory() &&
+                !contentRoot.getPaths(ExternalSystemSourceType.SOURCE).contains(subdirPath) &&
+                !contentRoot.getPaths(ExternalSystemSourceType.RESOURCE).contains(subdirPath) &&
+                !contentRoot.getPaths(ExternalSystemSourceType.TEST).contains(subdirPath) &&
+                !contentRoot.getPaths(ExternalSystemSourceType.TEST_RESOURCE).contains(subdirPath)) {
+              contentRoot.storePath(
+                ExternalSystemSourceType.EXCLUDED,
+                subdir.getPath()
+              );
+            }
           }
         }
       }
