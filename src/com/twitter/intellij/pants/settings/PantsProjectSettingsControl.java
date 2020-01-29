@@ -33,6 +33,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +54,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     isBUILDFile
   }
 
+  private final JTextField myNameField = new JTextField();
+
   @VisibleForTesting
   protected CheckBoxList<String> myTargetSpecsBox = new CheckBoxList<>();
 
@@ -65,6 +70,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   // Key to keep track whether target specs are requested for the same project path.
   private String lastPath = "";
+  private String lastGeneratedName = "";
 
   private PantsProjectSettings mySettings;
 
@@ -91,6 +97,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myTargetSpecsBox.setItems( mySettings.getAllAvailableTargetSpecs(), x->x);
     mySettings.getSelectedTargetSpecs().forEach(spec -> myTargetSpecsBox.setItemSelected(spec, true));
 
+    insertNameFieldBeforeProjectPath(content);
+
     List<JComponent> boxes = ContainerUtil.newArrayList(
       myLibsWithSourcesCheckBox,
       myEnableIncrementalImportCheckBox,
@@ -107,6 +115,12 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     for (JComponent component : boxes) {
       content.add(component, lineConstraints);
     }
+  }
+
+  private void insertNameFieldBeforeProjectPath(@NotNull PaintAwarePanel content) {
+    JLabel label = new JLabel(PantsBundle.message("pants.settings.text.project.name"));
+    content.add(label, ExternalSystemUiUtil.getLabelConstraints(0), 0);
+    content.add(myNameField, ExternalSystemUiUtil.getFillLineConstraints(0), 1);
   }
 
   // It is silly `CheckBoxList` does not provide an iterator.
@@ -136,6 +150,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       myUseIntellijCompilerCheckBox.isSelected()
     );
 
+    newSettings.setProjectName(myNameField.getText());
     return !newSettings.equals(getInitialSettings());
   }
 
@@ -158,8 +173,9 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
     myTargetSpecsBox.clear();
     errors.clear();
-
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(VfsUtil.pathToUrl(projectPath));
+    String buildRoot = PantsUtil.findBuildRoot(file).map(VirtualFile::getName).orElse("");
+
     ProjectPathFileType pathFileType = determinePathKind(file);
     switch (pathFileType) {
       case isNonExistent:
@@ -173,27 +189,51 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         Optional<String> relativeProjectPath = PantsUtil.getRelativeProjectPath(file.getPath());
 
         if (relativeProjectPath.isPresent()) {
-          String spec = relativeProjectPath.get() + "/::";
+          String relativePath = relativeProjectPath.get();
+          if (relativePath.equals(".")) {
+            setGeneratedName(buildRoot);
+          }
+          else {
+            setGeneratedName(buildRoot + File.separator + relativePath);
+          }
 
+          String spec = relativePath + "/::";
           myTargetSpecsBox.setEmptyText(spec);
           myTargetSpecsBox.addItem(spec, spec, true);
 
           myLibsWithSourcesCheckBox.setEnabled(true);
         } else {
+          clearGeneratedName();
           errors.add(String.format("Fail to find relative path from %s to build root.", file.getPath()));
           return;
         }
         break;
 
       case executableScript:
+        String path = PantsUtil.getRelativeProjectPath(file.getPath()).orElse(file.getName());
+        if (path.equals(".")) {
+          setGeneratedName(buildRoot + File.separator + file.getName());
+        }
+        else {
+          setGeneratedName(buildRoot + File.separator + path);
+        }
+
         myTargetSpecsBox.setEnabled(false);
-        myTargetSpecsBox.setEmptyText(PantsUtil.getRelativeProjectPath(file.getPath()).orElse(file.getName()));
+        myTargetSpecsBox.setEmptyText(path);
 
         myLibsWithSourcesCheckBox.setSelected(false);
         myLibsWithSourcesCheckBox.setEnabled(false);
         break;
 
       case isBUILDFile:
+        String name = PantsUtil.getRelativeProjectPath(file.getPath())
+          .orElse(file.getParent().getName());
+
+        if(file.equals(".")) {
+          setGeneratedName(buildRoot);
+        }else {
+          setGeneratedName(buildRoot + File.separator + name);
+        }
         myTargetSpecsBox.setEnabled(true);
         myTargetSpecsBox.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
         myLibsWithSourcesCheckBox.setEnabled(true);
@@ -217,6 +257,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         });
         break;
       default:
+        clearGeneratedName();
         UIUtil.invokeLaterIfNeeded((Runnable) () -> {
           Messages.showErrorDialog(getProject(), "Unexpected project file state: " + pathFileType, "Pants Failure");
           Messages.createMessageDialogRemover(getProject()).run();
@@ -224,8 +265,22 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     }
   }
 
+  private void clearGeneratedName() {
+    setGeneratedName("");
+  }
+
+  private void setGeneratedName(String name) {
+    boolean notChangedByTheUser = lastGeneratedName.equals(myNameField.getText());
+    if (lastGeneratedName.isEmpty() || notChangedByTheUser) {
+      String escapedName = name.replace(File.separator, ".");
+      myNameField.setText(escapedName);
+      lastGeneratedName = escapedName;
+    }
+  }
+
   @Override
   protected void applyExtraSettings(@NotNull PantsProjectSettings settings) {
+    settings.setProjectName(myNameField.getText());
     settings.setSelectedTargetSpecs(getSelectedTargetSpecsFromBoxes());
     settings.setAllAvailableTargetSpecs(getAllTargetSpecsFromBoxes());
     settings.libsWithSources = myLibsWithSourcesCheckBox.isSelected();
@@ -243,6 +298,14 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   public boolean validate(@NotNull PantsProjectSettings settings) throws ConfigurationException {
+    if(myNameField.getText().isEmpty()){
+      throw new ConfigurationException(PantsBundle.message("pants.error.project.name.empty"));
+    }
+
+    if (myNameField.getText().length() > 200) {
+      throw new ConfigurationException(PantsBundle.message("pants.error.project.name.tooLong"));
+    }
+    
     final String projectUrl = VfsUtil.pathToUrl(settings.getExternalProjectPath());
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(projectUrl);
     ProjectPathFileType pathFileType = determinePathKind(file);

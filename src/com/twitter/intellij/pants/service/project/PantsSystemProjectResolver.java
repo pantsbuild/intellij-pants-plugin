@@ -55,6 +55,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
@@ -103,7 +104,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
     final DataNode<ProjectData> projectDataNode =
-      resolveProjectInfoImpl(id, executor, listener, isPreviewMode, settings.isEnableIncrementalImport());
+      resolveProjectInfoImpl(id, executor, listener, settings, isPreviewMode);
     // We do not want to repeatedly force switching to 'Project Files Tree' view if
     // user decides to use import dep as jar and wants to use the more focused 'Project' view.
     if (!settings.isImportSourceDepsAsJars()) {
@@ -171,23 +172,25 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     @NotNull ExternalSystemTaskId id,
     @NotNull final PantsCompileOptionsExecutor executor,
     @NotNull ExternalSystemTaskNotificationListener listener,
-    boolean isPreviewMode,
-    boolean isEnableIncrementalImport
+    @NotNull PantsExecutionSettings settings,
+    boolean isPreviewMode
   ) throws ExternalSystemException, IllegalArgumentException, IllegalStateException {
-    // todo(fkorotkov): add ability to choose a name for a project
+    String projectName = settings.getProjectName().orElseGet(executor::getDefaultProjectName);
+    Path projectPath = Paths.get(
+      executor.getBuildRoot().getPath(),
+      ".idea",
+      "pants-projects",
+      // Use a timestamp hash to avoid module creation dead lock
+      // when overlapping targets were imported into multiple projects
+      // from the same Pants repo.
+      DigestUtils.sha1Hex(Long.toString(System.currentTimeMillis())),
+      executor.getProjectRelativePath()
+    );
+    
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
-      executor.getProjectName(),
-      Paths.get(
-        executor.getBuildRoot().getPath(),
-        ".idea",
-        "pants-projects",
-        // Use a timestamp hash to avoid module creation dead lock
-        // when overlapping targets were imported into multiple projects
-        // from the same Pants repo.
-        DigestUtils.sha1Hex(Long.toString(System.currentTimeMillis())),
-        executor.getProjectRelativePath()
-      ).toString(),
+      projectName,
+      projectPath.toString(),
       executor.getProjectPath()
     );
     final DataNode<ProjectData> projectDataNode = new DataNode<>(ProjectKeys.PROJECT, projectData, null);
@@ -198,7 +201,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {
-      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(isEnableIncrementalImport);
+      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(settings.isEnableIncrementalImport());
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {

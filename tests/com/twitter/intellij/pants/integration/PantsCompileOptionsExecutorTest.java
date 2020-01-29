@@ -30,7 +30,7 @@ public class PantsCompileOptionsExecutorTest extends OSSPantsIntegrationTest {
       settings
     );
 
-    String projectName = executor.getProjectName();
+    String projectName = executor.getDefaultProjectName();
     assertNotContainsSubstring(projectName, File.separator);
     assertEquals(PantsCompileOptionsExecutor.PROJECT_NAME_LIMIT, projectName.length());
   }

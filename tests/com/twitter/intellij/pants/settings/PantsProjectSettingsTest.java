@@ -61,6 +61,9 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
     CheckBoxList<String> checkBoxList = getTargetSpecCheckBoxList();
     assertFalse("Check box list should be disabled, but it is not.", checkBoxList.isEnabled());
 
+    String expectedProjectName = defaultProjectName("examples/src/java/org/pantsbuild/example/hello");
+    assertEquals(expectedProjectName, myFromPantsControl.getProjectSettings().getProjectName());
+
     assertEquals(
       ContainerUtil.newArrayList("examples/src/java/org/pantsbuild/example/hello/::"),
       myFromPantsControl.getProjectSettings().getSelectedTargetSpecs()
@@ -74,6 +77,9 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
     );
 
     updateSettingsBasedOnGuiStates();
+
+    String expectedProjectName = defaultProjectName("examples/src/java/org/pantsbuild/example/hello/main");
+    assertEquals(expectedProjectName, myFromPantsControl.getProjectSettings().getProjectName());
 
     // Checkbox is made, but it none of the targets should be selected.
     assertEquals(
@@ -157,5 +163,11 @@ public class PantsProjectSettingsTest extends OSSPantsImportIntegrationTest {
     updateSettingsBasedOnGuiStates();
     assertPantsProjectNotFound();
     assertNoTargets();
+  }
+
+  private String defaultProjectName(String relativePath) {
+    String buildRoot = getProjectFolder().getName();
+    String projectPath = buildRoot + File.separator + relativePath;
+    return projectPath.replace(File.separator, ".");
   }
 }

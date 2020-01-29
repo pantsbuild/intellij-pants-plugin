@@ -6,12 +6,14 @@ package com.twitter.intellij.pants.settings;
 import com.intellij.openapi.externalSystem.settings.ExternalProjectSettings;
 import com.twitter.intellij.pants.model.PantsCompileOptions;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
+  private String projectName;
   private List<String> mySelectedTargetSpecs = new ArrayList<>();
   private List<String> myAllAvailableTargetSpecs = new ArrayList<>();
   public boolean libsWithSources;
@@ -63,7 +65,8 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
       return false;
     }
     PantsProjectSettings other = (PantsProjectSettings) obj;
-    return Objects.equals(libsWithSources, other.libsWithSources)
+    return Objects.equals(projectName, other.projectName)
+           && Objects.equals(libsWithSources, other.libsWithSources)
            && Objects.equals(myAllAvailableTargetSpecs, other.myAllAvailableTargetSpecs)
            && Objects.equals(enableIncrementalImport, other.enableIncrementalImport)
            && Objects.equals(mySelectedTargetSpecs, other.mySelectedTargetSpecs)
@@ -84,6 +87,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   protected void copyTo(@NotNull ExternalProjectSettings receiver) {
     super.copyTo(receiver);
     if (receiver instanceof PantsProjectSettings) {
+      ((PantsProjectSettings) receiver).setProjectName(getProjectName());
       ((PantsProjectSettings) receiver).setSelectedTargetSpecs(getSelectedTargetSpecs());
       ((PantsProjectSettings) receiver).setAllAvailableTargetSpecs(getAllAvailableTargetSpecs());
       ((PantsProjectSettings) receiver).libsWithSources = libsWithSources;
@@ -126,4 +130,12 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     return this.importSourceDepsAsJars;
   }
 
+  void setProjectName(String projectName) {
+    this.projectName = projectName;
+  }
+
+  @Nullable
+  public String getProjectName() {
+    return projectName;
+  }
 }
