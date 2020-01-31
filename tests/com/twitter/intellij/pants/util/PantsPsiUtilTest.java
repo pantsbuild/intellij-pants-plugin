@@ -34,31 +34,37 @@ public class PantsPsiUtilTest extends PantsCodeInsightFixtureTestCase {
     assertEquals(
       "Source type correctly set",
       PantsSourceType.SOURCE,
-      PantsUtil.getSourceTypeForTargetType("source")
+      PantsUtil.getSourceTypeForTargetType("source", false)
+    );
+
+    assertEquals(
+      "Generated source type correctly set",
+      PantsSourceType.SOURCE_GENERATED,
+      PantsUtil.getSourceTypeForTargetType("source", true)
     );
 
     assertEquals(
       "Resource type correctly set",
       PantsSourceType.RESOURCE,
-      PantsUtil.getSourceTypeForTargetType("resource")
+      PantsUtil.getSourceTypeForTargetType("resource", false)
     );
 
     assertEquals(
       "Test Source type correctly set",
       PantsSourceType.TEST,
-      PantsUtil.getSourceTypeForTargetType("TEST")
+      PantsUtil.getSourceTypeForTargetType("TEST", false)
     );
 
     assertEquals(
       "Test Resource type correctly set",
       PantsSourceType.TEST_RESOURCE,
-      PantsUtil.getSourceTypeForTargetType("TEST_RESOURCE")
+      PantsUtil.getSourceTypeForTargetType("TEST_RESOURCE", false)
     );
 
     assertEquals(
       "Source type correctly set for gibberish",
       PantsSourceType.SOURCE,
-      PantsUtil.getSourceTypeForTargetType("gibberish")
+      PantsUtil.getSourceTypeForTargetType("gibberish", false)
     );
   }
 
