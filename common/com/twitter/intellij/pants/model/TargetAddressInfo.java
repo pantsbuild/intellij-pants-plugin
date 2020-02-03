@@ -30,10 +30,6 @@ public class TargetAddressInfo {
 
   private boolean is_code_gen;
 
-  public boolean isCodeGen() {
-    return is_code_gen;
-  }
-
   public void setIsTargetRoot(boolean is_target_root) {
     this.is_target_root = is_target_root;
   }
