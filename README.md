@@ -95,3 +95,4 @@ Compilation options can be configured in Preferences -> Build, Execution, Deploy
 
 ### Report Bugs
 If you encounter a bug, please check for existing issues or file a new one on [the project page](https://github.com/pantsbuild/intellij-pants-plugin/issues).
+.
