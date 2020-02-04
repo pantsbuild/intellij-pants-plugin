@@ -109,7 +109,7 @@ public class PantsCompileOptionsExecutor {
 
   @NotNull
   @Nls
-  public String getProjectName() {
+  public String getDefaultProjectName() {
     final String buildRootName = getBuildRoot().getName();
     List<String> buildRootPrefixedSpecs = myOptions.getSelectedTargetSpecs().stream()
       .map(s -> buildRootName + File.separator + s)
