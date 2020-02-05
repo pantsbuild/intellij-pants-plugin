@@ -17,7 +17,6 @@ import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -275,25 +274,20 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
   }
 
   private void applyProjectSdk() {
-    Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(myProject);
-    if (!pantsExecutable.isPresent()) {
-      return;
-    }
-
-    Optional<Sdk> sdk = PantsSdkUtil.getDefaultJavaSdk(pantsExecutable.get().getPath(), myProject);
-    if (!sdk.isPresent()) {
-      return;
-    }
-
     ApplicationManager.getApplication().runWriteAction(() -> {
-      NewProjectUtil.applyJdkToProject(myProject, sdk.get());
-    });
+      Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(myProject);
+      if (!pantsExecutable.isPresent()) {
+        return;
+      }
 
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      DumbService.getInstance(myProject).smartInvokeLater(() -> {
-        Runnable fix = MagicConstantInspection.getAttachAnnotationsJarFix(myProject);
-        Optional.ofNullable(fix).ifPresent(Runnable::run);
-      });
+      Optional<Sdk> sdk = PantsSdkUtil.getDefaultJavaSdk(pantsExecutable.get().getPath(), myProject);
+      if (!sdk.isPresent()) {
+        return;
+      }
+
+      NewProjectUtil.applyJdkToProject(myProject, sdk.get());
+      Runnable fix = MagicConstantInspection.getAttachAnnotationsJarFix(myProject);
+      Optional.ofNullable(fix).ifPresent(Runnable::run);
     });
   }
 }
