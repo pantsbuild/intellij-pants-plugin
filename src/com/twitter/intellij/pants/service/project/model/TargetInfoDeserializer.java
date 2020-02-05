@@ -34,7 +34,6 @@ public class TargetInfoDeserializer implements JsonDeserializer<TargetInfo> {
       }
     );
     final TargetAddressInfo addressInfo = context.deserialize(element, TargetAddressInfo.class);
-    final boolean isCodeGen = object.getAsJsonPrimitive("is_code_gen").getAsBoolean();
     return new TargetInfo(
       new HashSet<>(Collections.singleton(addressInfo)),
       new HashSet<>(targets),
