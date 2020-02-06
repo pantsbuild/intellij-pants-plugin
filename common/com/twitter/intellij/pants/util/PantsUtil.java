@@ -66,6 +66,7 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
+import com.twitter.intellij.pants.model.PantsVersion;
 import com.twitter.intellij.pants.model.SimpleExportResult;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nls;
@@ -218,8 +219,9 @@ public class PantsUtil {
   }
 
   public static boolean isCompatiblePantsVersion(String current, String minimum) {
-    String currentVersion = current.replaceAll("rc.+", "").trim();
-    return versionCompare(currentVersion, minimum) >= 0;
+    PantsVersion version1 = new PantsVersion(current);
+    PantsVersion version2 = new PantsVersion(minimum);
+    return version1.compareTo(version2) >= 0;
   }
 
   private static Optional<String> findVersionInFile(@NotNull VirtualFile file) {
