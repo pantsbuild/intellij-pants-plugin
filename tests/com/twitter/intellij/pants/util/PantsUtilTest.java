@@ -37,6 +37,9 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
     assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.4rc0", "1.2.3"));
     assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.4.dev0", "1.2.3"));
     assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.3", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.3+git12345678", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.3-git12345678", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.3-git12345678-md5123456789A", "1.2.3"));
 
     assertFalse(PantsUtil.isCompatiblePantsVersion("1.2.0rc122", "1.2.3"));
     assertFalse(PantsUtil.isCompatiblePantsVersion("2.34.43", "2.34.44"));
