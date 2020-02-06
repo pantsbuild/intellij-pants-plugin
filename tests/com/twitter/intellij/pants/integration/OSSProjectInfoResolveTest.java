@@ -71,7 +71,7 @@ public class OSSProjectInfoResolveTest extends OSSPantsIntegrationTest {
     final ProjectInfo info = resolveProjectInfo("examples/src/scala/org/pantsbuild/example/hello/");
 
     // this should be only tested after export version 1.0.13
-    if (PantsUtil.isCompatibleVersion(info.getVersion(), "1.0.13")) {
+    if (PantsUtil.isCompatiblePantsVersion(info.getVersion(), "1.0.13")) {
       final List<String> availableTargetTypes = Arrays.asList(info.getAvailableTargetTypes());
       assertNotEmpty(availableTargetTypes);
       assertContain(availableTargetTypes, "scala_library", "java_library");
