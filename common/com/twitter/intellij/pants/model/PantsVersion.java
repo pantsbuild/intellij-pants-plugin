@@ -15,7 +15,7 @@ public class PantsVersion {
   private int patch;
   private PantsPatchVersionKind kind;
 
-  // Link to regular expression checking this: https://regex101.com/r/SUZCl6/2
+  // Link to regular expression checking this: https://regex101.com/r/SUZCl6/3
   private static final String PANTS_VERSION_FORMAT = "^(\\d+)\\.(\\d+)\\.(\\d+)(rc\\d+|\\.dev\\d+)?";
   final Pattern pants_version_pattern = Pattern.compile(PANTS_VERSION_FORMAT);
 
