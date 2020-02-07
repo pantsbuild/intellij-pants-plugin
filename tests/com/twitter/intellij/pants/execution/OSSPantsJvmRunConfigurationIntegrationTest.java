@@ -28,7 +28,10 @@ import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Assert;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -153,10 +156,18 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testPackage.getDirectories()[0]);
 
+    Set<String> expectedItems = Files.list(Paths.get(getProjectPath()))
+      .map(path -> path.getFileName().toString())
+      .filter(name -> name.endsWith(".java"))
+      .filter(name -> !name.equals("TestBase.java"))
+      .map(name -> name.substring(0, name.length() - ".java".length()))
+      .map(name -> testPackage.getQualifiedName() + "." + name)
+      .map(fqn -> "--test-junit-test=" + fqn)
+      .collect(Collectors.toSet());
+    assertNotEmpty(expectedItems);
+
     Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
-    assertContains(items, "--test-junit-test=org.pantsbuild.testproject.testjvms.TestSix");
-    assertContains(items, "--test-junit-test=org.pantsbuild.testproject.testjvms.TestSeven");
-    assertContains(items, "--test-junit-test=org.pantsbuild.testproject.testjvms.TestEight");
+    assertContains(items, expectedItems);
   }
 
   @NotNull
@@ -191,10 +202,22 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
   }
 
   private void assertContains(Collection<String> collection, String expected) {
-    if (!collection.contains(expected)) {
-      String actual = collection.stream()
-        .collect(Collectors.joining(", ", "[", "]"));
-      fail("Expected to find [" + expected + "] in: " + actual);
+    assertContains(collection, Collections.singleton(expected));
+  }
+
+  private void assertContains(Collection<String> collection, Collection<String> expectedElements) {
+    Set<String> missing = new HashSet<>();
+    for (String expected : expectedElements) {
+      if (!collection.contains(expected)) {
+        missing.add(expected);
+      }
+    }
+
+    if (!missing.isEmpty()) {
+      String actual = collection.stream().collect(Collectors.joining(",", "[", "]"));
+      String expected = missing.stream().collect(Collectors.joining(",", "[", "]"));
+      String message = "Elements missing from " + actual + ": " + expected;
+      Assert.fail(message);
     }
   }
 }
