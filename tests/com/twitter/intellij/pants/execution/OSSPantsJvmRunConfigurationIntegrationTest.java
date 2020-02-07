@@ -30,11 +30,13 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
@@ -140,7 +142,7 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testMethod);
 
     Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
-    assertTrue(items.contains("--test-junit-test=" + classReference + "#" + methodName));
+    assertContains(items, "--test-junit-test=" + classReference + "#" + methodName);
   }
 
   public void testModuleRunConfiguration() throws Throwable {
@@ -152,9 +154,9 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testPackage.getDirectories()[0]);
 
     Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
-    assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestSix"));
-    assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestSeven"));
-    assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestEight"));
+    assertContains(items, "--test-junit-test=org.pantsbuild.testproject.testjvms.TestSix");
+    assertContains(items, "--test-junit-test=org.pantsbuild.testproject.testjvms.TestSeven");
+    assertContains(items, "--test-junit-test=org.pantsbuild.testproject.testjvms.TestEight");
   }
 
   @NotNull
@@ -186,5 +188,13 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     }
     dataContext.put(Location.DATA_KEY, PsiLocation.fromPsiElement(psiClass));
     return ConfigurationContext.getFromContext(dataContext);
+  }
+
+  private void assertContains(Collection<String> collection, String expected) {
+    if (!collection.contains(expected)) {
+      String actual = collection.stream()
+        .collect(Collectors.joining(", ", "[", "]"));
+      fail("Expected to find [" + expected + "] in: " + actual);
+    }
   }
 }
