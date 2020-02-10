@@ -45,11 +45,7 @@ public class AddPythonPluginQuickFix extends PantsQuickFix {
   @Override
   public void invoke(@NotNull final Project project, Editor editor, PsiFile psiFile) throws IncorrectOperationException {
     UIUtil.invokeLaterIfNeeded(
-      new Runnable() {
-        public void run() {
-          ShowSettingsUtil.getInstance().showSettingsDialog(project, "Plugins");
-        }
-      }
+      () -> ShowSettingsUtil.getInstance().showSettingsDialog(project, "Plugins")
     );
   }
 }
