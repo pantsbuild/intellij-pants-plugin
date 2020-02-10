@@ -49,27 +49,18 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
   public void testClassRunConfiguration() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
-    String classReference = "org.pantsbuild.testproject.testjvms.TestSix";
-
-    PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
-    assertNotNull(testClass);
+    PsiClass testClass = testClasses()
+      .findFirst()
+      .orElseThrow(() -> new IllegalStateException("Couldn't find a test class"));
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testClass);
 
     // Make sure task name is `test` goal.
-    assertEquals(Collections.singletonList("test"), esc.getSettings().getTaskNames());
+    String testTask = "test";
+    assertEquals(Collections.singletonList(testTask), esc.getSettings().getTaskNames());
 
     List<String> configScriptParameters = PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getScriptParameters()));
-
-    List<String> expectedConfigScriptParameters = Arrays.asList(
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:seven",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:base",
-      "--test-junit-test=" + classReference
-    );
-    assertEquals(expectedConfigScriptParameters, configScriptParameters);
+    assertContains(configScriptParameters, "--test-junit-test=" + testClass.getQualifiedName());
 
     // Make sure this configuration does not contain any task before running if added to the project.
     assertEmptyBeforeRunTask(esc);
@@ -84,34 +75,21 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
 
     String debuggerSetup = "dummy_debugger_setup";
 
+    List<String> debugParameters = Arrays.asList("--no-test-junit-timeouts", "--jvm-test-junit-options=" + debuggerSetup, "test");
+    List<String> expectedDebugParameters = Stream.of(debugParameters, configScriptParameters)
+      .flatMap(Collection::stream)
+      .collect(Collectors.toList());
+
     GeneralCommandLine finalDebugCommandline = getFinalCommandline(esc, debuggerSetup, taskManagerClass);
+    assertEquals(expectedDebugParameters, finalDebugCommandline.getParametersList().getParameters());
 
-    List<String> expectedFinalDebugCommandlineParameters = Arrays.asList(
-      "--no-test-junit-timeouts",
-      "--jvm-test-junit-options=" + debuggerSetup,
-      "test",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:seven",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:base",
-      "--test-junit-test=" + classReference
-    );
-
-    assertEquals(expectedFinalDebugCommandlineParameters, finalDebugCommandline.getParametersList().getParameters());
+    List<String> runParameters = Collections.singletonList("test");
+    List<String> expectedRunParameters = Stream.of(runParameters, configScriptParameters)
+      .flatMap(Collection::stream)
+      .collect(Collectors.toList());
 
     GeneralCommandLine finalRunCommandline = getFinalCommandline(esc, null, taskManagerClass);
-
-    List<String> expectedFinalRunCommandlineParameters = Arrays.asList(
-      "test",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:seven",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:base",
-      "--test-junit-test=" + classReference
-    );
-    assertEquals(expectedFinalRunCommandlineParameters, finalRunCommandline.getParametersList().getParameters());
+    assertEquals(expectedRunParameters, finalRunCommandline.getParametersList().getParameters());
   }
 
   @NotNull
@@ -135,13 +113,8 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
   public void testMethodRunConfiguration() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
-    JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(myProject);
-
-    PsiClass testClass = testClasses().findFirst()
-      .map(path -> path.getFileName().toString())
-      .map(fileName -> fileName.substring(0, fileName.length() - ".java".length()))
-      .map(className -> "org.pantsbuild.testproject.testjvms." + className)
-      .map(qualifiedName -> psiFacade.findClass(qualifiedName, GlobalSearchScope.allScope(myProject)))
+    PsiClass testClass = testClasses()
+      .findFirst()
       .orElseThrow(() -> new IllegalStateException("Couldn't find a test class"));
 
     PsiMethod testMethod = Arrays.stream(testClass.getMethods())
@@ -164,10 +137,7 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testPackage.getDirectories()[0]);
 
     Set<String> expectedItems = testClasses()
-      .map(path -> path.getFileName().toString())
-      .map(name -> name.substring(0, name.length() - ".java".length()))
-      .map(name -> testPackage.getQualifiedName() + "." + name)
-      .map(fqn -> "--test-junit-test=" + fqn)
+      .map(aClass -> "--test-junit-test=" + aClass.getQualifiedName())
       .collect(Collectors.toSet());
     assertNotEmpty(expectedItems);
 
@@ -175,7 +145,17 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     assertContains(items, expectedItems);
   }
 
-  private Stream<Path> testClasses() throws IOException {
+  private Stream<PsiClass> testClasses() throws IOException {
+    String packageName = "org.pantsbuild.testproject.testjvms";
+    JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(myProject);
+    return testClassFiles()
+      .map(path -> path.getFileName().toString())
+      .map(name -> name.substring(0, name.length() - ".java".length()))
+      .map(name -> packageName + "." + name)
+      .map(qualifiedName -> psiFacade.findClass(qualifiedName, GlobalSearchScope.allScope(myProject)));
+  }
+
+  private Stream<Path> testClassFiles() throws IOException {
     return Files.list(Paths.get(getProjectPath()))
       .filter(path -> path.getFileName().toString().endsWith(".java"))
       .filter(path -> !path.getFileName().toString().equals("TestBase.java"));
