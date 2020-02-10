@@ -30,7 +30,9 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,6 +42,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
@@ -132,20 +135,24 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
   public void testMethodRunConfiguration() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
-    String classReference = "org.pantsbuild.testproject.testjvms.TestSix";
-    String methodName = "testSix";
+    JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(myProject);
 
-    PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
-    assertNotNull(testClass);
-    PsiMethod[] testMethods = testClass.findMethodsByName(methodName, false);
-    assertEquals(testMethods.length, 1);
-    PsiMethod testMethod = testMethods[0];
-    assertNotNull(testMethod);
+    PsiClass testClass = testClasses().findFirst()
+      .map(path -> path.getFileName().toString())
+      .map(fileName -> fileName.substring(0, fileName.length() - ".java".length()))
+      .map(className -> "org.pantsbuild.testproject.testjvms." + className)
+      .map(qualifiedName -> psiFacade.findClass(qualifiedName, GlobalSearchScope.allScope(myProject)))
+      .orElseThrow(() -> new IllegalStateException("Couldn't find a test class"));
+
+    PsiMethod testMethod = Arrays.stream(testClass.getMethods())
+      .filter(m -> Arrays.stream(m.getAnnotations()).anyMatch(a -> a.getQualifiedName().equals("org.junit.Test")))
+      .findFirst()
+      .orElseThrow(() -> new IllegalStateException("No method annotated with @org.junit.Test"));
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testMethod);
 
     Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
-    assertContains(items, "--test-junit-test=" + classReference + "#" + methodName);
+    assertContains(items, "--test-junit-test=" + testClass.getQualifiedName() + "#" + testMethod.getName());
   }
 
   public void testModuleRunConfiguration() throws Throwable {
@@ -156,10 +163,8 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testPackage.getDirectories()[0]);
 
-    Set<String> expectedItems = Files.list(Paths.get(getProjectPath()))
+    Set<String> expectedItems = testClasses()
       .map(path -> path.getFileName().toString())
-      .filter(name -> name.endsWith(".java"))
-      .filter(name -> !name.equals("TestBase.java"))
       .map(name -> name.substring(0, name.length() - ".java".length()))
       .map(name -> testPackage.getQualifiedName() + "." + name)
       .map(fqn -> "--test-junit-test=" + fqn)
@@ -168,6 +173,12 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
 
     Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
     assertContains(items, expectedItems);
+  }
+
+  private Stream<Path> testClasses() throws IOException {
+    return Files.list(Paths.get(getProjectPath()))
+      .filter(path -> path.getFileName().toString().endsWith(".java"))
+      .filter(path -> !path.getFileName().toString().equals("TestBase.java"));
   }
 
   @NotNull
@@ -206,12 +217,9 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
   }
 
   private void assertContains(Collection<String> collection, Collection<String> expectedElements) {
-    Set<String> missing = new HashSet<>();
-    for (String expected : expectedElements) {
-      if (!collection.contains(expected)) {
-        missing.add(expected);
-      }
-    }
+    Set<String> missing = expectedElements.stream()
+      .filter(expected -> !collection.contains(expected))
+      .collect(Collectors.toSet());
 
     if (!missing.isEmpty()) {
       String actual = collection.stream().collect(Collectors.joining(",", "[", "]"));
