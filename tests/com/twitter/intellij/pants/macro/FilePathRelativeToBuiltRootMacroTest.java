@@ -9,9 +9,8 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.search.GlobalSearchScope;
+import com.twitter.intellij.pants.util.ProjectTestJvms;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import gnu.trove.THashMap;
 
@@ -21,16 +20,15 @@ public class FilePathRelativeToBuiltRootMacroTest extends OSSPantsIntegrationTes
   public void testFilePathRelativeMacro() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
-    String classReference = "org.pantsbuild.testproject.testjvms.TestSix";
-    PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
-    assertNotNull(testClass);
+    PsiClass testClass = ProjectTestJvms.anyTestClass(myProject, getProjectPath());
 
-    // fileSelected would be testprojects/tests/java/org/pantsbuild/testproject/testjvms/TestSix.java
+    String githubRepo = "https://github.com/pantsbuild/pants/blob/master";
+    String expected = String.format("%s/testprojects/tests/java/%s.java", githubRepo, testClass.getQualifiedName().replace('.', '/'));
+
     VirtualFile fileSelected = testClass.getContainingFile().getVirtualFile();
-    String actual = MacroManager.getInstance()
-      .expandMacrosInString("https://github.com/pantsbuild/pants/blob/master/$FileRelativePath$", false, getFakeContext(fileSelected));
-    assertEquals(
-      "https://github.com/pantsbuild/pants/blob/master/testprojects/tests/java/org/pantsbuild/testproject/testjvms/TestSix.java", actual);
+    String actual = MacroManager.getInstance().expandMacrosInString(githubRepo + "/$FileRelativePath$", false, getFakeContext(fileSelected));
+
+    assertEquals(expected, actual);
   }
 
   private DataContext getFakeContext(VirtualFile file) {

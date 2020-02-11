@@ -20,9 +20,9 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.MapDataContext;
 import com.twitter.intellij.pants.PantsManager;
+import com.twitter.intellij.pants.util.ProjectTestJvms;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
@@ -30,10 +30,6 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,9 +45,7 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
   public void testClassRunConfiguration() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
-    PsiClass testClass = testClasses()
-      .findFirst()
-      .orElseThrow(() -> new IllegalStateException("Couldn't find a test class"));
+    PsiClass testClass = ProjectTestJvms.anyTestClass(myProject, getProjectPath());
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testClass);
 
@@ -113,7 +107,7 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
   public void testMethodRunConfiguration() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
-    PsiClass testClass = testClasses()
+    PsiClass testClass = ProjectTestJvms.testClasses(myProject, getProjectPath())
       .findFirst()
       .orElseThrow(() -> new IllegalStateException("Couldn't find a test class"));
 
@@ -136,29 +130,13 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testPackage.getDirectories()[0]);
 
-    Set<String> expectedItems = testClasses()
+    Set<String> expectedItems = ProjectTestJvms.testClasses(myProject, getProjectPath())
       .map(aClass -> "--test-junit-test=" + aClass.getQualifiedName())
       .collect(Collectors.toSet());
     assertNotEmpty(expectedItems);
 
     Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
     assertContains(items, expectedItems);
-  }
-
-  private Stream<PsiClass> testClasses() throws IOException {
-    String packageName = "org.pantsbuild.testproject.testjvms";
-    JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(myProject);
-    return testClassFiles()
-      .map(path -> path.getFileName().toString())
-      .map(name -> name.substring(0, name.length() - ".java".length()))
-      .map(name -> packageName + "." + name)
-      .map(qualifiedName -> psiFacade.findClass(qualifiedName, GlobalSearchScope.allScope(myProject)));
-  }
-
-  private Stream<Path> testClassFiles() throws IOException {
-    return Files.list(Paths.get(getProjectPath()))
-      .filter(path -> path.getFileName().toString().endsWith(".java"))
-      .filter(path -> !path.getFileName().toString().equals("TestBase.java"));
   }
 
   @NotNull
