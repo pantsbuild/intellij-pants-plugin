@@ -8,6 +8,7 @@ import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupManager;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
@@ -15,7 +16,11 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.indexing.FileBasedIndex;
+import com.twitter.intellij.pants.index.PantsAddressesIndex;
+import com.twitter.intellij.pants.index.PantsTargetIndex;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.util.LinkedList;
@@ -86,10 +91,20 @@ public class TargetFileCompletionIntegrationTest extends OSSPantsIntegrationTest
     completionTest(toComplete, expected);
   }
 
+  private void invalidateCaches() {
+    PropertiesComponent.getInstance().unsetValue(PantsConstants.PANTS_AVAILABLE_TARGETS_KEY);
+
+    // NOTE: FileBasedIndex.invalidateCaches method does not clear the pants addresses index
+    FileBasedIndex.getInstance().requestRebuild(PantsAddressesIndex.NAME);
+    FileBasedIndex.getInstance().requestRebuild(PantsTargetIndex.NAME);
+  }
+
   private void completionTest(String stringToComplete, String[] expected) {
     String fullStringToComplete = "\n\n" + stringToComplete;
     // should be only tested with pants versions above 1.24.0
     if (PantsUtil.isCompatiblePantsVersion(myProjectRoot.getPath(), "1.24.0")) {
+      invalidateCaches();
+
       String helloProjectPath = "examples/src/scala/org/pantsbuild/example/hello/";
       doImport(helloProjectPath);
       VirtualFile vfile = myProjectRoot.findFileByRelativePath(helloProjectPath + "BUILD");

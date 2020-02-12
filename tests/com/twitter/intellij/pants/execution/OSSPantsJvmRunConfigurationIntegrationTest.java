@@ -20,48 +20,41 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.MapDataContext;
 import com.twitter.intellij.pants.PantsManager;
+import com.twitter.intellij.pants.util.ProjectTestJvms;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Assert;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
   public void testClassRunConfiguration() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
-    String classReference = "org.pantsbuild.testproject.testjvms.TestSix";
-
-    PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
-    assertNotNull(testClass);
+    PsiClass testClass = ProjectTestJvms.anyTestClass(myProject, getProjectPath());
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testClass);
 
     // Make sure task name is `test` goal.
-    assertEquals(Collections.singletonList("test"), esc.getSettings().getTaskNames());
+    String testTask = "test";
+    assertEquals(Collections.singletonList(testTask), esc.getSettings().getTaskNames());
 
     List<String> configScriptParameters = PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getScriptParameters()));
-
-    List<String> expectedConfigScriptParameters = Arrays.asList(
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:seven",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:base",
-      "--test-junit-test=" + classReference
-    );
-    assertEquals(expectedConfigScriptParameters, configScriptParameters);
+    assertContains(configScriptParameters, "--test-junit-test=" + testClass.getQualifiedName());
 
     // Make sure this configuration does not contain any task before running if added to the project.
     assertEmptyBeforeRunTask(esc);
@@ -76,34 +69,21 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
 
     String debuggerSetup = "dummy_debugger_setup";
 
+    List<String> debugParameters = Arrays.asList("--no-test-junit-timeouts", "--jvm-test-junit-options=" + debuggerSetup, "test");
+    List<String> expectedDebugParameters = Stream.of(debugParameters, configScriptParameters)
+      .flatMap(Collection::stream)
+      .collect(Collectors.toList());
+
     GeneralCommandLine finalDebugCommandline = getFinalCommandline(esc, debuggerSetup, taskManagerClass);
+    assertEquals(expectedDebugParameters, finalDebugCommandline.getParametersList().getParameters());
 
-    List<String> expectedFinalDebugCommandlineParameters = Arrays.asList(
-      "--no-test-junit-timeouts",
-      "--jvm-test-junit-options=" + debuggerSetup,
-      "test",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:seven",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:base",
-      "--test-junit-test=" + classReference
-    );
-
-    assertEquals(expectedFinalDebugCommandlineParameters, finalDebugCommandline.getParametersList().getParameters());
+    List<String> runParameters = Collections.singletonList("test");
+    List<String> expectedRunParameters = Stream.of(runParameters, configScriptParameters)
+      .flatMap(Collection::stream)
+      .collect(Collectors.toList());
 
     GeneralCommandLine finalRunCommandline = getFinalCommandline(esc, null, taskManagerClass);
-
-    List<String> expectedFinalRunCommandlineParameters = Arrays.asList(
-      "test",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight-test-platform",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:six",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:seven",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:eight",
-      "testprojects/tests/java/org/pantsbuild/testproject/testjvms:base",
-      "--test-junit-test=" + classReference
-    );
-    assertEquals(expectedFinalRunCommandlineParameters, finalRunCommandline.getParametersList().getParameters());
+    assertEquals(expectedRunParameters, finalRunCommandline.getParametersList().getParameters());
   }
 
   @NotNull
@@ -127,20 +107,19 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
   public void testMethodRunConfiguration() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/testjvms");
 
-    String classReference = "org.pantsbuild.testproject.testjvms.TestSix";
-    String methodName = "testSix";
+    PsiClass testClass = ProjectTestJvms.testClasses(myProject, getProjectPath())
+      .findFirst()
+      .orElseThrow(() -> new IllegalStateException("Couldn't find a test class"));
 
-    PsiClass testClass = JavaPsiFacade.getInstance(myProject).findClass(classReference, GlobalSearchScope.allScope(myProject));
-    assertNotNull(testClass);
-    PsiMethod[] testMethods = testClass.findMethodsByName(methodName, false);
-    assertEquals(testMethods.length, 1);
-    PsiMethod testMethod = testMethods[0];
-    assertNotNull(testMethod);
+    PsiMethod testMethod = Arrays.stream(testClass.getMethods())
+      .filter(m -> Arrays.stream(m.getAnnotations()).anyMatch(a -> a.getQualifiedName().equals("org.junit.Test")))
+      .findFirst()
+      .orElseThrow(() -> new IllegalStateException("No method annotated with @org.junit.Test"));
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testMethod);
 
     Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
-    assertTrue(items.contains("--test-junit-test=" + classReference + "#" + methodName));
+    assertContains(items, "--test-junit-test=" + testClass.getQualifiedName() + "#" + testMethod.getName());
   }
 
   public void testModuleRunConfiguration() throws Throwable {
@@ -151,10 +130,13 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
 
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(testPackage.getDirectories()[0]);
 
+    Set<String> expectedItems = ProjectTestJvms.testClasses(myProject, getProjectPath())
+      .map(aClass -> "--test-junit-test=" + aClass.getQualifiedName())
+      .collect(Collectors.toSet());
+    assertNotEmpty(expectedItems);
+
     Set<String> items = new HashSet<>(Arrays.asList(esc.getSettings().getScriptParameters().split(" ")));
-    assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestSix"));
-    assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestSeven"));
-    assertTrue(items.contains("--test-junit-test=org.pantsbuild.testproject.testjvms.TestEight"));
+    assertContains(items, expectedItems);
   }
 
   @NotNull
@@ -186,5 +168,22 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     }
     dataContext.put(Location.DATA_KEY, PsiLocation.fromPsiElement(psiClass));
     return ConfigurationContext.getFromContext(dataContext);
+  }
+
+  private void assertContains(Collection<String> collection, String expected) {
+    assertContains(collection, Collections.singleton(expected));
+  }
+
+  private void assertContains(Collection<String> collection, Collection<String> expectedElements) {
+    Set<String> missing = expectedElements.stream()
+      .filter(expected -> !collection.contains(expected))
+      .collect(Collectors.toSet());
+
+    if (!missing.isEmpty()) {
+      String actual = collection.stream().collect(Collectors.joining(",", "[", "]"));
+      String expected = missing.stream().collect(Collectors.joining(",", "[", "]"));
+      String message = "Elements missing from " + actual + ": " + expected;
+      Assert.fail(message);
+    }
   }
 }
