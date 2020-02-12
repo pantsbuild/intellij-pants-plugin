@@ -212,12 +212,7 @@ public class PantsCompileOptionsExecutor {
         targetSpecsFileWriter.write('\n');
       }
     }
-    if (PantsUtil.isCompatiblePantsVersion(getProjectPath(), "1.25.0")) {
-      commandLine.addParameter("--spec-file=" + targetSpecsFile.getPath());
-    }
-    else {
-      commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
-    }
+    commandLine.addParameter("--target-spec-file=" + targetSpecsFile.getPath());
     commandLine.addParameter("--no-quiet");
 
     if (PantsUtil.isCompatiblePantsVersion(getProjectPath(), "1.24.0")) {

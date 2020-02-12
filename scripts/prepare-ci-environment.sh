@@ -12,9 +12,8 @@ fi
 export CWD=$(pwd)
 # Normally, IJ_VERSION is of the form YEAR.x[.y[.z]]
 # But for EAPs, set IJ_VERSION to the same as IJ_BUILD_NUMBER
-export IJ_VERSION="193.4697.15"
-export IJ_BUILD_NUMBER="193.4697.15"
-
+export IJ_VERSION="2019.3.3"
+export IJ_BUILD_NUMBER="193.6494.35"
 
 # This is for bootstrapping Pants, since this repo does not do Pants intensive operations,
 # we can optimize for build time.
