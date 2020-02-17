@@ -81,8 +81,9 @@ class PantsPerformanceBenchmark(projectFolder: File, pluginsToDisable: Set[Strin
   override protected def getProjectFolder = projectFolder
 
   override protected def getRequiredPluginIds = {
-    val allPluginIds = PluginManagerCore.loadDescriptors().map(_.getPluginId.getIdString).toSet
-    (allPluginIds -- pluginsToDisable).toArray
+ //   val allPluginIds = PluginManagerCore.loadDescriptors().map(_.getPluginId.getIdString).toSet
+   // (allPluginIds -- pluginsToDisable).toArray
+    ???
   }
 
   def run(target: String): Timings = {

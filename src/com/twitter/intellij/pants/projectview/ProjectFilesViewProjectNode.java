@@ -44,14 +44,14 @@ public class ProjectFilesViewProjectNode extends AbstractProjectNode {
 
   @NotNull
   @Override
-  public Collection<? extends AbstractTreeNode> getChildren() {
+  public Collection<? extends AbstractTreeNode<?>> getChildren() {
     final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(myProject);
     final VirtualFile projectDir = buildRoot.orElse(myProject.getBaseDir());
     if (projectDir == null) {
       LOG.warn(String.format("Couldn't find project directory for project '%s'", myProject.getName()));
       return Collections.emptyList();
     }
-    final AbstractTreeNode root = new VirtualFileTreeNode(myProject, projectDir, getSettings());
+    final AbstractTreeNode<?> root = new VirtualFileTreeNode(myProject, projectDir, getSettings());
     if (getSettings().isShowLibraryContents()) {
       return Arrays.asList(
         root,

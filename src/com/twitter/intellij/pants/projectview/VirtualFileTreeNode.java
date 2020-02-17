@@ -76,14 +76,14 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
 
   @NotNull
   @Override
-  public Collection<? extends AbstractTreeNode> getChildren() {
+  public Collection<? extends AbstractTreeNode<?>> getChildren() {
     final PsiManager psiManager = PsiManager.getInstance(myProject);
     final VirtualFile virtualFile = getValue();
     return ContainerUtil.mapNotNull(
       virtualFile.isValid() && virtualFile.isDirectory() ? virtualFile.getChildren() : VirtualFile.EMPTY_ARRAY,
-      new Function<VirtualFile, AbstractTreeNode>() {
+      new Function<VirtualFile, AbstractTreeNode<?>>() {
         @Override
-        public AbstractTreeNode fun(VirtualFile file) {
+        public AbstractTreeNode<?> fun(VirtualFile file) {
           final PsiElement psiElement = file.isDirectory() ? psiManager.findDirectory(file) : psiManager.findFile(file);
           if (psiElement instanceof PsiDirectory && ModuleUtil.findModuleForPsiElement(psiElement) != null) {
             // PsiDirectoryNode doesn't render files outside of a project

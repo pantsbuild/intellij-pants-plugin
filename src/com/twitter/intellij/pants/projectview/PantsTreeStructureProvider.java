@@ -32,9 +32,9 @@ import java.util.Optional;
 public class PantsTreeStructureProvider implements TreeStructureProvider {
   @NotNull
   @Override
-  public Collection<AbstractTreeNode> modify(
-    @NotNull final AbstractTreeNode node,
-    @NotNull Collection<AbstractTreeNode> collection,
+  public Collection<AbstractTreeNode<?>> modify(
+    @NotNull final AbstractTreeNode<?> node,
+    @NotNull Collection<AbstractTreeNode<?>> collection,
     ViewSettings settings
   ) {
     final Project project = node.getProject();
@@ -66,7 +66,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
                 data.setIcon(PantsIcons.Icon);
               }
             };
-            final List<AbstractTreeNode> modifiedCollection = new ArrayList<>(collection);
+            final List<AbstractTreeNode<?>> modifiedCollection = new ArrayList<>(collection);
             modifiedCollection.add(buildNode);
             return modifiedCollection;
           }
@@ -78,7 +78,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
 
   @Nullable
   @Override
-  public Object getData(Collection<AbstractTreeNode> collection, String s) {
+  public Object getData(Collection<AbstractTreeNode<?>> collection, String s) {
     return null;
   }
 }

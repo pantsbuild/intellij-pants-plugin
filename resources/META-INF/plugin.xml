@@ -16,7 +16,7 @@
   <version>1.14.0</version>
   <vendor>Twitter, Inc.</vendor>
 
-  <idea-version since-build="193.0" until-build="193.*"/>
+  <idea-version since-build="193.0" until-build="201.*"/>
 
   <!--Add gradle as a dep because of Pants runner requires it.-->
   <depends>com.intellij.gradle</depends>
