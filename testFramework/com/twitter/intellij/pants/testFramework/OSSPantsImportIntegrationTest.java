@@ -24,7 +24,7 @@ abstract public class OSSPantsImportIntegrationTest extends OSSPantsIntegrationT
     super.setUp();
 
     VirtualFile virtualProjectDir = LocalFileSystem.getInstance().findFileByIoFile(getProjectFolder());
-    if (PantsUtil.isCompatiblePantsVersion(virtualProjectDir.getPath(), "1.26.0")) {
+    if (PantsUtil.isCompatibleProjectPantsVersion(virtualProjectDir.getPath(), "1.26.0")) {
       this.pantsIniFilePath = PantsUtil.findPantsTomlFile(Optional.ofNullable(virtualProjectDir)).get().getPath();
       File pantsIniFile = new File(pantsIniFilePath);
       assertTrue("pants.toml file should exist",
