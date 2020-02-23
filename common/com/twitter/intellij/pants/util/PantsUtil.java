@@ -211,6 +211,10 @@ public class PantsUtil {
     return workingDir.map(file -> file.findChild(PantsConstants.PANTS_INI));
   }
 
+  public static Optional<VirtualFile> findPantsTomlFile(Optional<VirtualFile> workingDir) {
+    return workingDir.map(file -> file.findChild(PantsConstants.PANTS_TOML));
+  }
+
   public static boolean isCompatibleProjectPantsVersion(String projectPath, String minVersion) {
     return PantsUtil.findPantsExecutable(projectPath)
       .flatMap(exec -> PantsOptions.getPantsOptions(exec.getPath()).get("pants_version"))
