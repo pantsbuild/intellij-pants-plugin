@@ -116,7 +116,15 @@ function determine_default_python_exe {
     supported_message='3.6+'
   fi
   for version in "${supported_python_versions[@]}"; do
-    command -v "python${version}" && return 0
+    interpreter_path="$(command -v "python${version}")"
+    if [[ -z "${interpreter_path}" ]]; then
+      continue
+    fi
+    # Check if the Python version is installed via Pyenv but not activated.
+    if [[ "$("${interpreter_path}" --version 2>&1 > /dev/null)" == "pyenv: python${version}"* ]]; then
+      continue
+    fi
+    echo "${interpreter_path}" && return 0
   done
   die "No valid Python interpreter found. For this Pants version, Pants requires Python ${supported_message}."
 }
@@ -168,6 +176,9 @@ function bootstrap_pants {
       staging_dir=$(tempdir "${PANTS_BOOTSTRAP}")
       "${python}" "${venv_path}/virtualenv.py" --no-download "${staging_dir}/install"
       "${staging_dir}/install/bin/pip" install -U pip
+      # TODO: remove this once enum34 stabilizes. See
+      # https://bitbucket.org/stoneleaf/enum34/issues/27/enum34-118-broken.
+      "${staging_dir}/install/bin/pip" install "enum34==1.1.6 ; python_version == \"2.7\""
       "${staging_dir}/install/bin/pip" install "${pants_requirement}"
       ln -s "${staging_dir}/install" "${staging_dir}/${target_folder_name}"
       mv "${staging_dir}/${target_folder_name}" "${PANTS_BOOTSTRAP}/${target_folder_name}"
