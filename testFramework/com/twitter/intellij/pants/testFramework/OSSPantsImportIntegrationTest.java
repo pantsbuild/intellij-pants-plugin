@@ -24,12 +24,22 @@ abstract public class OSSPantsImportIntegrationTest extends OSSPantsIntegrationT
     super.setUp();
 
     VirtualFile virtualProjectDir = LocalFileSystem.getInstance().findFileByIoFile(getProjectFolder());
-    this.pantsIniFilePath = PantsUtil.findPantsIniFile(Optional.ofNullable(virtualProjectDir)).get().getPath();
-    File pantsIniFile = new File(pantsIniFilePath);
-    assertTrue("pants.ini file should exist",
-               pantsIniFile.exists());
-    assertFalse("pants.ini file path should not resolve to a directory",
-                pantsIniFile.isDirectory());
+    if (PantsUtil.isCompatiblePantsVersion(virtualProjectDir.getPath(), "1.26.0")) {
+      this.pantsIniFilePath = PantsUtil.findPantsTomlFile(Optional.ofNullable(virtualProjectDir)).get().getPath();
+      File pantsIniFile = new File(pantsIniFilePath);
+      assertTrue("pants.toml file should exist",
+                 pantsIniFile.exists());
+      assertFalse("pants.toml file path should not resolve to a directory",
+                  pantsIniFile.isDirectory());
+    }
+    else {
+      this.pantsIniFilePath = PantsUtil.findPantsIniFile(Optional.ofNullable(virtualProjectDir)).get().getPath();
+      File pantsIniFile = new File(pantsIniFilePath);
+      assertTrue("pants.ini file should exist",
+                 pantsIniFile.exists());
+      assertFalse("pants.ini file path should not resolve to a directory",
+                  pantsIniFile.isDirectory());
+    }
 
     this.nonexistentFilePath = "not/a/build-file/path";
     File nonexistentFile = new File(nonexistentFilePath);

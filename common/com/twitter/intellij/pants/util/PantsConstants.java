@@ -22,6 +22,7 @@ public class PantsConstants {
   public static final String PANTS_PROJECT_MODULE_ID_PREFIX = ".root.module.for.pants_";
 
   public static final String PANTS_INI = "pants.ini";
+  public static final String PANTS_TOML = "pants.toml";
   public static final String PANTS_PEX = "pants.pex";
   public static final String PANTS_LIBRARY_NAME = PANTS_PEX;
 
