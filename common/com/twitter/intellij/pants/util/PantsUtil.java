@@ -39,7 +39,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.JavaAwareProjectJdkTableImpl;
 import com.intellij.openapi.roots.ContentEntry;
@@ -67,14 +66,13 @@ import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
+import com.twitter.intellij.pants.model.PantsVersion;
 import com.twitter.intellij.pants.model.SimpleExportResult;
-import org.bouncycastle.math.raw.Mod;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jps.incremental.ModuleLevelBuilder;
 import org.jetbrains.jps.model.JpsProject;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 import org.jetbrains.jps.model.library.JpsLibrary;
@@ -93,7 +91,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -218,16 +215,17 @@ public class PantsUtil {
     return workingDir.map(file -> file.findChild(PantsConstants.PANTS_TOML));
   }
 
-  public static boolean isCompatiblePantsVersion(String projectPath, String minVersion) {
+  public static boolean isCompatibleProjectPantsVersion(String projectPath, String minVersion) {
     return PantsUtil.findPantsExecutable(projectPath)
       .flatMap(exec -> PantsOptions.getPantsOptions(exec.getPath()).get("pants_version"))
-      .map(version -> PantsUtil.isCompatibleVersion(version, minVersion))
+      .map(version -> PantsUtil.isCompatiblePantsVersion(version, minVersion))
       .orElse(false);
   }
 
-  public static boolean isCompatibleVersion(String current, String minimum) {
-    String currentVersion = current.replaceAll("rc.+", "").trim();
-    return versionCompare(currentVersion, minimum) >= 0;
+  public static boolean isCompatiblePantsVersion(String current, String minimum) {
+    PantsVersion version1 = new PantsVersion(current);
+    PantsVersion version2 = new PantsVersion(minimum);
+    return version1.compareTo(version2) >= 0;
   }
 
   private static Optional<String> findVersionInFile(@NotNull VirtualFile file) {

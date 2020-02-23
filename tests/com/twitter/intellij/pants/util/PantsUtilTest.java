@@ -4,24 +4,15 @@
 package com.twitter.intellij.pants.util;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.testFramework.OSSPantsImportIntegrationTest;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PantsUtilTest extends OSSPantsImportIntegrationTest {
@@ -40,17 +31,20 @@ public class PantsUtilTest extends OSSPantsImportIntegrationTest {
   }
 
   public void testIsCompatibleVersion() {
-    assertTrue(PantsUtil.isCompatibleVersion("2.2.3", "1.2.3"));
-    assertTrue(PantsUtil.isCompatibleVersion("1.4.4", "1.2.3"));
-    assertTrue(PantsUtil.isCompatibleVersion("1.2.4", "1.2.3"));
-    assertTrue(PantsUtil.isCompatibleVersion("1.2.4rc0", "1.2.3"));
-    assertTrue(PantsUtil.isCompatibleVersion("1.2.4.dev0", "1.2.3"));
-    assertTrue(PantsUtil.isCompatibleVersion("1.2.3", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("2.2.3", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.4.4", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.4", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.4rc0", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.4.dev0", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.3", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.3+git12345678", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.3-git12345678", "1.2.3"));
+    assertTrue(PantsUtil.isCompatiblePantsVersion("1.2.3-git12345678-md5123456789A", "1.2.3"));
 
-    assertFalse(PantsUtil.isCompatibleVersion("1.2.0rc122", "1.2.3"));
-    assertFalse(PantsUtil.isCompatibleVersion("2.34.43", "2.34.44"));
-    assertFalse(PantsUtil.isCompatibleVersion("2.33.44", "2.34.44"));
-    assertFalse(PantsUtil.isCompatibleVersion("1.34.44", "2.34.44"));
+    assertFalse(PantsUtil.isCompatiblePantsVersion("1.2.0rc122", "1.2.3"));
+    assertFalse(PantsUtil.isCompatiblePantsVersion("2.34.43", "2.34.44"));
+    assertFalse(PantsUtil.isCompatiblePantsVersion("2.33.44", "2.34.44"));
+    assertFalse(PantsUtil.isCompatiblePantsVersion("1.34.44", "2.34.44"));
   }
 
   public void testFindJdk() {

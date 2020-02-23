@@ -102,7 +102,7 @@ public class TargetFileCompletionIntegrationTest extends OSSPantsIntegrationTest
   private void completionTest(String stringToComplete, String[] expected) {
     String fullStringToComplete = "\n\n" + stringToComplete;
     // should be only tested with pants versions above 1.24.0
-    if (PantsUtil.isCompatiblePantsVersion(myProjectRoot.getPath(), "1.24.0")) {
+    if (PantsUtil.isCompatibleProjectPantsVersion(myProjectRoot.getPath(), "1.24.0")) {
       invalidateCaches();
 
       String helloProjectPath = "examples/src/scala/org/pantsbuild/example/hello/";

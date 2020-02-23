@@ -212,7 +212,7 @@ public class PantsCompileOptionsExecutor {
         targetSpecsFileWriter.write('\n');
       }
     }
-    if (PantsUtil.isCompatiblePantsVersion(getProjectPath(), "1.25.0")) {
+    if (PantsUtil.isCompatibleProjectPantsVersion(getProjectPath(), "1.25.0")) {
       commandLine.addParameter("--spec-file=" + targetSpecsFile.getPath());
     }
     else {
@@ -220,7 +220,7 @@ public class PantsCompileOptionsExecutor {
     }
     commandLine.addParameter("--no-quiet");
 
-    if (PantsUtil.isCompatiblePantsVersion(getProjectPath(), "1.24.0")) {
+    if (PantsUtil.isCompatibleProjectPantsVersion(getProjectPath(), "1.24.0")) {
       commandLine.addParameter("--export-available-target-types");
     }
 
