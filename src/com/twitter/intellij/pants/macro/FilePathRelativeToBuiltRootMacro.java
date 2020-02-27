@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.macro;
 
-import com.intellij.application.options.PathMacrosImpl;
 import com.intellij.ide.macro.Macro;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
@@ -16,14 +15,11 @@ import java.util.Optional;
 
 public class FilePathRelativeToBuiltRootMacro extends Macro {
   /**
-   * Have to use one of the names listed in {@link PathMacrosImpl#ourToolsMacros} as a workaround due to
-   * https://intellij-support.jetbrains.com/hc/en-us/community/posts/206103709-Custom-macro
-   *
    * @return corresponding name of this macro
    */
   @Override
   public String getName() {
-    return "FileRelativePath";
+    return "PantsFilePathRelativeToBuiltRoot";
   }
 
   @Override
