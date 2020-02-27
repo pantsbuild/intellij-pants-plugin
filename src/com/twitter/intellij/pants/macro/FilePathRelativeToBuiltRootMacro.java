@@ -19,7 +19,7 @@ public class FilePathRelativeToBuiltRootMacro extends Macro {
    */
   @Override
   public String getName() {
-    return "PantsFilePathRelativeToBuiltRoot";
+    return "PantsFilePathRelativeToBuildRoot";
   }
 
   @Override
