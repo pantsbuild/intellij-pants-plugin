@@ -26,7 +26,7 @@ public class FilePathRelativeToBuiltRootMacroTest extends OSSPantsIntegrationTes
     String expected = String.format("%s/testprojects/tests/java/%s.java", githubRepo, testClass.getQualifiedName().replace('.', '/'));
 
     VirtualFile fileSelected = testClass.getContainingFile().getVirtualFile();
-    String actual = MacroManager.getInstance().expandMacrosInString(githubRepo + "/$FileRelativePath$", false, getFakeContext(fileSelected));
+    String actual = MacroManager.getInstance().expandMacrosInString(githubRepo + "/$PantsFilePathRelativeToBuildRoot$", false, getFakeContext(fileSelected));
 
     assertEquals(expected, actual);
   }
