@@ -11,6 +11,7 @@ import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
+import com.intellij.execution.impl.RunConfigurationLevel;
 import com.intellij.execution.junit.JUnitConfigurationType;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.openapi.util.Factory;
@@ -25,11 +26,59 @@ public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfig
   private boolean myActivateToolWindowBeforeRun;
   private boolean mySingleton;
   private String myFolderName;
+  private RunConfigurationLevel level = RunConfigurationLevel.WORKSPACE;
+  private String pathIfStoredInArbitraryFile;
 
   private final RunConfiguration myRunConfiguration;
 
   public PantsJUnitRunnerAndConfigurationSettings(RunConfiguration configuration) {
     myRunConfiguration = configuration;
+  }
+
+  @Override
+  public void storeInLocalWorkspace() {
+    if (level != RunConfigurationLevel.TEMPORARY) {
+      level = RunConfigurationLevel.WORKSPACE;
+    }
+    pathIfStoredInArbitraryFile = null;
+  }
+
+  @Override
+  public void storeInDotIdeaFolder() {
+    level = RunConfigurationLevel.PROJECT;
+    pathIfStoredInArbitraryFile = null;
+  }
+
+  @Override
+  public void storeInArbitraryFileInProject(@NotNull String filePath) {
+    level = RunConfigurationLevel.PROJECT;
+    pathIfStoredInArbitraryFile = filePath;
+  }
+
+  @Override
+  public boolean isStoredInLocalWorkspace() {
+    switch (level) {
+      case TEMPORARY:
+      case WORKSPACE:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  @Override
+  public boolean isStoredInDotIdeaFolder() {
+    return level == RunConfigurationLevel.PROJECT && pathIfStoredInArbitraryFile == null;
+  }
+
+  @Override
+  public boolean isStoredInArbitraryFileInProject() {
+    return level == RunConfigurationLevel.PROJECT && pathIfStoredInArbitraryFile != null;
+  }
+
+  @Override
+  public String getPathIfStoredInArbitraryFileInProject() {
+    return pathIfStoredInArbitraryFile;
   }
 
   @NotNull

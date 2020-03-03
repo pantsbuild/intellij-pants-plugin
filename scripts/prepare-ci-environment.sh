@@ -12,8 +12,8 @@ fi
 export CWD=$(pwd)
 # Normally, IJ_VERSION is of the form YEAR.x[.y[.z]]
 # But for EAPs, set IJ_VERSION to the same as IJ_BUILD_NUMBER
-export IJ_VERSION="201.5259.13"
-export IJ_BUILD_NUMBER="201.5259.13"
+export IJ_VERSION="201.5985.32"
+export IJ_BUILD_NUMBER="201.5985.32"
 
 # tests run from within pants repository must use java 8
 export PANTS_TEST_JUNIT_STRICT_JVM_VERSION=true
