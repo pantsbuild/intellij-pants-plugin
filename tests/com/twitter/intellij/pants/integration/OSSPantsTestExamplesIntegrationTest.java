@@ -3,10 +3,10 @@
 
 package com.twitter.intellij.pants.integration;
 
-import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.testFramework.RunResult;
 
 public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest {
   @Override
@@ -25,12 +25,12 @@ public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertTrue(result.output.get().contains("compile intellij-integration/tests/java/org/pantsbuild/testprojects:testprojects"));
     assertSuccessfulTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects", "org.pantsbuild.testprojects.JUnitIntegrationTest");
-    final OSProcessHandler processHandler = runJUnitTest(
+    RunResult runResult = runJUnitTest(
       "intellij-integration_tests_java_org_pantsbuild_testprojects_testprojects",
       "org.pantsbuild.testprojects.JUnitIntegrationTest",
       "-DPANTS_FAIL_TEST=true"
     );
-    assertTrue("Tests should fail!", processHandler.getProcess().exitValue() != 0);
+    assertTrue("Tests should fail!", runResult.getExitCode() != 0);
   }
 
   public void testScopedJUnitTests() throws Throwable {
