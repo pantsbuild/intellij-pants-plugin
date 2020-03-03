@@ -15,6 +15,9 @@ export CWD=$(pwd)
 export IJ_VERSION="201.5259.13"
 export IJ_BUILD_NUMBER="201.5259.13"
 
+# tests run from within pants repository must use java 8
+export PANTS_TEST_JUNIT_STRICT_JVM_VERSION=true
+
 # This is for bootstrapping Pants, since this repo does not do Pants intensive operations,
 # we can optimize for build time.
 # https://github.com/pantsbuild/pants/blob/16bd8fffb6db89779f5862604a0fe8745c8e50c4/build-support/bin/native/bootstrap_code.sh#L27
@@ -88,4 +91,8 @@ append_intellij_jvm_options() {
   echo $cmd
 }
 
-export JDK_JARS="$(printf "%s\n" 'sa-jdi.jar' 'tools.jar')"
+# on java 9+ these jars are not available
+if [ -f "$JAVA_HOME/lib/tools.jar" ]; then
+  JDK_JARS="$(printf "%s\n" 'sa-jdi.jar' 'tools.jar')"
+fi
+export JDK_JARS

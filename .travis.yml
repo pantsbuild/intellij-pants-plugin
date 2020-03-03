@@ -20,10 +20,13 @@ addons:
       - python-dev
 
 before_install:
-  - PATH="/usr/lib/jvm/java-8-openjdk-amd64/jre/bin":$PATH
-  - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  - PATH="/usr/lib/jvm/java-11-openjdk-amd64/jre/bin":$PATH
+  - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 install: ./scripts/setup-ci-environment.sh
+
+jdk:
+  - openjdk11
 
 # General policy is to support pants for the past 10 releases and the latest master.
 matrix:

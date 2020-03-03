@@ -25,9 +25,9 @@ CACHE_JDK_LIB_DIR='.cache/jdk-libs'
 mkdir -p "$CACHE_JDK_LIB_DIR"
 
 for jar_file in $JDK_JARS; do
+  src_jar="$JDK_LIB_DIR/$jar_file"
   dest_jar="$CACHE_JDK_LIB_DIR/$jar_file"
-  if [ ! -f "$dest_jar" ]; then
-    src_jar="$JDK_LIB_DIR/$jar_file"
+  if [ -f "$src_jar" ] && [ ! -f "$dest_jar" ]; then
     cp "$src_jar" "$dest_jar"
   fi
 done
