@@ -6,13 +6,13 @@ package com.twitter.intellij.pants.service.project.wizard;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
+import com.intellij.openapi.externalSystem.model.project.ProjectSdkData;
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager;
 import com.intellij.openapi.externalSystem.service.project.wizard.AbstractExternalProjectImportBuilder;
-import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.model.JdkRef;
 import com.twitter.intellij.pants.settings.ImportFromPantsControl;
 import com.twitter.intellij.pants.util.PantsConstants;
 import icons.PantsIcons;
@@ -62,9 +62,9 @@ public class PantsProjectImportBuilder extends AbstractExternalProjectImportBuil
       return;
     }
 
-    final DataNode<JdkRef> sdkNode = ExternalSystemApiUtil.find(node, PantsConstants.SDK_KEY);
-    if (sdkNode != null) {
-      Sdk pantsSdk = sdkNode.getData().toSdk(context.getDisposable());
+    ProjectSdkData sdk = node.getData(ProjectSdkData.KEY);
+    if (sdk != null && sdk.getSdkName() != null) {
+      Sdk pantsSdk = ProjectJdkTable.getInstance().findJdk(sdk.getSdkName());
       context.setProjectJdk(pantsSdk);
     }
   }

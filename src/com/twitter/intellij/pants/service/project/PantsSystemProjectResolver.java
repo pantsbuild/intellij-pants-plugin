@@ -13,7 +13,6 @@ import com.intellij.ide.SelectInTarget;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -21,6 +20,7 @@ import com.intellij.openapi.externalSystem.model.project.ContentRootData;
 import com.intellij.openapi.externalSystem.model.project.ExternalSystemSourceType;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
+import com.intellij.openapi.externalSystem.model.project.ProjectSdkData;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationEvent;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
@@ -30,6 +30,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.util.Key;
@@ -42,7 +43,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
-import com.twitter.intellij.pants.model.JdkRef;
 import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
@@ -197,8 +197,8 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
     PantsUtil.findPantsExecutable(executor.getProjectPath())
       .flatMap(file -> PantsSdkUtil.getDefaultJavaSdk(file.getPath(), null))
-      .map(JdkRef::fromSdk)
-      .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
+      .map(sdk -> new ProjectSdkData(sdk.getName()))
+      .ifPresent(sdk -> projectDataNode.createChild(ProjectSdkData.KEY, sdk));
 
     if (!isPreviewMode) {
       PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(settings.isEnableIncrementalImport());
