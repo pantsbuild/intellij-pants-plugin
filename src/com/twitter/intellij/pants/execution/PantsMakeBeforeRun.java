@@ -8,7 +8,6 @@ import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunManager;
-import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
@@ -30,11 +29,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTask;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTaskProvider;
-import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -237,14 +237,21 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
 
     PantsSettings settings = PantsSettings.getInstance(currentProject);
-    if (settings.isUseIdeaProjectJdk()) {
-      try {
-        commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(PantsUtil.getJdkPathFromIntelliJCore()));
+    try {
+      String javaHome;
+      if (settings.isUseIdeaProjectJdk()) {
+        javaHome = PantsUtil.getJdkPathFromIntelliJCore();
       }
-      catch (Exception e) {
-        showPantsMakeTaskMessage(e.getMessage(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
-        return PantsExecuteTaskResult.emptyFailure();
+      else {
+        Sdk sdk = ProjectRootManager.getInstance(currentProject).getProjectSdk();
+        javaHome = sdk.getHomeDirectory().getPath();
       }
+
+      commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(javaHome));
+    }
+    catch (Exception e) {
+      showPantsMakeTaskMessage(e.getMessage(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
+      return PantsExecuteTaskResult.emptyFailure();
     }
 
     /* Add `.ic.iterate.rc` file */

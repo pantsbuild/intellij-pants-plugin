@@ -1,7 +1,7 @@
 import os
 import re
 
-_jdk_jar_paths = os.environ['JDK_JARS'].split('\n')
+_jdk_jar_paths = os.environ['JDK_JARS'].split('\n') if 'JDK_JARS' in os.environ else []
 
 _is_ultimate = os.getenv('IJ_ULTIMATE', 'false') == 'true'
 

@@ -19,7 +19,10 @@ import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.execution.junit.JUnitConfigurationType;
 import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.execution.runners.ExecutionUtil;
@@ -45,6 +48,7 @@ import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -404,32 +408,48 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
 
   public void assertSuccessfulTest(String moduleName, String className) {
     try {
-      final OSProcessHandler handler = runJUnitTest(moduleName, className, null);
-      assertEquals("Bad exit code! Tests failed!", 0, handler.getProcess().exitValue());
+      RunResult result = runJUnitTest(moduleName, className, null);
+      assertEquals("Test failed: " + result, 0, result.getExitCode());
     }
     catch (ExecutionException e) {
       fail(e.toString());
     }
   }
 
-  public OSProcessHandler runJUnitTest(String moduleName, String className, @Nullable String vmParams) throws ExecutionException {
+  public RunResult runJUnitTest(String moduleName, String className, @Nullable String vmParams) throws ExecutionException {
     return runWithConfiguration(generateJUnitConfiguration(moduleName, className, vmParams));
   }
 
   @NotNull
-  protected OSProcessHandler runWithConfiguration(RunConfiguration configuration) throws ExecutionException {
+  protected RunResult runWithConfiguration(RunConfiguration configuration) throws ExecutionException {
     PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(configuration);
     PantsMakeBeforeRun.setRunConfigurationWorkingDirectory(configuration);
-    final PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
+    PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
       new PantsJUnitRunnerAndConfigurationSettings(configuration);
-    final ExecutionEnvironmentBuilder environmentBuilder =
+    ExecutionEnvironmentBuilder environmentBuilder =
       ExecutionUtil.createEnvironment(DefaultRunExecutor.getRunExecutorInstance(), runnerAndConfigurationSettings);
-    final ExecutionEnvironment environment = environmentBuilder.build();
+    ExecutionEnvironment environment = environmentBuilder.build();
+
+    List<String> output = new ArrayList<>();
+    List<String> errors = new ArrayList<>();
+    ProcessAdapter processAdapter = new ProcessAdapter() {
+      @Override
+      public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+        if (outputType == ProcessOutputTypes.STDOUT) {
+          output.add(event.getText());
+        }
+        else if (outputType == ProcessOutputTypes.STDERR) {
+          errors.add(event.getText());
+        }
+      }
+    };
 
     ProgramRunnerUtil.executeConfiguration(environment, false, false);
-    final OSProcessHandler handler = (OSProcessHandler) environment.getContentToReuse().getProcessHandler();
+    OSProcessHandler handler = (OSProcessHandler) environment.getContentToReuse().getProcessHandler();
+    handler.addProcessListener(processAdapter);
     assertTrue(handler.waitFor());
-    return handler;
+
+    return new RunResult(handler.getExitCode(), output, errors);
   }
 
   @NotNull

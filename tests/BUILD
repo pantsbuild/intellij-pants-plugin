@@ -17,6 +17,7 @@ target(name='sources-and-libs',
 
 junit_tests(
   name='misc',
+  platform='java11',
   dependencies=[
     ':sources-and-libs',
   ],
@@ -44,6 +45,7 @@ junit_tests(
 
 junit_tests(
   name='jvm-integration',
+  platform='java11',
   dependencies=[
     ':sources-and-libs',
   ],
@@ -54,6 +56,7 @@ junit_tests(
 
 junit_tests(
   name='py-integration',
+  platform='java11',
   dependencies=[
     ':sources-and-libs',
   ],
@@ -64,6 +67,7 @@ junit_tests(
 
 junit_tests(
   name='metrics',
+  platform='java11',
   dependencies=[
     ':sources-and-libs',
   ],
