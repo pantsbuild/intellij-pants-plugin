@@ -16,7 +16,7 @@
   <version>1.14.0</version>
   <vendor>Twitter, Inc.</vendor>
 
-  <idea-version since-build="201.0" until-build="201.*"/>
+  <idea-version since-build="201.6073" until-build="201.6073.*"/>
 
   <!--Add gradle as a dep because of Pants runner requires it.-->
   <depends>com.intellij.gradle</depends>
@@ -127,7 +127,7 @@
     <projectConfigurable groupId="build.tools" groupWeight="110" id="reference.settingsdialog.project.pants"
                          instance="com.twitter.intellij.pants.settings.PantsConfigurable"
                          key="pants.name" bundle="com.twitter.intellij.pants.PantsBundle"/>
-
+    <actionConfigurationCustomizer implementation="com.twitter.intellij.pants.components.impl.PantsActionConfigurationCustomizer"/>
     <projectImportProvider
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider"/>
     <projectImportBuilder

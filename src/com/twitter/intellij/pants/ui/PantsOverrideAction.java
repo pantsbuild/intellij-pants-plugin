@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.ui;
 
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAware;
@@ -11,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import javax.swing.Icon;
@@ -26,28 +26,20 @@ public class PantsOverrideAction extends AnAction implements DumbAware {
   @TestOnly
   private boolean pantsActive;
 
-  public PantsOverrideAction(String actionId, @NotNull AnAction pantsAction) {
-    this(pantsAction, getAction(actionId));
-  }
-
-  public PantsOverrideAction(String actionId, String oldName, @NotNull AnAction pantsAction, Icon icon) {
-    this(actionId, oldName, pantsAction);
+  public PantsOverrideAction(String oldName, @NotNull AnAction pantsAction, @Nullable AnAction ideaAction, Icon icon) {
+    super(oldName);
+    primaryPantsAction = pantsAction;
+    secondaryIdeaAction = ideaAction;
     secondaryIdeaIcon = icon;
   }
 
-  public PantsOverrideAction(String actionId, String oldName, @NotNull AnAction pantsAction) {
-    super(oldName);
-    primaryPantsAction = pantsAction;
-    secondaryIdeaAction = getAction(actionId);
+  public PantsOverrideAction(String oldName, @NotNull AnAction pantsAction, @Nullable AnAction ideaAction) {
+    this(oldName, pantsAction, ideaAction, null);
   }
 
-  public PantsOverrideAction(AnAction pantsPrimary, AnAction ideaSecondary) {
+  public PantsOverrideAction(@NotNull AnAction pantsPrimary, @Nullable  AnAction ideaSecondary) {
     primaryPantsAction = pantsPrimary;
     secondaryIdeaAction = ideaSecondary;
-  }
-
-  public static PantsOverrideAction createDisabledEmptyAction(String actionId) {
-    return new PantsOverrideAction(actionId, new ShieldAction(getAction(actionId)));
   }
 
   private boolean isPantsProject(AnActionEvent event) {
@@ -81,10 +73,6 @@ public class PantsOverrideAction extends AnAction implements DumbAware {
     else if (secondaryIdeaAction != null) {
       secondaryIdeaAction.actionPerformed(event);
     }
-  }
-
-  private static AnAction getAction(@NotNull String actionId) {
-    return ActionManager.getInstance().getAction(actionId);
   }
 
   @Override
