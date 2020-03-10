@@ -14,16 +14,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Optional;
 
 public class NoopCompileTest extends OSSPantsIntegrationTest {
-
-  private static class ScalaProjectData {
-    static final String path = "examples/tests/scala/org/pantsbuild/example/hello/welcome";
-    static final String HELLO_SRC_JAVA_MODULE = "examples_src_java_org_pantsbuild_example_hello_greet_greet";
-    static final String HELLO_SRC_SCALA_MODULE = "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome";
-    static final String HELLO_TEST_MODULE = "examples_tests_scala_org_pantsbuild_example_hello_welcome_welcome";
-    static final String HELLO_RESOURCES_MODULE = "examples_src_resources_org_pantsbuild_example_hello_hello";
-  }
 
   @Override
   public void setUp() throws Exception {
@@ -31,12 +24,12 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
   }
 
   private void importScalaHello() {
-    doImport(ScalaProjectData.path);
+    doImport(ScalaWelcomeProjectData.path);
     assertFirstSourcePartyModules(
-      ScalaProjectData.HELLO_RESOURCES_MODULE,
-      ScalaProjectData.HELLO_SRC_JAVA_MODULE,
-      ScalaProjectData.HELLO_SRC_SCALA_MODULE,
-      ScalaProjectData.HELLO_TEST_MODULE
+      ScalaWelcomeProjectData.HELLO_RESOURCES_MODULE,
+      ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE,
+      ScalaWelcomeProjectData.HELLO_SRC_SCALA_MODULE,
+      ScalaWelcomeProjectData.HELLO_TEST_MODULE
     );
   }
 
@@ -140,13 +133,13 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
   public void testCompileDifferentModule() throws Throwable {
     importScalaHello();
 
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
-    assertPantsCompileNoop(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileNoop(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
     // Compile a different module, should not noop.
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_SCALA_MODULE));
-    assertPantsCompileNoop(pantsCompileModule(ScalaProjectData.HELLO_SRC_SCALA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_SCALA_MODULE));
+    assertPantsCompileNoop(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_SCALA_MODULE));
     // Switch back should compile again.
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
   }
 
   public void testCompileProjectSettings() throws Throwable {
@@ -154,11 +147,11 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
 
     PantsSettings settings = PantsSettings.getInstance(myProject);
     settings.setUseIdeaProjectJdk(false);
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
-    assertPantsCompileNoop(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileNoop(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
 
     settings.setUseIdeaProjectJdk(true);
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
   }
 
   public void testCompileIncrementalImports() throws Throwable {
@@ -166,27 +159,28 @@ public class NoopCompileTest extends OSSPantsIntegrationTest {
 
     // If a project uses incremental imports, then noop should never happen.
     PantsSettings settings = PantsSettings.getInstance(myProject);
-    settings.setEnableIncrementalImport(true);
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
+    settings.setEnableIncrementalImport(Optional.of(1));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
   }
+
 
   public void testShouldCompileAfterCleanAll() throws Throwable {
     importScalaHello();
 
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
-    assertPantsCompileNoop(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileNoop(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
     cmd("./pants", "clean-all");
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
   }
 
   public void testShouldCompileAfterOutOfBandPantsCLI() throws Throwable {
     importScalaHello();
 
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
-    assertPantsCompileNoop(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileNoop(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
     cmd("./pants", "export-classpath", "--manifest-jar-only", "examples/tests/java/org/pantsbuild/example/hello/greet");
     // Recompile because the sha of manifest.jar will change.
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaProjectData.HELLO_SRC_JAVA_MODULE));
+    assertPantsCompileExecutesAndSucceeds(pantsCompileModule(ScalaWelcomeProjectData.HELLO_SRC_JAVA_MODULE));
   }
 }
