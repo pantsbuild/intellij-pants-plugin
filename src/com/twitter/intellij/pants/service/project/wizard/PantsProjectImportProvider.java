@@ -10,13 +10,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.ProjectJdkStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
-import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.service.project.wizard.AbstractExternalProjectImportProvider;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.projectImport.ProjectImportBuilder;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
@@ -31,7 +29,7 @@ public class PantsProjectImportProvider extends AbstractExternalProjectImportPro
   private static final boolean CAN_BE_CANCELLED = true;
 
   public PantsProjectImportProvider() {
-    super(new PantsProjectImportBuilder(), PantsConstants.SYSTEM_ID);
+    super(PantsProjectImportBuilder.getInstance(), PantsConstants.SYSTEM_ID);
   }
 
   @Override

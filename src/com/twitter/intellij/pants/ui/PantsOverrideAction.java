@@ -20,9 +20,9 @@ import javax.swing.Icon;
  */
 public class PantsOverrideAction extends AnAction implements DumbAware {
 
-  private AnAction secondaryIdeaAction;
-  private AnAction primaryPantsAction;
-  private Icon secondaryIdeaIcon;
+  private final AnAction primaryPantsAction;
+  private final AnAction secondaryIdeaAction;
+  private final Icon secondaryIdeaIcon;
   @TestOnly
   private boolean pantsActive;
 
@@ -40,6 +40,7 @@ public class PantsOverrideAction extends AnAction implements DumbAware {
   public PantsOverrideAction(@NotNull AnAction pantsPrimary, @Nullable  AnAction ideaSecondary) {
     primaryPantsAction = pantsPrimary;
     secondaryIdeaAction = ideaSecondary;
+    secondaryIdeaIcon = null;
   }
 
   private boolean isPantsProject(AnActionEvent event) {

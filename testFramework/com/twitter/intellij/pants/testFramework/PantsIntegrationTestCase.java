@@ -44,6 +44,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.LibraryOrderEntry;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
