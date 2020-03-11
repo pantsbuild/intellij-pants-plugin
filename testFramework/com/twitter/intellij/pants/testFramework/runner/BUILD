@@ -7,5 +7,5 @@ junit_tests(
         'src:pants-intellij-plugin',
         'testFramework:test-lib'
     ],
-    sources = globs('*.java')
+    sources = ['*.java'],
 )

@@ -1,5 +1,5 @@
 junit_tests(name='testprojects',
-  sources=globs('*.java'),
+  sources=['*.java'],
   dependencies=[
     '3rdparty:junit',
   ],
