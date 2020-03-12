@@ -15,8 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.file.FileChangeTracker;
-import com.twitter.intellij.pants.file.ProjectRefreshListener;
-import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 import javax.swing.event.HyperlinkEvent;
@@ -25,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.twitter.intellij.pants.file.ProjectRefreshListener.NOTIFICATION_TITLE;
@@ -39,6 +38,17 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
       .collect(Collectors.toList());
   }
 
+  private void withSelectedEditor(VirtualFile file, Consumer<Editor> c) {
+    FileEditorManager.getInstance(myProject).openFile(file, true);
+    Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
+    try {
+      c.accept(editor);
+    }
+    finally {
+      FileEditorManager.getInstance(myProject).closeFile(file);
+    }
+  }
+
   /**
    * Modifying a BUILD file in project should not trigger refresh prompt.
    */
@@ -49,14 +59,15 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
         doImport("examples/tests/java/org/pantsbuild/example/useproto");
 
         // Find a BUILD file in project.
-        FileEditorManager.getInstance(myProject).openFile(firstMatchingVirtualFileInProject("BUILD"), true);
-        Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
+        VirtualFile build = firstMatchingVirtualFileInProject("BUILD");
 
-        // Add a newline to the BUILD file.
-        editor.getDocument().setText(editor.getDocument().getText() + "\n");
+        withSelectedEditor(build, editor -> {
+          // Add a newline to the BUILD file.
+          editor.getDocument().setText(editor.getDocument().getText() + "\n");
 
-        // Save the BUILD file. Then the refresh notification should be triggered.
-        FileDocumentManager.getInstance().saveAllDocuments();
+          // Save the BUILD file. Then the refresh notification should be triggered.
+          FileDocumentManager.getInstance().saveAllDocuments();
+        });
 
         // Verify the notification is triggered.
         List<Notification> refreshNotifications = findAllExistingRefreshNotification(myProject);
@@ -71,25 +82,27 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
         */
 
         // Open 'Distances.java' in editor and make sure it only contains `getNumber` and not `getNewDummyNumber`.
-        FileEditorManager.getInstance(myProject).openFile(firstMatchingVirtualFileInProject("Distances.java"), true);
-        Editor editor2 = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
-        assertContainsSubstring(Collections.singletonList(editor2.getDocument().getText()), "getNumber()");
-        assertNotContainsSubstring(Collections.singletonList(editor2.getDocument().getText()), "getNewDummyNumber()");
+        VirtualFile distancesJava = firstMatchingVirtualFileInProject("Distances.java");
+        VirtualFile distancesProto = firstMatchingVirtualFileInProject("distances.proto");
+        withSelectedEditor(distancesJava, editor -> {
+          assertContainsSubstring(Collections.singletonList(editor.getDocument().getText()), "getNumber()");
+          assertNotContainsSubstring(Collections.singletonList(editor.getDocument().getText()), "getNewDummyNumber()");
 
-        // Find distances.proto, and replaces it with the new text which adds the line "required int64 new_dummy_number = 3"
-        Document distanceDotProtoDoc = FileDocumentManager.getInstance().getDocument(firstMatchingVirtualFileInProject("distances.proto"));
-        Document newDistanceProtoDoc = getTestData("testData/protobuf/distances.proto");
-        distanceDotProtoDoc.setText(newDistanceProtoDoc.getText());
+          // Find distances.proto, and replaces it with the new text which adds the line "required int64 new_dummy_number = 3"
+          Document distanceDotProtoDoc = FileDocumentManager.getInstance().getDocument(distancesProto);
+          Document newDistanceProtoDoc = getTestData("testData/protobuf/distances.proto");
+          distanceDotProtoDoc.setText(newDistanceProtoDoc.getText());
 
-        // Click the hyperlink to trigger project refresh and make sure `getNewDummyNumber()` is loaded into the Editor.
-        final URL url = null;
-        HyperlinkEvent event = new HyperlinkEvent(notification, HyperlinkEvent.EventType.ACTIVATED, url, FileChangeTracker.HREF_REFRESH);
-        NotificationListener listener = notification.getListener();
-        assertNotNull("Notification should have a listener set, but does not", listener);
-        listener.hyperlinkUpdate(notification, event);
+          // Click the hyperlink to trigger project refresh and make sure `getNewDummyNumber()` is loaded into the Editor.
+          final URL url = null;
+          HyperlinkEvent event = new HyperlinkEvent(notification, HyperlinkEvent.EventType.ACTIVATED, url, FileChangeTracker.HREF_REFRESH);
+          NotificationListener listener = notification.getListener();
+          assertNotNull("Notification should have a listener set, but does not", listener);
+          listener.hyperlinkUpdate(notification, event);
 
-        assertContainsSubstring(Collections.singletonList(editor2.getDocument().getText()), "getNumber()");
-        assertContainsSubstring(Collections.singletonList(editor2.getDocument().getText()), "getNewDummyNumber()");
+          assertContainsSubstring(Collections.singletonList(editor.getDocument().getText()), "getNumber()");
+          assertContainsSubstring(Collections.singletonList(editor.getDocument().getText()), "getNewDummyNumber()");
+        });
       }
     });
   }
@@ -98,49 +111,42 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
    * Modifying a non BUILD file in project should not trigger refresh prompt.
    */
   public void testNoRefreshPrompt() throws Throwable {
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        doImport("examples/tests/java/org/pantsbuild/example/useproto");
-        FileEditorManager.getInstance(myProject).openFile(firstMatchingVirtualFileInProject("UseProtoTest.java"), true);
-        Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      doImport("examples/tests/java/org/pantsbuild/example/useproto");
+      VirtualFile javaFile = firstMatchingVirtualFileInProject("UseProtoTest.java");
+      FileEditorManager.getInstance(myProject).openFile(javaFile, true);
+      withSelectedEditor(javaFile, editor -> {
         editor.getDocument().setText(editor.getDocument().getText() + "\n");
         FileDocumentManager.getInstance().saveAllDocuments();
         ArrayList<Notification> notifications = EventLog.getLogModel(myProject).getNotifications();
         assertEquals("There should not be any notifications, but there is", 0, notifications.size());
-      }
+      });
     });
   }
 
   public void testNoRefreshPromptPantsd() throws Throwable {
     doImport("examples/tests/java/org/pantsbuild/example/useproto");
-    String workdir = Paths.get(this.getProjectPath() ).relativize(Paths.get(myProjectRoot.getPath())).toString() + "/.pants.d/";
+    String workdir = Paths.get(this.getProjectPath()).relativize(Paths.get(myProjectRoot.getPath())).toString() + "/.pants.d/";
     createProjectSubDir(workdir);
     VirtualFile buildHtml = createProjectSubFile(workdir + "build.html");
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        FileEditorManager.getInstance(myProject).openFile(buildHtml, true);
-        Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      withSelectedEditor(buildHtml, editor -> {
         editor.getDocument().setText(editor.getDocument().getText() + "\n");
         FileDocumentManager.getInstance().saveAllDocuments();
-        ArrayList<Notification> notifications = EventLog.getLogModel(myProject).getNotifications();
-        notifications
-          .forEach(notification -> assertNotSame(notification.getTitle(), NOTIFICATION_TITLE));
-      }
+      });
+
+      ArrayList<Notification> notifications = EventLog.getLogModel(myProject).getNotifications();
+      notifications.forEach(notification -> assertNotSame(notification.getTitle(), NOTIFICATION_TITLE));
     });
   }
 
 
   public void testNotificationQuantity() throws Throwable {
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        doImport("examples/tests/java/org/pantsbuild/example/useproto");
-        // Find a BUILD file in project.
-        FileEditorManager.getInstance(myProject).openFile(firstMatchingVirtualFileInProject("BUILD"), true);
-        Editor editor = FileEditorManager.getInstance(myProject).getSelectedTextEditor();
-
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      doImport("examples/tests/java/org/pantsbuild/example/useproto");
+      // Find a BUILD file in project.
+      VirtualFile build = firstMatchingVirtualFileInProject("BUILD");
+      withSelectedEditor(build, editor -> {
         // Save the file multiple times and make sure there is only one active refresh notification
         for (int i = 0; i < 2; i++) {
           saveFileAndAssertRefreshNotification(editor);
@@ -151,25 +157,26 @@ public class OSSRefreshPromptIntegrationTest extends OSSPantsIntegrationTest {
         // Make sure there is no active one left
         assertEquals(0, EventLog.getLogModel(myProject).getNotifications().size());
         saveFileAndAssertRefreshNotification(editor);
-      }
-
-      /**
-       * Change the text file in an editor and make sure there is only one refresh notification.
-       * @param editor an editor containing an opened file.
-       */
-      private void saveFileAndAssertRefreshNotification(Editor editor) {
-        // Add a newline to the BUILD file.
-        editor.getDocument().setText(editor.getDocument().getText() + "\n");
-        // Save the BUILD file. Then the refresh notification should be triggered.
-        FileDocumentManager.getInstance().saveAllDocuments();
-        // Verify the notification is triggered.
-        List<Notification> notifications = findAllExistingRefreshNotification(myProject);
-        assertEquals(
-          String.format("Project should only have 1 refresh notification, but has %s", notifications.size()),
-          1, notifications.size()
-        );
-      }
+      });
     });
+  }
+
+  /**
+   * Change the text file in an editor and make sure there is only one refresh notification.
+   *
+   * @param editor an editor containing an opened file.
+   */
+  private void saveFileAndAssertRefreshNotification(Editor editor) {
+    // Add a newline to the BUILD file.
+    editor.getDocument().setText(editor.getDocument().getText() + "\n");
+    // Save the BUILD file. Then the refresh notification should be triggered.
+    FileDocumentManager.getInstance().saveAllDocuments();
+    // Verify the notification is triggered.
+    List<Notification> notifications = findAllExistingRefreshNotification(myProject);
+    assertEquals(
+      String.format("Project should only have 1 refresh notification, but has %s", notifications.size()),
+      1, notifications.size()
+    );
   }
 
   @Override
