@@ -7,13 +7,14 @@ import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import junit.framework.TestCase;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunnableState.BUILD_PROCESS_DEBUGGER_PORT_KEY;
 
 public class PantsTaskManagerTest extends TestCase {
 
   public void testGetCleanedDebugSetup() {
-    PantsExecutionSettings settings = new PantsExecutionSettings(Collections.emptyList(), false, false, false, false, false);
+    PantsExecutionSettings settings = new PantsExecutionSettings(Collections.emptyList(), false, false, false, Optional.empty(), false);
     settings.putUserData(BUILD_PROCESS_DEBUGGER_PORT_KEY, 63212);
 
     PantsTaskManager.setupDebuggerSettings(settings);
