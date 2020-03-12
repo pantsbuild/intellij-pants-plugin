@@ -62,6 +62,7 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.execution.ParametersListUtil;
+import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -965,5 +966,16 @@ public class PantsUtil {
    */
   public static List<String> parseCmdParameters(Optional<String> cmdArgsLine) {
     return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
+  }
+
+  public static void invokeLater(Runnable task) {
+    // calling directly ensures that the underlying exception gets propagated and
+    // can then be asserted in tests - otherwise it gets swallowed underneath
+    if (ApplicationManager.getApplication().isUnitTestMode()) {
+      task.run();
+    }
+    else {
+      UIUtil.invokeLaterIfNeeded(task);
+    }
   }
 }

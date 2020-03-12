@@ -25,7 +25,6 @@ import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.StatusText;
-import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -242,11 +241,12 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
           public void run(@NotNull ProgressIndicator indicator) {
             try {
               final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
-              UIUtil.invokeLaterIfNeeded(() -> {
+              PantsUtil.invokeLater(() -> {
                 targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
               });
-            } catch (RuntimeException e) {
-              UIUtil.invokeLaterIfNeeded((Runnable) () -> {
+            }
+            catch (RuntimeException e) {
+              PantsUtil.invokeLater(() -> {
                 Messages.showErrorDialog(getProject(), e.getMessage(), "Pants Failure");
                 Messages.createMessageDialogRemover(getProject()).run();
               });
@@ -256,7 +256,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         break;
       default:
         clearGeneratedName();
-        UIUtil.invokeLaterIfNeeded((Runnable) () -> {
+        PantsUtil.invokeLater(() -> {
           Messages.showErrorDialog(getProject(), "Unexpected project file state: " + pathFileType, "Pants Failure");
           Messages.createMessageDialogRemover(getProject()).run();
         });
@@ -303,7 +303,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     if (myNameField.getText().length() > 200) {
       throw new ConfigurationException(PantsBundle.message("pants.error.project.name.tooLong"));
     }
-    
+
     final String projectUrl = VfsUtil.pathToUrl(settings.getExternalProjectPath());
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(projectUrl);
     ProjectPathFileType pathFileType = determinePathKind(file);
