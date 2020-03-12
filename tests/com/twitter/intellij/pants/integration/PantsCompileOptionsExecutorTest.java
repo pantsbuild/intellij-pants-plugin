@@ -9,7 +9,6 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.Optional;
 
 public class PantsCompileOptionsExecutorTest extends OSSPantsIntegrationTest {
 
@@ -22,7 +21,7 @@ public class PantsCompileOptionsExecutorTest extends OSSPantsIntegrationTest {
       false, // include libs and sources. does not matter here
       false, // use idea project jdk. does not matter here.
       false, // pants qexport dep as jar
-      Optional.empty(), // incremental imports. does not matter here.
+      false, // incremental imports. does not matter here.
       false // use intellij compiler
     );
 

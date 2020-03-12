@@ -78,7 +78,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
                         {
                           Module[] modules = ModuleManager.getInstance(project).getModules();
                           for (Module module : modules) {
-                            if (Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), Paths.get(projectPath).normalize().toString())) {
+                            if (Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), projectPath)) {
                               ModuleManager.getInstance(project).disposeModule(module);
                             }
                           }
@@ -103,9 +103,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     checkForDifferentPantsExecutables(id, projectPath);
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
-
-    Optional<Integer> incrementalImportDepth = settings.incrementalImportDepth();
-
     final DataNode<ProjectData> projectDataNode =
       resolveProjectInfoImpl(id, executor, listener, settings, isPreviewMode);
     // We do not want to repeatedly force switching to 'Project Files Tree' view if
@@ -204,7 +201,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       .ifPresent(sdk -> projectDataNode.createChild(PantsConstants.SDK_KEY, sdk));
 
     if (!isPreviewMode) {
-      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(settings.incrementalImportDepth().isPresent());
+      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(settings.isEnableIncrementalImport());
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {
