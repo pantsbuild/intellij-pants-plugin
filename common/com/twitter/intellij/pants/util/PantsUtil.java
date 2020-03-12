@@ -28,6 +28,7 @@ import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.Key;
+import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode;
 import com.intellij.openapi.externalSystem.service.internal.ExternalSystemExecuteTaskTask;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
@@ -303,24 +304,26 @@ public class PantsUtil {
 
   public static Optional<VirtualFile> findBuildRoot(@NotNull Module module) {
     final VirtualFile moduleFile = module.getModuleFile();
-    if (moduleFile != null) {
-      return findBuildRoot(moduleFile);
-    }
-    final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-    for (VirtualFile contentRoot : rootManager.getContentRoots()) {
-      final Optional<VirtualFile> buildRoot = findBuildRoot(contentRoot);
-      if (buildRoot.isPresent()) {
-        return buildRoot;
+    Optional<VirtualFile> fromModuleFile = Optional.ofNullable(moduleFile).flatMap(PantsUtil::findBuildRoot);
+    if (fromModuleFile.isPresent()) {
+      return fromModuleFile;
+    } else {
+      final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+      for (VirtualFile contentRoot : rootManager.getContentRoots()) {
+        final Optional<VirtualFile> buildRoot = findBuildRoot(contentRoot);
+        if (buildRoot.isPresent()) {
+          return buildRoot;
+        }
       }
-    }
-    for (ContentEntry contentEntry : rootManager.getContentEntries()) {
-      VirtualFile contentEntryFile = VirtualFileManager.getInstance().refreshAndFindFileByUrl(contentEntry.getUrl());
-      final Optional<VirtualFile> buildRoot = findBuildRoot(contentEntryFile);
-      if (buildRoot.isPresent()) {
-        return buildRoot;
+      for (ContentEntry contentEntry : rootManager.getContentEntries()) {
+        VirtualFile contentEntryFile = VirtualFileManager.getInstance().refreshAndFindFileByUrl(contentEntry.getUrl());
+        final Optional<VirtualFile> buildRoot = findBuildRoot(contentEntryFile);
+        if (buildRoot.isPresent()) {
+          return buildRoot;
+        }
       }
+      return Optional.empty();
     }
-    return Optional.empty();
   }
 
   public static Optional<VirtualFile> findBuildRoot(@Nullable VirtualFile file) {
@@ -499,15 +502,7 @@ public class PantsUtil {
   }
 
   public static boolean isPantsProject(@NotNull Project project) {
-    return ContainerUtil.exists(
-      ModuleManager.getInstance(project).getModules(),
-      new Condition<Module>() {
-        @Override
-        public boolean value(Module module) {
-          return isPantsModule(module);
-        }
-      }
-    );
+    return ExternalProjectUtil.isExternalProject(project, PantsConstants.SYSTEM_ID);
   }
 
   /**
@@ -536,8 +531,7 @@ public class PantsUtil {
   }
 
   public static boolean isPantsModule(@NotNull Module module) {
-    final String systemId = module.getOptionValue(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY);
-    return StringUtil.equals(systemId, PantsConstants.SYSTEM_ID.getId());
+    return ExternalProjectUtil.isExternalModule(module, PantsConstants.SYSTEM_ID);
   }
 
   @NotNull
@@ -618,23 +612,16 @@ public class PantsUtil {
   }
 
   public static void refreshAllProjects(@NotNull Project project) {
-    if (!isPantsProject(project) && !isSeedPantsProject(project)) {
-      return;
+    if (isPantsProject(project) || isSeedPantsProject(project)) {
+      ExternalProjectUtil.refresh(project, PantsConstants.SYSTEM_ID);
+    } else if (isBspProject(project)) {
+      ExternalProjectUtil.refresh(project, ProjectSystemId.findById("BSP"));
     }
+  }
 
-    // This code needs to run on the dispatch thread, but in some cases
-    // refreshAllProjects() is called on a non-dispatch thread; we use
-    // invokeLater() to run in the dispatch thread.
-    ApplicationManager.getApplication().invokeAndWait(
-      () -> {
-        ApplicationManager.getApplication().runWriteAction(() -> FileDocumentManager.getInstance().saveAllDocuments());
-
-        final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID);
-        ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
-                                              ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
-        specBuilder.use(executionMode);
-        ExternalSystemUtil.refreshProjects(specBuilder);
-      });
+  private static boolean isBspProject(Project project) {
+    ProjectSystemId id = ProjectSystemId.findById("BSP");
+    return id != null && ExternalProjectUtil.isExternalProject(project, id);
   }
 
   public static Optional<VirtualFile> findFileByAbsoluteOrRelativePath(
