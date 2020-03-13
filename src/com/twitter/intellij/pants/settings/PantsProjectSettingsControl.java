@@ -6,7 +6,6 @@ package com.twitter.intellij.pants.settings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.intellij.ide.BrowserUtil;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
 import com.intellij.openapi.externalSystem.util.PaintAwarePanel;
@@ -242,12 +241,12 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
           public void run(@NotNull ProgressIndicator indicator) {
             try {
               final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
-              PantsUtil.invokeLater(() -> {
+              PantsUtil.invokeLaterIfNeeded(() -> {
                 targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
               });
             }
             catch (RuntimeException e) {
-              PantsUtil.invokeLater(() -> {
+              PantsUtil.invokeLaterIfNeeded(() -> {
                 Messages.showErrorDialog(getProject(), e.getMessage(), "Pants Failure");
                 Messages.createMessageDialogRemover(getProject()).run();
               });
@@ -257,7 +256,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         break;
       default:
         clearGeneratedName();
-        PantsUtil.invokeLater(() -> {
+        PantsUtil.invokeLaterIfNeeded(() -> {
           Messages.showErrorDialog(getProject(), "Unexpected project file state: " + pathFileType, "Pants Failure");
           Messages.createMessageDialogRemover(getProject()).run();
         });

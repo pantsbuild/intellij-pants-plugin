@@ -968,7 +968,7 @@ public class PantsUtil {
     return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
   }
 
-  public static void invokeLater(Runnable task) {
+  public static void invokeLaterIfNeeded(Runnable task) {
     // calling directly ensures that the underlying exception gets propagated and
     // can then be asserted in tests - otherwise it gets swallowed underneath
     if (ApplicationManager.getApplication().isUnitTestMode()) {
