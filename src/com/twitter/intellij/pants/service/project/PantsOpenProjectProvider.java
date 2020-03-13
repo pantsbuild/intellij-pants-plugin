@@ -10,9 +10,13 @@ import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.util.newProjectWizard.AddModuleWizard;
 import com.intellij.ide.util.projectWizard.ProjectBuilder;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
 import com.intellij.openapi.externalSystem.importing.OpenProjectProvider;
 import com.intellij.openapi.externalSystem.model.ExternalSystemDataKeys;
+import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode;
+import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ex.ProjectManagerEx;
@@ -26,6 +30,7 @@ import com.intellij.projectImport.ProjectImportBuilder;
 import com.intellij.projectImport.ProjectOpenProcessor;
 import com.intellij.projectImport.ProjectOpenedCallback;
 import com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider;
+import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -117,6 +122,9 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
     VirtualFile dotIdeaFile = rootFile.findChild(Project.DIRECTORY_STORE_FOLDER);
     if (dotIdeaFile == null || !dotIdeaFile.exists()) return Messages.NO;
 
+    Application application = ApplicationManager.getApplication();
+    if (application.isHeadlessEnvironment()) return Messages.YES;
+
     return Messages.showYesNoCancelDialog(
       projectToClose,
       JavaUiBundle.message("project.import.open.existing", "an existing project", rootFile.getPath(), file.getName()),
@@ -134,7 +142,11 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
     if (dialog == null) return null;
 
     Project project = createProject(projectFile, dialog);
+    if (project == null) return null;
+
     link(projectFile, project, dialog);
+    refresh(projectFile, project);
+
     return project;
   }
 
@@ -164,6 +176,17 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
     }
   }
 
+  private void refresh(VirtualFile file, Project project) {
+    ExternalSystemUtil.refreshProject(
+      file.getPath(),
+      new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID).usePreviewMode().use(ProgressExecutionMode.MODAL_SYNC)
+    );
+    ExternalSystemUtil.refreshProject(
+      file.getPath(),
+      new ImportSpecBuilder(project, PantsConstants.SYSTEM_ID)
+    );
+  }
+
   private AddModuleWizard openNewProjectWizard(VirtualFile projectFile) {
     PantsProjectImportProvider provider = new PantsProjectImportProvider();
     AddModuleWizard dialog = new AddModuleWizard(null, projectFile.getPath(), provider);
@@ -171,7 +194,10 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
     ProjectImportBuilder builder = provider.getBuilder();
     builder.setUpdate(false);
     dialog.getWizardContext().setProjectBuilder(builder);
-    if (dialog.showAndGet()) {
+
+    // dialog can only be shown in a non-headless environment
+    Application application = ApplicationManager.getApplication();
+    if (application.isHeadlessEnvironment() || dialog.showAndGet()) {
       return dialog;
     }
     else {

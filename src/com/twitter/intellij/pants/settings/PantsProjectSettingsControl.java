@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.settings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.intellij.ide.BrowserUtil;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
 import com.intellij.openapi.externalSystem.util.PaintAwarePanel;
