@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.execution;
 import com.intellij.openapi.externalSystem.service.execution.AbstractExternalSystemTaskConfigurationType;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.twitter.intellij.pants.util.PantsConstants;
+import org.jetbrains.annotations.NotNull;
 
 public class PantsExternalTaskConfigurationType extends AbstractExternalSystemTaskConfigurationType {
 
@@ -15,5 +16,11 @@ public class PantsExternalTaskConfigurationType extends AbstractExternalSystemTa
 
   public static PantsExternalTaskConfigurationType getInstance() {
     return (PantsExternalTaskConfigurationType)ExternalSystemUtil.findConfigurationType(PantsConstants.SYSTEM_ID);
+  }
+
+  @NotNull
+  @Override
+  protected String getConfigurationFactoryId() {
+    return getExternalSystemId().getId();
   }
 }

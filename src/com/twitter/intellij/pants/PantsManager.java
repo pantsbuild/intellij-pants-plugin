@@ -87,27 +87,16 @@ public class PantsManager implements
     return new PantsConfigurable(project);
   }
 
-
   @NotNull
   @Override
   public Function<Project, PantsSettings> getSettingsProvider() {
-    return new Function<Project, PantsSettings>() {
-      @Override
-      public PantsSettings fun(Project project) {
-        return PantsSettings.getInstance(project);
-      }
-    };
+    return PantsSettings::getInstance;
   }
 
   @NotNull
   @Override
   public Function<Project, PantsLocalSettings> getLocalSettingsProvider() {
-    return new Function<Project, PantsLocalSettings>() {
-      @Override
-      public PantsLocalSettings fun(Project project) {
-        return PantsLocalSettings.getInstance(project);
-      }
-    };
+    return PantsLocalSettings::getInstance;
   }
 
   @NotNull
