@@ -115,7 +115,9 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
   }
 
   private int shouldOpenExistingProject(VirtualFile file, Project projectToClose) {
-    VirtualFile rootFile = file.isDirectory() ? file : file.getParent();
+    VirtualFile rootFile = PantsUtil.findBuildRoot(file).orElse(null);
+    if(rootFile == null) return Messages.NO;
+
     ProjectOpenProcessor openProcessor = PlatformProjectOpenProcessor.getInstance();
     if (!openProcessor.canOpenProject(rootFile)) return Messages.NO;
 
@@ -206,8 +208,10 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
   }
 
   private Project createProject(VirtualFile file, AddModuleWizard dialog) {
-    Path projectDirectory = projectDir(file);
-    Project project = ProjectManagerEx.getInstanceEx().newProject(projectDirectory, dialog.getProjectName(), new OpenProjectTask());
+    Project project = PantsUtil.findBuildRoot(file)
+      .map(root -> Paths.get(root.getPath()))
+      .map(root -> ProjectManagerEx.getInstanceEx().newProject(root, dialog.getProjectName(), new OpenProjectTask()))
+      .orElse(null);
     if (project != null) {
       project.putUserData(ExternalSystemDataKeys.NEWLY_IMPORTED_PROJECT, true);
     }

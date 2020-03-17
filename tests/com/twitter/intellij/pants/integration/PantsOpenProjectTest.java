@@ -7,7 +7,10 @@ import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,19 +22,26 @@ public final class PantsOpenProjectTest extends OSSPantsIntegrationTest {
     Project project = ProjectUtil.openOrImport(path, new OpenProjectTask());
 
     assertNotNull(project);
-    assertEquals(path, Paths.get(project.getBasePath()));
+    Path rootPath = rootPath(path);
+    assertEquals(rootPath, Paths.get(project.getBasePath()));
 
     assertOpened(project);
   }
 
   public void testOpenHello() {
-    Path path = getPath("examples/src/scala/org/pantsbuild/example/hello/BUILD");
-    Project project = ProjectUtil.openOrImport(path, new OpenProjectTask());
+    Path importPath = getPath("examples/src/scala/org/pantsbuild/example/hello/BUILD");
+    Project project = ProjectUtil.openOrImport(importPath, new OpenProjectTask());
 
     assertNotNull(project);
-    assertEquals(path.getParent(), Paths.get(project.getBasePath()));
+    Path rootPath = rootPath(importPath);
+    assertEquals(rootPath, Paths.get(project.getBasePath()));
 
     assertOpened(project);
+  }
+
+  @NotNull
+  private Path rootPath(Path path) {
+    return PantsUtil.findBuildRoot(path.toString()).map(VirtualFile::getPath).map(Paths::get).get();
   }
 
   private Path getPath(String relative) {
