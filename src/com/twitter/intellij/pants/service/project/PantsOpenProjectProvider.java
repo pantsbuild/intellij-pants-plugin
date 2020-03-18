@@ -55,14 +55,7 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
   public boolean canOpenProject(@NotNull VirtualFile file) {
     if (!PantsUtil.findBuildRoot(file).isPresent()) return false;
 
-    if (file.isDirectory()) {
-      return Arrays.stream(file.getChildren())
-        .map(VirtualFile::getName)
-        .anyMatch(PantsUtil::isBUILDFileName);
-    }
-    else {
-      return PantsUtil.isBUILDFileName(file.getName());
-    }
+    return file.isDirectory() || PantsUtil.isBUILDFileName(file.getName());
   }
 
   @Override
