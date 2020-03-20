@@ -126,7 +126,7 @@ public class TargetInfo {
       new Condition<TargetAddressInfo>() {
         @Override
         public boolean value(TargetAddressInfo info) {
-          return PantsUtil.getSourceTypeForTargetType(info.getTargetType(), info.isCodeGen()).toExternalSystemSourceType().isTest();
+          return PantsUtil.getSourceTypeForTargetType(info.getTargetType(), info.isSynthetic()).toExternalSystemSourceType().isTest();
         }
       }
     );
@@ -140,7 +140,7 @@ public class TargetInfo {
     // e.g. if source and resources get combined, the common module should be source type.
 
     Set<PantsSourceType> allTypes = getAddressInfos().stream()
-      .map(s -> PantsUtil.getSourceTypeForTargetType(s.getTargetType(), s.isCodeGen()))
+      .map(s -> PantsUtil.getSourceTypeForTargetType(s.getTargetType(), s.isSynthetic()))
       .collect(Collectors.toSet());
 
     Optional<PantsSourceType> topRankedType = Arrays.stream(PantsSourceType.values())
