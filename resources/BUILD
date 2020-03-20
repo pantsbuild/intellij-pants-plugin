@@ -1,4 +1,4 @@
 resources(
     name = 'resources',
-    sources = rglobs('*')
+    sources = ['**/*'],
 )

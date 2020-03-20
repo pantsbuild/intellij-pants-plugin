@@ -3,7 +3,8 @@
 
 package com.twitter.intellij.pants.components;
 
-import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.NamedComponent;
 
-public interface PantsInitComponent extends ApplicationComponent {
+public interface PantsInitComponent extends Disposable, NamedComponent {
 }

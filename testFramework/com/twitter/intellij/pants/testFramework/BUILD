@@ -11,7 +11,7 @@ java_library(
         'src:pants-intellij-plugin',
         'common',
     ],
-    sources = globs('*.java')
+    sources = ['*.java'],
 )
 
 jar_library(

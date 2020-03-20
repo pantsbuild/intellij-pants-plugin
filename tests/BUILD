@@ -21,7 +21,7 @@ junit_tests(
   dependencies=[
     ':sources-and-libs',
   ],
-  sources=globs(
+  sources=[
     'com/twitter/intellij/pants/completion/*.java',
     'com/twitter/intellij/pants/components/impl/*.java',
     'com/twitter/intellij/pants/execution/*.java',
@@ -40,7 +40,7 @@ junit_tests(
     'com/twitter/intellij/pants/settings/*.java',
     'com/twitter/intellij/pants/util/*.java',
     'com/twitter/intellij/pants/rc/*.java',
-  )
+  ]
 )
 
 junit_tests(
@@ -49,9 +49,7 @@ junit_tests(
   dependencies=[
     ':sources-and-libs',
   ],
-  sources=globs(
-    'com/twitter/intellij/pants/integration/*.java',
-  )
+  sources=['com/twitter/intellij/pants/integration/*.java']
 )
 
 junit_tests(
@@ -60,9 +58,7 @@ junit_tests(
   dependencies=[
     ':sources-and-libs',
   ],
-  sources=globs(
-    'com/twitter/intellij/pants/integration/python/*.java',
-  )
+  sources=['com/twitter/intellij/pants/integration/python/*.java']
 )
 
 junit_tests(
@@ -71,5 +67,5 @@ junit_tests(
   dependencies=[
     ':sources-and-libs',
   ],
-  sources=globs('com/twitter/intellij/pants/metrics/*.java')
+  sources=['com/twitter/intellij/pants/metrics/*.java'],
 )

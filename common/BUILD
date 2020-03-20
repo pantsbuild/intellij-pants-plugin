@@ -6,10 +6,10 @@ java_library(
         '3rdparty/intellij:java-plugin',
         ':properties'
     ],
-    sources = rglobs('*.java')
+    sources = ['**/*.java'],
 )
 
 resources(
     name = 'properties',
-    sources = globs('com/twitter/intellij/pants/PantsBundle.properties')
+    sources = ['com/twitter/intellij/pants/PantsBundle.properties'],
 )

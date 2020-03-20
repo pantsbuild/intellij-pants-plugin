@@ -16,7 +16,7 @@
   <version>1.14.0</version>
   <vendor>Twitter, Inc.</vendor>
 
-  <idea-version since-build="201.0" until-build="201.*"/>
+  <idea-version since-build="201.6073" until-build="201.*"/>
 
   <!--Add gradle as a dep because of Pants runner requires it.-->
   <depends>com.intellij.gradle</depends>
@@ -44,6 +44,13 @@
   </project-components>
 
   <actions>
+    <!--  This group adds "Import Project" action which to the Welcome screen which was removed in 2020.1  -->
+    <group id="WelcomeScreen.QuickStart.Pants">
+      <action id="WelcomeScreen.ImportProject" class="com.intellij.ide.actions.ImportProjectAction"
+              icon="AllIcons.ToolbarDecorator.Import" text="Import Project"/>
+      <add-to-group group-id="WelcomeScreen.QuickStart" anchor="after" relative-to-action="WelcomeScreen.QuickStart.IDEA"/>
+    </group>
+
     <group id="Pants.Menu" text="_Pants" description="Pants">
       <add-to-group group-id="MainMenu" anchor="last"/>
       <action id="com.twitter.intellij.pants.ui.PantsProjectRefreshAction"
@@ -70,8 +77,8 @@
 
     <group id="Pants.Compile" text="Pants Compile" description="Pants compilation options" icon="PantsIcons.Icon"
            popup="true" class="com.twitter.intellij.pants.compiler.actions.PantsCompileActionGroup">
-      <add-to-group group-id="ProjectViewCompileGroup" />
-      <add-to-group group-id="Pants.Menu" anchor="first" />
+      <add-to-group group-id="ProjectViewCompileGroup"/>
+      <add-to-group group-id="Pants.Menu" anchor="first"/>
     </group>
 
     <!-- Ideally this would be in CutCopyPasteGroup anchored after CopyPaths, but if we do that,
@@ -85,9 +92,9 @@
 	 Relative to Build Root, but that seems less bad than having a non-functioning button elsewhere in
 	 the UI. -->
     <action id="Pants.CopyPathRelativeToBuildRootAction"
-	    class="com.twitter.intellij.pants.ui.CopyPathRelativeToBuildRootAction"
-	    text="Copy Path Relative to Build Root">
-	    <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="CutCopyPasteGroup" />
+            class="com.twitter.intellij.pants.ui.CopyPathRelativeToBuildRootAction"
+            text="Copy Path Relative to Build Root">
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="CutCopyPasteGroup"/>
     </action>
   </actions>
 
@@ -127,7 +134,8 @@
     <projectConfigurable groupId="build.tools" groupWeight="110" id="reference.settingsdialog.project.pants"
                          instance="com.twitter.intellij.pants.settings.PantsConfigurable"
                          key="pants.name" bundle="com.twitter.intellij.pants.PantsBundle"/>
-
+    <actionConfigurationCustomizer implementation="com.twitter.intellij.pants.components.impl.PantsActionConfigurationCustomizer"/>
+    <projectOpenProcessor implementation="com.twitter.intellij.pants.service.project.PantsProjectOpenProcessor"/>
     <projectImportProvider
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider"/>
     <projectImportBuilder
@@ -137,14 +145,16 @@
 
     <runConfigurationExtension implementation="com.twitter.intellij.pants.execution.PantsClasspathRunConfigurationExtension"/>
     <configurationType implementation="com.twitter.intellij.pants.execution.PantsExternalTaskConfigurationType"/>
-    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsJUnitTestRunConfigurationProducer" />
+    <runConfigurationProducer implementation="com.twitter.intellij.pants.execution.PantsJUnitTestRunConfigurationProducer"/>
 
     <!--Listener to be called after resolving projects finishes. -->
-    <externalSystemTaskNotificationListener implementation="com.twitter.intellij.pants.service.project.PantsProjectImportNotificationListener"/>
+    <externalSystemTaskNotificationListener
+        implementation="com.twitter.intellij.pants.service.project.PantsProjectImportNotificationListener"/>
 
     <externalSystemManager implementation="com.twitter.intellij.pants.PantsManager"/>
 
-    <applicationService serviceInterface="com.twitter.intellij.pants.metrics.PantsExternalMetricsListener" serviceImplementation="com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager" />
+    <applicationService serviceInterface="com.twitter.intellij.pants.metrics.PantsExternalMetricsListener"
+                        serviceImplementation="com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager"/>
 
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsSettings"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>

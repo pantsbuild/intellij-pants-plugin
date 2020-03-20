@@ -9,5 +9,5 @@ scala_library(
         'common',
         'resources',
     ],
-    sources=rglobs('*.scala', '*.java')
+    sources=['**/*.scala', '**/*.java'],
 )

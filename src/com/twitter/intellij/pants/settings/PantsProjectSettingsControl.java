@@ -7,7 +7,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.externalSystem.service.settings.AbstractExternalProjectSettingsControl;
-import com.intellij.openapi.externalSystem.service.settings.ExternalSystemSettingsControlCustomizer;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUiUtil;
 import com.intellij.openapi.externalSystem.util.PaintAwarePanel;
 import com.intellij.openapi.options.ConfigurationException;
@@ -26,7 +25,6 @@ import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.GridBag;
 import com.intellij.util.ui.StatusText;
-import com.intellij.util.ui.UIUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -72,21 +70,20 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private String lastPath = "";
   private String lastGeneratedName = "";
 
-  private PantsProjectSettings mySettings;
-
-  public PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
-    super(null, settings, new ExternalSystemSettingsControlCustomizer(true, true));
-    mySettings = settings;
+  PantsProjectSettingsControl(@NotNull PantsProjectSettings settings) {
+    super(null, settings);
   }
 
   @Override
   protected void fillExtraControls(@NotNull PaintAwarePanel content, int indentLevel) {
+    PantsProjectSettings initialSettings = getInitialSettings();
 
-    myLibsWithSourcesCheckBox.setSelected(mySettings.libsWithSources);
-    myEnableIncrementalImportCheckBox.setSelected(mySettings.enableIncrementalImport);
-    myUseIdeaProjectJdkCheckBox.setSelected(mySettings.useIdeaProjectJdk);
-    myImportSourceDepsAsJarsCheckBox.setSelected(mySettings.importSourceDepsAsJars);
-    myUseIntellijCompilerCheckBox.setSelected(mySettings.useIntellijCompiler);
+    myNameField.setText(initialSettings.getProjectName());
+    myLibsWithSourcesCheckBox.setSelected(initialSettings.libsWithSources);
+    myEnableIncrementalImportCheckBox.setSelected(initialSettings.enableIncrementalImport);
+    myUseIdeaProjectJdkCheckBox.setSelected(initialSettings.useIdeaProjectJdk);
+    myImportSourceDepsAsJarsCheckBox.setSelected(initialSettings.importSourceDepsAsJars);
+    myUseIntellijCompilerCheckBox.setSelected(initialSettings.useIntellijCompiler);
     LinkLabel<?> intellijCompilerHelpMessage = LinkLabel.create(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge"), new Runnable() {
       @Override
       public void run() {
@@ -94,8 +91,8 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
       }
     });
 
-    myTargetSpecsBox.setItems( mySettings.getAllAvailableTargetSpecs(), x->x);
-    mySettings.getSelectedTargetSpecs().forEach(spec -> myTargetSpecsBox.setItemSelected(spec, true));
+    myTargetSpecsBox.setItems(initialSettings.getAllAvailableTargetSpecs(), x -> x);
+    initialSettings.getSelectedTargetSpecs().forEach(spec -> myTargetSpecsBox.setItemSelected(spec, true));
 
     insertNameFieldBeforeProjectPath(content);
 
@@ -137,7 +134,6 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
 
   @Override
   protected boolean isExtraSettingModified() {
-
     PantsProjectSettings newSettings = new PantsProjectSettings(
       getSelectedTargetSpecsFromBoxes(),
       getAllTargetSpecsFromBoxes(),
@@ -160,6 +156,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     //     The values of all the settings are either their initial values,
     //     or whatever they were last set to, so you can't reuse them.
     lastPath = "";
+    lastGeneratedName = "";
     errors.clear();
   }
 
@@ -244,11 +241,12 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
           public void run(@NotNull ProgressIndicator indicator) {
             try {
               final Collection<String> targets = PantsUtil.listAllTargets(projectPath);
-              UIUtil.invokeLaterIfNeeded(() -> {
+              PantsUtil.invokeLaterIfNeeded(() -> {
                 targets.forEach(s -> myTargetSpecsBox.addItem(s, s, false));
               });
-            } catch (RuntimeException e) {
-              UIUtil.invokeLaterIfNeeded((Runnable) () -> {
+            }
+            catch (RuntimeException e) {
+              PantsUtil.invokeLaterIfNeeded(() -> {
                 Messages.showErrorDialog(getProject(), e.getMessage(), "Pants Failure");
                 Messages.createMessageDialogRemover(getProject()).run();
               });
@@ -258,7 +256,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         break;
       default:
         clearGeneratedName();
-        UIUtil.invokeLaterIfNeeded((Runnable) () -> {
+        PantsUtil.invokeLaterIfNeeded(() -> {
           Messages.showErrorDialog(getProject(), "Unexpected project file state: " + pathFileType, "Pants Failure");
           Messages.createMessageDialogRemover(getProject()).run();
         });
@@ -305,7 +303,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     if (myNameField.getText().length() > 200) {
       throw new ConfigurationException(PantsBundle.message("pants.error.project.name.tooLong"));
     }
-    
+
     final String projectUrl = VfsUtil.pathToUrl(settings.getExternalProjectPath());
     final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(projectUrl);
     ProjectPathFileType pathFileType = determinePathKind(file);
