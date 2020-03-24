@@ -14,7 +14,7 @@ Let's check an output of `./pants export examples/src/java/org/pantsbuild/exampl
     "libraries": {},
     "targets": {
         "examples/src/java/org/pantsbuild/example/hello/greet:greet": {
-            "is_code_gen": false,
+            "is_synthetic": false,
             "target_type": "SOURCE",
             "libraries": [],
             "pants_target_type": "java_library",
@@ -27,7 +27,7 @@ Let's check an output of `./pants export examples/src/java/org/pantsbuild/exampl
             ]
         },
         "examples/src/java/org/pantsbuild/example/hello/main:main-bin": {
-            "is_code_gen": false,
+            "is_synthetic": false,
             "target_type": "SOURCE",
             "libraries": [],
             "pants_target_type": "jvm_binary",
@@ -43,7 +43,7 @@ Let's check an output of `./pants export examples/src/java/org/pantsbuild/exampl
             ]
         },
         "examples/src/resources/org/pantsbuild/example/hello:hello": {
-            "is_code_gen": false,
+            "is_synthetic": false,
             "target_type": "RESOURCE",
             "libraries": [],
             "pants_target_type": "resources",
@@ -61,7 +61,7 @@ Let's check an output of `./pants export examples/src/java/org/pantsbuild/exampl
 
 The plugin will create three modules. One for the imported target, examples/src/java/com/pants/examples/hello/main:main-bin
 and two for the targets it depends on. It also will configure source roots for the modules and will use `target_type`
-and `is_code_gen` fields to figure out types of source roots(there are several types of source roots: sources,
+and `is_synthetic` fields to figure out types of source roots(there are several types of source roots: sources,
 test sources, resources, test resources, generated sources, etc).
 
 ## Contributing Guidelines:

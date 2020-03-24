@@ -536,9 +536,9 @@ public class PantsUtil {
   }
 
   @NotNull
-  public static PantsSourceType getSourceTypeForTargetType(@Nullable String targetType, Boolean isCodeGen) {
+  public static PantsSourceType getSourceTypeForTargetType(@Nullable String targetType, Boolean isSynthetic) {
     try {
-      if(isCodeGen && targetType != null) {
+      if(isSynthetic && targetType != null) {
         return PantsSourceType.SOURCE_GENERATED;
       }
       return targetType == null ? PantsSourceType.SOURCE :

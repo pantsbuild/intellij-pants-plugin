@@ -28,10 +28,10 @@ public class TargetAddressInfo {
    */
   private String pants_target_type = null;
 
-  private boolean is_code_gen;
+  private boolean is_synthetic;
 
-  public boolean isCodeGen() {
-    return is_code_gen;
+  public boolean isSynthetic() {
+    return is_synthetic;
   }
 
   public void setIsTargetRoot(boolean is_target_root) {
