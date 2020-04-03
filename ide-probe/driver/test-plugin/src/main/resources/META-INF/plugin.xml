@@ -1,0 +1,27 @@
+<idea-plugin>
+    <id>com.twitter.ideprobe.driver.test</id>
+    <name>Twitter IdeProbe Driver Test</name>
+    <vendor>Twitter, Inc.</vendor>
+
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.java</depends>
+    <idea-version since-build="191.*" until-build="201.*"/>
+
+    <actions>
+        <action id="com.twitter.ideprobe.test.ThrowingAction"
+                class="com.twitter.ideprobe.test.ThrowingAction"
+                text="Throwing Action" description="Action that throws">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+        <action id="com.twitter.ideprobe.test.BackgroundTaskAction15s"
+                class="com.twitter.ideprobe.test.BackgroundTaskAction15s"
+                text="Background Task Action" description="Action that starts infinite background task">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+        <action id="com.twitter.ideprobe.test.FreezingAction"
+                class="com.twitter.ideprobe.test.FreezingAction"
+                text="Background Task Action" description="Action blocks ui thread for 10s">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+    </actions>
+</idea-plugin>

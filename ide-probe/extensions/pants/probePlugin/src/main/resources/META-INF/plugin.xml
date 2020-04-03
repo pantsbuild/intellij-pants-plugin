@@ -1,0 +1,15 @@
+<idea-plugin>
+    <id>com.twitter.ideprobe.pants</id>
+    <name>Twitter IdeProbe for Pants</name>
+    <vendor>Twitter, Inc.</vendor>
+
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.twitter.ideprobe</depends>
+    <depends>com.intellij.plugins.pants</depends>
+    <idea-version since-build="191.*" until-build="201.*"/>
+
+    <extensions defaultExtensionNs="com.twitter.ideprobe">
+        <probeHandlerContributor implementation="com.twitter.intellij.pants.probe.PantsProbeHandlerContributor"/>
+    </extensions>
+</idea-plugin>

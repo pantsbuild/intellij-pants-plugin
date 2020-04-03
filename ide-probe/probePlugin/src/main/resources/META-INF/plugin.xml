@@ -1,0 +1,26 @@
+<idea-plugin>
+    <id>com.twitter.ideprobe</id>
+    <name>Twitter IdeProbe</name>
+    <vendor>Twitter, Inc.</vendor>
+
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.java</depends>
+    <idea-version since-build="191.*" until-build="201.*"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <appStarter implementation="com.twitter.HeadlessStarter"/>
+        <applicationService serviceImplementation="com.twitter.IdeProbeService"/>
+        <applicationInitializedListener implementation="com.twitter.IdeProbeLauncher"/>
+    </extensions>
+
+    <extensionPoints>
+        <extensionPoint
+                name="probeHandlerContributor"
+                interface="com.twitter.ProbeHandlerContributor"/>
+    </extensionPoints>
+
+    <extensions defaultExtensionNs="com.twitter.ideprobe">
+        <probeHandlerContributor implementation="com.twitter.BaseProbeHandlerContributor"/>
+    </extensions>
+
+</idea-plugin>
