@@ -28,12 +28,12 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-import static com.intellij.openapi.externalSystem.rt.execution.ForkedDebuggerHelper.DEBUG_FORK_SOCKET_PARAM;
+import static com.intellij.openapi.externalSystem.rt.execution.ForkedDebuggerHelper.JVM_DEBUG_SETUP_PREFIX;
+import static com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunnableState.BUILD_PROCESS_DEBUGGER_PORT_KEY;
 
 public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutionSettings> {
 
@@ -58,9 +58,7 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
       return;
     }
 
-    final GeneralCommandLine commandLine =
-      constructCommandLine(
-        taskNames, projectPath, settings, Lists.newArrayList(settings.getVmOptions()), settings.getArguments(), jvmAgentSetup);
+    GeneralCommandLine commandLine = constructCommandLine(taskNames, projectPath, settings);
     if (commandLine == null) {
       return;
     }
@@ -104,23 +102,19 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
     }
   }
 
-  /**
-   * Eliminate `DEBUG_FORK_SOCKET_PARAM`(-forkSocket) from debug setup parameters
-   */
   @VisibleForTesting
-  protected static String getCleanedDebugSetup(String debugSetup) {
-    ArrayList<String> params = Lists.newArrayList(debugSetup.split(" "));
-    return params.stream().filter(s -> !s.contains(DEBUG_FORK_SOCKET_PARAM)).collect(Collectors.joining(" "));
+  protected static void setupDebuggerSettings(PantsExecutionSettings settings) {
+    Optional.ofNullable(settings.getUserData(BUILD_PROCESS_DEBUGGER_PORT_KEY))
+      .filter(port -> port > 0)
+      .map(port -> JVM_DEBUG_SETUP_PREFIX + port)
+      .ifPresent(settings::withVmOption);
   }
 
   @Nullable
   public GeneralCommandLine constructCommandLine(
     @NotNull List<String> taskNames,
     @NotNull String projectPath,
-    @Nullable PantsExecutionSettings settings,
-    @NotNull List<String> vmOptions,
-    @NotNull List<String> scriptParameters,
-    @Nullable String debuggerSetup
+    @Nullable PantsExecutionSettings settings
   ) {
     if (settings == null) {
       return null;
@@ -128,20 +122,23 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
     projectPath = PantsTargetAddress.extractPath(projectPath).get();
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath);
 
+    setupDebuggerSettings(settings);
+    boolean debugEnabled = settings.getJvmArguments().stream()
+      .anyMatch(jvmOpt -> jvmOpt.startsWith(JVM_DEBUG_SETUP_PREFIX));
+
     /**
      * Global options section.
      */
-    if (debuggerSetup != null) {
+    if (debugEnabled) {
       if (taskNames.size() > 1) {
         throw new ExternalSystemException(PantsBundle.message("pants.error.multiple.tasks.for.debugging"));
       }
-      commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_TEST_JUNIT_TIMEOUTS);
       final String goal = taskNames.iterator().next();
-      final String jvmOptionsFlag = goal2JvmOptionsFlag.get(goal);
-      if (jvmOptionsFlag == null) {
+      if (!goal2JvmOptionsFlag.containsKey(goal)) {
         throw new ExternalSystemException(PantsBundle.message("pants.error.cannot.debug.task", goal));
       }
-      commandLine.addParameter(jvmOptionsFlag + "=" + getCleanedDebugSetup(debuggerSetup));
+
+      commandLine.addParameter(PantsConstants.PANTS_CLI_OPTION_NO_TEST_JUNIT_TIMEOUTS);
     }
     if (settings.isUseIdeaProjectJdk()) {
       try {
@@ -161,14 +158,14 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
       if (jvmOptionsFlag == null) {
         continue;
       }
-      for (String vmOption : vmOptions) {
+      for (String vmOption : settings.getJvmArguments()) {
         commandLine.addParameter(jvmOptionsFlag + "=" + vmOption);
       }
     }
     /**
      * Script parameters section including targets and options.
      */
-    commandLine.addParameters(scriptParameters);
+    commandLine.addParameters(settings.getArguments());
     return commandLine;
   }
 

@@ -22,11 +22,11 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiPackage;
 import com.intellij.testFramework.MapDataContext;
 import com.twitter.intellij.pants.PantsManager;
-import com.twitter.intellij.pants.util.ProjectTestJvms;
 import com.twitter.intellij.pants.service.task.PantsTaskManager;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsUtil;
+import com.twitter.intellij.pants.util.ProjectTestJvms;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 
@@ -36,9 +36,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.intellij.openapi.externalSystem.rt.execution.ForkedDebuggerHelper.JVM_DEBUG_SETUP_PREFIX;
+import static com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunnableState.BUILD_PROCESS_DEBUGGER_PORT_KEY;
 
 
 public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
@@ -67,14 +71,17 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
       ExternalSystemManager.EP_NAME.findExtension(PantsManager.class).getTaskManagerClass();
     assertEquals(PantsTaskManager.class, taskManagerClass);
 
-    String debuggerSetup = "dummy_debugger_setup";
-
-    List<String> debugParameters = Arrays.asList("--no-test-junit-timeouts", "--jvm-test-junit-options=" + debuggerSetup, "test");
+    int debugPort = 5005;
+    List<String> debugParameters = Arrays.asList(
+      "--no-test-junit-timeouts",
+      "test",
+      "--jvm-test-junit-options=" + JVM_DEBUG_SETUP_PREFIX + debugPort
+    );
     List<String> expectedDebugParameters = Stream.of(debugParameters, configScriptParameters)
       .flatMap(Collection::stream)
       .collect(Collectors.toList());
 
-    GeneralCommandLine finalDebugCommandline = getFinalCommandline(esc, debuggerSetup, taskManagerClass);
+    GeneralCommandLine finalDebugCommandline = getFinalCommandline(esc, taskManagerClass, OptionalInt.of(debugPort));
     assertEquals(expectedDebugParameters, finalDebugCommandline.getParametersList().getParameters());
 
     List<String> runParameters = Collections.singletonList("test");
@@ -82,23 +89,25 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
       .flatMap(Collection::stream)
       .collect(Collectors.toList());
 
-    GeneralCommandLine finalRunCommandline = getFinalCommandline(esc, null, taskManagerClass);
+    GeneralCommandLine finalRunCommandline = getFinalCommandline(esc, taskManagerClass, OptionalInt.empty());
     assertEquals(expectedRunParameters, finalRunCommandline.getParametersList().getParameters());
   }
 
   @NotNull
   private GeneralCommandLine getFinalCommandline(
     ExternalSystemRunConfiguration esc,
-    String debuggerSetup,
-    Class<? extends ExternalSystemTaskManager<PantsExecutionSettings>> taskManagerClass
+    Class<? extends ExternalSystemTaskManager<PantsExecutionSettings>> taskManagerClass,
+    OptionalInt debugPort
   ) throws InstantiationException, IllegalAccessException {
+    PantsExecutionSettings settings = PantsExecutionSettings.createDefault();
+    settings.withVmOptions(PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getVmOptions())));
+    settings.withArguments(PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getScriptParameters())));
+    debugPort.ifPresent(port -> settings.putUserData(BUILD_PROCESS_DEBUGGER_PORT_KEY, port));
+
     GeneralCommandLine commandLine = ((PantsTaskManager) taskManagerClass.newInstance()).constructCommandLine(
       esc.getSettings().getTaskNames(),
       esc.getSettings().getExternalProjectPath(),
-      PantsExecutionSettings.createDefault(),
-      PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getVmOptions())),
-      PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getScriptParameters())),
-      debuggerSetup
+      settings
     );
     assertNotNull(commandLine);
     return commandLine;

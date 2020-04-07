@@ -3,13 +3,21 @@
 
 package com.twitter.intellij.pants.service.task;
 
+import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import junit.framework.TestCase;
+
+import java.util.Collections;
+
+import static com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunnableState.BUILD_PROCESS_DEBUGGER_PORT_KEY;
 
 public class PantsTaskManagerTest extends TestCase {
 
   public void testGetCleanedDebugSetup() {
-    String cleanedSetup =
-      PantsTaskManager.getCleanedDebugSetup("-agentlib:jdwp=transport=dt_socket,server=n,suspend=y,address=63212 -forkSocket63213");
-    assertEquals("-agentlib:jdwp=transport=dt_socket,server=n,suspend=y,address=63212", cleanedSetup);
+    PantsExecutionSettings settings = new PantsExecutionSettings(Collections.emptyList(), false, false, false, false, false);
+    settings.putUserData(BUILD_PROCESS_DEBUGGER_PORT_KEY, 63212);
+
+    PantsTaskManager.setupDebuggerSettings(settings);
+    assertEquals(1, settings.getJvmArguments().size());
+    assertEquals("-agentlib:jdwp=transport=dt_socket,server=n,suspend=y,address=63212", settings.getJvmArguments().get(0));
   }
 }
