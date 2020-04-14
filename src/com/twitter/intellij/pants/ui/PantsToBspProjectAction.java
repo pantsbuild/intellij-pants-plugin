@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.ui;
 
+import com.google.common.collect.Streams;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
@@ -18,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.twitter.intellij.pants.bsp.FastpassUtils;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.io.IOUtils;
@@ -25,9 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -116,34 +116,14 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
   }
 
   private GeneralCommandLine createCommandLine(Project project) throws IOException {
-    GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(project);
-
-    String coursier = coursierPath().toString();
-    commandLine.setExePath(coursier);
-
-    List<String> commandBase = Arrays.asList(
-      "launch", "org.scalameta:metals_2.12:latest.stable",
-      "--main", "scala.meta.internal.pantsbuild.BloopPants",
-      "--",
+    List<String> fastpassCommandBase = Arrays.asList(
       "create",
       "--intellij",
       "--intellijLauncher", "echo"
     );
-    commandLine.addParameters(commandBase);
-
     List<String> targets = pantsTargets(project);
-    commandLine.addParameters(targets);
-    return commandLine;
-  }
-
-  private Path coursierPath() throws IOException {
-    Path destination = Paths.get(System.getProperty("java.io.tmpdir"), "pants-plugin-coursier");
-    if (!Files.exists(destination)) {
-      URL url = new URL("https://git.io/coursier-cli");
-      Files.copy(url.openConnection().getInputStream(), destination);
-      destination.toFile().setExecutable(true);
-    }
-    return destination;
+    List<String> fastpassCommand = Streams.concat(fastpassCommandBase.stream(), targets.stream()).collect(Collectors.toList());
+    return FastpassUtils.makeFastpassCommand(project, fastpassCommand);
   }
 
   private List<String> pantsTargets(Project project) {
