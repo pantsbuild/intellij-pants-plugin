@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.ui;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.ide.impl.OpenProjectTask;
 import com.intellij.ide.impl.ProjectUtil;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -15,6 +16,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.io.IOUtils;
@@ -29,16 +31,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class PantsToBspProjectAction extends AnAction implements DumbAware {
-  private static final String METALS_VERSION = "0.8.4";
+  private static final String BSP_LINKED_PROJECT_PATH = "bsp.linked_project_path";
 
   @Override
   public void update(@NotNull AnActionEvent e) {
     Project project = e.getProject();
     boolean isPants = project != null && PantsUtil.isPantsProject(project);
     e.getPresentation().setEnabledAndVisible(isPants);
+    if (isPants) {
+      dependingOnBspProjectExistence(
+        project,
+        () -> e.getPresentation().setText("Create new BSP project based on this Pants project"),
+        linkedBspProject -> e.getPresentation().setText("Open linked BSP project")
+      );
+    }
   }
 
   @Override
@@ -48,7 +58,14 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
       Messages.showInfoMessage("Project not found.", "Error");
       return;
     }
+    dependingOnBspProjectExistence(
+      project,
+      () -> createBspProject(project),
+      linkedBspProject -> ProjectUtil.openOrImport(Paths.get(linkedBspProject), new OpenProjectTask())
+    );
+  }
 
+  private void createBspProject(Project project) {
     ProgressManager.getInstance().run(new Task.Backgroundable(project, "Preparing BSP Project", false) {
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
@@ -61,8 +78,10 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
           if (result != 0) {
             String message = formatError(output, outputErr);
             throw new RuntimeException(message);
-          } else {
-            Path projectPath = Paths.get(output);
+          }
+          else {
+            Path projectPath = Paths.get(output).toAbsolutePath();
+            PropertiesComponent.getInstance(project).setValue(BSP_LINKED_PROJECT_PATH, projectPath.toString());
             ProjectUtil.openOrImport(projectPath, new OpenProjectTask());
           }
         }
@@ -80,13 +99,12 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
     String coursier = coursierPath().toString();
     commandLine.setExePath(coursier);
 
-    String name = project.getName();
+    //String name = project.getName();
     List<String> commandBase = Arrays.asList(
-      "launch", "org.scalameta:metals_2.12:" + METALS_VERSION,
+      "launch", "org.scalameta:metals_2.12:latest.stable",
       "--main", "scala.meta.internal.pantsbuild.BloopPants",
       "--",
       "create",
-      "--name", name,
       "--intellij",
       "--intellijLauncher", "echo"
     );
@@ -127,4 +145,21 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
     return IOUtils.toString(stream, StandardCharsets.UTF_8).trim();
   }
 
+  private void dependingOnBspProjectExistence(Project project, Runnable onNoBspProject, Consumer<String> onBspProject) {
+    PropertiesComponent properties = PropertiesComponent.getInstance(project);
+
+    String linkedBspProject = properties.getValue(BSP_LINKED_PROJECT_PATH);
+    if (linkedBspProject == null) {
+      onNoBspProject.run();
+    }
+    else {
+      if (LocalFileSystem.getInstance().findFileByPath(linkedBspProject) == null) {
+        properties.unsetValue(BSP_LINKED_PROJECT_PATH);
+        onNoBspProject.run();
+      }
+      else {
+        onBspProject.accept(linkedBspProject);
+      }
+    }
+  }
 }

@@ -75,7 +75,7 @@
       </action>
       <action id="com.twitter.intellij.pants.ui.PantsToBspProjectAction"
               class="com.twitter.intellij.pants.ui.PantsToBspProjectAction"
-              text="Convert to BSP project">
+              text="Create new BSP project based on this Pants project">
       </action>
     </group>
 
