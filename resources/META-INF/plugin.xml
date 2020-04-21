@@ -168,4 +168,8 @@
     <externalSystemNotificationExtension implementation="com.twitter.intellij.pants.notification.PantsNotificationCustomizer"/>
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.PantsMetadataService"/>
   </extensions>
+  <projectListeners>
+    <listener class="com.twitter.intellij.pants.execution.SetJarManifestCommandLineShortener"
+              topic="com.intellij.execution.RunManagerListener"/>
+  </projectListeners>
 </idea-plugin>
