@@ -17,6 +17,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.io.IOUtils;
@@ -126,11 +127,17 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
   }
 
   private List<String> pantsTargets(Project project) {
+    String root = PantsUtil.findBuildRoot(project).map(VirtualFile::getPath).orElse("") + "/";
     PantsSettings pantsSettings = PantsSettings.getInstance(project);
     return pantsSettings.getLinkedProjectsSettings()
       .stream()
       .flatMap(projectSettings -> projectSettings.getSelectedTargetSpecs().stream())
+      .map(target -> stripPrefix(target, root))
       .collect(Collectors.toList());
+  }
+
+  private String stripPrefix(String s, String prefix) {
+    return s.startsWith(prefix) ? s.substring(prefix.length()) : s;
   }
 
   private String formatError(String output, String outputErr) {
