@@ -19,6 +19,7 @@ import com.twitter.intellij.pants.inspection.PythonFacetInspection;
 import com.twitter.intellij.pants.quickfix.AddPythonFacetQuickFix;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.util.PantsPythonSdkUtil;
+import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,22 +50,44 @@ public class AddPythonFacetQuickFixTest extends OSSPantsIntegrationTest {
 
     AddPythonFacetQuickFix expected = new AddPythonFacetQuickFix();
     assertEquals(fixes[0].getName(), expected.getName());
-
-    AddPythonFacetQuickFix actual = (AddPythonFacetQuickFix) fixes[0];
-    final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-
-    // Create Sdk in order not to invoke the interpreter choosing modal
-    Sdk sdk = new PyDetectedSdk("FakeSdk");
-    ApplicationManager.getApplication().runWriteAction(() -> {
-      jdkTable.addJdk(sdk, myTestFixture.getTestRootDisposable());
-    });
+    injectFakePythonSdk();
 
     // invoke the quickfix in order to automatically add the python facet to the module containing the BUILD file
+    AddPythonFacetQuickFix actual = (AddPythonFacetQuickFix) fixes[0];
     actual.invoke(myProject, null, build);
 
     ProblemDescriptor[] problemsAfterFix = inspection.checkFile(build, manager, false);
     assertNull(problemsAfterFix);
 
+    assertAllModulesHavePythonSdk();
+  }
+
+  public void testKeepsFacetsAfterProjectRefresh() {
+    String helloProjectPath = "examples/src/scala/org/pantsbuild/example/hello/";
+    doImport(helloProjectPath);
+
+    VirtualFile vfile = myProjectRoot.findFileByRelativePath(helloProjectPath + "BUILD");
+
+    PsiFile build = PsiManager.getInstance(myProject).findFile(vfile);
+
+    injectFakePythonSdk();
+    new AddPythonFacetQuickFix().invoke(myProject, null, build);
+
+    assertAllModulesHavePythonSdk();
+    PantsUtil.refreshAllProjects(myProject);
+    assertAllModulesHavePythonSdk();
+  }
+
+  private void injectFakePythonSdk() {
+    // Create Sdk in order not to invoke the interpreter choosing modal
+    Sdk sdk = new PyDetectedSdk("FakeSdk");
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
+      jdkTable.addJdk(sdk, myTestFixture.getTestRootDisposable());
+    });
+  }
+
+  private void assertAllModulesHavePythonSdk() {
     List<Module> modulesWithoutSdk = Arrays.stream(ModuleManager.getInstance(myProject).getModules())
       .filter(PantsPythonSdkUtil::hasNoPythonSdk)
       .collect(Collectors.toList());
