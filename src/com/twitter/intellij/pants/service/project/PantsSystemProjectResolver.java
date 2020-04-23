@@ -11,6 +11,7 @@ import com.intellij.ide.FileSelectInContext;
 import com.intellij.ide.SelectInContext;
 import com.intellij.ide.SelectInTarget;
 import com.intellij.ide.projectView.ProjectView;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
@@ -30,7 +31,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.util.Key;
@@ -43,12 +43,12 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
-import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.projectview.PantsProjectPaneSelectInTarget;
 import com.twitter.intellij.pants.projectview.ProjectFilesViewPane;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
@@ -60,9 +60,11 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class PantsSystemProjectResolver implements ExternalSystemProjectResolver<PantsExecutionSettings> {
   protected static final Logger LOG = Logger.getInstance(PantsSystemProjectResolver.class);
@@ -70,21 +72,26 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
   private final Map<ExternalSystemTaskId, PantsCompileOptionsExecutor> task2executor =
     new ConcurrentHashMap<>();
 
-  private static void clearPantsModules(@NotNull Project project, String projectPath) {
-    ApplicationManager.getApplication().invokeAndWait(() -> {
-      ApplicationManager
-        .getApplication()
-        .runWriteAction(() ->
-                        {
-                          Module[] modules = ModuleManager.getInstance(project).getModules();
-                          for (Module module : modules) {
-                            if (Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), projectPath)) {
-                              ModuleManager.getInstance(project).disposeModule(module);
-                            }
-                          }
-                        }
-        );
-    });
+  private static void clearPantsModules(@NotNull Project project, String projectPath, DataNode<ProjectData> projectDataNode) {
+    Runnable clearModules = () -> {
+      Set<String> importedModules = projectDataNode.getChildren().stream()
+        .map(node -> node.getData(ProjectKeys.MODULE))
+        .filter(Objects::nonNull)
+        .map(ModuleData::getInternalName)
+        .collect(Collectors.toSet());
+
+      Module[] modules = ModuleManager.getInstance(project).getModules();
+      for (Module module : modules) {
+        boolean hasPantsProjectPath = Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), projectPath);
+        boolean isNotBeingImported = !importedModules.contains(module.getName());
+        if (hasPantsProjectPath && isNotBeingImported) {
+          ModuleManager.getInstance(project).disposeModule(module);
+        }
+      }
+    };
+
+    Application application = ApplicationManager.getApplication();
+    application.invokeAndWait(() -> application.runWriteAction(clearModules));
   }
 
   @Nullable
@@ -103,8 +110,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     checkForDifferentPantsExecutables(id, projectPath);
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
-    final DataNode<ProjectData> projectDataNode =
-      resolveProjectInfoImpl(id, executor, listener, settings, isPreviewMode);
+    DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, settings, isPreviewMode);
     // We do not want to repeatedly force switching to 'Project Files Tree' view if
     // user decides to use import dep as jar and wants to use the more focused 'Project' view.
     if (!settings.isImportSourceDepsAsJars()) {
@@ -113,7 +119,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     task2executor.remove(id);
     // Removing the existing modules right before returning to minimize the time user observes
     // that the old modules are gone.
-    Optional.ofNullable(id.findProject()).ifPresent(p -> clearPantsModules(p, projectPath));
+    Optional.ofNullable(id.findProject()).ifPresent(p -> clearPantsModules(p, projectPath, projectDataNode));
     return projectDataNode;
   }
 
@@ -186,7 +192,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       DigestUtils.sha1Hex(Long.toString(System.currentTimeMillis())),
       executor.getProjectRelativePath()
     );
-    
+
     final ProjectData projectData = new ProjectData(
       PantsConstants.SYSTEM_ID,
       projectName,
