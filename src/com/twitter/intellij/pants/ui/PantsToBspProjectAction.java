@@ -32,7 +32,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class PantsToBspProjectAction extends AnAction implements DumbAware {
@@ -77,13 +80,14 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
           String outputErr = readToString(process.getErrorStream());
           int result = process.waitFor();
           if (result != 0) {
-            String message = formatError(output, outputErr);
-            throw new RuntimeException(message);
-          }
-          else {
+            Path workspace = commandLine.getWorkDirectory().toPath();
+            Optional<Path> projectPath = existingProjectPath(outputErr, workspace);
+
+            projectPath.ifPresent(path -> registerNewBspProjectAndOpen(path, project));
+            projectPath.orElseThrow(() -> new RuntimeException(formatError(output, outputErr)));
+          } else {
             Path projectPath = Paths.get(output).toAbsolutePath();
-            PropertiesComponent.getInstance(project).setValue(BSP_LINKED_PROJECT_PATH, projectPath.toString());
-            ProjectUtil.openOrImport(projectPath, new OpenProjectTask());
+            registerNewBspProjectAndOpen(projectPath, project);
           }
         }
         catch (Exception ex) {
@@ -94,13 +98,29 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
     });
   }
 
+  private void registerNewBspProjectAndOpen(Path projectPath, Project project) {
+    PropertiesComponent.getInstance(project).setValue(BSP_LINKED_PROJECT_PATH, projectPath.toString());
+    ApplicationManager.getApplication()
+      .invokeLater(() -> ProjectUtil.openOrImport(projectPath, new OpenProjectTask()));
+  }
+
+  private Optional<Path> existingProjectPath(String output, Path workspace) {
+    Pattern pattern = Pattern.compile("can't create project named '(.*?)' because it already exists");
+    Matcher matcher = pattern.matcher(output);
+    if (matcher.find()) {
+      String name = matcher.group(1);
+      return Optional.of(workspace.resolveSibling("bsp-projects").resolve(name));
+    } else {
+      return Optional.empty();
+    }
+  }
+
   private GeneralCommandLine createCommandLine(Project project) throws IOException {
     GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(project);
 
     String coursier = coursierPath().toString();
     commandLine.setExePath(coursier);
 
-    //String name = project.getName();
     List<String> commandBase = Arrays.asList(
       "launch", "org.scalameta:metals_2.12:latest.stable",
       "--main", "scala.meta.internal.pantsbuild.BloopPants",
