@@ -37,6 +37,7 @@ junit_tests(
     'com/twitter/intellij/pants/service/project/model/*.java',
     'com/twitter/intellij/pants/service/project/modifier/*.java',
     'com/twitter/intellij/pants/service/util/*.java',
+    'com/twitter/intellij/pants/service/python/*.java',
     'com/twitter/intellij/pants/settings/*.java',
     'com/twitter/intellij/pants/util/*.java',
     'com/twitter/intellij/pants/rc/*.java',

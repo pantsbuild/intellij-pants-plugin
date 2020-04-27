@@ -7,6 +7,7 @@ import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
+import com.intellij.serialization.PropertyMapping;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +20,7 @@ public class PythonSetupData extends AbstractExternalEntityData {
   private final PythonInterpreterInfo myInterpreterInfo;
   private final ModuleData myOwnerModuleData;
 
+  @PropertyMapping({"myOwnerModuleData", "interpreterInfo"})
   public PythonSetupData(ModuleData ownerModuleData, @NotNull PythonInterpreterInfo interpreterInfo) {
     super(PantsConstants.SYSTEM_ID);
     myOwnerModuleData = ownerModuleData;
