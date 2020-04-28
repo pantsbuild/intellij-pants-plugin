@@ -23,7 +23,6 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
   protected void setUp() throws Exception {
     super.setUp();
     cleanUpsourceFolders();
-    PantsProjectCacheImpl.getInstance(getProject()).projectOpened();
   }
 
   private void cleanUpsourceFolders() {
@@ -44,7 +43,6 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
   @Override
   protected void tearDown() throws Exception {
     cleanUpsourceFolders();
-    PantsProjectCacheImpl.getInstance(getProject()).projectClosed();
     super.tearDown();
   }
 
@@ -56,34 +54,31 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
   }
 
   public void testEmpty() {
-    final PantsProjectCache cache = PantsProjectCacheImpl.getInstance(myFixture.getProject());
+    final PantsProjectCache cache = PantsProjectCache.getInstance(myFixture.getProject());
     assertFalse(cache.folderContainsSourceRoot(myFixture.getProject().getBaseDir()));
   }
 
   public void testLastOne() {
-    final PantsProjectCache cache = PantsProjectCacheImpl.getInstance(myFixture.getProject());
+    final PantsProjectCache cache = PantsProjectCache.getInstance(myFixture.getProject());
     final VirtualFile root = getMainContentRoot();
 
 
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "bar"));
-          PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "baz"));
-          assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "baz")));
-          assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "ba")));
-          assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "bat")));
-        }
-        catch (IOException e) {
-          fail(e.getMessage());
-        }
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      try {
+        PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "bar"));
+        PsiTestUtil.addSourceRoot(getModule(), VfsUtil.createDirectoryIfMissing(root, "baz"));
+        assertTrue(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "baz")));
+        assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "ba")));
+        assertFalse(cache.folderContainsSourceRoot(VfsUtil.createDirectoryIfMissing(root, "bat")));
+      }
+      catch (IOException e) {
+        fail(e.getMessage());
       }
     });
   }
 
   public void testFirstOne() {
-    final PantsProjectCache cache = PantsProjectCacheImpl.getInstance(myFixture.getProject());
+    final PantsProjectCache cache = PantsProjectCache.getInstance(myFixture.getProject());
     final VirtualFile root = getMainContentRoot();
 
     ApplicationManager.getApplication().runWriteAction(() -> {
