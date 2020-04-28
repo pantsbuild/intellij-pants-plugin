@@ -555,7 +555,9 @@ public class PantsUtil {
     return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
   }
 
-  public static Optional<String> findModuleAddress(@NotNull Module module) {
+  public static Optional<String> findModuleAddress(@Nullable Module module) {
+    if (module == null) return Optional.empty();
+
     ExternalSystemModulePropertyManager externalSystemModulePropertyManager = ExternalSystemModulePropertyManager.getInstance(module);
     String path = externalSystemModulePropertyManager.getLinkedProjectPath();
     if (path == null) {
