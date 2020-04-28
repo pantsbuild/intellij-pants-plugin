@@ -25,9 +25,9 @@ import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.file.FileChangeTracker;
@@ -35,22 +35,20 @@ import com.twitter.intellij.pants.metrics.LivePantsMetrics;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsOptions;
-import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
   protected PantsProjectComponentImpl(Project project) {
@@ -86,7 +84,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
       // projectOpened() is called on the dispatch thread, while
       // addPantsProjectIgnoreDirs() calls an external process,
       // so it cannot be run on the dispatch thread.
-      ApplicationManager.getApplication().executeOnPooledThread(() -> addPantsProjectIgnoredDirs());
+      ApplicationManager.getApplication().executeOnPooledThread(this::addPantsProjectIgnoredDirs);
     }
 
     super.projectOpened();
@@ -186,8 +184,9 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
          */
         private void prepareGuiComponents() {
           if (!ApplicationManager.getApplication().isUnitTestMode()) {
-            if (ToolWindowManager.getInstance(myProject).getToolWindow("Project") != null) {
-              ToolWindowManager.getInstance(myProject).getToolWindow("Project").show(null);
+            ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Project");
+            if (toolWindow != null) {
+              toolWindow.show(null);
             }
             ExternalSystemUtil.ensureToolWindowInitialized(myProject, PantsConstants.SYSTEM_ID);
           }
@@ -266,10 +265,9 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         String pathToIgnore = buildRoot.getPath() + File.separator + ".idea";
         clm.addDirectoryToIgnoreImplicitly(pathToIgnore);
 
-        PantsOptions.getPantsOptions(myProject).map(optionObj -> optionObj.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR))
-          .ifPresent(optionString -> optionString.ifPresent(
-            clm::addDirectoryToIgnoreImplicitly
-          ));
+        PantsOptions.getPantsOptions(myProject)
+          .flatMap(optionObj -> optionObj.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR))
+          .ifPresent(clm::addDirectoryToIgnoreImplicitly);
       }
     );
   }

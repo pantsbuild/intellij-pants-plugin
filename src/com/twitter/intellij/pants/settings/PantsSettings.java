@@ -112,7 +112,6 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   protected void checkSettings(@NotNull PantsProjectSettings old, @NotNull PantsProjectSettings current) {
   }
 
-  @SuppressWarnings("unchecked")
   @Nullable
   @Override
   public MyState getState() {
@@ -124,7 +123,7 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   @Override
-  public void loadState(MyState state) {
+  public void loadState(@NotNull MyState state) {
     super.loadState(state);
     setResolverVersion(state.getResolverVersion());
     setUseIdeaProjectJdk(state.isUseIdeaProjectJdk());
