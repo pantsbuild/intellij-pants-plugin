@@ -86,6 +86,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -961,11 +962,8 @@ public class PantsUtil {
     SimpleExportResult.clearCache();
   }
 
-  /**
-   * Copy from {@link ExternalSystemExecuteTaskTask#parseCmdParameters} because it is private.
-   */
-  public static List<String> parseCmdParameters(Optional<String> cmdArgsLine) {
-    return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
+  public static List<String> parseCmdParameters(@Nullable String cmdArgsLine) {
+    return Optional.ofNullable(cmdArgsLine).map(ParametersListUtil::parse).orElse(new ArrayList<>());
   }
 
   public static void invokeLaterIfNeeded(Runnable task) {

@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -57,7 +56,7 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     String testTask = "test";
     assertEquals(Collections.singletonList(testTask), esc.getSettings().getTaskNames());
 
-    List<String> configScriptParameters = PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getScriptParameters()));
+    List<String> configScriptParameters = PantsUtil.parseCmdParameters(esc.getSettings().getScriptParameters());
     assertContains(configScriptParameters, "--test-junit-test=" + testClass.getQualifiedName());
 
     // Make sure this configuration does not contain any task before running if added to the project.
@@ -100,8 +99,8 @@ public class OSSPantsJvmRunConfigurationIntegrationTest extends OSSPantsIntegrat
     OptionalInt debugPort
   ) throws InstantiationException, IllegalAccessException {
     PantsExecutionSettings settings = PantsExecutionSettings.createDefault();
-    settings.withVmOptions(PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getVmOptions())));
-    settings.withArguments(PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getScriptParameters())));
+    settings.withVmOptions(PantsUtil.parseCmdParameters(esc.getSettings().getVmOptions()));
+    settings.withArguments(PantsUtil.parseCmdParameters(esc.getSettings().getScriptParameters()));
     debugPort.ifPresent(port -> settings.putUserData(BUILD_PROCESS_DEBUGGER_PORT_KEY, port));
 
     GeneralCommandLine commandLine = ((PantsTaskManager) taskManagerClass.newInstance()).constructCommandLine(

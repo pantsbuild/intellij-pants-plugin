@@ -32,7 +32,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
 
@@ -51,7 +50,7 @@ public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsInteg
 
     PsiFile file = new PyTestFile(truClass.getContainingFile(), truClass);
     ExternalSystemRunConfiguration esc = getExternalSystemRunConfiguration(file);
-    List<String> items = PantsUtil.parseCmdParameters(Optional.ofNullable(esc.getSettings().getScriptParameters()));
+    List<String> items = PantsUtil.parseCmdParameters(esc.getSettings().getScriptParameters());
 
     assertNotContainsSubstring(items, PantsConstants.PANTS_CLI_OPTION_JUNIT_TEST);
     assertContainsSubstring(items, PantsConstants.PANTS_CLI_OPTION_PYTEST);

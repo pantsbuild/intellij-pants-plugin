@@ -8,7 +8,6 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -23,7 +22,6 @@ import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -254,7 +252,7 @@ public class FileChangeTracker {
         return false;
       }
       Manifest manifest = new Manifest(manifestInJar.getInputStream());
-      List<String> relPaths = PantsUtil.parseCmdParameters(Optional.of(manifest.getMainAttributes().getValue("Class-Path")));
+      List<String> relPaths = PantsUtil.parseCmdParameters(manifest.getMainAttributes().getValue("Class-Path"));
       for (String path : relPaths) {
         // All rel paths in META-INF/MANIFEST.MF is relative to the jar directory
         if (!new File(file.getParent().getPath(), path).exists()) {
