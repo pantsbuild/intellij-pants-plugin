@@ -226,7 +226,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
         String name = PantsUtil.getRelativeProjectPath(file.getPath())
           .orElse(file.getParent().getName());
 
-        if(file.equals(".")) {
+        if(name.equals(".")) {
           setGeneratedName(buildRoot);
         }else {
           setGeneratedName(buildRoot + File.separator + name);
