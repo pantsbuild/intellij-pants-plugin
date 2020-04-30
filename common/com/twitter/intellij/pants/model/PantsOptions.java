@@ -66,18 +66,19 @@ public class PantsOptions {
 
   public static PantsOptions getPantsOptions(@NotNull final String pantsExecutable) {
     File pantsExecutableFile = new File(pantsExecutable);
-    PantsOptions cache = optionsCache.get(pantsExecutableFile);
-    if (cache != null) {
-      return cache;
-    }
+    // note that executing the "pants option" command is neither fast nor simple, which may cause
+    // other threads trying to compute the value for a different pants executable to get blocked
+    // until the ongoing computation finishes
+    return optionsCache.computeIfAbsent(pantsExecutableFile, file -> execPantsOptions(pantsExecutable));
+  }
 
+  @NotNull
+  private static PantsOptions execPantsOptions(@NotNull String pantsExecutable) {
     GeneralCommandLine exportCommandline = PantsUtil.defaultCommandLine(pantsExecutable);
     exportCommandline.addParameters("options", PantsConstants.PANTS_CLI_OPTION_NO_COLORS);
     try {
-      final ProcessOutput processOutput = PantsUtil.getCmdOutput(exportCommandline, null);
-      PantsOptions result = new PantsOptions(processOutput.getStdout());
-      optionsCache.put(pantsExecutableFile, result);
-      return result;
+      ProcessOutput processOutput = PantsUtil.getCmdOutput(exportCommandline, null);
+      return new PantsOptions(processOutput.getStdout());
     }
     catch (ExecutionException e) {
       throw new PantsException("Failed:" + exportCommandline.getCommandLineString());
