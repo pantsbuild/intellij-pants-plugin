@@ -38,7 +38,7 @@ final public class FastpassUtils {
   public static CompletableFuture<Void> amendAll(@NotNull PantsBspData importData, Collection<String> newTargets) throws IOException {
     List<String> amendPart = Arrays.asList(
       "amend", importData.getBspPath().getFileName().toString(),
-      "--addresses-list", String.join(",", newTargets)
+      "--new-targets", String.join(",", newTargets)
     );
     String[] command = makeFastpassCommand(amendPart);
     Process process = fastpassProcess(command, importData.getBspPath().getParent(), Paths.get(importData.getPantsRoot().getPath()));
@@ -77,7 +77,7 @@ final public class FastpassUtils {
 
 
   private static List<String> coursierPart = Arrays.asList(
-    "coursier", "launch", "org.scalameta:metals_2.12:0.8.5-SNAPSHOT", "-r", "ivy2local",
+    "coursier", "launch", "org.scalameta:metals_2.12:0.8.4+114-d75e2293-SNAPSHOT", "-r", "sonatype:snapshots",
     "--main", "scala.meta.internal.pantsbuild.BloopPants", "--"
   );
 
