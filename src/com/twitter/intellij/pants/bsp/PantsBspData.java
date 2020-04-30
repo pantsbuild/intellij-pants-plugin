@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,9 +43,14 @@ final public class PantsBspData {
                   FastpassUtils.pantsRoots(module).findFirst().isPresent()
         )
         .map(module -> {
-          VirtualFile pantsRoots = FastpassUtils.pantsRoots(module).findFirst().get(); // todo handle null
-          Path bspRoot= Paths.get(ExternalSystemModulePropertyManager.getInstance(module).getLinkedProjectPath()); // todo handle null
-          return new PantsBspData(bspRoot, pantsRoots);
+          String linkedProjectPath = ExternalSystemModulePropertyManager.getInstance(module).getLinkedProjectPath();
+          Optional<VirtualFile> pantsRoots = FastpassUtils.pantsRoots(module).findFirst();
+          if(linkedProjectPath != null && pantsRoots.isPresent()) {
+            Path bspRoot = Paths.get(linkedProjectPath);
+            return new PantsBspData(bspRoot, pantsRoots.get());
+          } else {
+            throw new RuntimeException("Invalid BSP-Pants import. LinkedProjectPath: " + linkedProjectPath + ", pantsRoot: " + pantsRoots.toString());
+          }
         })
         .collect(Collectors.toSet());
   }
