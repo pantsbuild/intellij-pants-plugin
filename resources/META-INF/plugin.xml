@@ -69,6 +69,10 @@
               class="com.twitter.intellij.pants.compiler.actions.PantsCompileCurrentTargetAction"
               text="Compile target(s) in the selected editor">
       </action>
+      <action id="com.twitter.intellij.pants.ui.PantsToBspProjectAction"
+              class="com.twitter.intellij.pants.ui.PantsToBspProjectAction"
+              text="Create new BSP project based on this Pants project">
+      </action>
     </group>
 
     <group id="Pants.Compile" text="Pants Compile" description="Pants compilation options" icon="PantsIcons.Icon"
