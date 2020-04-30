@@ -33,11 +33,6 @@ public class PantsProjectPaneSelectInTarget extends ProjectViewSelectInTarget {
   }
 
   @Override
-  protected boolean canWorkWithCustomObjects() {
-    return false;
-  }
-
-  @Override
   public boolean canSelect(PsiFileSystemItem file) {
     if (!super.canSelect(file)) return false;
     final VirtualFile vFile = file.getVirtualFile();

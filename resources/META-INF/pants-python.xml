@@ -2,12 +2,10 @@
 <!-- Licensed under the Apache License, Version 2.0 (see LICENSE). -->
 
 <idea-plugin version="2">
-  <project-components>
-    <component>
-      <interface-class>com.twitter.intellij.pants.service.python.component.PantsPythonProjectComponent</interface-class>
-      <implementation-class>com.twitter.intellij.pants.service.python.component.impl.PantsPythonProjectComponentImpl</implementation-class>
-    </component>
-  </project-components>
+  <projectListeners>
+    <listener class="com.twitter.intellij.pants.service.python.component.PantsPythonRunConfigListener"
+              topic="com.intellij.execution.RunManagerListener"/>
+  </projectListeners>
   <extensions defaultExtensionNs="com.intellij.plugins.pants">
     <projectInfoModifier implementation="com.twitter.intellij.pants.service.python.PythonInfoModifier" order="before compressor"/>
     <projectResolver implementation="com.twitter.intellij.pants.service.python.PythonPexResolver"/>

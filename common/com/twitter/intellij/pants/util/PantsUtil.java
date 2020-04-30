@@ -14,7 +14,7 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.SaveAndSyncHandler;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -24,16 +24,11 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
-import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectSystemId;
-import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode;
-import com.intellij.openapi.externalSystem.service.internal.ExternalSystemExecuteTaskTask;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
-import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
-import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
@@ -86,6 +81,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -308,7 +304,8 @@ public class PantsUtil {
     Optional<VirtualFile> fromModuleFile = Optional.ofNullable(moduleFile).flatMap(PantsUtil::findBuildRoot);
     if (fromModuleFile.isPresent()) {
       return fromModuleFile;
-    } else {
+    }
+    else {
       final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
       for (VirtualFile contentRoot : rootManager.getContentRoots()) {
         final Optional<VirtualFile> buildRoot = findBuildRoot(contentRoot);
@@ -538,7 +535,7 @@ public class PantsUtil {
   @NotNull
   public static PantsSourceType getSourceTypeForTargetType(@Nullable String targetType, Boolean isSynthetic) {
     try {
-      if(isSynthetic && targetType != null) {
+      if (isSynthetic && targetType != null) {
         return PantsSourceType.SOURCE_GENERATED;
       }
       return targetType == null ? PantsSourceType.SOURCE :
@@ -554,7 +551,9 @@ public class PantsUtil {
     return sourceType == PantsSourceType.RESOURCE || sourceType == PantsSourceType.TEST_RESOURCE;
   }
 
-  public static Optional<String> findModuleAddress(@NotNull Module module) {
+  public static Optional<String> findModuleAddress(@Nullable Module module) {
+    if (module == null) return Optional.empty();
+
     ExternalSystemModulePropertyManager externalSystemModulePropertyManager = ExternalSystemModulePropertyManager.getInstance(module);
     String path = externalSystemModulePropertyManager.getLinkedProjectPath();
     if (path == null) {
@@ -615,7 +614,8 @@ public class PantsUtil {
   public static void refreshAllProjects(@NotNull Project project) {
     if (isPantsProject(project) || isSeedPantsProject(project)) {
       ExternalProjectUtil.refresh(project, PantsConstants.SYSTEM_ID);
-    } else if (isBspProject(project)) {
+    }
+    else if (isBspProject(project)) {
       ExternalProjectUtil.refresh(project, ProjectSystemId.findById("BSP"));
     }
   }
@@ -716,7 +716,7 @@ public class PantsUtil {
 
   public static boolean isPythonAvailable() {
     for (String pluginId : PYTHON_PLUGIN_IDS) {
-      final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
+      final IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId(pluginId));
       if (plugin != null && plugin.isEnabled()) {
         return true;
       }
@@ -903,10 +903,7 @@ public class PantsUtil {
 
   public static Optional<File> findPantsExecutable(@NotNull File file) {
     Optional<VirtualFile> vf = findPantsExecutable(LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file));
-    if (!vf.isPresent()) {
-      return Optional.empty();
-    }
-    return Optional.of(new File(vf.get().getPath()));
+    return vf.map(virtualFile -> new File(virtualFile.getPath()));
   }
 
   private static Optional<VirtualFile> findPantsExecutable(@Nullable VirtualFile file) {
@@ -961,11 +958,8 @@ public class PantsUtil {
     SimpleExportResult.clearCache();
   }
 
-  /**
-   * Copy from {@link ExternalSystemExecuteTaskTask#parseCmdParameters} because it is private.
-   */
-  public static List<String> parseCmdParameters(Optional<String> cmdArgsLine) {
-    return cmdArgsLine.map(ParametersListUtil::parse).orElse(ContainerUtil.newArrayList());
+  public static List<String> parseCmdParameters(@Nullable String cmdArgsLine) {
+    return Optional.ofNullable(cmdArgsLine).map(ParametersListUtil::parse).orElse(new ArrayList<>());
   }
 
   public static void invokeLaterIfNeeded(Runnable task) {

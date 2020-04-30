@@ -24,10 +24,12 @@ import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PantsTreeStructureProvider implements TreeStructureProvider {
   @NotNull
@@ -37,48 +39,56 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
     @NotNull Collection<AbstractTreeNode<?>> collection,
     ViewSettings settings
   ) {
-    final Project project = node.getProject();
-    if (node instanceof PsiDirectoryNode && project != null) {
-      final Module module = ModuleUtil.findModuleForPsiElement(((PsiDirectoryNode) node).getValue());
-      final Optional<String> buildPath =
-        module != null ? PantsUtil.findModuleAddress(module) : Optional.empty();
-      if (buildPath.isPresent()) {
-        final Optional<VirtualFile> buildFile = PantsUtil.findFileRelativeToBuildRoot(project, buildPath.get());
+    Project project = node.getProject();
+    if (project == null || !(node instanceof PsiDirectoryNode)) return collection;
+    PsiDirectoryNode directory = (PsiDirectoryNode) node;
 
-        boolean isModuleRoot =
-          ArrayUtil.indexOf(ModuleRootManager.getInstance(module).getContentRoots(), ((PsiDirectoryNode) node).getVirtualFile()) >= 0;
-        if (buildFile.isPresent() && isModuleRoot) {
-          // Check if there's already a BUILD file in the directory; if so, we don't add another
-          final AbstractTreeNode existingBuildFile = ContainerUtil.find(
-            collection.iterator(), new Condition<AbstractTreeNode>() {
-              @Override
-              public boolean value(AbstractTreeNode node) {
-                return node instanceof PsiFileNode && buildFile.get().equals(((PsiFileNode) node).getVirtualFile());
-              }
-            }
-          );
-          if (existingBuildFile == null) {
-            final PsiFile buildPsiFile = PsiManager.getInstance(project).findFile(buildFile.get());
-            final PsiFileNode buildNode = new PsiFileNode(project, buildPsiFile, settings) {
-              @Override
-              protected void updateImpl(PresentationData data) {
-                super.updateImpl(data);
-                data.setIcon(PantsIcons.Icon);
-              }
-            };
-            final List<AbstractTreeNode<?>> modifiedCollection = new ArrayList<>(collection);
-            modifiedCollection.add(buildNode);
-            return modifiedCollection;
-          }
-        }
+    List<PsiFileNode> newNodes =
+      Optional.ofNullable(getModuleOf(directory))
+        .filter(module -> isModuleRoot(directory, module))
+        .flatMap(PantsUtil::findModuleAddress)
+        .flatMap(buildPAth -> PantsUtil.findFileRelativeToBuildRoot(project, buildPAth))
+        .filter(buildFile -> !alreadyExists(collection, buildFile))
+        .map(buildFile -> createNode(settings, project, buildFile))
+        .orElseGet(Collections::emptyList);
+
+    if (newNodes.isEmpty()) return collection;
+
+    return Stream.concat(collection.stream(), newNodes.stream()).collect(Collectors.toList());
+  }
+
+  private Module getModuleOf(@NotNull PsiDirectoryNode node) {
+    return ModuleUtil.findModuleForPsiElement(node.getValue());
+  }
+
+  private boolean alreadyExists(Collection<AbstractTreeNode<?>> collection, VirtualFile buildFile) {
+    Condition<AbstractTreeNode<?>> isBuildFile =
+      node -> node instanceof PsiFileNode && buildFile.equals(((PsiFileNode) node).getVirtualFile());
+    return ContainerUtil.exists(collection, isBuildFile);
+  }
+
+  @NotNull
+  private List<PsiFileNode> createNode(ViewSettings settings, Project project, VirtualFile buildFile) {
+    final PsiFile buildPsiFile = PsiManager.getInstance(project).findFile(buildFile);
+    if(buildPsiFile == null) return Collections.emptyList();
+
+    PsiFileNode node = new PsiFileNode(project, buildPsiFile, settings) {
+      @Override
+      protected void updateImpl(@NotNull PresentationData data) {
+        super.updateImpl(data);
+        data.setIcon(PantsIcons.Icon);
       }
-    }
-    return collection;
+    };
+    return Collections.singletonList(node);
+  }
+
+  private boolean isModuleRoot(@NotNull PsiDirectoryNode node, Module module) {
+    return ArrayUtil.indexOf(ModuleRootManager.getInstance(module).getContentRoots(), node.getVirtualFile()) >= 0;
   }
 
   @Nullable
   @Override
-  public Object getData(Collection<AbstractTreeNode<?>> collection, String s) {
+  public Object getData(@NotNull Collection<AbstractTreeNode<?>> collection, @NotNull String s) {
     return null;
   }
 }

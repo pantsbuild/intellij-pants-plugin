@@ -23,7 +23,6 @@ import com.intellij.psi.PsiManager;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.components.PantsProjectCache;
-import com.twitter.intellij.pants.components.impl.PantsProjectCacheImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,7 +57,7 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
   }
 
   @Override
-  protected void update(PresentationData presentation) {
+  protected void update(@NotNull PresentationData presentation) {
     final PsiManager psiManager = PsiManager.getInstance(myProject);
     final VirtualFile virtualFile = getValue();
     final PsiFile psiElement = virtualFile.isValid() ? psiManager.findFile(virtualFile) : null;
@@ -114,7 +113,7 @@ public class VirtualFileTreeNode extends ProjectViewNode<VirtualFile> {
   private boolean shouldIncludeDirectory(VirtualFile dir) {
     final ViewSettings viewSettings = getSettings();
     if (viewSettings instanceof PantsViewSettings && ((PantsViewSettings)viewSettings).isShowOnlyLoadedFiles()) {
-      final PantsProjectCache projectCache = PantsProjectCacheImpl.getInstance(getProject());
+      final PantsProjectCache projectCache = PantsProjectCache.getInstance(getProject());
       return projectCache.folderContainsSourceRoot(dir);
     }
     return true;

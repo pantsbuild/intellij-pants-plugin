@@ -43,11 +43,13 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     super(project);
   }
 
+  @NotNull
   @Override
   public String getTitle() {
     return PantsBundle.message("pants.title.project.files");
   }
 
+  @NotNull
   @Override
   public Icon getIcon() {
     return AllIcons.General.ProjectTab;
@@ -68,7 +70,7 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
   }
 
   @Override
-  public void readExternal(Element element) throws InvalidDataException {
+  public void readExternal(@NotNull Element element) throws InvalidDataException {
     super.readExternal(element);
     final String showExcludedOption = JDOMExternalizerUtil.readField(element, SHOW_EXCLUDED_FILES_OPTION);
     myShowExcludedFiles = showExcludedOption == null || Boolean.parseBoolean(showExcludedOption);
@@ -90,11 +92,13 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     actionGroup.addAction(new ShowOnlyLoadedFilesAction()).setAsSecondary(true);
   }
 
+  @NotNull
   @Override
   protected ProjectAbstractTreeStructureBase createStructure() {
     return new ProjectViewPaneTreeStructure();
   }
 
+  @NotNull
   @Override
   protected ProjectViewTree createTree(DefaultTreeModel treeModel) {
     return new ProjectViewTree(myProject, treeModel) {
@@ -110,6 +114,7 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     return new AbstractTreeUpdater(treeBuilder);
   }
 
+  @NotNull
   @Override
   public SelectInTarget createSelectInTarget() {
     return new PantsProjectPaneSelectInTarget(myProject);
@@ -146,12 +151,12 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     }
 
     @Override
-    public boolean isSelected(AnActionEvent event) {
+    public boolean isSelected(@NotNull AnActionEvent event) {
       return myShowExcludedFiles;
     }
 
     @Override
-    public void setSelected(AnActionEvent event, boolean flag) {
+    public void setSelected(@NotNull AnActionEvent event, boolean flag) {
       if (myShowExcludedFiles != flag) {
         myShowExcludedFiles = flag;
         updateFromRoot(true);
@@ -177,12 +182,12 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     }
 
     @Override
-    public boolean isSelected(AnActionEvent event) {
+    public boolean isSelected(@NotNull AnActionEvent event) {
       return myShowOnlyLoadedFiles;
     }
 
     @Override
-    public void setSelected(AnActionEvent event, boolean flag) {
+    public void setSelected(@NotNull AnActionEvent event, boolean flag) {
       if (myShowOnlyLoadedFiles != flag) {
         myShowOnlyLoadedFiles = flag;
         updateFromRoot(true);
