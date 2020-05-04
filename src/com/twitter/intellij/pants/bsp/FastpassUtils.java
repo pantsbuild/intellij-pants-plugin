@@ -44,7 +44,8 @@ final public class FastpassUtils {
   public static CompletableFuture<Void> amendAll(@NotNull PantsBspData importData, Collection<String> newTargets, Project project)
     throws IOException, ExecutionException {
     List<String> amendPart = Arrays.asList(
-      "amend", importData.getBspPath().getFileName().toString(),
+      "amend",  "--no-bloop-exit", "--intellij", "--intellij-launcher", "echo",
+      importData.getBspPath().getFileName().toString(),
       "--new-targets", String.join(",", newTargets)
     );
     GeneralCommandLine command = makeFastpassCommand(project, amendPart);
@@ -105,7 +106,6 @@ final public class FastpassUtils {
 
   @NotNull
   public static GeneralCommandLine makeFastpassCommand(Project project, @NotNull Collection<String> amendPart) throws IOException {
-
     GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(project);
     String coursier = FastpassUtils.coursierPath().toString();
     commandLine.setExePath(coursier);
@@ -116,7 +116,10 @@ final public class FastpassUtils {
 
   @NotNull
   private static Process fastpassProcess(GeneralCommandLine command, Path fastpassHome, Path pantsWorkspace) throws ExecutionException {
-    return command.withWorkDirectory(pantsWorkspace.toFile()).withEnvironment("FASTPASS_HOME", fastpassHome.toString()).createProcess();
+    return command
+      .withWorkDirectory(pantsWorkspace.toFile())
+      .withEnvironment("FASTPASS_HOME", fastpassHome.toString())
+      .createProcess();
   }
 
   @NotNull
