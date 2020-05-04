@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.bsp;
 
+import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -60,8 +61,8 @@ public class FastpassBspAmendAction extends AnAction {
     }
   }
 
-  private void startAmendProcedure(Project project, PantsBspData firstProject) throws IOException {
-    CompletableFuture<Set<PantsTargetAddress>> oldTargets = FastpassUtils.selectedTargets(firstProject);
+  private void startAmendProcedure(Project project, PantsBspData firstProject) throws IOException, ExecutionException {
+    CompletableFuture<Set<PantsTargetAddress>> oldTargets = FastpassUtils.selectedTargets(firstProject, project);
 
     FastpassTargetListCache targetsListCache = new FastpassTargetListCache();
     Optional<Set<PantsTargetAddress>> newTargets = FastpassManagerDialog
@@ -100,7 +101,7 @@ public class FastpassBspAmendAction extends AnAction {
   ) throws InterruptedException, IOException {
     ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
       try {
-        FastpassUtils.amendAll(basePath, newTargets.stream().map(x -> x.toAddressString()).collect(Collectors.toList())).get();
+        FastpassUtils.amendAll(basePath, newTargets.stream().map(x -> x.toAddressString()).collect(Collectors.toList()), project).get();
         ExternalProjectUtil.refresh(project, BSP.ProjectSystemId());
       } catch (Throwable e){
         logger.error(e);

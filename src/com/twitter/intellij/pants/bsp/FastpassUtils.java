@@ -3,7 +3,10 @@
 
 package com.twitter.intellij.pants.bsp;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -12,9 +15,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,12 +41,13 @@ final public class FastpassUtils {
     );
   }
 
-  public static CompletableFuture<Void> amendAll(@NotNull PantsBspData importData, Collection<String> newTargets) throws IOException {
+  public static CompletableFuture<Void> amendAll(@NotNull PantsBspData importData, Collection<String> newTargets, Project project)
+    throws IOException, ExecutionException {
     List<String> amendPart = Arrays.asList(
       "amend", importData.getBspPath().getFileName().toString(),
       "--new-targets", String.join(",", newTargets)
     );
-    String[] command = makeFastpassCommand(amendPart);
+    GeneralCommandLine command = makeFastpassCommand(project, amendPart);
     Process process = fastpassProcess(command, importData.getBspPath().getParent(), Paths.get(importData.getPantsRoot().getPath()));
     return onExit(process).thenAccept(__ -> {});
   }
@@ -61,8 +68,10 @@ final public class FastpassUtils {
     });
   }
 
-  public static CompletableFuture<Set<PantsTargetAddress>> selectedTargets(PantsBspData basePath) throws IOException {
-        String[] fastpassCommand = makeFastpassCommand(Arrays.asList("info", basePath.getBspPath().getFileName().toString()));
+  public static CompletableFuture<Set<PantsTargetAddress>> selectedTargets(PantsBspData basePath, Project project)
+    throws IOException, ExecutionException {
+        GeneralCommandLine fastpassCommand = makeFastpassCommand(
+          project, Arrays.asList("info", basePath.getBspPath().getFileName().toString()));
         Process process = fastpassProcess(fastpassCommand, basePath.getBspPath().getParent(), Paths.get(basePath.getPantsRoot().getPath()));
         return onExit(process).thenApply(finishedProcess -> {
           try {
@@ -76,22 +85,38 @@ final public class FastpassUtils {
   }
 
 
-  private static List<String> coursierPart = Arrays.asList(
-    "coursier", "launch", "org.scalameta:metals_2.12:0.8.4+114-d75e2293-SNAPSHOT", "-r", "sonatype:snapshots",
-    "--main", "scala.meta.internal.pantsbuild.BloopPants", "--"
-  );
+  private static List<String> coursierPart(){
+    return Arrays.asList("launch", "org.scalameta:metals_2.12:0.8.4+114-d75e2293-SNAPSHOT",
+                         "-r", "sonatype:snapshots",
+                         "--main", "scala.meta.internal.pantsbuild.BloopPants",
+                         "--"
+    );
+  }
 
-  @NotNull
-  private static String[] makeFastpassCommand(@NotNull  Collection<String> amendPart) {
-    return Stream.concat(coursierPart.stream(), amendPart.stream()).toArray(String[]::new);
+  public static Path coursierPath() throws IOException {
+    Path destination = Paths.get(System.getProperty("java.io.tmpdir"), "pants-plugin-coursier");
+    if (!Files.exists(destination)) {
+      URL url = new URL("https://git.io/coursier-cli");
+      Files.copy(url.openConnection().getInputStream(), destination);
+      destination.toFile().setExecutable(true);
+    }
+    return destination;
   }
 
   @NotNull
-  private static Process fastpassProcess(String[] command, Path fastpassHome, Path pantsWorkspace) throws IOException {
-    ProcessBuilder builder = new ProcessBuilder(command);
-    builder.environment().put("FASTPASS_HOME", fastpassHome.toString());
-    builder.directory(pantsWorkspace.toFile());
-    return builder.start();
+  public static GeneralCommandLine makeFastpassCommand(Project project, @NotNull Collection<String> amendPart) throws IOException {
+
+    GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(project);
+    String coursier = FastpassUtils.coursierPath().toString();
+    commandLine.setExePath(coursier);
+    commandLine.addParameters(coursierPart());
+    commandLine.addParameters(new ArrayList<>(amendPart));
+    return commandLine;
+  }
+
+  @NotNull
+  private static Process fastpassProcess(GeneralCommandLine command, Path fastpassHome, Path pantsWorkspace) throws ExecutionException {
+    return command.withWorkDirectory(pantsWorkspace.toFile()).withEnvironment("FASTPASS_HOME", fastpassHome.toString()).createProcess();
   }
 
   @NotNull
