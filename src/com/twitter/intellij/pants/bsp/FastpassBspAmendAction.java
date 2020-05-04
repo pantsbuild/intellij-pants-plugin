@@ -15,6 +15,7 @@ import com.twitter.intellij.pants.bsp.ui.FastpassManagerDialog;
 import com.twitter.intellij.pants.util.ExternalProjectUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.bsp.BSP;
+import org.jetbrains.bsp.BspUtil;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -26,6 +27,13 @@ import java.util.stream.Collectors;
 public class FastpassBspAmendAction extends AnAction {
 
   private Logger logger = Logger.getInstance(FastpassBspAmendAction.class);
+
+  @Override
+  public void update(@NotNull AnActionEvent e) {
+    super.update(e);
+    boolean isBsp = e.getProject() != null && BspUtil.isBspProject(e.getProject());
+    e.getPresentation().setEnabledAndVisible(isBsp);
+  }
 
   @Override
   public void actionPerformed(@NotNull AnActionEvent event) {
