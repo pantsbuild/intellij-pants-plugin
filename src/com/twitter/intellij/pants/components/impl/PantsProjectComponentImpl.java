@@ -95,7 +95,7 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
       new Runnable() {
         @Override
         public void run() {
-          FastpassUpdater.initialize();
+          FastpassUpdater.initialize(myProject);
           if (PantsUtil.isSeedPantsProject(myProject)) {
             convertToPantsProject();
             // projectOpened() is called on the dispatch thread, while

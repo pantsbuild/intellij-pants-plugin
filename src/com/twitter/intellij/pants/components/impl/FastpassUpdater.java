@@ -104,8 +104,8 @@ public class FastpassUpdater {
     }
   }
 
-  public static void initialize() {
-    if (!initialized) {
+  public static void initialize(Project project) {
+    if (PantsUtil.isBspProject(project) && !initialized) {
       synchronized (FastpassUpdater.class) {
         if (!initialized) {
           ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
