@@ -10,7 +10,6 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.settings.AbstractExternalSystemSettings;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
@@ -20,6 +19,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
@@ -28,10 +28,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.components.PantsProjectComponent;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.file.FileChangeTracker;
-import com.twitter.intellij.pants.metrics.LivePantsMetrics;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsOptions;
@@ -50,73 +48,54 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class PantsProjectComponentImpl extends AbstractProjectComponent implements PantsProjectComponent {
-  protected PantsProjectComponentImpl(Project project) {
-    super(project);
-  }
-
+public class PantsProjectComponentImpl implements ProjectManagerListener {
   @Override
-  public void projectClosed() {
+  public void projectClosed(@NotNull Project project) {
     PantsMetrics.report();
-    FileChangeTracker.unregisterProject(myProject);
-    PantsConsoleManager.unregisterConsole(myProject);
-    super.projectClosed();
+    FileChangeTracker.unregisterProject(project);
+    PantsConsoleManager.unregisterConsole(project);
   }
 
   @Override
-  public void initComponent() {
-    super.initComponent();
-    LivePantsMetrics.registerDumbModeListener(myProject);
-  }
-
-  @Override
-  public void disposeComponent() {
-    super.disposeComponent();
-    LivePantsMetrics.unregisterDumbModeListener(myProject);
-  }
-
-  @Override
-  public void projectOpened() {
-
+  public void projectOpened(@NotNull Project project) {
     PantsMetrics.initialize();
-    PantsConsoleManager.registerConsole(myProject);
-    if (PantsUtil.isPantsProject(myProject)) {
+    PantsConsoleManager.registerConsole(project);
+    if (PantsUtil.isPantsProject(project)) {
       // projectOpened() is called on the dispatch thread, while
       // addPantsProjectIgnoreDirs() calls an external process,
       // so it cannot be run on the dispatch thread.
-      ApplicationManager.getApplication().executeOnPooledThread(this::addPantsProjectIgnoredDirs);
+      ApplicationManager.getApplication().executeOnPooledThread(() -> addPantsProjectIgnoredDirs(project));
     }
 
-    super.projectOpened();
-    if (myProject.isDefault()) {
+    if (project.isDefault()) {
       return;
     }
-    StartupManager.getInstance(myProject).registerPostStartupActivity(
+    StartupManager.getInstance(project).registerPostStartupActivity(
       new Runnable() {
         @Override
         public void run() {
-          if (PantsUtil.isSeedPantsProject(myProject)) {
+          if (PantsUtil.isSeedPantsProject(project)) {
             convertToPantsProject();
             // projectOpened() is called on the dispatch thread, while
             // addPantsProjectIgnoreDirs() calls an external process,
             // so it cannot be run on the dispatch thread.
-            ApplicationManager.getApplication().executeOnPooledThread(() -> addPantsProjectIgnoredDirs());
+            ApplicationManager.getApplication().executeOnPooledThread(() -> addPantsProjectIgnoredDirs(project));
           }
 
           subscribeToRunConfigurationAddition();
-          registerVfsListener(myProject);
-          final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
+          registerVfsListener(project);
+          final AbstractExternalSystemSettings pantsSettings = ExternalSystemApiUtil.getSettings(project, PantsConstants.SYSTEM_ID);
           final boolean resolverVersionMismatch =
             pantsSettings instanceof PantsSettings && ((PantsSettings) pantsSettings).getResolverVersion() != PantsResolver.VERSION;
-          if (resolverVersionMismatch && PantsUtil.isPantsProject(myProject)) {
-            final int answer = Messages.showYesNoDialog(
-              myProject,
-              PantsBundle.message("pants.project.generated.with.old.version", myProject.getName()),
+          if (resolverVersionMismatch && PantsUtil.isPantsProject(project)) {
+              final int answer = Messages.showYesNoDialog(
+                project,
+              PantsBundle.message("pants.project.generated.with.old.version", project.getName()),
               PantsBundle.message("pants.name"),
               PantsIcons.Icon
             );
             if (answer == Messages.YES) {
-              PantsUtil.refreshAllProjects(myProject);
+              PantsUtil.refreshAllProjects(project);
             }
           }
         }
@@ -130,18 +109,18 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
          */
         private void convertToPantsProject() {
           PantsExternalMetricsListenerManager.getInstance().logIsGUIImport(false);
-          final String serializedTargets = PropertiesComponent.getInstance(myProject).getValue("targets");
-          final String projectPath = PropertiesComponent.getInstance(myProject).getValue("project_path");
+          final String serializedTargets = PropertiesComponent.getInstance(project).getValue("targets");
+          final String projectPath = PropertiesComponent.getInstance(project).getValue("project_path");
           if (serializedTargets == null || projectPath == null) {
             return;
           }
           // TODO: This is actually an integer value: if we replaced the incremental import
           // checkbox with an integer optional, we could propagate this value through.
           final boolean enableIncrementalImport =
-            PropertiesComponent.getInstance(myProject).getValue("incremental_import") != null;
+            PropertiesComponent.getInstance(project).getValue("incremental_import") != null;
 
           final boolean enableExportDepAsJar =
-            Boolean.parseBoolean(Optional.ofNullable(PropertiesComponent.getInstance(myProject).getValue("dep_as_jar")).orElse("false"));
+            Boolean.parseBoolean(Optional.ofNullable(PropertiesComponent.getInstance(project).getValue("dep_as_jar")).orElse("false"));
 
           /**
            * Generate the import spec for the next refresh.
@@ -152,7 +131,9 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           final boolean useIntellijCompiler = false;
           final PantsProjectSettings pantsProjectSettings =
             new PantsProjectSettings(
-              targetSpecs, targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk, enableExportDepAsJar, useIntellijCompiler);
+              targetSpecs, targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk, enableExportDepAsJar,
+              useIntellijCompiler
+            );
 
           /**
            * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:
@@ -162,16 +143,16 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
           if (manager == null) {
             return;
           }
-          AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(myProject);
+          AbstractExternalSystemSettings settings = manager.getSettingsProvider().fun(project);
           settings.setLinkedProjectsSettings(Collections.singleton(pantsProjectSettings));
-          PantsUtil.refreshAllProjects(myProject);
+          PantsUtil.refreshAllProjects(project);
 
           prepareGuiComponents();
 
-          myProject.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
+          project.getMessageBus().connect().subscribe(ProjectTopics.MODULES, new ModuleListener() {
             @Override
             public void moduleAdded(@NotNull Project project, @NotNull Module module) {
-              applyProjectSdk();
+              applyProjectSdk(project);
             }
           });
         }
@@ -184,11 +165,11 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
          */
         private void prepareGuiComponents() {
           if (!ApplicationManager.getApplication().isUnitTestMode()) {
-            ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Project");
+            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Project");
             if (toolWindow != null) {
               toolWindow.show(null);
             }
-            ExternalSystemUtil.ensureToolWindowInitialized(myProject, PantsConstants.SYSTEM_ID);
+            ExternalSystemUtil.ensureToolWindowInitialized(project, PantsConstants.SYSTEM_ID);
           }
         }
 
@@ -233,13 +214,13 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
         }
 
         private void subscribeToRunConfigurationAddition() {
-          myProject.getMessageBus().connect().subscribe(RunManagerListener.TOPIC, new RunManagerListener() {
+          project.getMessageBus().connect().subscribe(RunManagerListener.TOPIC, new RunManagerListener() {
             @Override
             public void runConfigurationAdded(@NotNull RunnerAndConfigurationSettings settings) {
-              if (!PantsUtil.isPantsProject(myProject) && !PantsUtil.isSeedPantsProject(myProject)) {
+              if (!PantsUtil.isPantsProject(project) && !PantsUtil.isSeedPantsProject(project)) {
                 return;
               }
-              final PantsSettings pantsSettings = (PantsSettings) ExternalSystemApiUtil.getSettings(myProject, PantsConstants.SYSTEM_ID);
+              final PantsSettings pantsSettings = (PantsSettings) ExternalSystemApiUtil.getSettings(project, PantsConstants.SYSTEM_ID);
               if (!pantsSettings.isUseIntellijCompiler()) {
                 PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(settings.getConfiguration());
               }
@@ -257,39 +238,39 @@ public class PantsProjectComponentImpl extends AbstractProjectComponent implemen
    * put project file in a temp dir unrelated to where the repo resides.
    * TODO: make sure it reflects on GUI immediately without a project reload.
    */
-  private void addPantsProjectIgnoredDirs() {
-    PantsUtil.findBuildRoot(myProject).ifPresent(
+  private void addPantsProjectIgnoredDirs(Project project) {
+    PantsUtil.findBuildRoot(project).ifPresent(
       buildRoot -> {
-        ChangeListManagerImpl clm = ChangeListManagerImpl.getInstanceImpl(myProject);
+        ChangeListManagerImpl clm = ChangeListManagerImpl.getInstanceImpl(project);
 
         String pathToIgnore = buildRoot.getPath() + File.separator + ".idea";
         clm.addDirectoryToIgnoreImplicitly(pathToIgnore);
 
-        PantsOptions.getPantsOptions(myProject)
+        PantsOptions.getPantsOptions(project)
           .flatMap(optionObj -> optionObj.get(PantsConstants.PANTS_OPTION_PANTS_WORKDIR))
           .ifPresent(clm::addDirectoryToIgnoreImplicitly);
       }
     );
   }
 
-  private void applyProjectSdk() {
-    Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(myProject);
+  private void applyProjectSdk(Project project) {
+    Optional<VirtualFile> pantsExecutable = PantsUtil.findPantsExecutable(project);
     if (!pantsExecutable.isPresent()) {
       return;
     }
 
-    Optional<Sdk> sdk = PantsSdkUtil.getDefaultJavaSdk(pantsExecutable.get().getPath(), myProject);
+    Optional<Sdk> sdk = PantsSdkUtil.getDefaultJavaSdk(pantsExecutable.get().getPath(), project);
     if (!sdk.isPresent()) {
       return;
     }
 
     ApplicationManager.getApplication().runWriteAction(() -> {
-      NewProjectUtil.applyJdkToProject(myProject, sdk.get());
+      NewProjectUtil.applyJdkToProject(project, sdk.get());
     });
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      DumbService.getInstance(myProject).smartInvokeLater(() -> {
-        Runnable fix = MagicConstantInspection.getAttachAnnotationsJarFix(myProject);
+      DumbService.getInstance(project).smartInvokeLater(() -> {
+        Runnable fix = MagicConstantInspection.getAttachAnnotationsJarFix(project);
         Optional.ofNullable(fix).ifPresent(Runnable::run);
       });
     });

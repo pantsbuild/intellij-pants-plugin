@@ -32,13 +32,6 @@
     </component>
   </application-components>
 
-  <project-components>
-    <component>
-      <interface-class>com.twitter.intellij.pants.components.PantsProjectComponent</interface-class>
-      <implementation-class>com.twitter.intellij.pants.components.impl.PantsProjectComponentImpl</implementation-class>
-    </component>
-  </project-components>
-
   <actions>
     <!--  This group adds "Import Project" action which to the Welcome screen which was removed in 2020.1  -->
     <group id="WelcomeScreen.QuickStart.Pants">
@@ -169,8 +162,14 @@
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.PantsMetadataService"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.components.PantsProjectCache"/>
   </extensions>
+  <applicationListeners>
+    <listener class="com.twitter.intellij.pants.components.impl.PantsProjectComponentImpl"
+              topic="com.intellij.openapi.project.ProjectManagerListener"/>
+  </applicationListeners>
   <projectListeners>
     <listener class="com.twitter.intellij.pants.execution.SetJarManifestCommandLineShortener"
               topic="com.intellij.execution.RunManagerListener"/>
+    <listener class="com.twitter.intellij.pants.metrics.LivePantsMetrics"
+              topic="com.intellij.openapi.project.DumbService$DumbModeListener"/>
   </projectListeners>
 </idea-plugin>

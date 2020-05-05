@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.ui;
 
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
@@ -16,12 +17,11 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import icons.PantsIcons;
 import org.jetbrains.annotations.TestOnly;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 public class PantsConsoleManager {
-  private static ConcurrentHashMap<Project, ConsoleView> mapper = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<Project, ConsoleView> mapper = new ConcurrentHashMap<>();
 
   public static void registerConsole(Project project) {
     // Create the toolWindow
@@ -53,12 +53,11 @@ public class PantsConsoleManager {
    * @return Pants ConsoleView for the project
    */
   public static ConsoleView getOrMakeNewConsole(Project project) {
-    ConsoleView console = mapper.get(project);
-    if (console != null) {
-      return console;
-    }
+    return mapper.computeIfAbsent(project, PantsConsoleManager::createNewConsole);
+  }
+
+  private static ConsoleView createNewConsole(Project project) {
     ConsoleView newConsole = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-    mapper.put(project, newConsole);
     Disposer.register(project, newConsole);
     return newConsole;
   }
@@ -77,8 +76,6 @@ public class PantsConsoleManager {
    */
   @TestOnly
   public static void disposeAll() {
-    for (Map.Entry<Project, ConsoleView> entrySet : mapper.entrySet()) {
-      entrySet.getValue().dispose();
-    }
+    mapper.values().forEach(Disposable::dispose);
   }
 }
