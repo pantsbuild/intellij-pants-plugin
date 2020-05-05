@@ -11,12 +11,15 @@ import com.intellij.notification.NotificationDisplayType;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -46,7 +49,7 @@ public class FastpassUpdater {
   public static final String FASTPASS_PATH = "/opt/twitter_mde/bin/fastpass";
   public static final String BLOOP_PATH = "/opt/twitter_mde/bin/bloop";
 
-  private static final String NOTIFICATION_TITLE = "Fastpass version changed";
+  private static final String NOTIFICATION_TITLE = "Fastpass update available";
   public static final String NOTIFICATION_HREF = "fastpass-update";
 
   private static boolean initialized = false;
@@ -58,9 +61,46 @@ public class FastpassUpdater {
   private static class FastpassData {
     public String version;
     public String projectName;
+
     public FastpassData(String version, String projectName) {
       this.version = version;
       this.projectName = projectName;
+    }
+  }
+
+  public static final class Action extends AnAction {
+
+    public static final String DIALOG_TITLE = "Fastpass Update";
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+      boolean show = fastpassBinaryExists();
+      e.getPresentation().setEnabledAndVisible(show);
+    }
+
+    @Override
+    public void actionPerformed(@NotNull AnActionEvent e) {
+      Project project = e.getProject();
+      if (fastpassBinaryExists()) {
+        systemVersion(FASTPASS_PATH)
+          .ifPresent(systemVersion -> extractFastpassData(project)
+            .ifPresent(data -> {
+              if (!data.version.equals(systemVersion)) {
+                String message = "Do you want to update fastpass to version: " + systemVersion + "?";
+                int answer = Messages.showYesNoDialog(project, message, DIALOG_TITLE, null);
+                if (answer == Messages.YES) {
+                  updateFastpassVersion(project, data);
+                }
+              } else {
+                Messages.showInfoMessage(project, "Fastpass is already up to date", DIALOG_TITLE);
+              }
+            }));
+      }
+    }
+
+    private boolean fastpassBinaryExists() {
+      VirtualFile fastpassBinary = LocalFileSystem.getInstance().findFileByPath(FASTPASS_PATH);
+      return fastpassBinary != null && fastpassBinary.exists();
     }
   }
 
@@ -69,7 +109,11 @@ public class FastpassUpdater {
       synchronized (FastpassUpdater.class) {
         if (!initialized) {
           ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
-          timer.scheduleWithFixedDelay(FastpassUpdater::checkForFastpassUpdates, 1, 60, TimeUnit.MINUTES);
+          TimeUnit timeUnit = TimeUnit.SECONDS;
+          timer.scheduleWithFixedDelay(FastpassUpdater::checkForFastpassUpdates,
+                                       timeUnit.convert(1, TimeUnit.MINUTES),
+                                       timeUnit.convert(1, TimeUnit.DAYS),
+                                       timeUnit);
           initialized = true;
         }
       }
@@ -136,7 +180,8 @@ public class FastpassUpdater {
   private static void exitBloop() {
     try {
       new ProcessBuilder(BLOOP_PATH, "exit").start().waitFor();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       LOG.warn(e);
     }
   }
@@ -154,7 +199,8 @@ public class FastpassUpdater {
       Process refresh = commandLine.createProcess();
       refresh.waitFor();
       return refresh.exitValue() == 0;
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       LOG.warn(e);
       return false;
     }
