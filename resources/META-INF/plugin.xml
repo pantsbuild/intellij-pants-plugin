@@ -161,6 +161,7 @@
     <externalSystemNotificationExtension implementation="com.twitter.intellij.pants.notification.PantsNotificationCustomizer"/>
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.PantsMetadataService"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.components.PantsProjectCache"/>
+    <projectService serviceImplementation="com.twitter.intellij.pants.ui.PantsConsoleManager"/>
   </extensions>
   <applicationListeners>
     <listener class="com.twitter.intellij.pants.components.impl.PantsProjectComponentImpl"

@@ -26,7 +26,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
-import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -120,7 +119,6 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightJavaCodeInsig
         }
       );
     }
-    PantsConsoleManager.disposeAll();
     super.tearDown();
   }
 

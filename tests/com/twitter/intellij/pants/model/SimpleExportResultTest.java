@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.model;
 
 import com.intellij.testFramework.LightPlatformTestCase;
-import com.twitter.intellij.pants.ui.PantsConsoleManager;
 
 public class SimpleExportResultTest extends LightPlatformTestCase {
 
@@ -198,11 +197,5 @@ public class SimpleExportResultTest extends LightPlatformTestCase {
     // (DistributionLocator.cached().version 1.8) does not correspond to any platform
     // as far as this plugin is concerned.
     assertFalse(exportResult.getJdkHome(STRICT).isPresent());
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    PantsConsoleManager.disposeAll();
-    super.tearDown();
   }
 }

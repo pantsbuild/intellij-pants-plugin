@@ -359,7 +359,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       @Override
       public void run() {
         /* Clear message window. */
-        ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
+        ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
         executionConsole.getComponent().setVisible(true);
         executionConsole.clear();
         ToolWindowManagerEx.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
@@ -399,7 +399,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
 
   private void showPantsMakeTaskMessage(String message, ConsoleViewContentType type, Project project) {
-    ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
+    ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
     // Create a filter that monitors console outputs, and turns them into a hyperlink if applicable.
     Filter filter = new Filter() {
       @Nullable

@@ -5,7 +5,7 @@ package com.twitter.intellij.pants.ui;
 
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.ui.ConsoleView;
-import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
@@ -15,16 +15,27 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.twitter.intellij.pants.util.PantsConstants;
 import icons.PantsIcons;
-import org.jetbrains.annotations.TestOnly;
-
-import java.util.concurrent.ConcurrentHashMap;
-
 
 public class PantsConsoleManager {
-  private static final ConcurrentHashMap<Project, ConsoleView> mapper = new ConcurrentHashMap<>();
+  private final ConsoleView myConsole;
 
-  public static void registerConsole(Project project) {
-    // Create the toolWindow
+  public PantsConsoleManager(Project project) {
+    myConsole = createNewConsole(project);
+
+    Disposer.register(project, myConsole); // for some reason extending Disposable results in leaked resources
+    initializeConsolePanel(project, myConsole);
+  }
+
+  private static ConsoleView createNewConsole(Project project) {
+    return TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+  }
+
+  public static ConsoleView getConsole(Project project) {
+    PantsConsoleManager service = ServiceManager.getService(project, PantsConsoleManager.class);
+    return service.getConsole();
+  }
+
+  private static void initializeConsolePanel(Project project, ConsoleView console) {
     ToolWindow window =
       ToolWindowManager.getInstance(project).registerToolWindow(
         PantsConstants.PANTS_CONSOLE_NAME,
@@ -36,8 +47,7 @@ public class PantsConsoleManager {
 
     window.setIcon(PantsIcons.Icon);
 
-    // Have the toolWindow contain the view panel.
-    PantsConsoleViewPanel pantsConsoleViewPanel = new PantsConsoleViewPanel(project);
+    PantsConsoleViewPanel pantsConsoleViewPanel = new PantsConsoleViewPanel(project, console);
     final boolean isLockable = true;
     final String displayName = "";
     Content pantsConsoleContent = ContentFactory.SERVICE.getInstance().createContent(pantsConsoleViewPanel, displayName, isLockable);
@@ -45,37 +55,7 @@ public class PantsConsoleManager {
     window.getContentManager().addContent(pantsConsoleContent);
   }
 
-  /**
-   * Creates a `ConsoleView` for the current project, and register it under `PantsConsole` tool window,
-   * or just retrieve one if there is already one registered.
-   *
-   * @param project current project
-   * @return Pants ConsoleView for the project
-   */
-  public static ConsoleView getOrMakeNewConsole(Project project) {
-    return mapper.computeIfAbsent(project, PantsConsoleManager::createNewConsole);
-  }
-
-  private static ConsoleView createNewConsole(Project project) {
-    ConsoleView newConsole = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-    Disposer.register(project, newConsole);
-    return newConsole;
-  }
-
-  /**
-   * Close the console for a project.
-   *
-   * @param project current project
-   */
-  public static void unregisterConsole(Project project) {
-    mapper.remove(project);
-  }
-
-  /**
-   * TestOnly because some test library is not tearing down properly.
-   */
-  @TestOnly
-  public static void disposeAll() {
-    mapper.values().forEach(Disposable::dispose);
+  public ConsoleView getConsole() {
+    return myConsole;
   }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 package com.twitter.intellij.pants.ui;
 
+import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeBundle;
@@ -49,8 +50,7 @@ public class PantsConsoleViewPanel extends JPanel {
 
   private final AutoScrollToSourceHandler myAutoScrollToSourceHandler;
 
-
-  public PantsConsoleViewPanel(Project project) {
+  public PantsConsoleViewPanel(Project project, ConsoleView console) {
     myProject = project;
     myConfiguration = ErrorTreeViewConfiguration.getInstance(project);
     setLayout(new BorderLayout());
@@ -83,7 +83,7 @@ public class PantsConsoleViewPanel extends JPanel {
 
     JScrollPane scrollPane = NewErrorTreeRenderer.install(myTree);
     scrollPane.setBorder(IdeBorderFactory.createBorder(SideBorder.LEFT));
-    myMessagePanel.add(PantsConsoleManager.getOrMakeNewConsole(myProject).getComponent(), BorderLayout.CENTER);
+    myMessagePanel.add(console.getComponent(), BorderLayout.CENTER);
 
     add(createToolbarPanel(), BorderLayout.WEST);
 
@@ -111,7 +111,7 @@ public class PantsConsoleViewPanel extends JPanel {
     @Override
     public void actionPerformed(AnActionEvent e) {
       PantsMakeBeforeRun.terminatePantsProcess(e.getProject());
-      PantsConsoleManager.getOrMakeNewConsole(e.getProject()).print(PantsBundle.message("pants.command.terminated"), ConsoleViewContentType.ERROR_OUTPUT);
+      PantsConsoleManager.getConsole(e.getProject()).print(PantsBundle.message("pants.command.terminated"), ConsoleViewContentType.ERROR_OUTPUT);
     }
 
     @Override

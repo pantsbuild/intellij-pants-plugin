@@ -36,7 +36,6 @@ import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.settings.PantsSettings;
-import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -53,13 +52,11 @@ public class PantsProjectComponentImpl implements ProjectManagerListener {
   public void projectClosed(@NotNull Project project) {
     PantsMetrics.report();
     FileChangeTracker.unregisterProject(project);
-    PantsConsoleManager.unregisterConsole(project);
   }
 
   @Override
   public void projectOpened(@NotNull Project project) {
     PantsMetrics.initialize();
-    PantsConsoleManager.registerConsole(project);
     if (PantsUtil.isPantsProject(project)) {
       // projectOpened() is called on the dispatch thread, while
       // addPantsProjectIgnoreDirs() calls an external process,
