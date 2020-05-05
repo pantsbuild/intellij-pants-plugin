@@ -63,6 +63,20 @@ public class PantsTargetAddress {
     }
   }
 
+  public static Optional<PantsTargetAddress> tryParse(String s) {
+    String[] strings = s.split(":");
+
+    if (strings.length == 2) {
+      return Optional.of(new PantsTargetAddress(Paths.get(strings[0]), AddressKind.SINGLE_TARGET, Optional.of(strings[1])));
+    } else if (s.endsWith("::")) {
+      return Optional.of(new PantsTargetAddress(Paths.get(strings[0]), AddressKind.ALL_TARGETS_DEEP, Optional.empty()));
+    } else if (s.endsWith(":")) {
+      return Optional.of(new PantsTargetAddress(Paths.get(strings[0]), AddressKind.ALL_TARGETS_FLAT, Optional.empty()));
+    } else {
+      return Optional.empty();
+    }
+  }
+
   public Path getPath() {
     return myPath;
   }
