@@ -31,26 +31,18 @@ public class TargetsPreview extends JPanel {
   }
 
 
-  public void updatePreview (Set<PantsTargetAddress> addresses,
-                             Function<PantsTargetAddress, CompletableFuture<Collection<PantsTargetAddress>>> expand)
-    throws InterruptedException, ExecutionException {
+  public void updatePreview (Set<PantsTargetAddress> addresses)
+     {
     preview.setText("Loading...");
     this.addresses = addresses;
-    List<CompletableFuture<Collection<PantsTargetAddress>>> futures =
-      addresses.stream().map(expand::apply).collect(Collectors.toList());
 
-    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((value, error) -> {
-      String newPreviewValue = futures.stream()
-        .map(CompletableFuture::join)
-        .flatMap(Collection::stream)
-        .map(PantsTargetAddress::toAddressString)
-        .sorted()
-        .collect(Collectors.joining("\n")) + "\n";
-      SwingUtilities.invokeLater(() -> {
-        if(this.addresses == addresses) {
-          preview.setText(newPreviewValue);
-        }
-      });
-    });
+    String newText =
+      addresses
+      .stream()
+      .map(PantsTargetAddress::toAddressString)
+      .sorted()
+      .collect(Collectors.joining("\n"));
+    preview.setText(newText);
+
   }
 }

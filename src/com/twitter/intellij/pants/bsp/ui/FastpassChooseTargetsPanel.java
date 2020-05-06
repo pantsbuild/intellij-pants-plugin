@@ -13,6 +13,7 @@ import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.processing.Completion;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,6 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,6 +44,7 @@ class FastpassChooseTargetsPanel extends JPanel {
   private final JLabel statusLabel;
   private final TargetsPreview preview;
   Logger logger = Logger.getInstance(FastpassChooseTargetsPanel.class);
+  private Set<String> targetString;
 
 
   public FastpassChooseTargetsPanel(
@@ -69,7 +72,6 @@ class FastpassChooseTargetsPanel extends JPanel {
     editor.setText(importedTargets.stream().map(PantsTargetAddress::toAddressString).collect(Collectors.joining("\n")));
     try {
       validateItems(selectedTargetStrings());
-      preview.updatePreview(mySelectedTargets, this::mapToSingleTarget);
     } catch (Throwable e) {
       logger.error(e);
     }
@@ -89,7 +91,6 @@ class FastpassChooseTargetsPanel extends JPanel {
         try {
           mySelectedTargetStrings = selectedTargetStrings();
           validateItems(selectedTargetStrings());
-          preview.updatePreview(mySelectedTargets, x -> mapToSingleTarget(x));
         } catch (Throwable ex){
           logger.error(ex);
         }
@@ -154,63 +155,90 @@ class FastpassChooseTargetsPanel extends JPanel {
     return mySelectedTargets;
   }
 
-  private void validateItems(Collection<String> targetString) throws ExecutionException, InterruptedException {
+  CompletableFuture<Collection<PantsTargetAddress>> validateAndGetDetails(String targetString) {
+    Optional<PantsTargetAddress> pantsTarget  = PantsTargetAddress.tryParse(targetString);
+    if(!pantsTarget.isPresent()) {
+      return failedFuture(new InvalidTargetException(targetString, "Malformed address"));
+    }
+
+    if(resolvePathToFile(pantsTarget.get().getPath()) == null) {
+      return failedFuture(new InvalidTargetException(targetString, "No such folder"));
+    }
+
+    if(pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.ALL_TARGETS_DEEP ||
+       pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.ALL_TARGETS_FLAT ) {
+      return mapToSingleTarget(pantsTarget.get());
+    }else {
+      Path path = pantsTarget.get().getPath();
+      VirtualFile file = resolvePathToFile(path);
+      CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
+      return fut.thenApply(targets-> {
+        if(targets.stream().noneMatch(target -> Objects.equals(target, pantsTarget.get()))) {
+          throw new CompletionException(new InvalidTargetException(pantsTarget.toString(), "No such target"));
+        } else {
+          return Collections.singletonList(pantsTarget.get());
+        }
+      });
+    }
+  }
+
+  @NotNull
+  private CompletableFuture<Collection<PantsTargetAddress>> failedFuture(InvalidTargetException ex) {
+    return CompletableFuture.supplyAsync(() ->
+                                             {
+                                               throw new CompletionException(ex);
+                                             });
+  }
+
+  private void validateItems(Set<String> targetString) {
     statusLabel.setText("Validating");
 
-    List<Optional<PantsTargetAddress>> targets = targetString.stream().map(PantsTargetAddress::tryParse).collect(Collectors.toList());
+    this.targetString = targetString;
 
-    for(String line: selectedTargetStrings()) {
-      Optional<PantsTargetAddress> pantsTarget  = PantsTargetAddress.tryParse(line);
-      if(!pantsTarget.isPresent()) {
-        statusLabel.setText("Malformed address: " + line);
-        return;
-      } else if(resolvePathToFile(pantsTarget.get().getPath()) == null) {
-        statusLabel.setText("No such folder:" + line);
-        return;
-      } else if (pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.SINGLE_TARGET) {
-        Path path = pantsTarget.get().getPath();
-        VirtualFile file = resolvePathToFile(path);
-        CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
-        if(fut.isDone()) {
-          if(fut.get().stream().noneMatch(x -> Objects.equals(x, pantsTarget.get()))) {
-            statusLabel.setText("No such target in path: " + pantsTarget.get().toAddressString());
-            return;
+    List<CompletableFuture<Collection<PantsTargetAddress>>> futures =
+      targetString.stream().map(x -> validateAndGetDetails(x)).collect(Collectors.toList());
+
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete(
+      (value, error ) ->{
+        SwingUtilities.invokeLater(() -> {
+          if(this.targetString == targetString){
+            if (error == null) {
+              Set<PantsTargetAddress> toPreview = futures.stream().flatMap(x -> x.join().stream()).collect(Collectors.toSet());
+              preview.updatePreview(toPreview);
+              statusLabel.setText("Valid");
+            }
+            else {
+              if (error instanceof CompletionException) {
+                statusLabel.setText(((CompletionException) error).getCause().getMessage());
+              }
+              else {
+                statusLabel.setText("Invalid");
+              }
+            }
           }
-        } else {
-          statusLabel.setText("Fetching targets: " + pantsTarget.get().toAddressString());
-          fut.whenComplete((value, error) ->
-                             SwingUtilities.invokeLater(() -> {
-                               if (error == null) {
-                                 try {
-                                   validateItems(selectedTargetStrings());
-                                 } catch (Throwable e ){
-                                   logger.error(e);
-                                 }
-                               }
-                             }));
-          return;
-        }
+        });
       }
-      if(resolvePathToFile(pantsTarget.get().getPath()) != null) {
-        VirtualFile file = resolvePathToFile(pantsTarget.get().getPath());
-        myTargetsListFetcher.apply(file);
-      }
-    }
-    mySelectedTargets = targets.stream().map(x -> x.get()).collect(Collectors.toSet());
-    statusLabel.setText("Valid");
+    );
+
+
   }
 
   private VirtualFile resolvePathToFile(Path path) {
     return myImportData.getPantsRoot().findFileByRelativePath(path.toString());
   }
 
-  class InvalidTargetException extends Throwable {
-    private String myTargetString;
-    private String myMessage;
+  static class InvalidTargetException extends Throwable {
+    private final String myTargetString;
+    private final String myMessage;
 
     InvalidTargetException(String targetString, String message) {
       myTargetString = targetString;
       myMessage = message;
+    }
+
+    @Override
+    public String getMessage() {
+      return "[" + myTargetString + "]:" + myMessage;
     }
   }
 
@@ -222,10 +250,9 @@ class FastpassChooseTargetsPanel extends JPanel {
       case ALL_TARGETS_DEEP: {
         return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()));
       }
-      case ALL_TARGETS_FLAT: {
-        return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()))
+      case ALL_TARGETS_FLAT: { return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()))
           .thenApply(x -> x.stream()
-            .filter(t -> t.getPath() == targetAddress.getPath())
+            .filter(t -> t.getPath().equals(targetAddress.getPath()))
             .collect(Collectors.toSet()));
       }
     }
