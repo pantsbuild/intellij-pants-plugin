@@ -68,7 +68,7 @@ class FastpassChooseTargetsPanel extends JPanel {
     editor.setAlignmentX(Component.LEFT_ALIGNMENT);
     editor.setText(importedTargets.stream().map(PantsTargetAddress::toAddressString).collect(Collectors.joining("\n")));
     try {
-      validateItems();
+      validateItems(selectedTargetStrings());
       preview.updatePreview(mySelectedTargets, this::mapToSingleTarget);
     } catch (Throwable e) {
       logger.error(e);
@@ -88,7 +88,7 @@ class FastpassChooseTargetsPanel extends JPanel {
       public void keyReleased(KeyEvent e) {
         try {
           mySelectedTargetStrings = selectedTargetStrings();
-          validateItems();
+          validateItems(selectedTargetStrings());
           preview.updatePreview(mySelectedTargets, x -> mapToSingleTarget(x));
         } catch (Throwable ex){
           logger.error(ex);
@@ -154,10 +154,10 @@ class FastpassChooseTargetsPanel extends JPanel {
     return mySelectedTargets;
   }
 
-  private void validateItems() throws ExecutionException, InterruptedException {
+  private void validateItems(Collection<String> targetString) throws ExecutionException, InterruptedException {
     statusLabel.setText("Validating");
 
-    List<Optional<PantsTargetAddress>> targets = selectedTargetStrings().stream().map(PantsTargetAddress::tryParse).collect(Collectors.toList());
+    List<Optional<PantsTargetAddress>> targets = targetString.stream().map(PantsTargetAddress::tryParse).collect(Collectors.toList());
 
     for(String line: selectedTargetStrings()) {
       Optional<PantsTargetAddress> pantsTarget  = PantsTargetAddress.tryParse(line);
@@ -182,7 +182,7 @@ class FastpassChooseTargetsPanel extends JPanel {
                              SwingUtilities.invokeLater(() -> {
                                if (error == null) {
                                  try {
-                                   validateItems();
+                                   validateItems(selectedTargetStrings());
                                  } catch (Throwable e ){
                                    logger.error(e);
                                  }
@@ -204,14 +204,30 @@ class FastpassChooseTargetsPanel extends JPanel {
     return myImportData.getPantsRoot().findFileByRelativePath(path.toString());
   }
 
+  class InvalidTargetException extends Throwable {
+    private String myTargetString;
+    private String myMessage;
+
+    InvalidTargetException(String targetString, String message) {
+      myTargetString = targetString;
+      myMessage = message;
+    }
+  }
+
   CompletableFuture<Collection<PantsTargetAddress>> mapToSingleTarget(PantsTargetAddress targetAddress) {
     switch (targetAddress.getKind()){
-      case SINGLE_TARGET: return CompletableFuture.completedFuture(Collections.singletonList(targetAddress));
-      case ALL_TARGETS_DEEP: return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()));
-      case ALL_TARGETS_FLAT: return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()))
-        .thenApply(x -> x.stream()
-          .filter(t -> t.getPath() == targetAddress.getPath())
-          .collect(Collectors.toSet()));  // todo handle flat
+      case SINGLE_TARGET: {
+        return CompletableFuture.completedFuture(Collections.singletonList(targetAddress));
+      }
+      case ALL_TARGETS_DEEP: {
+        return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()));
+      }
+      case ALL_TARGETS_FLAT: {
+        return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()))
+          .thenApply(x -> x.stream()
+            .filter(t -> t.getPath() == targetAddress.getPath())
+            .collect(Collectors.toSet()));
+      }
     }
     return null; // todo no null
   }
