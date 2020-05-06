@@ -126,6 +126,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <attachSourcesProvider implementation="com.twitter.intellij.pants.bsp.SourceJarGenerator"/>
     <macro implementation="com.twitter.intellij.pants.macro.FilePathRelativeToBuiltRootMacro"/>
     <localInspection bundle="com.twitter.intellij.pants.PantsBundle" key="pants.info.python.plugin.missing"
                      groupName="Pants" enabledByDefault="true"
