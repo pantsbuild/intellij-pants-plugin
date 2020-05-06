@@ -11,6 +11,7 @@ import com.intellij.util.ui.JBUI;
 import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
 import org.jetbrains.annotations.NotNull;
+import scala.reflect.internal.Trees;
 
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -150,16 +151,27 @@ class FastpassChooseTargetsPanel extends JPanel {
       } else if (pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.SINGLE_TARGET) {
 
         VirtualFile file = myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString());
-        if(myTargetsListFetcher.apply(file).isDone()) {
-          if(!myTargetsListFetcher.apply(file).get().stream().anyMatch(x -> Objects.equals(x, pantsTarget.get()))) {
+        CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
+        if(fut.isDone()) {
+          if(!fut.get().stream().anyMatch(x -> Objects.equals(x, pantsTarget.get()))) {
             statusLabel.setText("No such target in path: " + pantsTarget.get().toAddressString());
             return;
           }
-        }else {
+        } else {
           statusLabel.setText("Fetching targets: " + pantsTarget.get().toAddressString());
+          fut.whenComplete((value, error) -> {
+            SwingUtilities.invokeLater(() -> {
+            if (error == null) {
+              try {
+                validateItems();
+              } catch (Throwable e ){
+                logger.error(e);
+              }
+            }
+            });
+          });
           return;
         }
-
       }
     }
     mySelectedTargets = targets.stream().map(x -> x.get()).collect(Collectors.toSet());
