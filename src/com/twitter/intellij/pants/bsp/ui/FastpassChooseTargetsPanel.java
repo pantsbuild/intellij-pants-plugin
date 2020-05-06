@@ -196,7 +196,8 @@ class FastpassChooseTargetsPanel extends JPanel {
     switch (targetAddress.getKind()){
       case SINGLE_TARGET: return CompletableFuture.completedFuture(Collections.singletonList(targetAddress));
       case ALL_TARGETS_DEEP: return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()));
-      case ALL_TARGETS_FLAT: return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()));  // todo handle flat
+      case ALL_TARGETS_FLAT: return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath())).thenApply(x -> x.stream().filter(t -> t.getPath() == targetAddress.getPath()).collect(
+        Collectors.toSet()));  // todo handle flat
     }
     return null;
   }

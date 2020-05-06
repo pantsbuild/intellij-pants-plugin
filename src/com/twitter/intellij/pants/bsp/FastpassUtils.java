@@ -146,7 +146,7 @@ final public class FastpassUtils {
             Process process = cmd.createProcess();
             String stdout = toString(process.getInputStream());
             String[] list = stdout.equals("") ? new String[]{} : stdout.split("\n");
-            return Stream.of(list).map(x -> PantsTargetAddress.fromString(x)).collect(Collectors.toSet());
+            return Stream.of(list).map(PantsTargetAddress::fromString).collect(Collectors.toSet());
           } catch (Throwable e) {
             throw new CompletionException(e);
           }
