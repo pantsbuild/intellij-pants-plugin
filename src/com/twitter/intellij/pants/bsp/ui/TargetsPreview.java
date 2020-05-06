@@ -41,7 +41,7 @@ public class TargetsPreview extends JPanel {
       .stream()
       .map(PantsTargetAddress::toAddressString)
       .sorted()
-      .collect(Collectors.joining("\n"));
+      .collect(Collectors.joining("\n")) + "\n";
     preview.setText(newText);
 
   }

@@ -21,6 +21,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
+import java.awt.GridLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.nio.file.Path;
@@ -100,7 +101,7 @@ class FastpassChooseTargetsPanel extends JPanel {
     this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
     JPanel northPanel = new JPanel();
-    northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.LINE_AXIS));
+    northPanel.setLayout(new GridLayout(0, 2));
 
     JPanel southPanel = new JPanel();
     southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.LINE_AXIS));
@@ -111,8 +112,8 @@ class FastpassChooseTargetsPanel extends JPanel {
     northPanel.add(new JScrollPane(editorPanel));
     northPanel.add(new JScrollPane(preview));
     southPanel.add(statusLabel);
-    southPanel.setAlignmentY(LEFT_ALIGNMENT);
-    mainPanel.setAlignmentY(LEFT_ALIGNMENT);
+    southPanel.setAlignmentX(LEFT_ALIGNMENT);
+    mainPanel.setAlignmentX(LEFT_ALIGNMENT);
     statusLabel.setAlignmentX(LEFT_ALIGNMENT);
     southPanel.setAlignmentX(LEFT_ALIGNMENT);
 
