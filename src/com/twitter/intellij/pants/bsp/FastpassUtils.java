@@ -3,6 +3,8 @@
 
 package com.twitter.intellij.pants.bsp;
 
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.module.Module;
@@ -13,6 +15,7 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -69,20 +72,18 @@ final public class FastpassUtils {
     });
   }
 
-  public static CompletableFuture<Set<PantsTargetAddress>> selectedTargets(PantsBspData basePath, Project project)
-    throws IOException, ExecutionException {
-        GeneralCommandLine fastpassCommand = makeFastpassCommand(
-          project, Arrays.asList("info", basePath.getBspPath().getFileName().toString()));
-        Process process = fastpassProcess(fastpassCommand, basePath.getBspPath().getParent(), Paths.get(basePath.getPantsRoot().getPath()));
-        return onExit(process).thenApply(finishedProcess -> {
-          try {
-            String stdout = toString(finishedProcess.getInputStream());
-            String[] list = stdout.equals("") ? new String[]{} : stdout.split("\n");
-            return Stream.of(list).map(PantsTargetAddress::fromString).collect(Collectors.toSet());
-          } catch (Throwable e) {
-            throw new CompletionException(e);
-          }
-        });
+  public static CompletableFuture<Set<PantsTargetAddress>> selectedTargets(PantsBspData basePath, Project project) {
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        JsonReader reader = new JsonReader(new FileReader(basePath.getBspPath().resolve(Paths.get(".bsp", "bloop.json")).toFile()));
+        Gson gson = new Gson();
+        BloopConfig res = gson.fromJson(reader, BloopConfig.class);
+        return res.getPantsTargets().stream().map(PantsTargetAddress::fromString).collect(Collectors.toSet());
+      }
+      catch (Throwable e) {
+        throw new CompletionException(e);
+      }
+    });
   }
 
 

@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.bsp.ui;
 
-import com.intellij.ui.JBColor;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
 
 import javax.swing.BoxLayout;
@@ -33,7 +32,8 @@ public class TargetsPreview extends JPanel {
 
 
   public void updatePreview (Set<PantsTargetAddress> addresses,
-                      Function<PantsTargetAddress, CompletableFuture<Collection<PantsTargetAddress>>> expand) throws InterruptedException, ExecutionException {
+                             Function<PantsTargetAddress, CompletableFuture<Collection<PantsTargetAddress>>> expand)
+    throws InterruptedException, ExecutionException {
     preview.setText("Loading...");
     this.addresses = addresses;
     List<CompletableFuture<Collection<PantsTargetAddress>>> futures =
@@ -45,7 +45,7 @@ public class TargetsPreview extends JPanel {
         .flatMap(Collection::stream)
         .map(PantsTargetAddress::toAddressString)
         .sorted()
-        .collect(Collectors.joining("\n"));
+        .collect(Collectors.joining("\n")) + "\n";
       SwingUtilities.invokeLater(() -> {
         if(this.addresses == addresses) {
           preview.setText(newPreviewValue);
