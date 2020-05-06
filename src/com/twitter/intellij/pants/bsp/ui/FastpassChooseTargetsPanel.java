@@ -78,14 +78,10 @@ class FastpassChooseTargetsPanel extends JPanel {
     }
     editor.addKeyListener(new KeyListener() {
       @Override
-      public void keyTyped(KeyEvent e) {
-
-      }
+      public void keyTyped(KeyEvent e) {}
 
       @Override
-      public void keyPressed(KeyEvent e) {
-
-      }
+      public void keyPressed(KeyEvent e) {}
 
       @Override
       public void keyReleased(KeyEvent e) {
@@ -112,11 +108,12 @@ class FastpassChooseTargetsPanel extends JPanel {
     northPanel.add(new JScrollPane(editorPanel));
     northPanel.add(new JScrollPane(preview));
     southPanel.add(statusLabel);
+
     southPanel.setAlignmentX(LEFT_ALIGNMENT);
     mainPanel.setAlignmentX(LEFT_ALIGNMENT);
     statusLabel.setAlignmentX(LEFT_ALIGNMENT);
+    northPanel.setAlignmentX(LEFT_ALIGNMENT);
     southPanel.setAlignmentX(LEFT_ALIGNMENT);
-
 
     mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.PAGE_AXIS));
     mainPanel.add(northPanel);
@@ -192,6 +189,7 @@ class FastpassChooseTargetsPanel extends JPanel {
   }
 
   private void validateItems(Set<String> targetString) {
+    preview.setLoading();
     statusLabel.setText("Validating");
 
     this.targetString = targetString;
@@ -209,11 +207,13 @@ class FastpassChooseTargetsPanel extends JPanel {
               statusLabel.setText("Valid");
             }
             else {
+              preview.setError();
               if (error instanceof CompletionException) {
                 statusLabel.setText(((CompletionException) error).getCause().getMessage());
               }
               else {
                 statusLabel.setText("Invalid");
+                logger.error(error);
               }
             }
           }

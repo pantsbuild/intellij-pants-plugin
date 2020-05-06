@@ -30,6 +30,13 @@ public class TargetsPreview extends JPanel {
     this.add(preview);
   }
 
+  public void setError() {
+    preview.setText("Error");
+  }
+
+  public void setLoading() {
+    preview.setText("Loading...");
+  }
 
   public void updatePreview (Set<PantsTargetAddress> addresses)
      {
