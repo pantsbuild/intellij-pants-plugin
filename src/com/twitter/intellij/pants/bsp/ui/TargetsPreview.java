@@ -12,6 +12,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -19,11 +20,11 @@ import java.util.stream.Collectors;
 
 public class TargetsPreview extends JPanel {
   private final JTextArea preview;
+  private Set<PantsTargetAddress> addresses;
 
   public TargetsPreview() {
     preview = new JTextArea();
     preview.setAlignmentX(JTextArea.LEFT_ALIGNMENT);
-    preview.setBackground(JBColor.lightGray);
     preview.setEnabled(false);
 
     this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -31,9 +32,10 @@ public class TargetsPreview extends JPanel {
   }
 
 
-  public void updatePreview (Collection<PantsTargetAddress> addresses,
+  public void updatePreview (Set<PantsTargetAddress> addresses,
                       Function<PantsTargetAddress, CompletableFuture<Collection<PantsTargetAddress>>> expand) throws InterruptedException, ExecutionException {
     preview.setText("Loading...");
+    this.addresses = addresses;
     List<CompletableFuture<Collection<PantsTargetAddress>>> futures =
       addresses.stream().map(expand::apply).collect(Collectors.toList());
 
@@ -45,7 +47,9 @@ public class TargetsPreview extends JPanel {
         .sorted()
         .collect(Collectors.joining("\n"));
       SwingUtilities.invokeLater(() -> {
-        preview.setText(newPreviewValue); // todo handle instant changes
+        if(this.addresses == addresses) {
+          preview.setText(newPreviewValue);
+        }
       });
     });
   }

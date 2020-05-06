@@ -7,7 +7,7 @@ package com.twitter.intellij.pants.bsp.ui;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.JBColor;
+import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.util.ui.JBUI;
 import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
@@ -16,9 +16,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import java.awt.GridLayout;
+import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.nio.file.Path;
@@ -63,8 +64,8 @@ class FastpassChooseTargetsPanel extends JPanel {
 
     preview = new TargetsPreview();
 
-    editor = new JTextArea(); // todo jscroll for editor
-    editor.setPreferredSize(JBUI.size(200, 200));
+    editor = new JTextArea();
+    editor.setAlignmentX(Component.LEFT_ALIGNMENT);
     editor.setText(importedTargets.stream().map(PantsTargetAddress::toAddressString).collect(Collectors.joining("\n")));
     try {
       validateItems();
@@ -103,12 +104,13 @@ class FastpassChooseTargetsPanel extends JPanel {
     JPanel southPanel = new JPanel();
     southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.LINE_AXIS));
 
-    northPanel.add(editor);;
-    northPanel.add(preview);
-
+    JPanel editorPanel = new JPanel();
+    editorPanel.setLayout(new BoxLayout(editorPanel, BoxLayout.PAGE_AXIS));
+    editorPanel.add(editor);
+    northPanel.add(new JScrollPane(editorPanel));
+    northPanel.add(new JScrollPane(preview));
     southPanel.add(statusLabel);
-
-    this.setAlignmentY(LEFT_ALIGNMENT);
+    southPanel.setAlignmentY(LEFT_ALIGNMENT);
     mainPanel.setAlignmentY(LEFT_ALIGNMENT);
     statusLabel.setAlignmentX(LEFT_ALIGNMENT);
     southPanel.setAlignmentX(LEFT_ALIGNMENT);
