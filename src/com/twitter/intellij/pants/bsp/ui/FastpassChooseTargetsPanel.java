@@ -18,12 +18,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.GridLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,8 +56,6 @@ class FastpassChooseTargetsPanel extends JPanel {
     myTargetsListFetcher = targetsListFetcher;
 
     mainPanel = new JPanel();
-    mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-    mainPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
     statusLabel = new JLabel();
     statusLabel.setText(" ");
@@ -98,17 +94,31 @@ class FastpassChooseTargetsPanel extends JPanel {
         }
       }
     });
-    mainPanel.add(editor);
-    mainPanel.add(preview);
-    mainPanel.add(statusLabel);
 
-    editor.setAlignmentX(JTextArea.LEFT_ALIGNMENT);
-    preview.setAlignmentX(JTextArea.LEFT_ALIGNMENT);
-    statusLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+    this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
+    JPanel northPanel = new JPanel();
+    northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.LINE_AXIS));
+
+    JPanel southPanel = new JPanel();
+    southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.LINE_AXIS));
+
+    northPanel.add(editor);;
+    northPanel.add(preview);
+
+    southPanel.add(statusLabel);
+
+    this.setAlignmentY(LEFT_ALIGNMENT);
+    mainPanel.setAlignmentY(LEFT_ALIGNMENT);
+    statusLabel.setAlignmentX(LEFT_ALIGNMENT);
+    southPanel.setAlignmentX(LEFT_ALIGNMENT);
 
 
-    this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-    this.setAlignmentX(Component.LEFT_ALIGNMENT);
+    mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.PAGE_AXIS));
+    mainPanel.add(northPanel);
+    mainPanel.add(southPanel);
+
+
     this.add(mainPanel);
   }
 

@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.bsp.ui;
 import com.intellij.ui.JBColor;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
 
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
@@ -13,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -26,6 +26,7 @@ public class TargetsPreview extends JPanel {
     preview.setBackground(JBColor.lightGray);
     preview.setEnabled(false);
 
+    this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     this.add(preview);
   }
 
@@ -36,7 +37,7 @@ public class TargetsPreview extends JPanel {
     List<CompletableFuture<Collection<PantsTargetAddress>>> futures =
       addresses.stream().map(expand::apply).collect(Collectors.toList());
 
-    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((value, erro) -> {
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((value, error) -> {
       String newPreviewValue = futures.stream()
         .map(CompletableFuture::join)
         .flatMap(Collection::stream)
