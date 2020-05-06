@@ -11,7 +11,6 @@ import com.intellij.util.ui.JBUI;
 import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
 import org.jetbrains.annotations.NotNull;
-import scala.reflect.internal.Trees;
 
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -21,8 +20,6 @@ import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -60,15 +57,15 @@ class FastpassChooseTargetsPanel extends JPanel {
     statusLabel = new JLabel();
     statusLabel.setText(" ");
 
-    preview = new JTextArea();
-    preview.setPreferredSize(JBUI.size(200,200));
-    preview.setText(importedTargets.stream().map(PantsTargetAddress::toAddressString).collect(Collectors.joining("\n")));
+    editor = new JTextArea();
+    editor.setPreferredSize(JBUI.size(200, 200));
+    editor.setText(importedTargets.stream().map(PantsTargetAddress::toAddressString).collect(Collectors.joining("\n")));
     try {
       validateItems();
     } catch (Throwable e) {
       logger.error(e);
     }
-    preview.addKeyListener(new KeyListener() {
+    editor.addKeyListener(new KeyListener() {
       @Override
       public void keyTyped(KeyEvent e) {
 
@@ -89,13 +86,13 @@ class FastpassChooseTargetsPanel extends JPanel {
         }
       }
     });
-    mainPanel.add(preview);
+    mainPanel.add(editor);
 
     myTargetsListPanel = new FastpassAddressesViewPanel();
 
     mainPanel.add(statusLabel);
 
-    preview.setAlignmentX(JTextArea.LEFT_ALIGNMENT);
+    editor.setAlignmentX(JTextArea.LEFT_ALIGNMENT);
     statusLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
 
 
@@ -105,12 +102,12 @@ class FastpassChooseTargetsPanel extends JPanel {
   }
 
   private Set<String> selectedTargetStrings() {
-    String[] lines = preview.getText().split("\n");
+    String[] lines = editor.getText().split("\n");
     return Arrays.stream(lines).filter(x -> !x.equals("")).collect(Collectors.toSet());
   }
 
   @NotNull
-  JTextArea preview;
+  JTextArea editor;
 
   @NotNull
   Project myProject;
