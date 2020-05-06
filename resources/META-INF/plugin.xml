@@ -163,10 +163,12 @@
     <projectService serviceImplementation="com.twitter.intellij.pants.components.PantsProjectCache"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.ui.PantsConsoleManager"/>
   </extensions>
+
   <applicationListeners>
     <listener class="com.twitter.intellij.pants.components.impl.PantsProjectComponentImpl"
               topic="com.intellij.openapi.project.ProjectManagerListener"/>
   </applicationListeners>
+
   <projectListeners>
     <listener class="com.twitter.intellij.pants.execution.SetJarManifestCommandLineShortener"
               topic="com.intellij.execution.RunManagerListener"/>

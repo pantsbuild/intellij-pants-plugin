@@ -48,7 +48,7 @@ public class TypeAssociationFix extends PantsQuickFix {
     FileType type = manager.getFileTypeByFileName(psiFile.getName());
     // Remove the BUILD file matcher from the wrong type then add it to PythonFileType
     for (FileNameMatcher matcher : manager.getAssociations(type)) {
-      if (matcher.accept(psiFile.getName())) {
+      if (matcher.acceptsCharSequence(psiFile.getName())) {
         manager.removeAssociation(type, matcher);
       }
     }

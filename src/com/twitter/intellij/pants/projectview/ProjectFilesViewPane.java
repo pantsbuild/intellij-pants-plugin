@@ -126,7 +126,7 @@ public class ProjectFilesViewPane extends AbstractProjectViewPSIPane {
     }
 
     @Override
-    protected AbstractTreeNode createRoot(final Project project, ViewSettings settings) {
+    protected AbstractTreeNode<?> createRoot(final Project project, ViewSettings settings) {
       return new ProjectFilesViewProjectNode(project, settings);
     }
 

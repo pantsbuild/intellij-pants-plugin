@@ -16,7 +16,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.impl.libraries.LibraryEx.ModifiableModelEx
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.util.Computable
-import org.jetbrains.plugins.scala.project.{LibraryExt, ScalaLanguageLevel, ScalaLibraryProperties, ScalaLibraryType, Version}
+import org.jetbrains.plugins.scala.project.{LibraryExt, ScalaLibraryProperties, ScalaLibraryType, Version}
 
 import scala.collection.JavaConverters.{asScalaSetConverter, iterableAsScalaIterableConverter}
 

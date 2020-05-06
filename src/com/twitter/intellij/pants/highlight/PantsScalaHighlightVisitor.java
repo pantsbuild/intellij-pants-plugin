@@ -97,10 +97,4 @@ public class PantsScalaHighlightVisitor implements HighlightVisitor {
   public HighlightVisitor clone() {
     return new PantsScalaHighlightVisitor();
   }
-
-  @Override
-  public int order() {
-    // greater than ScalaAnnotatorHighlightVisitor.order()
-    return 1;
-  }
 }

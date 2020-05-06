@@ -16,7 +16,6 @@ import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,15 +28,15 @@ public class ProjectFilesViewProjectNode extends AbstractProjectNode {
   }
 
   @Override
-  protected AbstractTreeNode createModuleGroup(Module module)
-    throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+  protected AbstractTreeNode<?> createModuleGroup(@NotNull Module module)
+    throws NoSuchMethodException {
     // should be never called
     throw new NoSuchMethodException(PantsBundle.message("pants.error.not.implemented"));
   }
 
   @Override
-  protected AbstractTreeNode createModuleGroupNode(ModuleGroup moduleGroup)
-    throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+  protected AbstractTreeNode<?> createModuleGroupNode(@NotNull ModuleGroup moduleGroup)
+    throws NoSuchMethodException {
     // should be never called
     throw new NoSuchMethodException(PantsBundle.message("pants.error.not.implemented"));
   }

@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.testFramework;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
@@ -69,7 +68,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightJavaCodeInsig
     getModule().setOption(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, PantsConstants.SYSTEM_ID.getId());
 
     final String pyPluginId = "PythonCore";
-    final IdeaPluginDescriptor pyPlugin = PluginManager.getPlugin(PluginId.getId(pyPluginId));
+    final IdeaPluginDescriptor pyPlugin = PluginManagerCore.getPlugin(PluginId.getId(pyPluginId));
     assertNotNull(
       "Python Community Edition plugin should be in classpath for tests\n" +
       "You need to include jars from ~/Library/Application Support/IdeaIC14/python/lib/",
@@ -87,14 +86,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightJavaCodeInsig
     final VirtualFile[] pexFiles = folderWithPex.get().getChildren();
     assertTrue("There should be only one pex file!", pexFiles.length == 1);
 
-    ApplicationManager.getApplication().runWriteAction(
-      new Runnable() {
-        @Override
-        public void run() {
-          configurePantsLibrary(myFixture.getProject(), pexFiles[0]);
-        }
-      }
-    );
+    ApplicationManager.getApplication().runWriteAction(() -> configurePantsLibrary(myFixture.getProject(), pexFiles[0]));
     assertNotNull(
       "Pants lib not configured!",
       LibraryTablesRegistrar.getInstance().getLibraryTable(myFixture.getProject()).getLibraryByName(PantsConstants.PANTS_LIBRARY_NAME)
@@ -110,14 +102,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightJavaCodeInsig
     final LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myFixture.getProject());
     final Library libraryByName = libraryTable.getLibraryByName(PantsConstants.PANTS_LIBRARY_NAME);
     if (libraryByName != null) {
-      ApplicationManager.getApplication().runWriteAction(
-        new Runnable() {
-          @Override
-          public void run() {
-            libraryTable.removeLibrary(libraryByName);
-          }
-        }
-      );
+      ApplicationManager.getApplication().runWriteAction(() -> libraryTable.removeLibrary(libraryByName));
     }
     super.tearDown();
   }

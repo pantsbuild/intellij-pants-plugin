@@ -41,6 +41,11 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(myUseIdeaProjectJdk, myUsePantsMakeBeforeRun, myResolverVersion);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (obj == null) {
       return false;

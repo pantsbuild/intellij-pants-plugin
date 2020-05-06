@@ -22,12 +22,7 @@ public class AddPantsTargetDependencyFixTest extends PantsCodeInsightFixtureTest
 
     WriteCommandAction.Simple.runWriteCommandAction(
       getProject(),
-      new Runnable() {
-        @Override
-        public void run() {
-          dependencyFix.doInsert(myFixture.getFile(), targetName, dependencyAddress);
-        }
-      }
+      () -> dependencyFix.doInsert(myFixture.getFile(), targetName, dependencyAddress)
     );
     // FIXME: Fix the formatting of files under testData/quickfix/addPantsTargetDependency
     myFixture.checkResultByFile(testName + "_expected.py");

@@ -59,6 +59,6 @@ public class PantsProjectPaneSelectInTarget extends ProjectViewSelectInTarget {
   }
 
   public String toString() {
-    return SelectInManager.PROJECT;
+    return SelectInManager.getProject();
   }
 }
