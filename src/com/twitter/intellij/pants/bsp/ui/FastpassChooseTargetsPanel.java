@@ -148,9 +148,7 @@ class FastpassChooseTargetsPanel extends JPanel {
       } else if(myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString()) == null) {
         statusLabel.setText("No such folder:" + line);
         return;
-      } else if (pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.SINGLE_TARGET) {
-        VirtualFile file = myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString());
-        CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
+      } else if (pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.SINGLE_TARGET) { VirtualFile file = myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString());CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
         if(fut.isDone()) {
           if(!fut.get().stream().anyMatch(x -> Objects.equals(x, pantsTarget.get()))) {
             statusLabel.setText("No such target in path: " + pantsTarget.get().toAddressString());
@@ -158,17 +156,16 @@ class FastpassChooseTargetsPanel extends JPanel {
           }
         } else {
           statusLabel.setText("Fetching targets: " + pantsTarget.get().toAddressString());
-          fut.whenComplete((value, error) -> {
-            SwingUtilities.invokeLater(() -> {
-            if (error == null) {
-              try {
-                validateItems();
-              } catch (Throwable e ){
-                logger.error(e);
-              }
-            }
-            });
-          });
+          fut.whenComplete((value, error) ->
+                             SwingUtilities.invokeLater(() -> {
+                               if (error == null) {
+                                 try {
+                                   validateItems();
+                                 } catch (Throwable e ){
+                                   logger.error(e);
+                                 }
+                               }
+                             }));
           return;
         }
       }

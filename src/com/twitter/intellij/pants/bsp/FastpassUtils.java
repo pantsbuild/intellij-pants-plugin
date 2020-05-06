@@ -140,11 +140,17 @@ final public class FastpassUtils {
     return CompletableFuture.supplyAsync(
       () -> {
         final String buildFileName = "BUILD";
-        if (file.isDirectory() && file.findChild(buildFileName) != null) {
-          return PantsUtil.listAllTargets(Paths.get(file.getPath(), buildFileName).toString())
-            .stream()
-            .map(PantsTargetAddress::fromString)
-            .collect(Collectors.toList());
+        if (file.isDirectory()) {
+          try {
+            GeneralCommandLine cmd = PantsUtil.defaultCommandLine(file.getPath());
+            cmd.addParameters("list", file.getPath() + "::");
+            Process process = cmd.createProcess();
+            String stdout = toString(process.getInputStream());
+            String[] list = stdout.equals("") ? new String[]{} : stdout.split("\n");
+            return Stream.of(list).map(x -> PantsTargetAddress.fromString(x)).collect(Collectors.toSet());
+          } catch (Throwable e) {
+            throw new CompletionException(e);
+          }
         } else if(file.getName().equals(buildFileName)) {
           return PantsUtil.listAllTargets(file.getPath()).stream().map(PantsTargetAddress::fromString).collect(Collectors.toList());
         } else {
