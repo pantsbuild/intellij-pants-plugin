@@ -149,7 +149,6 @@ class FastpassChooseTargetsPanel extends JPanel {
         statusLabel.setText("No such folder:" + line);
         return;
       } else if (pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.SINGLE_TARGET) {
-
         VirtualFile file = myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString());
         CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
         if(fut.isDone()) {
@@ -172,6 +171,10 @@ class FastpassChooseTargetsPanel extends JPanel {
           });
           return;
         }
+      }
+      if(myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString()) != null) {
+        VirtualFile file = myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString());
+        myTargetsListFetcher.apply(file);
       }
     }
     mySelectedTargets = targets.stream().map(x -> x.get()).collect(Collectors.toSet());
