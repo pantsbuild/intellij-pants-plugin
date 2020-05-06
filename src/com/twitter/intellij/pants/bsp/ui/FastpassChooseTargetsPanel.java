@@ -41,7 +41,7 @@ import java.util.stream.Stream;
 
 class FastpassChooseTargetsPanel extends JPanel {
   private final JLabel statusLabel;
-  private final JTextArea preview;
+  private final TargetsPreview preview;
   Logger logger = Logger.getInstance(FastpassChooseTargetsPanel.class);
 
 
@@ -65,14 +65,14 @@ class FastpassChooseTargetsPanel extends JPanel {
     statusLabel.setText(" ");
 
 
-    preview = new JTextArea();
+    preview = new TargetsPreview();
 
     editor = new JTextArea(); // todo jscroll for editor
     editor.setPreferredSize(JBUI.size(200, 200));
     editor.setText(importedTargets.stream().map(PantsTargetAddress::toAddressString).collect(Collectors.joining("\n")));
     try {
       validateItems();
-      updatePreview();
+      preview.updatePreview(mySelectedTargets, this::mapToSingleTarget);
     } catch (Throwable e) {
       logger.error(e);
     }
@@ -92,23 +92,18 @@ class FastpassChooseTargetsPanel extends JPanel {
         try {
           mySelectedTargetStrings = selectedTargetStrings();
           validateItems();
-          updatePreview();
+          preview.updatePreview(mySelectedTargets, x -> mapToSingleTarget(x));
         } catch (Throwable ex){
           logger.error(ex);
-          // todo log
         }
       }
     });
     mainPanel.add(editor);
-
-    preview.setAlignmentX(JTextArea.LEFT_ALIGNMENT);
-    preview.setBackground(JBColor.lightGray);
-    preview.setEnabled(false);
     mainPanel.add(preview);
-
     mainPanel.add(statusLabel);
 
     editor.setAlignmentX(JTextArea.LEFT_ALIGNMENT);
+    preview.setAlignmentX(JTextArea.LEFT_ALIGNMENT);
     statusLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
 
 
@@ -165,7 +160,7 @@ class FastpassChooseTargetsPanel extends JPanel {
         VirtualFile file = resolvePathToFile(path);
         CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
         if(fut.isDone()) {
-          if(!fut.get().stream().anyMatch(x -> Objects.equals(x, pantsTarget.get()))) {
+          if(fut.get().stream().noneMatch(x -> Objects.equals(x, pantsTarget.get()))) {
             statusLabel.setText("No such target in path: " + pantsTarget.get().toAddressString());
             return;
           }
@@ -195,18 +190,6 @@ class FastpassChooseTargetsPanel extends JPanel {
 
   private VirtualFile resolvePathToFile(Path path) {
     return myImportData.getPantsRoot().findFileByRelativePath(path.toString());
-  }
-
-  void updatePreview () throws InterruptedException, ExecutionException  {
-    preview.setText("");
-    List<CompletableFuture<Collection<PantsTargetAddress>>> futures =
-      mySelectedTargets.stream().map(this::mapToSingleTarget).collect(Collectors.toList());
-    if(futures.stream().allMatch(CompletableFuture::isDone)) {
-      for (CompletableFuture<Collection<PantsTargetAddress>> f : futures)
-        for (PantsTargetAddress t : f.get()) {
-          preview.append("\n" + t.toAddressString());
-        }
-    }
   }
 
   CompletableFuture<Collection<PantsTargetAddress>> mapToSingleTarget(PantsTargetAddress targetAddress) {

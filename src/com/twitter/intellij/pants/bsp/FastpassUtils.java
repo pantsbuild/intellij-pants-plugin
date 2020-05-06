@@ -139,7 +139,6 @@ final public class FastpassUtils {
   public static CompletableFuture<Collection<PantsTargetAddress>> availableTargetsIn(VirtualFile file) {
     return CompletableFuture.supplyAsync(
       () -> {
-        final String buildFileName = "BUILD";
         if (file.isDirectory()) {
           try {
             GeneralCommandLine cmd = PantsUtil.defaultCommandLine(file.getPath());
@@ -151,8 +150,6 @@ final public class FastpassUtils {
           } catch (Throwable e) {
             throw new CompletionException(e);
           }
-        } else if(file.getName().equals(buildFileName)) {
-          return PantsUtil.listAllTargets(file.getPath()).stream().map(PantsTargetAddress::fromString).collect(Collectors.toList());
         } else {
           return Collections.emptyList();
         }
