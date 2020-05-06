@@ -7,6 +7,7 @@ package com.twitter.intellij.pants.bsp.ui;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBUI;
 import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
@@ -17,11 +18,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -31,10 +36,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 class FastpassChooseTargetsPanel extends JPanel {
   private final JLabel statusLabel;
+  private final JTextArea preview;
   Logger logger = Logger.getInstance(FastpassChooseTargetsPanel.class);
 
 
@@ -52,16 +59,20 @@ class FastpassChooseTargetsPanel extends JPanel {
 
     mainPanel = new JPanel();
     mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-    mainPanel.setAlignmentY(Component.LEFT_ALIGNMENT);
+    mainPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
     statusLabel = new JLabel();
     statusLabel.setText(" ");
 
-    editor = new JTextArea();
+
+    preview = new JTextArea();
+
+    editor = new JTextArea(); // todo jscroll for editor
     editor.setPreferredSize(JBUI.size(200, 200));
     editor.setText(importedTargets.stream().map(PantsTargetAddress::toAddressString).collect(Collectors.joining("\n")));
     try {
       validateItems();
+      updatePreview();
     } catch (Throwable e) {
       logger.error(e);
     }
@@ -81,14 +92,19 @@ class FastpassChooseTargetsPanel extends JPanel {
         try {
           mySelectedTargetStrings = selectedTargetStrings();
           validateItems();
+          updatePreview();
         } catch (Throwable ex){
+          logger.error(ex);
           // todo log
         }
       }
     });
     mainPanel.add(editor);
 
-    myTargetsListPanel = new FastpassAddressesViewPanel();
+    preview.setAlignmentX(JTextArea.LEFT_ALIGNMENT);
+    preview.setBackground(JBColor.lightGray);
+    preview.setEnabled(false);
+    mainPanel.add(preview);
 
     mainPanel.add(statusLabel);
 
@@ -102,8 +118,8 @@ class FastpassChooseTargetsPanel extends JPanel {
   }
 
   private Set<String> selectedTargetStrings() {
-    String[] lines = editor.getText().split("\n");
-    return Arrays.stream(lines).filter(x -> !x.equals("")).collect(Collectors.toSet());
+    Stream<String> lines = Arrays.stream(editor.getText().split("\n"));
+    return lines.filter(x -> !x.equals("")).collect(Collectors.toSet());
   }
 
   @NotNull
@@ -125,7 +141,6 @@ class FastpassChooseTargetsPanel extends JPanel {
 
   JPanel mainPanel = null;
 
-  FastpassAddressesViewPanel myTargetsListPanel = null;
 
   @NotNull
   public Collection<PantsTargetAddress> selectedItems() {
@@ -142,10 +157,13 @@ class FastpassChooseTargetsPanel extends JPanel {
       if(!pantsTarget.isPresent()) {
         statusLabel.setText("Malformed address: " + line);
         return;
-      } else if(myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString()) == null) {
+      } else if(resolvePathToFile(pantsTarget.get().getPath()) == null) {
         statusLabel.setText("No such folder:" + line);
         return;
-      } else if (pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.SINGLE_TARGET) { VirtualFile file = myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString());CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
+      } else if (pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.SINGLE_TARGET) {
+        Path path = pantsTarget.get().getPath();
+        VirtualFile file = resolvePathToFile(path);
+        CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
         if(fut.isDone()) {
           if(!fut.get().stream().anyMatch(x -> Objects.equals(x, pantsTarget.get()))) {
             statusLabel.setText("No such target in path: " + pantsTarget.get().toAddressString());
@@ -166,12 +184,37 @@ class FastpassChooseTargetsPanel extends JPanel {
           return;
         }
       }
-      if(myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString()) != null) {
-        VirtualFile file = myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString());
+      if(resolvePathToFile(pantsTarget.get().getPath()) != null) {
+        VirtualFile file = resolvePathToFile(pantsTarget.get().getPath());
         myTargetsListFetcher.apply(file);
       }
     }
     mySelectedTargets = targets.stream().map(x -> x.get()).collect(Collectors.toSet());
     statusLabel.setText("Valid");
+  }
+
+  private VirtualFile resolvePathToFile(Path path) {
+    return myImportData.getPantsRoot().findFileByRelativePath(path.toString());
+  }
+
+  void updatePreview () throws InterruptedException, ExecutionException  {
+    preview.setText("");
+    List<CompletableFuture<Collection<PantsTargetAddress>>> futures =
+      mySelectedTargets.stream().map(this::mapToSingleTarget).collect(Collectors.toList());
+    if(futures.stream().allMatch(CompletableFuture::isDone)) {
+      for (CompletableFuture<Collection<PantsTargetAddress>> f : futures)
+        for (PantsTargetAddress t : f.get()) {
+          preview.append("\n" + t.toAddressString());
+        }
+    }
+  }
+
+  CompletableFuture<Collection<PantsTargetAddress>> mapToSingleTarget(PantsTargetAddress targetAddress) {
+    switch (targetAddress.getKind()){
+      case SINGLE_TARGET: return CompletableFuture.completedFuture(Collections.singletonList(targetAddress));
+      case ALL_TARGETS_DEEP: return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()));
+      case ALL_TARGETS_FLAT: return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()));  // todo handle flat
+    }
+    return null;
   }
 }
