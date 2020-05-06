@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,6 @@ class FastpassChooseTargetsPanel extends JPanel {
   private final JLabel statusLabel;
   Logger logger = Logger.getInstance(FastpassChooseTargetsPanel.class);
 
-  Path myPreviewCurrentPath  = null;
 
   public FastpassChooseTargetsPanel(
     @NotNull Project project,
@@ -62,7 +62,11 @@ class FastpassChooseTargetsPanel extends JPanel {
     preview = new JTextArea();
     preview.setPreferredSize(JBUI.size(200,200));
     preview.setText(importedTargets.stream().map(PantsTargetAddress::toAddressString).collect(Collectors.joining("\n")));
-    validateItems();
+    try {
+      validateItems();
+    } catch (Throwable e) {
+      logger.error(e);
+    }
     preview.addKeyListener(new KeyListener() {
       @Override
       public void keyTyped(KeyEvent e) {
@@ -77,8 +81,6 @@ class FastpassChooseTargetsPanel extends JPanel {
       @Override
       public void keyReleased(KeyEvent e) {
         try {
-
-          int currentLine = preview.getLineOfOffset(preview.getCaretPosition());
           mySelectedTargetStrings = selectedTargetStrings();
           validateItems();
         } catch (Throwable ex){
@@ -132,15 +134,7 @@ class FastpassChooseTargetsPanel extends JPanel {
     return mySelectedTargets;
   }
 
-
-  private boolean belongsToImportedPantsProject(
-    VirtualFile selectedFile,
-    VirtualFile root
-  ) {
-    return  Paths.get(selectedFile.getPath()).startsWith(Paths.get(root.getPath())) && !root.getPath().equals(selectedFile.getPath());
-  }
-
-  private void validateItems() {
+  private void validateItems() throws ExecutionException, InterruptedException {
     statusLabel.setText("Validating");
 
     List<Optional<PantsTargetAddress>> targets = selectedTargetStrings().stream().map(PantsTargetAddress::tryParse).collect(Collectors.toList());
@@ -148,47 +142,27 @@ class FastpassChooseTargetsPanel extends JPanel {
     for(String line: selectedTargetStrings()) {
       Optional<PantsTargetAddress> pantsTarget  = PantsTargetAddress.tryParse(line);
       if(!pantsTarget.isPresent()) {
-        statusLabel.setText("Invalid address: " + line);
+        statusLabel.setText("Malformed address: " + line);
         return;
-      } else if(myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString()) == null){
+      } else if(myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString()) == null) {
         statusLabel.setText("No such folder:" + line);
         return;
       } else if (pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.SINGLE_TARGET) {
-        statusLabel.setText("Single target addresses not supported");
-        return;
+
+        VirtualFile file = myImportData.getPantsRoot().findFileByRelativePath(pantsTarget.get().getPath().toString());
+        if(myTargetsListFetcher.apply(file).isDone()) {
+          if(!myTargetsListFetcher.apply(file).get().stream().anyMatch(x -> Objects.equals(x, pantsTarget.get()))) {
+            statusLabel.setText("No such target in path: " + pantsTarget.get().toAddressString());
+            return;
+          }
+        }else {
+          statusLabel.setText("Fetching targets: " + pantsTarget.get().toAddressString());
+          return;
+        }
+
       }
     }
     mySelectedTargets = targets.stream().map(x -> x.get()).collect(Collectors.toSet());
     statusLabel.setText("Valid");
   }
-
-  private void updateCheckboxList(Path path) {
-    VirtualFile selectedFile = myImportData.getPantsRoot().findFileByRelativePath(path.toString());
-    CompletableFuture<Collection<PantsTargetAddress>> targetsList = myTargetsListFetcher.apply(selectedFile);
-    if (!targetsList.isDone()) {
-      myTargetsListPanel.setLoading();
-      mainPanel.updateUI();
-    }
-    targetsList.whenComplete((targetsInDir, error) -> {
-      SwingUtilities.invokeLater(() -> {
-        if (Objects.equals(myPreviewCurrentPath, path)) {
-          if (error == null) {
-//            Path path = Paths.get(myImportData.getPantsRoot().getPath()).relativize(Paths.get(selectedFile.getPath()));
-            myTargetsListPanel.setItems(
-              targetsInDir,
-              mySelectedTargets,
-              path,
-              items -> {
- ;
-              }
-            );
-            mainPanel.updateUI();
-          } else {
-            logger.error(error);
-          }
-        }
-      });
-    });
-  }
-
 }
