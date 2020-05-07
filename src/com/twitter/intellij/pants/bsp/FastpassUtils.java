@@ -28,10 +28,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -137,13 +139,12 @@ final public class FastpassUtils {
     return IOUtils.toString(process, StandardCharsets.UTF_8);
   }
 
-  public static CompletableFuture<Collection<PantsTargetAddress>> availableTargetsIn(VirtualFile file) {
+  public static CompletableFuture<Collection<PantsTargetAddress>> availableTargetsIn(Path path) {
     return CompletableFuture.supplyAsync(
       () -> {
-        if (file.isDirectory()) {
           try {
-            GeneralCommandLine cmd = PantsUtil.defaultCommandLine(file.getPath());
-            cmd.addParameters("list", file.getPath() + "::");
+            GeneralCommandLine cmd = PantsUtil.defaultCommandLine(path.toString());
+            cmd.addParameters("list", path.toString() + "::");
             Process process = cmd.createProcess();
             String stdout = toString(process.getInputStream());
             String[] list = stdout.equals("") ? new String[]{} : stdout.split("\n");
@@ -151,9 +152,82 @@ final public class FastpassUtils {
           } catch (Throwable e) {
             throw new CompletionException(e);
           }
+      });
+  }
+
+
+  public static CompletableFuture<Collection<PantsTargetAddress>> validateAndGetDetails(
+    VirtualFile pantsRoot,
+    String targetString,
+    Function<Path, CompletableFuture<Collection<PantsTargetAddress>>> fetcher
+  ) {
+    Optional<PantsTargetAddress> pantsTarget  = PantsTargetAddress.tryParse(targetString);
+    if(!pantsTarget.isPresent()) {
+      return failedFuture(new InvalidTargetException(targetString, "Malformed address"));
+    }
+
+    if(pantsRoot.findFileByRelativePath(pantsTarget.get().getPath().toString()) == null) {
+      return failedFuture(new InvalidTargetException(targetString, "No such folder"));
+    }
+
+    if(pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.ALL_TARGETS_DEEP ||
+       pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.ALL_TARGETS_FLAT ) {
+      return mapToSingleTarget(pantsTarget.get(), fetcher);
+    } else {
+      Path path = pantsTarget.get().getPath();
+      CompletableFuture<Collection<PantsTargetAddress>> fut = fetcher.apply(path);
+      return fut.thenApply(targets-> {
+        if(targets.stream().noneMatch(target -> Objects.equals(target, pantsTarget.get()))) {
+          throw new CompletionException(new InvalidTargetException(pantsTarget.toString(), "No such target"));
         } else {
-          return Collections.emptyList();
+          return Collections.singletonList(pantsTarget.get());
         }
       });
+    }
+  }
+
+
+  static CompletableFuture<Collection<PantsTargetAddress>> mapToSingleTarget(
+    PantsTargetAddress targetAddress, Function<Path, CompletableFuture<Collection<PantsTargetAddress>>> fetcher
+  ) {
+    switch (targetAddress.getKind()){
+      case SINGLE_TARGET: {
+        return CompletableFuture.completedFuture(Collections.singletonList(targetAddress));
+      }
+      case ALL_TARGETS_DEEP: {
+        return fetcher.apply(targetAddress.getPath());
+      }
+      case ALL_TARGETS_FLAT: { return fetcher.apply(targetAddress.getPath())
+        .thenApply(x -> x.stream()
+          .filter(t -> t.getPath().equals(targetAddress.getPath()))
+          .collect(Collectors.toSet()));
+      }
+    }
+    return null; // todo no null
+  }
+
+
+  static class InvalidTargetException extends Throwable {
+    private final String myTargetString;
+    private final String myMessage;
+
+    InvalidTargetException(String targetString, String message) {
+      myTargetString = targetString;
+      myMessage = message;
+    }
+
+    @Override
+    public String getMessage() {
+      return "[" + myTargetString + "]:" + myMessage;
+    }
+  }
+
+
+  @NotNull
+  static private CompletableFuture<Collection<PantsTargetAddress>> failedFuture(InvalidTargetException ex) {
+    return CompletableFuture.supplyAsync(() ->
+                                         {
+                                           throw new CompletionException(ex);
+                                         });
   }
 }

@@ -3,9 +3,7 @@
 
 package com.twitter.intellij.pants.bsp;
 
-
-import com.intellij.openapi.vfs.VirtualFile;
-
+import java.nio.file.Path;
 import java.util.Collection;
 
 import java.util.concurrent.CompletableFuture;
@@ -13,9 +11,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 final class FastpassTargetListCache {
 
-  ConcurrentHashMap<VirtualFile, CompletableFuture<Collection<PantsTargetAddress>>> cache = new ConcurrentHashMap<>();
+  private Path myPantsRoot;
 
-  CompletableFuture<Collection<PantsTargetAddress>>  getTargetsList(VirtualFile file) {
-    return cache.computeIfAbsent(file, FastpassUtils::availableTargetsIn);
+  FastpassTargetListCache(Path pantsRoot) {
+
+    myPantsRoot = pantsRoot;
+  }
+
+  ConcurrentHashMap<Path, CompletableFuture<Collection<PantsTargetAddress>>> cache = new ConcurrentHashMap<>();
+
+  CompletableFuture<Collection<PantsTargetAddress>>  getTargetsList(Path path) {
+    return cache.computeIfAbsent(path, path1 -> FastpassUtils.availableTargetsIn(myPantsRoot.resolve(path1)));
   }
 }

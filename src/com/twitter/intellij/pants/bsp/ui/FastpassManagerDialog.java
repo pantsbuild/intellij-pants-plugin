@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class FastpassManagerDialog extends DialogWrapper {
     @NotNull Project project,
     @NotNull PantsBspData importData,
     @NotNull CompletableFuture<Set<PantsTargetAddress>> importedTargets,
-    @NotNull Function<VirtualFile, CompletableFuture<Collection<PantsTargetAddress>>> targetsListFetcher
+    @NotNull Function<Path, CompletableFuture<Collection<PantsTargetAddress>>> targetsListFetcher
   ) {
     super(project, false);
     setTitle(PantsBundle.message("pants.bsp.select.targets"));
@@ -58,7 +59,7 @@ public class FastpassManagerDialog extends DialogWrapper {
   private void showFastpassChooseTargetsPanel(
     @NotNull Project project,
     @NotNull PantsBspData importData,
-    @NotNull Function<VirtualFile, CompletableFuture<Collection<PantsTargetAddress>>> targetsListFetcher,
+    @NotNull Function<Path, CompletableFuture<Collection<PantsTargetAddress>>> targetsListFetcher,
     Set<PantsTargetAddress> targets
   ) {
     mainPanel.removeAll();
@@ -103,7 +104,7 @@ public class FastpassManagerDialog extends DialogWrapper {
     Project project,
     PantsBspData importData,
     CompletableFuture<Set<PantsTargetAddress>> importedTargets,
-    Function<VirtualFile, CompletableFuture<Collection<PantsTargetAddress>>> fetchTargetsList
+    Function<Path, CompletableFuture<Collection<PantsTargetAddress>>> fetchTargetsList
   ) {
     try {
       FastpassManagerDialog dial =

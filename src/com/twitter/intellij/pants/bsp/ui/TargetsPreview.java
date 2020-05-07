@@ -8,13 +8,7 @@ import com.twitter.intellij.pants.bsp.PantsTargetAddress;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class TargetsPreview extends JPanel {

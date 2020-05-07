@@ -6,14 +6,11 @@ package com.twitter.intellij.pants.bsp.ui;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.util.ui.JBUI;
+import com.twitter.intellij.pants.bsp.FastpassUtils;
 import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.processing.Completion;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,15 +24,11 @@ import java.awt.event.KeyListener;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,7 +45,7 @@ class FastpassChooseTargetsPanel extends JPanel {
     @NotNull Project project,
     @NotNull PantsBspData importData,
     @NotNull Collection<PantsTargetAddress> importedTargets,
-    @NotNull Function<VirtualFile, CompletableFuture<Collection<PantsTargetAddress>>> targetsListFetcher
+    @NotNull Function<Path, CompletableFuture<Collection<PantsTargetAddress>>> targetsListFetcher
   ) {
     myImportData = importData;
     mySelectedTargets = new HashSet<>(importedTargets);
@@ -135,7 +128,7 @@ class FastpassChooseTargetsPanel extends JPanel {
   Project myProject;
 
   @NotNull
-  Function<VirtualFile, CompletableFuture<Collection<PantsTargetAddress>>> myTargetsListFetcher;
+  Function<Path, CompletableFuture<Collection<PantsTargetAddress>>> myTargetsListFetcher;
 
   @NotNull
   final private PantsBspData myImportData;
@@ -153,40 +146,6 @@ class FastpassChooseTargetsPanel extends JPanel {
     return mySelectedTargets;
   }
 
-  CompletableFuture<Collection<PantsTargetAddress>> validateAndGetDetails(String targetString) {
-    Optional<PantsTargetAddress> pantsTarget  = PantsTargetAddress.tryParse(targetString);
-    if(!pantsTarget.isPresent()) {
-      return failedFuture(new InvalidTargetException(targetString, "Malformed address"));
-    }
-
-    if(resolvePathToFile(pantsTarget.get().getPath()) == null) {
-      return failedFuture(new InvalidTargetException(targetString, "No such folder"));
-    }
-
-    if(pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.ALL_TARGETS_DEEP ||
-       pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.ALL_TARGETS_FLAT ) {
-      return mapToSingleTarget(pantsTarget.get());
-    }else {
-      Path path = pantsTarget.get().getPath();
-      VirtualFile file = resolvePathToFile(path);
-      CompletableFuture<Collection<PantsTargetAddress>> fut = myTargetsListFetcher.apply(file);
-      return fut.thenApply(targets-> {
-        if(targets.stream().noneMatch(target -> Objects.equals(target, pantsTarget.get()))) {
-          throw new CompletionException(new InvalidTargetException(pantsTarget.toString(), "No such target"));
-        } else {
-          return Collections.singletonList(pantsTarget.get());
-        }
-      });
-    }
-  }
-
-  @NotNull
-  private CompletableFuture<Collection<PantsTargetAddress>> failedFuture(InvalidTargetException ex) {
-    return CompletableFuture.supplyAsync(() ->
-                                             {
-                                               throw new CompletionException(ex);
-                                             });
-  }
 
   private void validateItems(Set<String> targetString) {
     preview.setLoading();
@@ -195,66 +154,29 @@ class FastpassChooseTargetsPanel extends JPanel {
     this.targetString = targetString;
 
     List<CompletableFuture<Collection<PantsTargetAddress>>> futures =
-      targetString.stream().map(x -> validateAndGetDetails(x)).collect(Collectors.toList());
+      targetString.stream()
+        .map(x -> FastpassUtils.validateAndGetDetails(myImportData.getPantsRoot(), x, myTargetsListFetcher)).collect(Collectors.toList());
 
     CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete(
-      (value, error ) ->{
-        SwingUtilities.invokeLater(() -> {
-          if(this.targetString == targetString){
-            if (error == null) {
-              Set<PantsTargetAddress> toPreview = futures.stream().flatMap(x -> x.join().stream()).collect(Collectors.toSet());
-              preview.updatePreview(toPreview);
-              statusLabel.setText("Valid");
+      (value, error ) -> SwingUtilities.invokeLater(() -> {
+        if(this.targetString == targetString){
+          if (error == null) {
+            Set<PantsTargetAddress> toPreview = futures.stream().flatMap(x -> x.join().stream()).collect(Collectors.toSet());
+            preview.updatePreview(toPreview);
+            statusLabel.setText("Valid");
+          }
+          else {
+            preview.setError();
+            if (error instanceof CompletionException) {
+              statusLabel.setText(error.getCause().getMessage());
             }
             else {
-              preview.setError();
-              if (error instanceof CompletionException) {
-                statusLabel.setText(error.getCause().getMessage());
-              }
-              else {
-                statusLabel.setText("Invalid");
-                logger.error(error);
-              }
+              statusLabel.setText("Invalid");
+              logger.error(error);
             }
           }
-        });
-      }
+        }
+      })
     );
-  }
-
-  private VirtualFile resolvePathToFile(Path path) {
-    return myImportData.getPantsRoot().findFileByRelativePath(path.toString());
-  }
-
-  static class InvalidTargetException extends Throwable {
-    private final String myTargetString;
-    private final String myMessage;
-
-    InvalidTargetException(String targetString, String message) {
-      myTargetString = targetString;
-      myMessage = message;
-    }
-
-    @Override
-    public String getMessage() {
-      return "[" + myTargetString + "]:" + myMessage;
-    }
-  }
-
-  CompletableFuture<Collection<PantsTargetAddress>> mapToSingleTarget(PantsTargetAddress targetAddress) {
-    switch (targetAddress.getKind()){
-      case SINGLE_TARGET: {
-        return CompletableFuture.completedFuture(Collections.singletonList(targetAddress));
-      }
-      case ALL_TARGETS_DEEP: {
-        return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()));
-      }
-      case ALL_TARGETS_FLAT: { return myTargetsListFetcher.apply(resolvePathToFile(targetAddress.getPath()))
-          .thenApply(x -> x.stream()
-            .filter(t -> t.getPath().equals(targetAddress.getPath()))
-            .collect(Collectors.toSet()));
-      }
-    }
-    return null; // todo no null
   }
 }

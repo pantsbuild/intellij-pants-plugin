@@ -18,6 +18,7 @@ import org.jetbrains.bsp.BSP;
 import org.jetbrains.bsp.BspUtil;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -72,7 +73,7 @@ public class FastpassBspAmendAction extends AnAction {
   private void startAmendProcedure(Project project, PantsBspData firstProject) throws IOException, ExecutionException {
     CompletableFuture<Set<PantsTargetAddress>> oldTargets = FastpassUtils.selectedTargets(firstProject, project);
 
-    FastpassTargetListCache targetsListCache = new FastpassTargetListCache();
+    FastpassTargetListCache targetsListCache = new FastpassTargetListCache(Paths.get(firstProject.getPantsRoot().getPath()));
     Optional<Set<PantsTargetAddress>> newTargets = FastpassManagerDialog
       .promptForTargetsToImport(project, firstProject, oldTargets,
                                 targetsListCache::getTargetsList
