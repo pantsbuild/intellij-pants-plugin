@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -56,6 +57,11 @@ public class FastpassUpdater {
 
   private static class BloopSettings {
     public List<String> refreshProjectsCommand;
+  }
+
+  private static class BspSettings {
+    public String fastpassVersion;
+    public String fastpassProjectName;
   }
 
   private static class FastpassData {
@@ -91,7 +97,8 @@ public class FastpassUpdater {
                 if (answer == Messages.YES) {
                   updateFastpassVersion(project, data);
                 }
-              } else {
+              }
+              else {
                 Messages.showInfoMessage(project, "Fastpass is already up to date", DIALOG_TITLE);
               }
             }));
@@ -110,10 +117,12 @@ public class FastpassUpdater {
         if (!initialized) {
           ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
           TimeUnit timeUnit = TimeUnit.SECONDS;
-          timer.scheduleWithFixedDelay(FastpassUpdater::checkForFastpassUpdates,
-                                       timeUnit.convert(1, TimeUnit.MINUTES),
-                                       timeUnit.convert(1, TimeUnit.DAYS),
-                                       timeUnit);
+          timer.scheduleWithFixedDelay(
+            FastpassUpdater::checkForFastpassUpdates,
+            timeUnit.convert(1, TimeUnit.MINUTES),
+            timeUnit.convert(1, TimeUnit.DAYS),
+            timeUnit
+          );
           initialized = true;
         }
       }
@@ -210,25 +219,46 @@ public class FastpassUpdater {
     try {
       String path = project.getBasePath();
       if (path != null) {
-        Path bloopSettingsPath = Paths.get(path, ".bloop", "bloop.settings.json");
-        VirtualFile bloopSettings =
-          LocalFileSystem.getInstance().findFileByIoFile(bloopSettingsPath.toFile());
-        if (bloopSettings != null && bloopSettings.exists()) {
-          String content = new String(bloopSettings.contentsToByteArray());
-          Gson gson = new Gson();
-          BloopSettings settings = gson.fromJson(content, BloopSettings.class);
-          Pattern pattern = Pattern.compile("org\\.scalameta:metals_2\\.12:(.*)");
-          Optional<String> version =
-            settings.refreshProjectsCommand.stream().map(pattern::matcher).filter(Matcher::find).map(m -> m.group(1)).findFirst();
-          return version.map(fastpassVersion -> {
-            String projectName = settings.refreshProjectsCommand.get(settings.refreshProjectsCommand.size() - 1);
-            return new FastpassData(fastpassVersion, projectName);
+        Optional<FastpassData> fromBsp = readJsonFile(Paths.get(path, ".bsp", "bloop.json"), BspSettings.class)
+          .flatMap(settings -> {
+            if (settings.fastpassVersion != null && settings.fastpassProjectName != null) {
+              return Optional.of(new FastpassData(settings.fastpassVersion, settings.fastpassProjectName));
+            } else {
+              return Optional.empty();
+            }
           });
-        }
+
+        Supplier<Optional<FastpassData>> fromBloopSettings =
+          () -> readJsonFile(Paths.get(path, ".bloop", "bloop.settings.json"), BloopSettings.class).flatMap(settings -> {
+            Pattern pattern = Pattern.compile("org\\.scalameta:metals_2\\.12:(.*)");
+            Optional<String> version =
+              settings.refreshProjectsCommand.stream().map(pattern::matcher).filter(Matcher::find).map(m -> m.group(1)).findFirst();
+            return version.map(fastpassVersion -> {
+              String projectName = settings.refreshProjectsCommand.get(settings.refreshProjectsCommand.size() - 1);
+              return new FastpassData(fastpassVersion, projectName);
+            });
+          });
+
+        return fromBsp.map(Optional::of).orElseGet(fromBloopSettings);
       }
     }
     catch (Exception e) {
       LOG.warn("Failed to extract fastpass data from " + project, e);
+    }
+    return Optional.empty();
+  }
+
+  private static <T> Optional<T> readJsonFile(Path path, Class<T> cls) {
+    VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(path.toFile());
+    if (virtualFile != null && virtualFile.exists()) {
+      try {
+        String content = new String(virtualFile.contentsToByteArray());
+        T parsed = new Gson().fromJson(content, cls);
+        return Optional.of(parsed);
+      }
+      catch (Exception e) {
+        LOG.warn("Failed to read and parse as json: " + path, e);
+      }
     }
     return Optional.empty();
   }
