@@ -209,7 +209,7 @@ class FastpassChooseTargetsPanel extends JPanel {
             else {
               preview.setError();
               if (error instanceof CompletionException) {
-                statusLabel.setText(((CompletionException) error).getCause().getMessage());
+                statusLabel.setText(error.getCause().getMessage());
               }
               else {
                 statusLabel.setText("Invalid");
@@ -220,8 +220,6 @@ class FastpassChooseTargetsPanel extends JPanel {
         });
       }
     );
-
-
   }
 
   private VirtualFile resolvePathToFile(Path path) {
