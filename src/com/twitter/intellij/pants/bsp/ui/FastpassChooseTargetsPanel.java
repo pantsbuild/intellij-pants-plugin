@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.bsp.ui;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.twitter.intellij.pants.bsp.FastpassUtils;
 import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
@@ -57,7 +58,6 @@ class FastpassChooseTargetsPanel extends JPanel {
 
     statusLabel = new JLabel();
     statusLabel.setText(" ");
-
 
     preview = new TargetsPreview();
 
@@ -153,7 +153,7 @@ class FastpassChooseTargetsPanel extends JPanel {
 
     this.targetString = targetString;
 
-    List<CompletableFuture<Collection<PantsTargetAddress>>> futures =
+    List<CompletableFuture<Pair<PantsTargetAddress, Collection<PantsTargetAddress>>>> futures =
       targetString.stream()
         .map(x -> FastpassUtils.validateAndGetDetails(myImportData.getPantsRoot(), x, myTargetsListFetcher)).collect(Collectors.toList());
 
@@ -161,7 +161,8 @@ class FastpassChooseTargetsPanel extends JPanel {
       (value, error ) -> SwingUtilities.invokeLater(() -> {
         if(this.targetString == targetString){
           if (error == null) {
-            Set<PantsTargetAddress> toPreview = futures.stream().flatMap(x -> x.join().stream()).collect(Collectors.toSet());
+            Set<PantsTargetAddress> toPreview = futures.stream().flatMap(x -> x.join().second.stream()).collect(Collectors.toSet());
+            mySelectedTargets = futures.stream().map(x -> x.join().first).collect(Collectors.toSet());
             preview.updatePreview(toPreview);
             statusLabel.setText("Valid");
           }

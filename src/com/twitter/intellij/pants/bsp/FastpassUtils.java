@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.io.IOUtils;
@@ -156,7 +157,7 @@ final public class FastpassUtils {
   }
 
 
-  public static CompletableFuture<Collection<PantsTargetAddress>> validateAndGetDetails(
+  public static CompletableFuture<Pair<PantsTargetAddress,Collection<PantsTargetAddress>>> validateAndGetDetails(
     VirtualFile pantsRoot,
     String targetString,
     Function<Path, CompletableFuture<Collection<PantsTargetAddress>>> fetcher
@@ -172,7 +173,7 @@ final public class FastpassUtils {
 
     if(pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.ALL_TARGETS_DEEP ||
        pantsTarget.get().getKind() == PantsTargetAddress.AddressKind.ALL_TARGETS_FLAT ) {
-      return mapToSingleTarget(pantsTarget.get(), fetcher);
+      return mapToSingleTarget(pantsTarget.get(), fetcher).thenApply(x -> Pair.create(pantsTarget.get(),x));
     } else {
       Path path = pantsTarget.get().getPath();
       CompletableFuture<Collection<PantsTargetAddress>> fut = fetcher.apply(path);
@@ -180,7 +181,7 @@ final public class FastpassUtils {
         if(targets.stream().noneMatch(target -> Objects.equals(target, pantsTarget.get()))) {
           throw new CompletionException(new InvalidTargetException(pantsTarget.toString(), "No such target"));
         } else {
-          return Collections.singletonList(pantsTarget.get());
+          return Pair.create(pantsTarget.get(), Collections.singletonList(pantsTarget.get()));
         }
       });
     }
@@ -224,7 +225,7 @@ final public class FastpassUtils {
 
 
   @NotNull
-  static private CompletableFuture<Collection<PantsTargetAddress>> failedFuture(InvalidTargetException ex) {
+  static private CompletableFuture<Pair<PantsTargetAddress,Collection<PantsTargetAddress>>> failedFuture(InvalidTargetException ex) {
     return CompletableFuture.supplyAsync(() ->
                                          {
                                            throw new CompletionException(ex);
