@@ -11,16 +11,28 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class PantsProjectSettings extends ExternalProjectSettings implements PantsCompileOptions {
   private String projectName;
   private List<String> mySelectedTargetSpecs = new ArrayList<>();
   private List<String> myAllAvailableTargetSpecs = new ArrayList<>();
   public boolean libsWithSources;
-  public boolean enableIncrementalImport;
+  public boolean incrementalImportEnabled;
+
+  public boolean isIncrementalImportEnabled() {
+    return incrementalImportEnabled;
+  }
+
+  public int getIncrementalImportDepth() {
+    return incrementalImportDepth;
+  }
+
+  public int incrementalImportDepth;
   public boolean useIdeaProjectJdk;
   public boolean importSourceDepsAsJars;
   public boolean useIntellijCompiler;
+
 
   /**
    * @param allAvailableTargetSpecs   targets explicted listed from `pants idea-plugin` goal.
@@ -38,6 +50,7 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     String externalProjectPath,
     boolean libsWithSources,
     boolean isEnableIncrementalImport,
+    int incrementalImportDepth,
     boolean isUseIdeaProjectJdk,
     boolean isImportSourceDepsAsJars,
     boolean isUseIntellijCompiler
@@ -46,7 +59,8 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     mySelectedTargetSpecs = selectedTargetSpecs;
     myAllAvailableTargetSpecs = allAvailableTargetSpecs;
     this.libsWithSources = libsWithSources;
-    enableIncrementalImport = isEnableIncrementalImport;
+    incrementalImportEnabled = isEnableIncrementalImport;
+    this.incrementalImportDepth = incrementalImportDepth;
     useIdeaProjectJdk = isUseIdeaProjectJdk;
     importSourceDepsAsJars = isImportSourceDepsAsJars;
     useIdeaProjectJdk = isUseIntellijCompiler;
@@ -68,8 +82,9 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
     return Objects.equals(projectName, other.projectName)
            && Objects.equals(libsWithSources, other.libsWithSources)
            && Objects.equals(myAllAvailableTargetSpecs, other.myAllAvailableTargetSpecs)
-           && Objects.equals(enableIncrementalImport, other.enableIncrementalImport)
            && Objects.equals(mySelectedTargetSpecs, other.mySelectedTargetSpecs)
+           && Objects.equals(incrementalImportEnabled, other.incrementalImportEnabled)
+           && Objects.equals(incrementalImportDepth, other.incrementalImportDepth)
            && Objects.equals(useIdeaProjectJdk, other.useIdeaProjectJdk)
            && Objects.equals(importSourceDepsAsJars, other.importSourceDepsAsJars)
            && Objects.equals(useIntellijCompiler, other.useIntellijCompiler);
@@ -91,7 +106,8 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
       ((PantsProjectSettings) receiver).setSelectedTargetSpecs(getSelectedTargetSpecs());
       ((PantsProjectSettings) receiver).setAllAvailableTargetSpecs(getAllAvailableTargetSpecs());
       ((PantsProjectSettings) receiver).libsWithSources = libsWithSources;
-      ((PantsProjectSettings) receiver).enableIncrementalImport = enableIncrementalImport;
+      ((PantsProjectSettings) receiver).incrementalImportDepth = incrementalImportDepth;
+      ((PantsProjectSettings) receiver).incrementalImportEnabled = incrementalImportEnabled;
       ((PantsProjectSettings) receiver).useIdeaProjectJdk = useIdeaProjectJdk;
       ((PantsProjectSettings) receiver).importSourceDepsAsJars = importSourceDepsAsJars;
       ((PantsProjectSettings) receiver).useIntellijCompiler = useIntellijCompiler;
@@ -121,8 +137,8 @@ public class PantsProjectSettings extends ExternalProjectSettings implements Pan
   }
 
   @Override
-  public boolean isEnableIncrementalImport() {
-    return this.enableIncrementalImport;
+  public Optional<Integer> incrementalImportDepth() {
+    return incrementalImportEnabled ? Optional.of(incrementalImportDepth) : Optional.empty();
   }
 
   @Override
