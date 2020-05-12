@@ -56,7 +56,7 @@ public class FastpassManagerDialog extends DialogWrapper {
     Set<String> targets
   ) {
     mainPanel.removeAll();
-    myChooseTargetsPanel = new FastpassEditImportRules(targets, targetsListFetcher);
+    myChooseTargetsPanel = new FastpassEditTargetSpecsPanel(targets, targetsListFetcher);
     mainPanel.add(myChooseTargetsPanel);
     setOKButtonText(CommonBundle.getOkButtonText());
     mainPanel.updateUI();
@@ -75,7 +75,7 @@ public class FastpassManagerDialog extends DialogWrapper {
   @NotNull
   static final Logger logger = Logger.getInstance(FastpassManagerDialog.class);
 
-  FastpassEditImportRules myChooseTargetsPanel;
+  FastpassEditTargetSpecsPanel myChooseTargetsPanel;
 
   @NotNull final JPanel mainPanel = new JPanel();
 
@@ -90,7 +90,7 @@ public class FastpassManagerDialog extends DialogWrapper {
 
   public Optional<Collection<String>> selectedItems() {
     return Optional.ofNullable(myChooseTargetsPanel)
-      .map(FastpassEditImportRules::selectedItems);
+      .map(FastpassEditTargetSpecsPanel::selectedItems);
   }
 
   public static Optional<Set<String>> promptForTargetsToImport(

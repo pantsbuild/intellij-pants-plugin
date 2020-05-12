@@ -22,7 +22,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -31,14 +30,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-class FastpassEditImportRules extends JPanel {
+class FastpassEditTargetSpecsPanel extends JPanel {
   private final FastpassStatus statusLabel;
   private final TargetsPreview preview;
-  final Logger logger = Logger.getInstance(FastpassEditImportRules.class);
+  final Logger logger = Logger.getInstance(FastpassEditTargetSpecsPanel.class);
   private Set<String> targetStrings;
 
 
-  public FastpassEditImportRules(
+  public FastpassEditTargetSpecsPanel(
     @NotNull Collection<String> importedTargets,
     @NotNull PantsTargetsRepository targetsListFetcher
   ) {
