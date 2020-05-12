@@ -6,20 +6,31 @@ package com.twitter.intellij.pants.bsp;
 import com.intellij.testFramework.UsefulTestCase;
 
 import java.nio.file.Paths;
+import java.util.Optional;
 
 public class PantsTargetAddressTest extends UsefulTestCase {
   public void testDirectEntry() {
-    PantsTargetAddress t = PantsTargetAddress.fromString("project:target");
-    assertEquals(t, PantsTargetAddress.oneTargetInDir(Paths.get("project"), "target"));
+    Optional<PantsTargetAddress> t = PantsTargetAddress.tryParse("project:target");
+    assertEquals(t.get(), PantsTargetAddress.oneTargetInDir(Paths.get("project"), "target"));
   }
 
   public void testRecursiveEntry() {
-    PantsTargetAddress t = PantsTargetAddress.fromString("project::");
-    assertEquals(t, PantsTargetAddress.allTargetsInDirDeep(Paths.get("project")));
+    Optional<PantsTargetAddress> t = PantsTargetAddress.tryParse("project::");
+    assertEquals(t.get(), PantsTargetAddress.allTargetsInDirDeep(Paths.get("project")));
   }
 
   public void testFlatEntry() {
-    PantsTargetAddress t = PantsTargetAddress.fromString("project:");
-    assertEquals(t, PantsTargetAddress.allTargetsInDirFlat(Paths.get("project")));
+    Optional<PantsTargetAddress> t = PantsTargetAddress.tryParse("project:");
+    assertEquals(t.get(), PantsTargetAddress.allTargetsInDirFlat(Paths.get("project")));
+  }
+
+  public void testJustColon() {
+    Optional<PantsTargetAddress> t = PantsTargetAddress.tryParse(":");
+    assertFalse(t.isPresent());
+  }
+
+  public void testJustDoubleColon() {
+    Optional<PantsTargetAddress> t = PantsTargetAddress.tryParse("::");
+    assertFalse(t.isPresent());
   }
 }

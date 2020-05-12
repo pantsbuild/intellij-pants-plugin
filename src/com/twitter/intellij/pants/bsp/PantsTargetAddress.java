@@ -55,14 +55,9 @@ public class PantsTargetAddress {
   }
 
   public static PantsTargetAddress fromString(String s) {
-    String[] strings = s.split(":");
-
-    if (strings.length == 2) {
-      return new PantsTargetAddress(Paths.get(strings[0]), AddressKind.SINGLE_TARGET, Optional.of(strings[1]));
-    } else if (s.endsWith("::")) {
-      return new PantsTargetAddress(Paths.get(strings[0]), AddressKind.ALL_TARGETS_DEEP, Optional.empty());
-    } else if (s.endsWith(":")) {
-      return new PantsTargetAddress(Paths.get(strings[0]), AddressKind.ALL_TARGETS_FLAT, Optional.empty());
+    Optional<PantsTargetAddress> parsed = tryParse(s);
+    if(parsed.isPresent()) {
+      return parsed.get();
     } else {
       throw new RuntimeException("PantsTargetAddress: could not parse string '" + s + "'");
     }
@@ -73,9 +68,9 @@ public class PantsTargetAddress {
 
     if (strings.length == 2) {
       return Optional.of(new PantsTargetAddress(Paths.get(strings[0]), AddressKind.SINGLE_TARGET, Optional.of(strings[1])));
-    } else if (s.endsWith("::")) {
+    } else if (strings.length >= 1 && s.endsWith("::")) {
       return Optional.of(new PantsTargetAddress(Paths.get(strings[0]), AddressKind.ALL_TARGETS_DEEP, Optional.empty()));
-    } else if (s.endsWith(":")) {
+    } else if (strings.length >= 1 && s.endsWith(":")) {
       return Optional.of(new PantsTargetAddress(Paths.get(strings[0]), AddressKind.ALL_TARGETS_FLAT, Optional.empty()));
     } else {
       return Optional.empty();
