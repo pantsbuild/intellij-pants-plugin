@@ -14,6 +14,7 @@ import com.twitter.intellij.pants.bsp.PantsTargetsRepository;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import javax.swing.JTextArea;
@@ -34,6 +35,7 @@ class FastpassEditTargetSpecsPanel extends JPanel {
   private final FastpassStatus statusLabel;
   private final TargetsPreview preview;
   final Logger logger = Logger.getInstance(FastpassEditTargetSpecsPanel.class);
+  private final JLabel previewLabel;
   private Set<String> targetStrings;
 
 
@@ -45,9 +47,16 @@ class FastpassEditTargetSpecsPanel extends JPanel {
     mainPanel = new JPanel();
     statusLabel = new FastpassStatus();
     preview = new TargetsPreview();
+
+    previewLabel = new JLabel();
+    previewLabel.setAlignmentX(LEFT_ALIGNMENT);
+
     editor = new JTextArea();
     editor.setText(importedTargets.stream().sorted().collect(Collectors.joining("\n")));
     onRulesListEdition(selectedTargetStrings());
+
+    JLabel editorLabel = new JLabel(PantsBundle.message("pants.bsp.editor.title"));
+    editorLabel.setAlignmentX(LEFT_ALIGNMENT);
 
     editor.addKeyListener(new KeyListener() {
       @Override
@@ -64,12 +73,27 @@ class FastpassEditTargetSpecsPanel extends JPanel {
 
     this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
+
+    JPanel editorPanel = new JPanel();
+    editorPanel.setLayout(new BoxLayout(editorPanel, BoxLayout.PAGE_AXIS));
+    editorPanel.add(editorLabel);
+    JBScrollPane editorScroll = new JBScrollPane(editor);
+    editorScroll.setAlignmentX(LEFT_ALIGNMENT);
+    editorPanel.add(editorScroll);
+
+    JPanel previewPanel = new JPanel();
+    previewPanel.setLayout(new BoxLayout(previewPanel, BoxLayout.PAGE_AXIS));
+    previewPanel.add(previewLabel);
+    JBScrollPane previewScroll = new JBScrollPane(preview);
+    previewScroll.setAlignmentX(LEFT_ALIGNMENT);
+    previewPanel.add(previewScroll);
+
     JPanel southPanel = new JPanel();
     southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.LINE_AXIS));
 
     JBSplitter northPanel = new JBSplitter(false);
-    northPanel.setFirstComponent(new JBScrollPane(editor));
-    northPanel.setSecondComponent(new JBScrollPane(preview));
+    northPanel.setFirstComponent(editorPanel);
+    northPanel.setSecondComponent(previewPanel);
     northPanel.setProportion(0.35f);
     southPanel.add(statusLabel);
 
@@ -84,6 +108,14 @@ class FastpassEditTargetSpecsPanel extends JPanel {
 
 
     this.add(mainPanel);
+  }
+
+  private void setPreviewTitle(int matches) {
+    if(matches == 1 ) {
+      previewLabel.setText(PantsBundle.message("pants.bsp.preview.title.singular", matches));
+    } else {
+      previewLabel.setText(PantsBundle.message("pants.bsp.preview.title.plural", matches));
+    }
   }
 
   private Set<String> selectedTargetStrings() {
@@ -111,12 +143,14 @@ class FastpassEditTargetSpecsPanel extends JPanel {
     if(!previewData.isDone()) {
       preview.setLoading();
       statusLabel.setLoading();
+      setPreviewTitleLoading();
     }
     previewData.whenComplete(
       (value, error) -> SwingUtilities.invokeLater(() -> {
         if (this.targetStrings == targetStrings) {
           if (error == null) {
             Set<PantsTargetAddress> toPreview = value.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
+            setPreviewTitle(toPreview.size());
             preview.updatePreview(toPreview);
             statusLabel.setOk();
           }
@@ -133,5 +167,9 @@ class FastpassEditTargetSpecsPanel extends JPanel {
         }
       })
     );
+  }
+
+  private void setPreviewTitleLoading() {
+    previewLabel.setText(PantsBundle.message("pants.bsp.preview.title.loading"));
   }
 }
