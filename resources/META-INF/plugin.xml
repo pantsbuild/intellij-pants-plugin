@@ -73,6 +73,10 @@
               class="com.twitter.intellij.pants.ui.PantsToBspProjectAction"
               text="Create new BSP project based on this Pants project">
       </action>
+      <action id="com.twitter.intellij.pants.components.impl.FastpassUpdater.Action"
+              class="com.twitter.intellij.pants.components.impl.FastpassUpdater$Action"
+              text="Update fastpass version">
+      </action>
     </group>
 
     <group id="Pants.Compile" text="Pants Compile" description="Pants compilation options" icon="PantsIcons.Icon"

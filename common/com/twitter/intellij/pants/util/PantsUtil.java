@@ -620,7 +620,7 @@ public class PantsUtil {
     }
   }
 
-  private static boolean isBspProject(Project project) {
+  public static boolean isBspProject(Project project) {
     ProjectSystemId id = ProjectSystemId.findById("BSP");
     return id != null && ExternalProjectUtil.isExternalProject(project, id);
   }
