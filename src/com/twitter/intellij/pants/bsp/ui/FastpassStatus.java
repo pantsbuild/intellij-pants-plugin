@@ -34,6 +34,14 @@ public class FastpassStatus extends JPanel {
     this.updateUI();
   }
 
+  public void setWarning(String msg) {
+    this.removeAll();
+    this.add(myLabel);
+    myLabel.setIcon(PlatformIcons.WARNING_INTRODUCTION_ICON);
+    myLabel.setText(msg);
+    this.updateUI();
+  }
+
   public void setError(String msg) {
     this.removeAll();
     this.add(myLabel);

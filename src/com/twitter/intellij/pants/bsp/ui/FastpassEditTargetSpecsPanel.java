@@ -152,7 +152,11 @@ class FastpassEditTargetSpecsPanel extends JPanel {
             Set<PantsTargetAddress> toPreview = value.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
             setPreviewTitle(toPreview.size());
             preview.updatePreview(toPreview);
-            statusLabel.setOk();
+            if(toPreview.size() > 0) {
+              statusLabel.setOk();
+            } else {
+              statusLabel.setWarning(PantsBundle.message("pants.bsp.warn.no.targets"));
+            }
           }
           else {
             preview.setError();
