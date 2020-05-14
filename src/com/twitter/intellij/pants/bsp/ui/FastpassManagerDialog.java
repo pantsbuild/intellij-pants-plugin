@@ -8,6 +8,9 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.util.PlatformIcons;
 import com.intellij.util.ui.AsyncProcessIcon;
 import com.intellij.util.ui.JBUI;
+import com.twitter.intellij.pants.bsp.FastpassTargetListCache;
+import com.twitter.intellij.pants.bsp.FastpassUtils;
+import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.bsp.PantsTargetsRepository;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -32,7 +36,8 @@ public class FastpassManagerDialog extends DialogWrapper {
   public FastpassManagerDialog(
     @NotNull Project project,
     @NotNull CompletableFuture<Set<String>> importedTargets,
-    @NotNull PantsTargetsRepository targetsListFetcher
+    @NotNull PantsTargetsRepository targetsListFetcher,
+    @NotNull Collection<String> newTargets
   ) {
     super(project, false);
     setTitle(PantsBundle.message("pants.bsp.select.targets"));
@@ -42,7 +47,7 @@ public class FastpassManagerDialog extends DialogWrapper {
       (targets, error) ->
         SwingUtilities.invokeLater(() -> {
           if (error == null) {
-            showFastpassChooseTargetsPanel(targetsListFetcher, targets);
+            showFastpassChooseTargetsPanel(targetsListFetcher, targets, newTargets);
           }
           else {
             logger.error(error);
@@ -53,10 +58,11 @@ public class FastpassManagerDialog extends DialogWrapper {
 
   private void showFastpassChooseTargetsPanel(
     @NotNull PantsTargetsRepository targetsListFetcher,
-    Set<String> targets
+    Set<String> targets,
+    Collection<String> newTargets
   ) {
     mainPanel.removeAll();
-    myChooseTargetsPanel = new FastpassEditTargetSpecsPanel(targets, targetsListFetcher);
+    myChooseTargetsPanel = new FastpassEditTargetSpecsPanel(targets, targetsListFetcher, newTargets);
     mainPanel.add(myChooseTargetsPanel);
     setOKButtonText(CommonBundle.getOkButtonText());
     mainPanel.updateUI();
@@ -96,16 +102,29 @@ public class FastpassManagerDialog extends DialogWrapper {
   public static Optional<Set<String>> promptForTargetsToImport(
     Project project,
     CompletableFuture<Set<String>> importedTargets,
-    PantsTargetsRepository fetchTargetsList
+    PantsTargetsRepository fetchTargetsList,
+    Collection<String> newTargets
   ) {
     try {
       FastpassManagerDialog dial =
-        new FastpassManagerDialog(project, importedTargets, fetchTargetsList);
+        new FastpassManagerDialog(project, importedTargets, fetchTargetsList, newTargets);
       dial.show();
       return dial.isOK() ? dial.selectedItems().map(HashSet::new) : Optional.empty();
     }catch (Throwable e) {
       logger.error(e);
       return Optional.empty();
     }
+  }
+
+  public static Optional<Set<String>> promptForNewTargetSpecs(Project project,
+                                                              PantsBspData firstProject,
+                                                              CompletableFuture<Set<String>> oldTargets,
+                                                              Collection<String> newTargets) {
+    FastpassTargetListCache targetsListCache = new FastpassTargetListCache(Paths.get(firstProject.getPantsRoot().getPath()));
+    PantsTargetsRepository getPreview = targets -> FastpassUtils.validateAndGetPreview(firstProject.getPantsRoot(), targets,
+                                                                                       targetsListCache::getTargetsList
+    );
+    return FastpassManagerDialog
+      .promptForTargetsToImport(project, oldTargets, getPreview, newTargets);
   }
 }

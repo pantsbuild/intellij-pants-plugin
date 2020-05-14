@@ -38,10 +38,10 @@ class FastpassEditTargetSpecsPanel extends JPanel {
   private final JLabel previewLabel;
   private Set<String> targetStrings;
 
-
   public FastpassEditTargetSpecsPanel(
-    @NotNull Collection<String> importedTargets,
-    @NotNull PantsTargetsRepository targetsListFetcher
+    @NotNull Collection<String> alreadyImportedTargets,
+    @NotNull PantsTargetsRepository targetsListFetcher,
+    @NotNull Collection<String> targetsToAmend
   ) {
     myPantsTargetsRepository = targetsListFetcher;
     mainPanel = new JPanel();
@@ -52,7 +52,8 @@ class FastpassEditTargetSpecsPanel extends JPanel {
     previewLabel.setAlignmentX(LEFT_ALIGNMENT);
 
     editor = new JTextArea();
-    editor.setText(importedTargets.stream().sorted().collect(Collectors.joining("\n")));
+    editor.setText(alreadyImportedTargets.stream().sorted().collect(Collectors.joining("\n")) + "\n" +
+                   targetsToAmend.stream().sorted().collect(Collectors.joining("\n")));
     onRulesListEdition(selectedTargetStrings());
 
     JLabel editorLabel = new JLabel(PantsBundle.message("pants.bsp.editor.title"));
@@ -106,7 +107,6 @@ class FastpassEditTargetSpecsPanel extends JPanel {
     mainPanel.add(northPanel);
     mainPanel.add(southPanel);
 
-
     this.add(mainPanel);
   }
 
@@ -132,7 +132,6 @@ class FastpassEditTargetSpecsPanel extends JPanel {
   public Set<String> selectedItems() {
     return targetStrings;
   }
-
 
   final PantsTargetsRepository myPantsTargetsRepository;
 
