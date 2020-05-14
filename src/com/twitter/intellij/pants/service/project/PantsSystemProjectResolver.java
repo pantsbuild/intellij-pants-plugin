@@ -81,7 +81,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
       Module[] modules = ModuleManager.getInstance(project).getModules();
       for (Module module : modules) {
-        boolean hasPantsProjectPath = Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), projectPath);
+        boolean hasPantsProjectPath = Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), Paths.get(projectPath).normalize().toString());
         boolean isNotBeingImported = !importedModules.contains(module.getName());
         if (hasPantsProjectPath && isNotBeingImported) {
           ModuleManager.getInstance(project).disposeModule(module);
@@ -109,7 +109,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     checkForDifferentPantsExecutables(id, projectPath);
     final PantsCompileOptionsExecutor executor = PantsCompileOptionsExecutor.create(projectPath, settings);
     task2executor.put(id, executor);
-    DataNode<ProjectData> projectDataNode = resolveProjectInfoImpl(id, executor, listener, settings, isPreviewMode);
+
+    final DataNode<ProjectData> projectDataNode =
+      resolveProjectInfoImpl(id, executor, listener, settings, isPreviewMode);
+
     // We do not want to repeatedly force switching to 'Project Files Tree' view if
     // user decides to use import dep as jar and wants to use the more focused 'Project' view.
     if (!settings.isImportSourceDepsAsJars()) {
@@ -206,7 +209,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       .ifPresent(sdk -> projectDataNode.createChild(ProjectSdkData.KEY, sdk));
 
     if (!isPreviewMode) {
-      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(settings.isEnableIncrementalImport());
+      PantsExternalMetricsListenerManager.getInstance().logIsIncrementalImport(settings.incrementalImportDepth().isPresent());
       resolveUsingPantsGoal(id, executor, listener, projectDataNode);
 
       if (!containsContentRoot(projectDataNode, executor.getProjectDir())) {

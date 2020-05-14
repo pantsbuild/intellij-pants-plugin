@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @State(
@@ -78,15 +79,19 @@ public class PantsSettings extends AbstractExternalSystemSettings<PantsSettings,
   }
 
   public boolean isEnableIncrementalImport() {
-    return getLinkedProjectsSettings().stream().anyMatch(PantsProjectSettings::isEnableIncrementalImport);
+    return getLinkedProjectsSettings().stream().anyMatch(x -> x.incrementalImportDepth().isPresent());
   }
+
 
   public boolean isUseIntellijCompiler() {
     return getLinkedProjectsSettings().stream().anyMatch(s -> s.useIntellijCompiler);
   }
-
-  public void setEnableIncrementalImport(boolean enableIncrementalImport) {
-    getLinkedProjectsSettings().forEach(s -> s.enableIncrementalImport = enableIncrementalImport);
+  public void setEnableIncrementalImport(Optional<Integer> incrementalImportDepth) {
+    getLinkedProjectsSettings().forEach(s ->
+                                        {
+                                          s.incrementalImportEnabled = incrementalImportDepth.isPresent();
+                                          s.incrementalImportDepth = incrementalImportDepth.orElse(0);
+                                        });
   }
 
   public int getResolverVersion() {

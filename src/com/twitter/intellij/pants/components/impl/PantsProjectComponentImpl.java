@@ -71,6 +71,7 @@ public class PantsProjectComponentImpl implements ProjectManagerListener {
       new Runnable() {
         @Override
         public void run() {
+          FastpassUpdater.initialize(project);
           if (PantsUtil.isSeedPantsProject(project)) {
             convertToPantsProject();
             // projectOpened() is called on the dispatch thread, while
@@ -113,8 +114,8 @@ public class PantsProjectComponentImpl implements ProjectManagerListener {
           }
           // TODO: This is actually an integer value: if we replaced the incremental import
           // checkbox with an integer optional, we could propagate this value through.
-          final boolean enableIncrementalImport =
-            PropertiesComponent.getInstance(project).getValue("incremental_import") != null;
+          final Optional<Integer> enableIncrementalImport =
+            Optional.ofNullable(PropertiesComponent.getInstance(project).getValue("incremental_import")).map(Integer::parseInt);
 
           final boolean enableExportDepAsJar =
             Boolean.parseBoolean(Optional.ofNullable(PropertiesComponent.getInstance(project).getValue("dep_as_jar")).orElse("false"));
@@ -128,9 +129,7 @@ public class PantsProjectComponentImpl implements ProjectManagerListener {
           final boolean useIntellijCompiler = false;
           final PantsProjectSettings pantsProjectSettings =
             new PantsProjectSettings(
-              targetSpecs, targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport, useIdeaProjectJdk, enableExportDepAsJar,
-              useIntellijCompiler
-            );
+              targetSpecs, targetSpecs, projectPath, loadLibsAndSources, enableIncrementalImport.isPresent(), enableIncrementalImport.orElse(0), useIdeaProjectJdk, enableExportDepAsJar, useIntellijCompiler);
 
           /**
            * Following procedures in {@link com.intellij.openapi.externalSystem.util.ExternalSystemUtil#refreshProjects}:

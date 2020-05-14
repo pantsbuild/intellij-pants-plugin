@@ -54,7 +54,7 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
     Set<TargetInfo> targetInfoWithinLevel = null;
     if (buildGraph.isPresent()) {
       final int maxDepth = buildGraph.get().getMaxDepth();
-      getDepthToImportFromUser(maxDepth);
+      depthToInclude = executor.getIncrementalImportDepth().orElse(null);
       if (depthToInclude == null) {
         throw new PantsException("Task cancelled");
       }
@@ -90,30 +90,6 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
         );
       modules.put(targetName, moduleData);
     }
-  }
-
-  private void getDepthToImportFromUser(final int maxDepth) {
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-      @Override
-      public void run() {
-        String result = Messages.showInputDialog(
-          String.format(
-            "Enter the depth of transitive dependencies to import min: 0, max: %s.\n" +
-            "0: root level.\n" +
-            "1: up to direct dependency.\n" +
-            "%s: entire build graph", maxDepth, maxDepth
-          ),
-          "Incremental Import",
-          PantsIcons.Icon, //icon
-          String.valueOf(maxDepth),  //initial number
-          null //validator per keystroke, not necessary in this case.
-        );
-        depthToInclude = result == null ? null : Integer.valueOf(result);
-        if (depthToInclude == null || depthToInclude < 0 || depthToInclude > maxDepth) {
-          throw new PantsException("Invalid input");
-        }
-      }
-    }, ModalityState.NON_MODAL);
   }
 
   @NotNull
