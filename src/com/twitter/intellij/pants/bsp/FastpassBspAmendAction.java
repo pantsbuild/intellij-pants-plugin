@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.bsp.BSP;
 import org.jetbrains.bsp.BspUtil;
 
+import javax.swing.SwingUtilities;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,7 +89,12 @@ public class FastpassBspAmendAction extends AnAction {
   ) {
     oldTargets.thenAccept(
       oldTargetsVal -> newTargets.ifPresent(newTargetsVal -> {
-        if (!newTargets.get().equals(oldTargetsVal)) {
+        if(newTargetsVal.isEmpty()) {
+          SwingUtilities.invokeLater(() -> {
+            Messages.showErrorDialog(PantsBundle.message("pants.bsp.msg.box.empty.list.content"),
+                                     PantsBundle.message("pants.bsp.msg.box.amend.title"));
+          });
+        } else if (!newTargetsVal.equals(oldTargetsVal)) {
           try {
             refreshProjectsWithNewTargetsList(project, newTargets.get(), basePath);
           }
@@ -96,7 +102,10 @@ public class FastpassBspAmendAction extends AnAction {
             logger.error(e);
           }
         } else {
-          logger.info("Nothing changed");
+          SwingUtilities.invokeLater(() -> {
+            Messages.showInfoMessage(PantsBundle.message("pants.bsp.msg.box.specs.unchanged.content"),
+                                     PantsBundle.message("pants.bsp.msg.box.amend.title"));
+          });
         }
       })
     );
