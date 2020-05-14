@@ -41,6 +41,9 @@ public class TargetInfo {
    */
   protected Set<ContentRoot> roots = Collections.emptySet();
 
+  // TODO: This is a hack and should never be merged
+  public Set<ContentRoot> roots_copy = Collections.emptySet();
+
   public TargetInfo(TargetAddressInfo... addressInfos) {
     setAddressInfos(ContainerUtil.newHashSet(addressInfos));
   }
@@ -57,6 +60,7 @@ public class TargetInfo {
     setExcludes(excludes);
     setTargets(targets);
     setRoots(roots);
+    roots_copy = roots.stream().collect(Collectors.toSet());
   }
 
   public Set<TargetAddressInfo> getAddressInfos() {

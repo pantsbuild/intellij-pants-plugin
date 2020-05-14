@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.service.project.resolver;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
 import com.intellij.openapi.externalSystem.model.project.ContentRootData;
+import com.intellij.openapi.externalSystem.model.project.ExternalSystemSourceType;
 import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.util.io.FileUtil;
@@ -13,6 +14,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsSourceType;
+import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
 import com.twitter.intellij.pants.service.project.model.ContentRoot;
@@ -22,6 +24,8 @@ import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -75,26 +79,37 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
       return;
     }
 
+    // TODO this uses the hacky roots_copy field, which we shouldn't do.
+    Set<String> absolutePathsToAllTheRoots =
+      targetInfo
+        .roots_copy.stream()
+        .map( root -> {return root.getRawSourceRoot();})
+        .collect(Collectors.toSet());
+
     for (String baseRoot : findBaseRoots(targetInfo, roots)) {
       final ContentRootData contentRoot = new ContentRootData(PantsConstants.SYSTEM_ID, baseRoot);
       moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
+      contentRoot.storePath(
+        targetInfo.getSourcesType().toExternalSystemSourceType(),
+        baseRoot
+      );
 
-      for (ContentRoot sourceRoot : roots) {
-        final String sourceRootPathToAdd = getSourceRootRegardingTargetType(targetInfo, sourceRoot);
-        if (FileUtil.isAncestor(baseRoot, sourceRootPathToAdd, false)) {
-          try {
-            contentRoot.storePath(
-              targetInfo.getSourcesType().toExternalSystemSourceType(),
-              sourceRootPathToAdd,
-              doNotSupportPackagePrefixes(targetInfo) ? null : sourceRoot.getPackagePrefix()
-            );
-          }
-          catch (IllegalArgumentException e) {
-            LOG.warn(e);
-            // todo(fkorotkov): log and investigate exceptions from ContentRootData.storePath(ContentRootData.java:94)
-          }
-        }
+      if (targetInfo.getAddressInfos().stream().anyMatch(TargetAddressInfo::isScala)) {
+        excludeSubfoldersThatAreNotContentRoots(baseRoot, contentRoot, absolutePathsToAllTheRoots);
       }
+    }
+  }
+
+  private void excludeSubfoldersThatAreNotContentRoots(@NotNull final String rootToExcludeFrom, ContentRootData contentRootData, @NotNull final Set<String> absolutPathsToAllTheRoots) {
+    File baseRootFile = new File(rootToExcludeFrom);
+    List<File> subdirs = Arrays.asList(baseRootFile.listFiles());
+    for (File subdir : subdirs) {
+      ContentRootData.SourceRoot subdirPath = new ContentRootData.SourceRoot(subdir.getPath(), "");
+      if (subdir.isDirectory() && !absolutPathsToAllTheRoots.contains(subdir.getAbsolutePath()))
+        contentRootData.storePath(
+          ExternalSystemSourceType.EXCLUDED,
+          subdir.getPath()
+        );
     }
   }
 
