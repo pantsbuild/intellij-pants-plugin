@@ -160,6 +160,8 @@
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsSettings"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>
 
+    <projectService serviceImplementation="com.twitter.intellij.pants.bsp.JarMappings"/>
+
     <treeStructureProvider implementation="com.twitter.intellij.pants.projectview.PantsTreeStructureProvider"/>
     <projectViewPane implementation="com.twitter.intellij.pants.projectview.ProjectFilesViewPane"/>
 

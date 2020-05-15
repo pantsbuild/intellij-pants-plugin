@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SourceJarGenerator extends AbstractAttachSourceProvider {
@@ -51,21 +52,27 @@ public class SourceJarGenerator extends AbstractAttachSourceProvider {
 
   @NotNull
   @Override
-  public Collection<AttachSourcesAction> getActions(List<LibraryOrderEntry> orderEntries, PsiFile psiFile) {
-    return extractTargetAddress(psiFile)
-      .<Collection<AttachSourcesAction>>map(target -> Collections.singleton(new GenerateSourceJarAction(psiFile, target)))
-      .orElse(Collections.emptySet());
+  public Collection<AttachSourcesAction> getActions(List<LibraryOrderEntry> orderEntries, PsiFile classFile) {
+    JarMappings mappings = JarMappings.getInstance(classFile.getProject());
+
+    return resolveJar(classFile).flatMap(jar -> {
+      Optional<Set<AttachSourcesAction>> generateSourceJarForInternalDependency =
+        mappings.findTargetForClassJar(jar)
+          .flatMap(target -> mappings.findSourceJarForTarget(target)
+            .map(sourceJar -> Collections.singleton(
+              exists(sourceJar)
+              ? new AttachExistingSourceJarAction(sourceJar)
+              : new GenerateSourceJarAction(classFile, target, sourceJar))));
+
+      Optional<Set<AttachSourcesAction>> attachSourceJarForLibrary =
+        mappings.findSourceJarForLibraryJar(jar)
+          .map(libraryJar -> Collections.singleton(new AttachExistingSourceJarAction(libraryJar)));
+
+      return attachSourceJarForLibrary.map(Optional::of).orElse(generateSourceJarForInternalDependency);
+    }).orElse(Collections.emptySet());
   }
 
-  private static class GenerateSourceJarAction implements AttachSourcesAction {
-    private final PsiFile psiFile;
-    private String target;
-
-    private GenerateSourceJarAction(PsiFile psiFile, String target) {
-      this.psiFile = psiFile;
-      this.target = target;
-    }
-
+  private static abstract class PantsAttachSourcesAction implements AttachSourcesAction {
     @Override
     public String getName() {
       return "Import Sources from Pants";
@@ -84,16 +91,38 @@ public class SourceJarGenerator extends AbstractAttachSourceProvider {
         .collect(Collectors.toSet());
 
       if (libraries.isEmpty()) return ActionCallback.REJECTED;
+      return perform(libraries);
+    }
 
+    protected void attach(File jar, Collection<Library> libraries) {
+      ApplicationManager.getApplication().invokeAndWait(() -> WriteAction.runAndWait(() -> attachSourceJar(jar, libraries)));
+    }
+
+    protected abstract ActionCallback perform(Collection<Library> libraries);
+  }
+
+  private static class GenerateSourceJarAction extends PantsAttachSourcesAction {
+    private final PsiFile psiFile;
+    private final String target;
+    private final String sourceJarPath;
+
+    private GenerateSourceJarAction(PsiFile psiFile, String target, String sourceJar) {
+      this.psiFile = psiFile;
+      this.target = target;
+      this.sourceJarPath = sourceJar;
+    }
+
+    @Override
+    public ActionCallback perform(Collection<Library> libraries) {
       ActionCallback callback = new ActionCallback();
       Task task = new Task.Backgroundable(psiFile.getProject(), "Generating source jar from Pants") {
         @Override
         public void run(@NotNull ProgressIndicator indicator) {
           try {
             indicator.setText("Generating source jar");
-            File jar = generateSourceJar(indicator, target, psiFile);
+            File sourceJar = generateSourceJar(indicator, target, sourceJarPath, psiFile);
             indicator.setText("Attaching source jar");
-            ApplicationManager.getApplication().invokeAndWait(() -> WriteAction.runAndWait(() -> attachSourceJar(jar, libraries)));
+            attach(sourceJar, libraries);
             callback.setDone();
           }
           catch (Exception e) {
@@ -103,13 +132,31 @@ public class SourceJarGenerator extends AbstractAttachSourceProvider {
           }
         }
       };
-
       task.queue();
       return callback;
     }
   }
 
-  private static File generateSourceJar(ProgressIndicator progress, String target, PsiFile psiFile) throws IOException, URISyntaxException {
+  private static class AttachExistingSourceJarAction extends PantsAttachSourcesAction {
+    private File sourceJar;
+
+    private AttachExistingSourceJarAction(String sourceJar) {
+      this.sourceJar = new File(sourceJar);
+    }
+
+    public ActionCallback perform(Collection<Library> libraries) {
+      attach(sourceJar, libraries);
+      return ActionCallback.DONE;
+    }
+  }
+
+  private Optional<VirtualFile> resolveJar(PsiFile classFile) {
+    return Optional.ofNullable(getJarByPsiFile(classFile));
+  }
+
+  private static File generateSourceJar(ProgressIndicator progress, String target, String sourceJarPath, PsiFile psiFile)
+    throws IOException, URISyntaxException {
+
     Project project = psiFile.getProject();
 
     progress.setText("Getting source paths for target " + target);
@@ -119,8 +166,7 @@ public class SourceJarGenerator extends AbstractAttachSourceProvider {
     Path buildRoot = findBuildRoot(project);
 
     progress.setText("Preparing source jar");
-    Path targetPath = setupTargetJarPath(target, project);
-
+    Path targetPath = Paths.get(sourceJarPath);
     Optional<String> packageName = findPackageName(psiFile);
     try (FileSystem zipFileSystem = createZipFileSystem(targetPath)) {
       for (String source : sources) {
@@ -139,30 +185,15 @@ public class SourceJarGenerator extends AbstractAttachSourceProvider {
 
   @NotNull
   private static Path findBuildRoot(Project project) {
-    return Paths.get(PantsUtil.findBuildRoot(project).map(
-      VirtualFile::getPath).orElseThrow(() -> new PantsException("Could not find build root for " + project)));
-  }
-
-  private static Path setupTargetJarPath(String targetAddress, Project project) throws IOException {
-    Path bloopJarsDir = bloopJarsPath(project);
-    Files.createDirectories(bloopJarsDir);
-
-    String sanitizedTargetAddress = targetAddress.replace('/', '.').replace(':', '.');
-    String jarName = sanitizedTargetAddress + "-sources.jar";
-    Path targetPath = bloopJarsDir.resolve(jarName);
-    Files.deleteIfExists(targetPath);
-    return targetPath;
+    return Paths.get(PantsUtil.findBuildRoot(project)
+                       .map(VirtualFile::getPath)
+                       .orElseThrow(() -> new PantsException("Could not find build root for " + project)));
   }
 
   private static FileSystem createZipFileSystem(Path targetPath) throws URISyntaxException, IOException {
     URI fileUri = targetPath.toUri();
     URI zipUri = new URI("jar:" + fileUri.getScheme(), fileUri.getPath(), null);
     return FileSystems.newFileSystem(zipUri, Collections.singletonMap("create", Files.notExists(targetPath)));
-  }
-
-  @NotNull
-  private static Path bloopJarsPath(Project project) {
-    return Paths.get(project.getBasePath(), ".bloop", "bloop-jars");
   }
 
   @NotNull
@@ -258,25 +289,6 @@ public class SourceJarGenerator extends AbstractAttachSourceProvider {
     }
   }
 
-  private Optional<String> extractTargetAddress(PsiFile classFile) {
-    if (!isProjectInternalDependency(classFile)) {
-      return Optional.empty();
-    }
-    return Optional.ofNullable(getJarByPsiFile(classFile)).map(jar -> {
-      String jarName = jar.getNameWithoutExtension();
-      String[] components = jarName.split("\\.");
-      String[] targetPath = Arrays.copyOf(components, components.length - 1);
-      String targetName = components[components.length - 1];
-      return String.join("/", targetPath) + ":" + targetName;
-    });
-  }
-
-  private boolean isProjectInternalDependency(PsiFile classFile) {
-    Path classFilePath = Paths.get(classFile.getVirtualFile().getPath());
-    Path bloopJarsPath = bloopJarsPath(classFile.getProject());
-    return classFilePath.startsWith(bloopJarsPath);
-  }
-
   public static void attachSourceJar(@NotNull File sourceJar, @NotNull Collection<? extends Library> libraries) {
     VirtualFile srcFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(sourceJar);
     if (srcFile == null) return;
@@ -295,5 +307,10 @@ public class SourceJarGenerator extends AbstractAttachSourceProvider {
         model.commit();
       }
     });
+  }
+
+  private boolean exists(String sourceJar) {
+    VirtualFile path = LocalFileSystem.getInstance().findFileByPath(sourceJar);
+    return path != null && path.exists();
   }
 }
