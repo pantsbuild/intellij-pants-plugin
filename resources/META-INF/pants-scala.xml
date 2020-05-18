@@ -2,6 +2,14 @@
 <!-- Licensed under the Apache License, Version 2.0 (see LICENSE). -->
 
 <idea-plugin version="2">
+  <actions>
+    <action id="com.twitter.intellij.pants.compiler.actions.BspAmendProjectAction"
+            class="com.twitter.intellij.pants.bsp.FastpassBspAmendAction"
+            text="Amend BSP project">
+      <add-to-group group-id="Pants.Menu"/>
+    </action>
+  </actions>
+
   <extensions defaultExtensionNs="com.intellij">
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService" order="last"/>
     <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantsScalaHighlightVisitor"/>
