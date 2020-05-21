@@ -34,6 +34,7 @@ public class AddPythonFacetQuickFixTest extends OSSPantsIntegrationTest {
     VirtualFile vfile = myProjectRoot.findFileByRelativePath(helloProjectPath + "BUILD");
     assertNotNull(vfile);
     PsiFile build = PsiManager.getInstance(myProject).findFile(vfile);
+    assertNotNull(build);
     PythonFacetInspection inspection = new PythonFacetInspection();
     InspectionManager manager = InspectionManager.getInstance(myProject);
 
@@ -43,9 +44,11 @@ public class AddPythonFacetQuickFixTest extends OSSPantsIntegrationTest {
 
     // We should not have any interpreter selected for the BUILD file
     ProblemDescriptor[] problems = inspection.checkFile(build, manager, false);
+    assertNotNull(problems);
     assertSize(1, problems);
 
-    QuickFix[] fixes = problems[0].getFixes();
+    QuickFix<?>[] fixes = problems[0].getFixes();
+    assertNotNull(fixes);
     assertSize(1, fixes);
 
     AddPythonFacetQuickFix expected = new AddPythonFacetQuickFix();
@@ -67,6 +70,7 @@ public class AddPythonFacetQuickFixTest extends OSSPantsIntegrationTest {
     doImport(helloProjectPath);
 
     VirtualFile vfile = myProjectRoot.findFileByRelativePath(helloProjectPath + "BUILD");
+    assertNotNull(vfile);
 
     PsiFile build = PsiManager.getInstance(myProject).findFile(vfile);
 

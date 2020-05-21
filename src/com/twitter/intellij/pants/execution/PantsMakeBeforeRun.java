@@ -75,14 +75,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   public static final Key<ExternalSystemBeforeRunTask> ID = Key.create("Pants.BeforeRunTask");
   public static final String ERROR_TAG = "[error]";
-  private static ConcurrentHashMap<Project, Process> runningPantsProcesses = new ConcurrentHashMap<>();
-
-  public static boolean hasActivePantsProcess(@NotNull Project project) {
-    return runningPantsProcesses.containsKey(project);
-  }
+  private static final ConcurrentHashMap<Project, Process> runningPantsProcesses = new ConcurrentHashMap<>();
 
   public PantsMakeBeforeRun(@NotNull Project project) {
     super(PantsConstants.SYSTEM_ID, project, ID);
+  }
+
+  public static boolean hasActivePantsProcess(@NotNull Project project) {
+    return runningPantsProcesses.containsKey(project);
   }
 
   public static void setRunConfigurationWorkingDirectory(@NotNull RunConfiguration runConfiguration) {
@@ -94,17 +94,17 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
      * Use string test on class name due to scala plugin can be optional and it is hard to separate this logic.
      */
     if (PantsUtil.isScalaRelatedTestRunConfiguration(runConfiguration)) {
-      if (buildRoot.isPresent()) {
-        ((AbstractTestRunConfiguration) runConfiguration).testConfigurationData().setWorkingDirectory(buildRoot.get().getPath());
-      }
+      buildRoot
+        .map(VirtualFile::getPath)
+        .ifPresent(((AbstractTestRunConfiguration) runConfiguration).testConfigurationData()::setWorkingDirectory);
     }
     /**
      * JUnit, Application, etc configuration inherit {@link CommonProgramRunConfigurationParameters}
      */
     else if (runConfiguration instanceof CommonProgramRunConfigurationParameters) {
-      if (buildRoot.isPresent()) {
-        ((CommonProgramRunConfigurationParameters) runConfiguration).setWorkingDirectory(buildRoot.get().getPath());
-      }
+      buildRoot
+        .map(VirtualFile::getPath)
+        .ifPresent(((CommonProgramRunConfigurationParameters) runConfiguration)::setWorkingDirectory);
     }
   }
 
@@ -152,18 +152,16 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   }
 
   @Override
-  public boolean canExecuteTask(
-    RunConfiguration configuration, ExternalSystemBeforeRunTask beforeRunTask
-  ) {
+  public boolean canExecuteTask(@NotNull RunConfiguration configuration, @NotNull ExternalSystemBeforeRunTask beforeRunTask) {
     return true;
   }
 
   @Override
   public boolean executeTask(
-    final DataContext context,
+    @NotNull DataContext context,
     RunConfiguration configuration,
-    ExecutionEnvironment env,
-    ExternalSystemBeforeRunTask beforeRunTask
+    @NotNull ExecutionEnvironment env,
+    @NotNull ExternalSystemBeforeRunTask beforeRunTask
   ) {
     Project currentProject = configuration.getProject();
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
@@ -185,17 +183,19 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   /**
    * Execute a list of tasks on a set of target addresses, doing some compile-specific checks.
    *
-   * @param currentProject:           current project
-   * @param targetAddresses:          set of target addresses given to pants executable (e.g. "::")
-   * @param tasks:                    set of tasks given to pants executable (e.g. "lint")
-   * @param opTitle:                  simple title describing what this invocation is doing (e.g. "Compile")
+   * @param currentProject:  current project
+   * @param targetAddresses: set of target addresses given to pants executable (e.g. "::")
+   * @param tasks:           set of tasks given to pants executable (e.g. "lint")
+   * @param opTitle:         simple title describing what this invocation is doing (e.g. "Compile")
    * @return whether the execution is successful and an optional message
    * describing the result as a PantsExecuteTaskResult object
    */
-  public PantsExecuteTaskResult invokePants(@NotNull Project currentProject,
-                                            @NotNull Set<String> targetAddresses,
-                                            @NotNull List<String> tasks,
-                                            @NotNull String opTitle) {
+  public PantsExecuteTaskResult invokePants(
+    @NotNull Project currentProject,
+    @NotNull Set<String> targetAddresses,
+    @NotNull List<String> tasks,
+    @NotNull String opTitle
+  ) {
     prepareIDE(currentProject);
 
     if (targetAddresses.isEmpty()) {
@@ -276,7 +276,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     final List<String> output = new ArrayList<>();
     processHandler.addProcessListener(new ProcessAdapter() {
       @Override
-      public void onTextAvailable(ProcessEvent event, Key outputType) {
+      public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
         super.onTextAvailable(event, outputType);
         showPantsMakeTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, currentProject);
         output.add(event.getText());
@@ -291,7 +291,8 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       if (success) {
         // manifest jar is always created if the run succeeds
         FileChangeTracker.addManifestJarIntoSnapshot(currentProject);
-      } else {
+      }
+      else {
         // Mark project dirty if compile failed.
         FileChangeTracker.markDirty(currentProject);
       }
@@ -306,8 +307,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     notify(notifTitle, resultDescription, notifType);
 
     String finalOutString = String.join("", output);
-    PantsExecuteTaskResult result = new PantsExecuteTaskResult(success, Optional.of(finalOutString));
-    return result;
+    return new PantsExecuteTaskResult(success, Optional.of(finalOutString));
   }
 
   /**
@@ -316,17 +316,16 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    * @param useCleanAll:              whether to run "clean-all" before the compilation
    * @return the result of invoking pants with the "compile" task on the given targets.
    */
-  public PantsExecuteTaskResult executeCompileTask(@NotNull Project currentProject,
-                                                   @NotNull Set<String> targetAddressesToCompile,
-                                                   boolean useCleanAll) {
+  public PantsExecuteTaskResult executeCompileTask(
+    @NotNull Project currentProject,
+    @NotNull Set<String> targetAddressesToCompile,
+    boolean useCleanAll
+  ) {
 
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-      @Override
-      public void run() {
-        /* Force cached changes to disk so {@link com.twitter.intellij.pants.file.FileChangeTracker} can mark the project dirty. */
-        FileDocumentManager.getInstance().saveAllDocuments();
-        currentProject.save();
-      }
+    ApplicationManager.getApplication().invokeAndWait(() -> {
+      /* Force cached changes to disk so {@link com.twitter.intellij.pants.file.FileChangeTracker} can mark the project dirty. */
+      FileDocumentManager.getInstance().saveAllDocuments();
+      currentProject.save();
     }, ModalityState.NON_MODAL);
 
     // If project has not changed since last Compile, return immediately.
@@ -345,25 +344,19 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
   private void notify(final String title, final String subtitle, NotificationType type) {
     /* Show pop up notification about pants compile result. */
-    ApplicationManager.getApplication().invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        Notification start = new Notification(PantsConstants.PANTS, PantsIcons.Icon, title, subtitle, null, type, null);
-        Notifications.Bus.notify(start);
-      }
+    ApplicationManager.getApplication().invokeLater(() -> {
+      Notification start = new Notification(PantsConstants.PANTS, PantsIcons.Icon, title, subtitle, null, type, null);
+      Notifications.Bus.notify(start);
     });
   }
 
   private void prepareIDE(Project project) {
-    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-      @Override
-      public void run() {
-        /* Clear message window. */
-        ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
-        executionConsole.getComponent().setVisible(true);
-        executionConsole.clear();
-        ToolWindowManagerEx.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
-      }
+    ApplicationManager.getApplication().invokeAndWait(() -> {
+      /* Clear message window. */
+      ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
+      executionConsole.getComponent().setVisible(true);
+      executionConsole.clear();
+      ToolWindowManagerEx.getInstance(project).getToolWindow(PantsConstants.PANTS_CONSOLE_NAME).activate(null);
     }, ModalityState.NON_MODAL);
   }
 
@@ -399,40 +392,33 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
 
 
   private void showPantsMakeTaskMessage(String message, ConsoleViewContentType type, Project project) {
-    ConsoleView executionConsole = PantsConsoleManager.getOrMakeNewConsole(project);
+    ConsoleView executionConsole = PantsConsoleManager.getConsole(project);
     // Create a filter that monitors console outputs, and turns them into a hyperlink if applicable.
-    Filter filter = new Filter() {
-      @Nullable
-      @Override
-      public Result applyFilter(String line, int entireLength) {
-        Optional<ParseResult> result = ParseResult.parseErrorLocation(line, ERROR_TAG);
-        if (result.isPresent()) {
+    Filter filter = (line, entireLength) -> {
+      Optional<ParseResult> result = ParseResult.parseErrorLocation(line, ERROR_TAG);
+      if (result.isPresent()) {
 
-          OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
-            project,
-            result.get().getFile(),
-            result.get().getLineNumber() - 1, // line number needs to be 0 indexed
-            result.get().getColumnNumber() - 1 // column number needs to be 0 indexed
-          );
-          int startHyperlink = entireLength - line.length() + line.indexOf(ERROR_TAG);
+        OpenFileHyperlinkInfo linkInfo = new OpenFileHyperlinkInfo(
+          project,
+          result.get().getFile(),
+          result.get().getLineNumber() - 1, // line number needs to be 0 indexed
+          result.get().getColumnNumber() - 1 // column number needs to be 0 indexed
+        );
+        int startHyperlink = entireLength - line.length() + line.indexOf(ERROR_TAG);
 
-          return new Result(
-            startHyperlink,
-            entireLength,
-            linkInfo,
-            null // TextAttributes, going with default hence null
-          );
-        }
-        return null;
+        return new Filter.Result(
+          startHyperlink,
+          entireLength,
+          linkInfo,
+          null // TextAttributes, going with default hence null
+        );
       }
+      return null;
     };
 
-    ApplicationManager.getApplication().invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        executionConsole.addMessageFilter(filter);
-        executionConsole.print(message, type);
-      }
+    ApplicationManager.getApplication().invokeLater(() -> {
+      executionConsole.addMessageFilter(filter);
+      executionConsole.print(message, type);
     }, ModalityState.NON_MODAL);
   }
 
@@ -440,10 +426,16 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
    * Encapsulate the result of parsed data.
    */
   static class ParseResult {
-    private VirtualFile file;
-    private int lineNumber;
-    private int columnNumber;
+    private final VirtualFile file;
+    private final int lineNumber;
+    private final int columnNumber;
 
+
+    private ParseResult(VirtualFile file, int lineNumber, int columnNumber) {
+      this.file = file;
+      this.lineNumber = lineNumber;
+      this.columnNumber = columnNumber;
+    }
 
     /**
      * This function parses Pants output against known file and tag,
@@ -472,20 +464,14 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
           return Optional.empty();
         }
         // line number is between first and second colon
-        int lineNumber = Integer.valueOf(splitByColon[1]);
+        int lineNumber = Integer.parseInt(splitByColon[1]);
         // column number is between second and third colon
-        int columnNumber = Integer.valueOf(splitByColon[2]);
+        int columnNumber = Integer.parseInt(splitByColon[2]);
         return Optional.of(new ParseResult(virtualFile, lineNumber, columnNumber));
       }
       catch (NumberFormatException e) {
         return Optional.empty();
       }
-    }
-
-    private ParseResult(VirtualFile file, int lineNumber, int columnNumber) {
-      this.file = file;
-      this.lineNumber = lineNumber;
-      this.columnNumber = columnNumber;
     }
 
     @Override

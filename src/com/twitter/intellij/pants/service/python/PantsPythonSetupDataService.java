@@ -10,21 +10,13 @@ import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider;
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataService;
-import com.intellij.openapi.externalSystem.util.DisposeAwareProjectChange;
-import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.util.Computable;
-import com.intellij.util.Function;
-import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.containers.ContainerUtilRt;
 import com.jetbrains.python.facet.PythonFacet;
 import com.jetbrains.python.facet.PythonFacetType;
-import com.jetbrains.python.sdk.PythonSdkType;
 import com.jetbrains.python.testing.TestRunnerService;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,19 +44,14 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
   ) {
     final Set<PythonInterpreterInfo> interpreters = ContainerUtil.map2Set(
       toImport,
-      new Function<DataNode<PythonSetupData>, PythonInterpreterInfo>() {
-        @Override
-        public PythonInterpreterInfo fun(DataNode<PythonSetupData> node) {
-          return node.getData().getInterpreterInfo();
-        }
-      }
+      node -> node.getData().getInterpreterInfo()
     );
 
     if (interpreters.isEmpty()) {
       return;
     }
 
-    final Map<PythonInterpreterInfo, Sdk> interpreter2sdk = ContainerUtilRt.newHashMap();
+    final Map<PythonInterpreterInfo, Sdk> interpreter2sdk = new HashMap<>();
 
     /**
      * TODO(yic): to move it to a thread appropriate place.

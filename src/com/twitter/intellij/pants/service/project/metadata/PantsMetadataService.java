@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.service.project.metadata;
 
+import com.google.gson.Gson;
 import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
@@ -18,7 +19,6 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.google.gson.Gson;
 
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -64,12 +64,7 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
     @NotNull Project project,
     @NotNull IdeModifiableModelsProvider modelsProvider
   ) {
-    return new Computable<Collection<Module>>() {
-      @Override
-      public Collection<Module> compute() {
-        return Collections.emptyList();
-      }
-    };
+    return Collections::emptyList;
   }
 
   @Override

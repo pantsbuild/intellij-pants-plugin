@@ -84,6 +84,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private JBCheckBox myImportSourceDepsAsJarsCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.import.deps.as.jars"));
   private JBCheckBox myUseIntellijCompilerCheckBox = new JBCheckBox(PantsBundle.message("pants.settings.text.use.intellij.compiler"));
   private JPanel myImportDepthPanel = importDepthPanel(myImportDepthSpinner);
+
   @VisibleForTesting
   protected Set<String> errors = new HashSet<>();
 
@@ -114,12 +115,10 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
     myUseIdeaProjectJdkCheckBox.setSelected(initialSettings.useIdeaProjectJdk);
     myImportSourceDepsAsJarsCheckBox.setSelected(initialSettings.importSourceDepsAsJars);
     myUseIntellijCompilerCheckBox.setSelected(initialSettings.useIntellijCompiler);
-    LinkLabel<?> intellijCompilerHelpMessage = LinkLabel.create(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge"), new Runnable() {
-      @Override
-      public void run() {
-        BrowserUtil.browse(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge.link"));
-      }
-    });
+    LinkLabel<?> intellijCompilerHelpMessage = LinkLabel.create(
+      PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge"),
+      () -> BrowserUtil.browse(PantsBundle.message("pants.settings.text.use.intellij.compiler.help.messasge.link"))
+    );
 
     myTargetSpecsBox.setItems(initialSettings.getAllAvailableTargetSpecs(), x -> x);
     initialSettings.getSelectedTargetSpecs().forEach(spec -> myTargetSpecsBox.setItemSelected(spec, true));

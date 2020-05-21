@@ -87,6 +87,7 @@ public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfig
     return JUnitConfigurationType.getInstance();
   }
 
+  @NotNull
   @Override
   public RunConfiguration getConfiguration() {
     return myRunConfiguration;
@@ -124,6 +125,7 @@ public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfig
     return myName;
   }
 
+  @NotNull
   @Override
   public String getUniqueID() {
     return getName();
@@ -153,12 +155,7 @@ public class PantsJUnitRunnerAndConfigurationSettings implements RunnerAndConfig
 
   @Override
   public Factory<RunnerAndConfigurationSettings> createFactory() {
-    return new Factory<RunnerAndConfigurationSettings>() {
-      @Override
-      public RunnerAndConfigurationSettings create() {
-        return new PantsJUnitRunnerAndConfigurationSettings(myRunConfiguration);
-      }
-    };
+    return () -> new PantsJUnitRunnerAndConfigurationSettings(myRunConfiguration);
   }
 
   @Override

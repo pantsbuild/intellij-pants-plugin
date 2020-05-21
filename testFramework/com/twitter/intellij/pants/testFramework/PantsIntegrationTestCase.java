@@ -28,7 +28,7 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.gotoByName.GotoFileModel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -44,11 +44,9 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.LibraryOrderEntry;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -69,9 +67,9 @@ import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.metrics.PantsMetrics;
 import com.twitter.intellij.pants.model.PantsOptions;
-import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsSdkUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NonNls;
@@ -120,13 +118,26 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     this.readOnly = readOnly;
   }
 
+  @NotNull
+  public static Stream<Sdk> getAllJdks() {
+    return Arrays.stream(ProjectJdkTable.getInstance().getAllJdks());
+  }
+
+  public static void removeJdks(@NotNull final Predicate<Sdk> pred) {
+    getAllJdks().filter(pred).forEach(jdk -> {
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        ProjectJdkTable.getInstance().removeJdk(jdk);
+      });
+    });
+  }
+
   @Override
   public void setUp() throws Exception {
     cleanProjectIdeaDir();
     super.setUp();
     VfsRootAccess.allowRootAccess(myProject, "/");
     for (String pluginId : getRequiredPluginIds()) {
-      final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId(pluginId));
+      IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId(pluginId));
       assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
       assertTrue(pluginId + " is not enabled!", plugin.isEnabled());
     }
@@ -165,7 +176,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     super.setUpInWriteAction();
   }
 
-  protected void cleanProjectIdeaDir() throws ExecutionException, IOException {
+  protected void cleanProjectIdeaDir() {
     final File projectDir = new File(getProjectFolder().getPath());
     assertTrue("Failed to clean up!", FileUtil.delete(new File(projectDir, ".idea")));
   }
@@ -205,13 +216,13 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected void cmd(File workDir, String... args) throws ExecutionException {
     final GeneralCommandLine commandLine = new GeneralCommandLine(args);
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(workDir), null);
-    assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
+    assertEquals("Failed to execute: " + StringUtil.join(args, " "), 0, cmdOutput.getExitCode());
   }
 
   protected void cmd(String... args) throws ExecutionException {
     final GeneralCommandLine commandLine = new GeneralCommandLine(args);
     final ProcessOutput cmdOutput = PantsUtil.getCmdOutput(commandLine.withWorkDirectory(getProjectFolder()), null);
-    assertTrue("Failed to execute: " + StringUtil.join(args, " "), cmdOutput.getExitCode() == 0);
+    assertEquals("Failed to execute: " + StringUtil.join(args, " "), 0, cmdOutput.getExitCode());
   }
 
   protected void killNailgun() throws ExecutionException {
@@ -273,16 +284,9 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     );
   }
 
-  private Optional<VirtualFile> findManifestJar() throws Exception {
-    Optional<PantsOptions> pantsOptions = PantsOptions.getPantsOptions(myProject);
-    if (!pantsOptions.isPresent()) {
-      return Optional.empty();
-    }
-    Optional<VirtualFile> manifestJar = PantsUtil.findProjectManifestJar(myProject);
-    if (manifestJar.isPresent()) {
-      return manifestJar;
-    }
-    return Optional.empty();
+  private Optional<VirtualFile> findManifestJar() {
+    return PantsOptions.getPantsOptions(myProject)
+      .flatMap(ignored -> PantsUtil.findProjectManifestJar(myProject));
   }
 
   protected void modify(@NonNls @NotNull String qualifiedName) {
@@ -292,12 +296,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     final PsiComment comment = parserFacade.createBlockCommentFromText(psiFile.getLanguage(), "Foo");
     WriteCommandAction.runWriteCommandAction(
       myProject,
-      new Runnable() {
-        @Override
-        public void run() {
-          psiFile.add(comment);
-        }
-      }
+      ((Runnable) () -> psiFile.add(comment))
     );
     FileDocumentManager manager = FileDocumentManager.getInstance();
     manager.saveAllDocuments();
@@ -366,7 +365,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     for (String name : moduleNames) {
       modules.add(getModule(name));
     }
-    return modules.toArray(new Module[modules.size()]);
+    return modules.toArray(new Module[0]);
   }
 
   protected void assertFirstSourcePartyModules(String... expectedNames) {
@@ -401,12 +400,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   protected void assertGenModules(int count) {
     final List<Module> genModules = ContainerUtil.findAll(
       ModuleManager.getInstance(myProject).getModules(),
-      new Condition<Module>() {
-        @Override
-        public boolean value(Module module) {
-          return module.getName().startsWith(".pants.d");
-        }
-      }
+      module -> module.getName().startsWith(".pants.d")
     );
 
     assertSize(count, genModules);
@@ -427,7 +421,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @NotNull
-  protected RunResult runWithConfiguration(RunConfiguration configuration) throws ExecutionException {
+  protected RunResult runWithConfiguration(RunConfiguration configuration) {
     PantsMakeBeforeRun.replaceDefaultMakeWithPantsMake(configuration);
     PantsMakeBeforeRun.setRunConfigurationWorkingDirectory(configuration);
     PantsJUnitRunnerAndConfigurationSettings runnerAndConfigurationSettings =
@@ -505,20 +499,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     File exampleDir = new File(getProjectFolder(), "examples");
     cmd(exampleDir, "git", "clean", "-fdx");
     cmd("rm", "-rf", "dist");
-  }
-
-  @NotNull
-  public static Stream<Sdk> getAllJdks() {
-    return Arrays.stream(ProjectJdkTable.getInstance().getAllJdks());
-  }
-
-  @NotNull
-  public static void removeJdks(@NotNull final Predicate<Sdk> pred) {
-    getAllJdks().filter(pred).forEach(jdk -> {
-      ApplicationManager.getApplication().runWriteAction(() -> {
-        ProjectJdkTable.getInstance().removeJdk(jdk);
-      });
-    });
   }
 
   @Override
@@ -617,15 +597,13 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     );
   }
 
-  protected void assertPantsInvocationFails(final PantsExecuteTaskResult result, @NotNull String opTitle) throws Exception {
+  protected void assertPantsInvocationFails(final PantsExecuteTaskResult result, @NotNull String opTitle) {
     assertFalse(String.format("%s succeeded, but should fail.", opTitle), result.succeeded);
   }
 
   protected void assertPantsCompileExecutesAndSucceeds(final PantsExecuteTaskResult compileResult) throws Exception {
     assertPantsInvocationSucceeds(compileResult, "Compile");
-    if (compileResult.output.isPresent()) {
-      assertTrue("Compile was noop, but should not be.", !PantsConstants.NOOP_COMPILE.equals(compileResult.output.get()));
-    }
+    compileResult.output.ifPresent(s -> assertFalse("Compile was noop, but should not be.", PantsConstants.NOOP_COMPILE.equals(s)));
     assertManifestJarExists();
   }
 
@@ -636,7 +614,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     assertManifestJarExists();
   }
 
-  protected void assertPantsCompileFailure(final PantsExecuteTaskResult compileResult) throws Exception {
+  protected void assertPantsCompileFailure(final PantsExecuteTaskResult compileResult) {
     assertPantsInvocationFails(compileResult, "Compile");
   }
 

@@ -3,9 +3,7 @@
 
 package com.twitter.intellij.pants;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.SimpleJavaParameters;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.ExternalSystemConfigurableAware;
 import com.intellij.openapi.externalSystem.ExternalSystemManager;
 import com.intellij.openapi.externalSystem.ExternalSystemUiAware;
@@ -61,8 +59,6 @@ public class PantsManager implements
       }
     };
 
-  private static final Logger LOG = Logger.getInstance(PantsManager.class);
-
   @NotNull
   @Override
   public ProjectSystemId getSystemId() {
@@ -112,7 +108,7 @@ public class PantsManager implements
 
       @NotNull
       private PantsExecutionSettings getExecutionsSettingsFromPath(@NotNull Project ideProject, @NotNull String projectPath) {
-        final AbstractExternalSystemSettings systemSettings = ExternalSystemApiUtil.getSettings(ideProject, PantsConstants.SYSTEM_ID);
+        final AbstractExternalSystemSettings<?, ?, ?> systemSettings = ExternalSystemApiUtil.getSettings(ideProject, PantsConstants.SYSTEM_ID);
         final ExternalProjectSettings projectSettings = systemSettings.getLinkedProjectSettings(projectPath);
 
         if (projectSettings instanceof PantsProjectSettings) {
@@ -167,7 +163,7 @@ public class PantsManager implements
   }
 
   @Override
-  public void enhanceRemoteProcessing(@NotNull SimpleJavaParameters parameters) throws ExecutionException {
+  public void enhanceRemoteProcessing(@NotNull SimpleJavaParameters parameters) {
     parameters.getVMParametersList().addProperty(
       ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, PantsConstants.SYSTEM_ID.getId()
     );

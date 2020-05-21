@@ -72,13 +72,13 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
         process,
         commandLine.getCommandLineString(), new ProcessAdapter() {
           @Override
-          public void startNotified(ProcessEvent event) {
+          public void startNotified(@NotNull ProcessEvent event) {
             super.startNotified(event);
             listener.onStart(id, commandLine.getWorkDirectory().getPath());
           }
 
           @Override
-          public void onTextAvailable(ProcessEvent event, Key outputType) {
+          public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
             super.onTextAvailable(event, outputType);
             textOutputs.add(event.getText());
             listener.onTaskOutput(id, event.getText(), outputType == ProcessOutputTypes.STDOUT);

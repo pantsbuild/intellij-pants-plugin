@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @State(name = "PantsLocalSettings", storages = {@Storage(file = StoragePathMacros.WORKSPACE_FILE)})
-public class PantsLocalSettings extends AbstractExternalSystemLocalSettings
+public class PantsLocalSettings extends AbstractExternalSystemLocalSettings<AbstractExternalSystemLocalSettings.State>
   implements PersistentStateComponent<AbstractExternalSystemLocalSettings.State> {
 
   public PantsLocalSettings(@NotNull Project project) {

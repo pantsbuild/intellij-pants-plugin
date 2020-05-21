@@ -4,20 +4,20 @@
 package com.twitter.intellij.pants.service.project.modifier;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsProjectInfoModifierExtension;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class PantsEmptyTargetRemover implements PantsProjectInfoModifierExtension {
   @Override
   public void modify(@NotNull ProjectInfo projectInfo, @NotNull PantsCompileOptionsExecutor executor, @NotNull Logger log) {
-    final List<String> emptyTargets = ContainerUtilRt.newArrayList();
+    final List<String> emptyTargets = new ArrayList<>();
     do {
       emptyTargets.clear();
       for (Map.Entry<String, TargetInfo> targetInfoEntry : projectInfo.getTargets().entrySet()) {

@@ -5,10 +5,7 @@ package com.twitter.intellij.pants.metrics;
 
 import com.google.common.base.Stopwatch;
 import com.intellij.openapi.project.DumbService;
-import com.intellij.openapi.project.Project;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,43 +27,23 @@ import java.util.concurrent.atomic.AtomicInteger;
  * can be a delay where python plugin detects changes first, and one moment later, scala plugin does the same.
  * In this case, it is possible `PantsDumbModeListener` will report 5 seconds twice and separately.
  */
-public class LivePantsMetrics {
+public class LivePantsMetrics implements DumbService.DumbModeListener {
+  private final Stopwatch indexWatch = Stopwatch.createUnstarted();
+  private final AtomicInteger count = new AtomicInteger(0);
 
-  static class PantsDumbModeListener implements DumbService.DumbModeListener {
-    private AtomicInteger count = new AtomicInteger(0);
-    Stopwatch indexWatch = Stopwatch.createUnstarted();
-
-    @Override
-    public void enteredDumbMode() {
-      if (count.getAndIncrement() == 0) {
-        indexWatch.start();
-      }
-    }
-
-    @Override
-    public void exitDumbMode() {
-      if (count.decrementAndGet() == 0) {
-        indexWatch.stop();
-        PantsExternalMetricsListenerManager.getInstance().logIndexingDuration(indexWatch.elapsed(TimeUnit.MILLISECONDS));
-        indexWatch.reset();
-      }
+  @Override
+  public void enteredDumbMode() {
+    if (count.getAndIncrement() == 0) {
+      indexWatch.start();
     }
   }
 
-  private static final ConcurrentHashMap<Project, PantsDumbModeListener> projectListener = new ConcurrentHashMap<>();
-
-  /**
-   * Register project to subscribe the event of hopping in and out of Dumb mode. Being in dumb mode means the IDE is indexing.
-   * This is only functional in the actual GUI setting.
-   *
-   * @param project project of interest.
-   */
-  public static void registerDumbModeListener(@NotNull Project project) {
-    PantsDumbModeListener listener = projectListener.computeIfAbsent(project, k -> new PantsDumbModeListener());
-    project.getMessageBus().connect().subscribe(DumbService.DUMB_MODE, listener);
-  }
-
-  public static void unregisterDumbModeListener(@NotNull Project project) {
-    projectListener.remove(project);
+  @Override
+  public void exitDumbMode() {
+    if (count.decrementAndGet() == 0) {
+      indexWatch.stop();
+      PantsExternalMetricsListenerManager.getInstance().logIndexingDuration(indexWatch.elapsed(TimeUnit.MILLISECONDS));
+      indexWatch.reset();
+    }
   }
 }

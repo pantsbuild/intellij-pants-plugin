@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
 package com.twitter.intellij.pants.ui;
 
+import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeBundle;
@@ -23,7 +24,6 @@ import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.EditSourceOnDoubleClickHandler;
-import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
@@ -45,17 +45,13 @@ public class PantsConsoleViewPanel extends JPanel {
   private final ErrorTreeViewConfiguration myConfiguration;
 
   protected Project myProject;
-  private Tree myTree;
 
-  private final AutoScrollToSourceHandler myAutoScrollToSourceHandler;
-
-
-  public PantsConsoleViewPanel(Project project) {
+  public PantsConsoleViewPanel(Project project, ConsoleView console) {
     myProject = project;
     myConfiguration = ErrorTreeViewConfiguration.getInstance(project);
     setLayout(new BorderLayout());
 
-    myAutoScrollToSourceHandler = new AutoScrollToSourceHandler() {
+    AutoScrollToSourceHandler autoScrollToSourceHandler = new AutoScrollToSourceHandler() {
       @Override
       protected boolean isAutoScrollMode() {
         return myConfiguration.isAutoscrollToSource();
@@ -71,25 +67,25 @@ public class PantsConsoleViewPanel extends JPanel {
 
     DefaultMutableTreeNode root = new DefaultMutableTreeNode();
     final DefaultTreeModel treeModel = new DefaultTreeModel(root);
-    myTree = createTree(treeModel);
-    myTree.getEmptyText().setText(IdeBundle.message("errortree.noMessages"));
+    Tree tree = createTree(treeModel);
+    tree.getEmptyText().setText(IdeBundle.message("errortree.noMessages"));
 
-    myAutoScrollToSourceHandler.install(myTree);
-    TreeUtil.installActions(myTree);
-    UIUtil.setLineStyleAngled(myTree);
-    myTree.setRootVisible(false);
-    myTree.setShowsRootHandles(true);
-    myTree.setLargeModel(true);
+    autoScrollToSourceHandler.install(tree);
+    TreeUtil.installActions(tree);
 
-    JScrollPane scrollPane = NewErrorTreeRenderer.install(myTree);
+    tree.setRootVisible(false);
+    tree.setShowsRootHandles(true);
+    tree.setLargeModel(true);
+
+    JScrollPane scrollPane = NewErrorTreeRenderer.install(tree);
     scrollPane.setBorder(IdeBorderFactory.createBorder(SideBorder.LEFT));
-    myMessagePanel.add(PantsConsoleManager.getOrMakeNewConsole(myProject).getComponent(), BorderLayout.CENTER);
+    myMessagePanel.add(console.getComponent(), BorderLayout.CENTER);
 
     add(createToolbarPanel(), BorderLayout.WEST);
 
     add(myMessagePanel, BorderLayout.CENTER);
 
-    EditSourceOnDoubleClickHandler.install(myTree);
+    EditSourceOnDoubleClickHandler.install(tree);
   }
 
   @NotNull
@@ -103,7 +99,7 @@ public class PantsConsoleViewPanel extends JPanel {
     };
   }
 
-  private class StopAction extends DumbAwareAction {
+  private static class StopAction extends DumbAwareAction {
     public StopAction() {
       super(IdeBundle.message("action.stop"), null, AllIcons.Actions.Suspend);
     }
@@ -111,7 +107,7 @@ public class PantsConsoleViewPanel extends JPanel {
     @Override
     public void actionPerformed(AnActionEvent e) {
       PantsMakeBeforeRun.terminatePantsProcess(e.getProject());
-      PantsConsoleManager.getOrMakeNewConsole(e.getProject()).print(PantsBundle.message("pants.command.terminated"), ConsoleViewContentType.ERROR_OUTPUT);
+      PantsConsoleManager.getConsole(e.getProject()).print(PantsBundle.message("pants.command.terminated"), ConsoleViewContentType.ERROR_OUTPUT);
     }
 
     @Override

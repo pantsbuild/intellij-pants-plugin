@@ -11,7 +11,6 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.containers.ContainerUtilRt;
 import com.twitter.intellij.pants.model.PantsSourceType;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.PantsResolverExtension;
@@ -22,6 +21,7 @@ import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +109,7 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
       StringUtil::naturalCompare
     );
 
-    final List<String> baseRoots = ContainerUtilRt.newArrayList();
+    final List<String> baseRoots = new ArrayList<>();
     for (String root : sortedRoots) {
       if (!hasAnAncestorRoot(baseRoots, root)) {
         baseRoots.add(root);

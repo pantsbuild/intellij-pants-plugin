@@ -3,7 +3,6 @@
 
 package com.twitter.intellij.pants.extension;
 
-import com.intellij.execution.junit.JUnitConfiguration;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.util.containers.ContainerUtil;

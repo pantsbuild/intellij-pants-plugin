@@ -7,7 +7,6 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.BeforeRunTask;
-import com.intellij.execution.CantRunException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunConfigurationExtension;
 import com.intellij.execution.RunManager;
@@ -17,7 +16,7 @@ import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunConfigurationModule;
 import com.intellij.execution.configurations.RunnerSettings;
 import com.intellij.execution.impl.RunManagerImpl;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -30,7 +29,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathsList;
 import com.intellij.util.Processor;
-import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -40,6 +38,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +62,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
   @Override
   public <T extends RunConfigurationBase> void updateJavaParameters(
     T configuration,
-    JavaParameters params,
+    @NotNull JavaParameters params,
     RunnerSettings runnerSettings
   ) throws ExecutionException {
     List<BeforeRunTask<?>> tasks = ((RunManagerImpl) RunManager.getInstance(configuration.getProject())).getBeforeRunTasks(configuration);
@@ -105,11 +104,9 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
    *
    * @param params JavaParameters
    * @return a set of paths that should be allowed to passed to the test runner.
-   *
-   * @throws CantRunException
    */
   @NotNull
-  private Set<String> calculatePathsAllowed(JavaParameters params) throws CantRunException {
+  private Set<String> calculatePathsAllowed(JavaParameters params) {
 
     String homePath = PathManager.getHomePath();
     String pluginPath = PathManager.getPluginsPath();
@@ -117,27 +114,25 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
     Set<String> pathsAllowed = Sets.newHashSet(homePath, pluginPath);
 
     if (ApplicationManager.getApplication().isUnitTestMode()) {
-      pathsAllowed.add(
-        // /Users/yic/.ivy2/pants/com.intellij.sdk.community/idea_rt/jars/idea_rt-latest.jar ->
-        // /Users/yic/.ivy2/pants/com.intellij.sdk.community/
-        Optional.ofNullable(PluginManager.getPlugin(PluginId.getId("com.intellij")))
-          .map(s -> s.getPath().getParentFile().getParentFile().getParentFile().getAbsolutePath()).get()
-      );
+      // /Users/yic/.ivy2/pants/com.intellij.sdk.community/idea_rt/jars/idea_rt-latest.jar ->
+      // /Users/yic/.ivy2/pants/com.intellij.sdk.community/
+      Optional.ofNullable(PluginManagerCore.getPlugin(PluginId.getId("com.intellij")))
+        .map(s -> s.getPath().getParentFile().getParentFile().getParentFile().getAbsolutePath())
+        .ifPresent(pathsAllowed::add);
 
-      pathsAllowed.add(
-        // At this point we know junit plugin is already enabled.
-        // //Users/yic/.ivy2/pants/com.intellij.junit-plugin/junit-rt/jars/junit-rt-latest.jar ->
-        // /Users/yic/.ivy2/pants/com.intellij.junit-plugin/
-        Optional.ofNullable(PluginManager.getPlugin(PluginId.getId("JUnit")))
-          .map(s -> s.getPath().getParentFile().getParentFile().getParentFile().getAbsolutePath()).get()
-      );
+      // At this point we know junit plugin is already enabled.
+      // //Users/yic/.ivy2/pants/com.intellij.junit-plugin/junit-rt/jars/junit-rt-latest.jar ->
+      // /Users/yic/.ivy2/pants/com.intellij.junit-plugin/
+      Optional.ofNullable(PluginManagerCore.getPlugin(PluginId.getId("JUnit")))
+        .map(s -> s.getPath().getParentFile().getParentFile().getParentFile().getAbsolutePath())
+        .ifPresent(pathsAllowed::add);
     }
     return pathsAllowed;
   }
 
   @NotNull
   public static List<String> findPublishedClasspath(@NotNull Module module) {
-    final List<String> result = ContainerUtil.newArrayList();
+    final List<String> result = new ArrayList<>();
     // This is type for Gson to figure the data type to deserialize
     final Type type = new TypeToken<HashSet<TargetAddressInfo>>() {}.getType();
     Set<TargetAddressInfo> targetInfoSet = gson.fromJson(module.getOptionValue(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY), type);
@@ -155,7 +150,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
       return Collections.emptyList();
     }
     // Handle classpath with target.id
-    List<String> paths = ContainerUtil.newArrayList();
+    List<String> paths = new ArrayList<>();
     int count = 0;
     while (true) {
       VirtualFile classpathLinkFolder = classpath.get().findFileByRelativePath(targetAddressInfo.getId() + "-" + count);
