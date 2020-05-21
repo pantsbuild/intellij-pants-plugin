@@ -34,30 +34,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_annotation_main_main"));
   }
 
-  public void testAntl3() throws Throwable {
-    doImport("examples/src/java/org/pantsbuild/example/antlr3");
-
-    assertFirstSourcePartyModules(
-      "examples_src_java_org_pantsbuild_example_antlr3_antlr3",
-      "examples_src_antlr_org_pantsbuild_example_exp_exp_antlr3"
-    );
-    assertGenModules(1);
-
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_antlr3_antlr3"));
-  }
-
-  public void testAntl4() throws Throwable {
-    doImport("examples/src/java/org/pantsbuild/example/antlr4");
-
-    assertFirstSourcePartyModules(
-      "examples_src_java_org_pantsbuild_example_antlr4_antlr4",
-      "examples_src_antlr_org_pantsbuild_example_exp_exp_antlr4"
-    );
-    assertGenModules(1);
-
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_antlr4_antlr4"));
-  }
-
   public void testHello() throws Throwable {
     doImport("examples/src/java/org/pantsbuild/example/hello");
     assertProjectJdkAndLanguageLevel();
@@ -78,20 +54,6 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
     );
 
     assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_hello_main_main"));
-  }
-
-  public void testJaxb() throws Throwable {
-    String projectRelativePath = "examples/src/java/org/pantsbuild/example/jaxb/main";
-    doImport(projectRelativePath);
-
-    //Checking whether the modules loaded in the project are the same as pants dependencies
-    String[] moduleNames = getModulesNamesFromPantsDependencies(projectRelativePath);
-    assertTrue(moduleNames.length > 0);
-    assertFirstSourcePartyModules(moduleNames);
-
-    assertGenModules(1);
-
-    assertPantsCompileExecutesAndSucceeds(pantsCompileModule("examples_src_java_org_pantsbuild_example_jaxb_main_main"));
   }
 
   public void testProtobuf() throws Throwable {

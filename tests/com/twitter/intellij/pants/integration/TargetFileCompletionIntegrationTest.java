@@ -35,8 +35,7 @@ public class TargetFileCompletionIntegrationTest extends OSSPantsIntegrationTest
   public void testScalaLibCompletions() {
     String toComplete = "scala_lib" + CURSOR;
     String[] expected = {
-      "scala_library(",
-      "scala_js_library("
+      "scala_library("
     };
     completionTest(toComplete, expected);
   }
@@ -57,10 +56,8 @@ public class TargetFileCompletionIntegrationTest extends OSSPantsIntegrationTest
       "examples/src/java/org/pantsbuild/example/hello/greet:greet",
       "examples/src/resources/org/pantsbuild/example/hello:hello",
       "examples/src/resources/org/pantsbuild/example:example",
-      "examples/src/resources/org/pantsbuild/example/jaxb:jaxb",
       "examples/src/resources/org/pantsbuild/example/names:names",
       "examples/src/resources/org/pantsbuild/example:hello_directory",
-      "examples/src/resources/org/pantsbuild/example:jaxb_directory",
       "examples/src/resources/org/pantsbuild/example:names_directory",
     };
     completionTest(toComplete, expected);
@@ -79,13 +76,8 @@ public class TargetFileCompletionIntegrationTest extends OSSPantsIntegrationTest
       "java_library(",
       "java_agent(",
       "javac_plugin(",
-      "java_antlr_library(",
-      "java_avro_library(",
       "java_protobuf_library(",
-      "java_ragel_library(",
       "java_thrift_library(",
-      "java_thrifty_library(",
-      "java_wire_library("
     };
 
     completionTest(toComplete, expected);
