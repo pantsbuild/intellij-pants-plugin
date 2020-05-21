@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.service.project.modifier;
 
+import com.google.common.collect.Sets;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.io.FileUtil;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
@@ -11,7 +12,7 @@ import com.twitter.intellij.pants.service.project.model.ContentRoot;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.util.PantsUtil;
-import org.apache.commons.compress.utils.Sets;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;

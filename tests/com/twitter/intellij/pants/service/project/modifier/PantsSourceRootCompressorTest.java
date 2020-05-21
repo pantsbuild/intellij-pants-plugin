@@ -3,8 +3,8 @@
 
 package com.twitter.intellij.pants.service.project.modifier;
 
+import com.google.common.collect.Sets;
 import junit.framework.TestCase;
-import org.apache.commons.compress.utils.Sets;
 
 import java.io.File;
 
