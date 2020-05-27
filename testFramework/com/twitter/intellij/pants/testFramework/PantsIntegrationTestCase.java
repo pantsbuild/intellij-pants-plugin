@@ -481,7 +481,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     final ScalaTestRunConfiguration runConfiguration = new ScalaTestRunConfiguration(myProject, factory, className);
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
-    runConfiguration.setupIntegrationTestClassPath();
 
     SingleTestData data = new SingleTestData(runConfiguration);
     data.setTestClassPath(className);
