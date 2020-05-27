@@ -29,6 +29,8 @@ jdk:
   - openjdk11
 
 env:
+  # Make the build time faster for Pants.
+  # Runtime perf is less important because this is a small repo.
   - MODE="debug"
 
 # General policy is to support pants for the past 10 releases and the latest master.
