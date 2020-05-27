@@ -72,6 +72,9 @@
       </action>
     </group>
 
+    <action class="com.twitter.intellij.pants.bsp.AmendAction"
+            id="com.twitter.intellij.pants.bsp.AmendAction"/>
+
     <group id="Pants.Compile" text="Pants Compile" description="Pants compilation options" icon="PantsIcons.Icon"
            popup="true" class="com.twitter.intellij.pants.compiler.actions.PantsCompileActionGroup">
       <add-to-group group-id="ProjectViewCompileGroup"/>
