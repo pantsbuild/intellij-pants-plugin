@@ -32,10 +32,10 @@ jdk:
 matrix:
   include:
     - python: 3.7
-      env: IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=0/2
+      env: PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=0/2
 
     - python: 3.7
-      env: IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=1/2
+      env: PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=1/2
 
     - python: 3.7
       env: PANTS_SHA="release_1.18.0" TEST_SET=jvm-integration
