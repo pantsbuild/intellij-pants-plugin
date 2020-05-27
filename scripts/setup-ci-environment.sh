@@ -79,7 +79,7 @@ if [ ! -d .cache/pants/.git ]; then
     echo "Using the latest master..."
   else
     echo "Using $PANTS_SHA..."
-    git reset --hard $PANTS_SHA
+    git checkout -f $PANTS_SHA
   fi
   ./pants goals
   popd
