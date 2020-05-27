@@ -28,6 +28,9 @@ install: ./scripts/setup-ci-environment.sh
 jdk:
   - openjdk11
 
+env:
+  - MODE="debug"
+
 # General policy is to support pants for the past 10 releases and the latest master.
 matrix:
   include:
