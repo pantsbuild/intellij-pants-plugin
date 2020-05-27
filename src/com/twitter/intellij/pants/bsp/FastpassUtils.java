@@ -99,7 +99,7 @@ final public class FastpassUtils {
 
   private static List<String> coursierPart(){
     return Arrays.asList("launch", "org.scalameta:fastpass_2.12:latest.stable",
-                         "--main", "scala.meta.internal.fastpass.pantsbuild.BloopPants",
+                         "--main", "scala.meta.fastpass.Fastpass",
                          "--"
     );
   }
