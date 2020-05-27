@@ -230,7 +230,7 @@ public class FastpassUpdater {
 
         Supplier<Optional<FastpassData>> fromBloopSettings =
           () -> readJsonFile(Paths.get(path, ".bloop", "bloop.settings.json"), BloopSettings.class).flatMap(settings -> {
-            Pattern pattern = Pattern.compile("org\\.scalameta:metals_2\\.12:(.*)");
+            Pattern pattern = Pattern.compile("org\\.scalameta:fastpass_2\\.12:(.*)");
             Optional<String> version =
               settings.refreshProjectsCommand.stream().map(pattern::matcher).filter(Matcher::find).map(m -> m.group(1)).findFirst();
             return version.map(fastpassVersion -> {
