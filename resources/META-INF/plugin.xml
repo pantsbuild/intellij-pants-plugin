@@ -123,6 +123,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <attachSourcesProvider implementation="com.twitter.intellij.pants.bsp.SourceJarGenerator"/>
     <macro implementation="com.twitter.intellij.pants.macro.FilePathRelativeToBuiltRootMacro"/>
     <localInspection bundle="com.twitter.intellij.pants.PantsBundle" key="pants.info.python.plugin.missing"
                      groupName="Pants" enabledByDefault="true"
@@ -155,6 +156,8 @@
 
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsSettings"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>
+
+    <projectService serviceImplementation="com.twitter.intellij.pants.bsp.JarMappings"/>
 
     <treeStructureProvider implementation="com.twitter.intellij.pants.projectview.PantsTreeStructureProvider"/>
     <projectViewPane implementation="com.twitter.intellij.pants.projectview.ProjectFilesViewPane"/>
