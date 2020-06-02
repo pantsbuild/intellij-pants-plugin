@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.bsp;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 public class JarMappings {
   private static final String SOURCES_JAR_SUFFIX = "-sources.jar";
+  private static final Logger LOG = Logger.getInstance(JarMappings.class);
 
   public static JarMappings getInstance(Project project) {
     return ServiceManager.getService(project, JarMappings.class);
@@ -53,7 +55,7 @@ public class JarMappings {
   private Map<String, String> libraryJarToLibrarySourceJar = new HashMap<>();
   private boolean librariesFileIsUpToDate = false;
 
-  private synchronized void ensureInitialized() {
+  private synchronized void ensureUpToDate() {
     try {
       if (!librariesFileIsUpToDate) {
         VirtualFile file = librariesFile();
@@ -65,11 +67,12 @@ public class JarMappings {
     }
     catch (Exception e) {
       librariesFileIsUpToDate = false;
+      LOG.warn("Error while reading libraries.json", e);
     }
   }
 
   public Optional<String> findSourceJarForLibraryJar(VirtualFile path) {
-    ensureInitialized();
+    ensureUpToDate();
     return Optional.ofNullable(libraryJarToLibrarySourceJar.get(path.getPath()));
   }
 
