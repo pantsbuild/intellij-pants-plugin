@@ -250,7 +250,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       commandLine.addParameter(PantsUtil.getJvmDistributionPathParameter(javaHome));
     }
     catch (Exception e) {
-      showPantsMakeTaskMessage(e.getMessage(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
+      showPantsMakeTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
       return PantsExecuteTaskResult.emptyFailure();
     }
 
@@ -268,7 +268,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
       process = commandLine.createProcess();
     }
     catch (ExecutionException e) {
-      showPantsMakeTaskMessage(e.getMessage(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
+      showPantsMakeTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, currentProject);
       return PantsExecuteTaskResult.emptyFailure();
     }
 
