@@ -11,6 +11,7 @@
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <editorNotificationProvider implementation="com.twitter.intellij.pants.bsp.ConvertToSourceDependencyEditorNotificationsProvider"/>
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.scala.PantsScalaDataService" order="last"/>
     <highlightVisitor implementation="com.twitter.intellij.pants.highlight.PantsScalaHighlightVisitor"/>
     <bspResolverNamingExtension implementation="com.twitter.intellij.pants.service.scala.PantsBspResolverNamingExtension"/>

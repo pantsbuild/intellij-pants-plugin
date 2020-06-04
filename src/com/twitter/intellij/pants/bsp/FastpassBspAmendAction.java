@@ -17,16 +17,16 @@ import org.jetbrains.bsp.BSP;
 import org.jetbrains.bsp.BspUtil;
 
 import javax.swing.SwingUtilities;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class FastpassBspAmendAction extends AnAction {
 
-  private final Logger logger = Logger.getInstance(FastpassBspAmendAction.class);
+  private final static Logger logger = Logger.getInstance(FastpassBspAmendAction.class);
 
   @Override
   public void update(@NotNull AnActionEvent e) {
@@ -39,49 +39,50 @@ public class FastpassBspAmendAction extends AnAction {
   public void actionPerformed(@NotNull AnActionEvent event) {
     try {
       Project project = event.getProject();
-      if (project != null) {
-        Set<PantsBspData> linkedProjects = PantsBspData.importsFor(project);
-        if (linkedProjects.size() > 1) {
-          Messages.showErrorDialog(
-            PantsBundle.message("pants.bsp.error.failed.more.than.one.bsp.project.not.supported.message"),
-            PantsBundle.message("pants.bsp.error.action.not.supported.title")
-          );
-        }
-        else if (linkedProjects.size() < 1) {
-          Messages.showErrorDialog(
-            PantsBundle.message("pants.bsp.error.failed.not.a.bsp.pants.project.message"),
-            PantsBundle.message("pants.bsp.error.action.not.supported.title")
-          );
-        }
-        else {
-          PantsBspData importData = linkedProjects.stream().findFirst().get();
-          startAmendProcedure(project, importData);
-        }
-      }
-      else {
-        Messages.showErrorDialog(
-          PantsBundle.message("pants.bsp.error.no.project.found"),
-          PantsBundle.message("pants.bsp.error.action.not.supported.title")
-        );
-      }
+      bspAmendWithDialog(project, Collections.emptyList());
     } catch (Throwable e) {
       logger.error(e);
     }
   }
 
-  private void startAmendProcedure(Project project, PantsBspData firstProject) {
+  public static void bspAmendWithDialog(Project project, Collection<String> targetsToAppend) {
+    if (project != null) {
+      Set<PantsBspData> linkedProjects = PantsBspData.importsFor(project);
+      if (linkedProjects.size() > 1) {
+        Messages.showErrorDialog(
+          PantsBundle.message("pants.bsp.error.failed.more.than.one.bsp.project.not.supported.message"),
+          PantsBundle.message("pants.bsp.error.action.not.supported.title")
+        );
+      }
+      else if (linkedProjects.size() < 1) {
+        Messages.showErrorDialog(
+          PantsBundle.message("pants.bsp.error.failed.not.a.bsp.pants.project.message"),
+          PantsBundle.message("pants.bsp.error.action.not.supported.title")
+        );
+      }
+      else {
+        PantsBspData importData = linkedProjects.stream().findFirst().get();
+        startAmendProcedure(project, importData, targetsToAppend);
+      }
+    }
+    else {
+      Messages.showErrorDialog(
+        PantsBundle.message("pants.bsp.error.no.project.found"),
+        PantsBundle.message("pants.bsp.error.action.not.supported.title")
+      );
+    }
+  }
+
+  private static void startAmendProcedure(Project project, PantsBspData firstProject, Collection<String> targetsToAppend) {
     CompletableFuture<Set<String>> oldTargets = FastpassUtils.selectedTargets(firstProject);
 
-    FastpassTargetListCache targetsListCache = new FastpassTargetListCache(Paths.get(firstProject.getPantsRoot().getPath()));
-    PantsTargetsRepository getPreview = targets -> FastpassUtils.validateAndGetPreview(firstProject.getPantsRoot(), targets,
-                                                                                       targetsListCache::getTargetsList
-    );
-    Optional<Set<String>> newTargets = FastpassManagerDialog
-      .promptForTargetsToImport(project, oldTargets, getPreview);
+    Optional<Set<String>> newTargets = FastpassManagerDialog.promptForNewTargetSpecs(project, firstProject, oldTargets, targetsToAppend);
     amendAndRefreshIfNeeded(project, firstProject, oldTargets, newTargets);
   }
 
-  private void amendAndRefreshIfNeeded(
+
+
+  private static void amendAndRefreshIfNeeded(
     @NotNull Project project,
     @NotNull PantsBspData basePath,
     @NotNull CompletableFuture<Set<String>> oldTargets,
@@ -111,7 +112,7 @@ public class FastpassBspAmendAction extends AnAction {
     );
   }
 
-  private void refreshProjectsWithNewTargetsList(
+  private static void refreshProjectsWithNewTargetsList(
     @NotNull Project project,
     Collection<String> newTargets,
     PantsBspData basePath

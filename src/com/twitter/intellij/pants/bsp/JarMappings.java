@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
+import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class JarMappings {
@@ -85,6 +87,15 @@ public class JarMappings {
     return Optional.of(targetAddress);
   }
 
+  public Optional<String> findTargetForJar(VirtualFile jar) {
+    Optional<String> sourceJar = findTargetForSourceJar(jar);
+    if(sourceJar.isPresent()){
+      return sourceJar;
+    } else {
+      return findTargetForClassJar(jar);
+    }
+  }
+
   public Optional<String> findSourceJarForTarget(String target) {
     String name = target.replaceAll("[:/]", ".") + SOURCES_JAR_SUFFIX;
     Path path = bloopJarsPath(project).resolve(name);
@@ -125,5 +136,20 @@ public class JarMappings {
   private VirtualFile librariesFile() {
     Path path = Paths.get(project.getBasePath(), ".pants", "libraries.json");
     return LocalFileSystem.getInstance().findFileByIoFile(path.toFile());
+  }
+
+  public static Optional<VirtualFile> getParentJar(VirtualFile file) {
+    return predecessors(file).stream().filter(x -> Objects.equals(x.getExtension(), "jar")).findFirst();
+  }
+
+  @NotNull
+  public static List<VirtualFile> predecessors(@NotNull VirtualFile file) {
+    List<VirtualFile> predecessors = Lists.newArrayList();
+    VirtualFile parent = file;
+    while(parent != null){
+      predecessors.add(parent);
+      parent = parent.getParent();
+    }
+    return predecessors;
   }
 }
