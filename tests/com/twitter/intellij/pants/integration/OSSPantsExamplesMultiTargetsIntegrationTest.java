@@ -19,7 +19,8 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
       "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
       "examples_src_java_org_pantsbuild_example_hello_module",
       "examples_src_java_org_pantsbuild_example_hello_main_readme",
-      "examples_src_java_org_pantsbuild_example_hello_main_common_sources"
+      "examples_src_java_org_pantsbuild_example_hello_main_common_sources",
+      "examples_src_java_org_pantsbuild_example_hello-project-root"
     };
 
     assertFirstSourcePartyModules(initialModules);
@@ -33,7 +34,8 @@ public class OSSPantsExamplesMultiTargetsIntegrationTest extends OSSPantsIntegra
       "examples_src_scala_org_pantsbuild_example_hello_module",
       "examples_src_scala_org_pantsbuild_example_hello_hello",
       "examples_src_scala_org_pantsbuild_example_hello_welcome_welcome",
-      "examples_src_scala_org_pantsbuild_example_hello_exe_exe"
+      "examples_src_scala_org_pantsbuild_example_hello_exe_exe",
+      "examples_src_scala_org_pantsbuild_example_hello-project-root"
     };
 
     assertFirstSourcePartyModules((String[]) ArrayUtils.
