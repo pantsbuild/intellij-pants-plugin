@@ -3,30 +3,30 @@
 
 package com.twitter.intellij.pants.bsp;
 
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.bsp.ui.FastpassManagerDialog;
-import com.twitter.intellij.pants.util.ExternalProjectUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.bsp.BSP;
 import org.jetbrains.bsp.BspUtil;
 
 import javax.swing.SwingUtilities;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-public class FastpassBspAmendAction extends AnAction {
+public class OpenBspAmendWindowAction extends AnAction {
 
-  private final static Logger logger = Logger.getInstance(FastpassBspAmendAction.class);
+  private final static Logger logger = Logger.getInstance(OpenBspAmendWindowAction.class);
 
   @Override
   public void update(@NotNull AnActionEvent e) {
@@ -73,10 +73,9 @@ public class FastpassBspAmendAction extends AnAction {
     }
   }
 
-  private static void startAmendProcedure(Project project, PantsBspData firstProject, Collection<String> targetsToAppend) {
+  private static void startAmendProcedure(Project project, PantsBspData firstProject, Collection<String> targetSpecs) {
     CompletableFuture<Set<String>> oldTargets = FastpassUtils.selectedTargets(firstProject);
-
-    Optional<Set<String>> newTargets = FastpassManagerDialog.promptForNewTargetSpecs(project, firstProject, oldTargets, targetsToAppend);
+    Optional<Set<String>> newTargets = FastpassManagerDialog.promptForNewTargetSpecs(project, firstProject, oldTargets, targetSpecs);
     amendAndRefreshIfNeeded(project, firstProject, oldTargets, newTargets);
   }
 
@@ -97,7 +96,19 @@ public class FastpassBspAmendAction extends AnAction {
           });
         } else if (!newTargetsVal.equals(oldTargetsVal)) {
           try {
-            refreshProjectsWithNewTargetsList(project, newTargets.get(), basePath);
+            DataContext c = dataId -> {
+              if(AmendAction.amendDataKey.is(dataId)) {
+                return new AmendData(basePath, newTargets.get());
+              } else if(CommonDataKeys.PROJECT.is(dataId)){
+                return project;
+              } else {
+                return null;
+              }
+            };
+
+            AnAction a = ActionManager.getInstance().getAction("com.twitter.intellij.pants.bsp.AmendAction");
+            AnActionEvent e = AnActionEvent.createFromAnAction(a, null, ActionPlaces.UNKNOWN, c);
+            a.actionPerformed(e);
           }
           catch (Throwable e) {
             logger.error(e);
@@ -110,20 +121,5 @@ public class FastpassBspAmendAction extends AnAction {
         }
       })
     );
-  }
-
-  private static void refreshProjectsWithNewTargetsList(
-    @NotNull Project project,
-    Collection<String> newTargets,
-    PantsBspData basePath
-  ) {
-    ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
-      try {
-        FastpassUtils.amendAll(basePath, new ArrayList<>(newTargets), project).get();
-        ExternalProjectUtil.refresh(project, BSP.ProjectSystemId());
-      } catch (Throwable e){
-        logger.error(e);
-      }
-    },"Amending", false, project );
   }
 }

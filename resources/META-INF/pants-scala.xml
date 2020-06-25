@@ -4,7 +4,7 @@
 <idea-plugin version="2">
   <actions>
     <action id="com.twitter.intellij.pants.compiler.actions.BspAmendProjectAction"
-            class="com.twitter.intellij.pants.bsp.FastpassBspAmendAction"
+            class="com.twitter.intellij.pants.bsp.OpenBspAmendWindowAction"
             text="Amend BSP project">
       <add-to-group group-id="Pants.Menu"/>
     </action>

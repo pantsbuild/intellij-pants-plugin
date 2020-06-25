@@ -39,7 +39,7 @@ class ConvertToSourceDependencyEditorNotificationsProvider extends EditorNotific
       EditorNotificationPanel panel = new EditorNotificationPanel();
       panel.createActionLabel(PantsBundle.message("pants.bsp.editor.convert.button"), () -> {
         try {
-          FastpassBspAmendAction.bspAmendWithDialog(project, Collections.singleton(targetName.get().toAddressString()));
+          OpenBspAmendWindowAction.bspAmendWithDialog(project, Collections.singleton(targetName.get().toAddressString()));
         } catch (Throwable e) {
           logger.error(e);
         }
