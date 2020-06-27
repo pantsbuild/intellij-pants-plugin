@@ -13,9 +13,11 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFileSystemItem;
+import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.util.Optional;
+import java.util.Set;
 
 public class PantsProjectPaneSelectInTarget extends ProjectViewSelectInTarget {
   protected PantsProjectPaneSelectInTarget(Project project) {
@@ -50,6 +52,10 @@ public class PantsProjectPaneSelectInTarget extends ProjectViewSelectInTarget {
       if (projectFileIndex.isInLibraryClasses(vFile) || projectFileIndex.isInLibrarySource(vFile)) {
         return true;
       }
+      if(PantsBspData.importsFor(myProject).stream().map(PantsBspData::getPantsRoot).anyMatch(root -> VfsUtil.isAncestor(root, vFile, false))) {
+        return true;
+      }
+
       final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(myProject.getBaseDir());
 
       return buildRoot.isPresent() && VfsUtil.isAncestor(buildRoot.get(), vFile, false);
