@@ -1,5 +1,5 @@
 #!/bin/sh
-find -maxdepth 1 -regex '.*/pants_.*\.zip' -delete
+find . -maxdepth 1 -regex '.*/pants_.*\.zip' -delete
 TRAVIS_BRANCH=master ./scripts/deploy/deploy.sh --skip-publish
 PANTS_ZIP=$(ls | grep 'pants_.*\.zip' | head -1 | head -c -1)
 

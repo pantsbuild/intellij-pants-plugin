@@ -25,7 +25,6 @@ addons:
 before_install:
   - PATH="/usr/lib/jvm/java-11-openjdk-amd64/jre/bin":$PATH
   - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-  - docker build --tag ide-probe scripts/ide-probe
 
 install: ./scripts/setup-ci-environment.sh
 
@@ -53,7 +52,7 @@ matrix:
       env: PANTS_SHA="release_1.16.0" TEST_SET=jvm-integration
 
     - name: ideprobe
-      script: ./scripts/ide-probe/run_docker.sh bash test.sh
+      script: docker build --tag ide-probe ideprobe && ./ideprobe/ci/run_docker.sh bash ci/test.sh
 
 script:
   # Test a single Java target without scala plugin
