@@ -8,14 +8,10 @@ import org.jetbrains.bsp.project.resolver.BspResolverDescriptors.ModuleDescripti
 
 class PantsBspResolverNamingExtension extends BspResolverNamingExtension {
 
-  def libraryData(moduleDescription: ModuleDescription): Option[String] = shortName("dependencies", moduleDescription)
+  def libraryData(moduleDescription: ModuleDescription): Option[String] = empty
 
-  def libraryTestData(moduleDescription: ModuleDescription): Option[String] = shortName("test dependencies", moduleDescription)
+  def libraryTestData(moduleDescription: ModuleDescription): Option[String] = empty
 
-  private def shortName(suffix: String, moduleDescription: ModuleDescription): Option[String] = {
-    val name = moduleDescription.data.name
-    val shortName = name.split(":").last
-    Some(s"$shortName $suffix")
-  }
+  private val empty = Some("\u200b")
 
 }
