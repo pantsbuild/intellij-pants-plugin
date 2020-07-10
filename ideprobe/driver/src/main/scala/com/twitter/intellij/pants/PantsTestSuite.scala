@@ -7,7 +7,7 @@ import org.virtuslab.ideprobe.dependencies.Plugin
 
 import scala.language.implicitConversions
 
-class PantsTestSuite extends IntegrationTestSuite {
+class PantsTestSuite extends IntegrationTestSuite with OpenProjectFixture {
 
   val pantsProbePlugin: Plugin = Plugin.Bundled(s"ideprobe-pants-${BuildInfo.version}.zip")
 

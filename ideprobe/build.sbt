@@ -3,7 +3,7 @@ name := "ideprobe-pants"
 organization.in(ThisBuild) := "com.twitter.ideprobe"
 version.in(ThisBuild) := "0.1"
 scalaVersion.in(ThisBuild) := "2.12.10"
-intellijBuild.in(ThisBuild) := "201.8538.17"
+intellijBuild.in(ThisBuild) := "202.6109.22"
 resolvers.in(ThisBuild) ++= Seq(
   Resolver.sonatypeRepo("public"),
   Resolver.sonatypeRepo("snapshots")
@@ -49,7 +49,7 @@ lazy val pantsProbePlugin = ideaPlugin("probePlugin", id = "pantsProbePlugin")
       // seems to be no way to prevent including probePlugin.jar in the dist reasonable way.
       file.getName == "pantsProbePlugin.jar"
     },
-    intellijPlugins += "com.intellij.plugins.pants:1.15.0.a59f12da18800c84452060673ace245dcd23cf80:bleedingedge".toPlugin,
+    intellijPlugins += "com.intellij.plugins.pants:1.15.1".toPlugin,
     name := "pants-probe-plugin"
   )
 
@@ -72,6 +72,15 @@ lazy val pantsTests = project
   .usesIdeaPlugin(pantsProbePlugin)
   .settings(
     name := "pants-tests",
+    libraryDependencies ++= Dependencies.junit
+  )
+
+lazy val ciSetup = project
+  .in(file("ci/setup"))
+  .disableIdeaPluginDevelopment
+  .dependsOn(pantsTests % "test->test")
+  .settings(
+    name := "pants-ci-setup",
     libraryDependencies ++= Dependencies.junit
   )
 
