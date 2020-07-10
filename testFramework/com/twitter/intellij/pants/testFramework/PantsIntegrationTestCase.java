@@ -41,12 +41,16 @@ import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ex.ProjectManagerEx;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -481,7 +485,6 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     final ScalaTestRunConfiguration runConfiguration = new ScalaTestRunConfiguration(myProject, factory, className);
     runConfiguration.setModule(getModule(moduleName));
     runConfiguration.setName(className);
-    runConfiguration.setupIntegrationTestClassPath();
 
     SingleTestData data = new SingleTestData(runConfiguration);
     data.setTestClassPath(className);
@@ -527,6 +530,11 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     // table. i don't think this indicates any problems, so for now if tests
     // fail with leaky sdk errors, broaden this to include the leaked sdks.
     removeJdks(jdk -> jdk.getName().contains("pants"));
+
+    for (Project project : ProjectManager.getInstance().getOpenProjects()) {
+      ((ProjectManagerEx)ProjectManager.getInstance()).forceCloseProject(project);
+    }
+
     super.tearDown();
   }
 
