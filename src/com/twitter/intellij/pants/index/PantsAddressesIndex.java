@@ -4,6 +4,8 @@
 package com.twitter.intellij.pants.index;
 
 import com.intellij.openapi.fileTypes.UnknownFileType;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -95,7 +97,8 @@ public class PantsAddressesIndex extends ScalarIndexExtension<String> {
     }
 
     String relative = FileUtil.getRelativePath(buildRoot.get().getPath(), file.getParent().getPath(), File.separatorChar);
-    if (relative == null || relative.isEmpty() || inputData.getFileType() == UnknownFileType.INSTANCE) {
+    FileType fileType = inputData.getFileType();
+    if (relative == null || relative.isEmpty() || fileType == UnknownFileType.INSTANCE || !(fileType instanceof LanguageFileType)) {
       return Collections.emptyMap();
     }
     else {
