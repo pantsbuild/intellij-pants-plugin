@@ -5,26 +5,36 @@ package com.twitter.intellij.pants.service.python;
 
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider;
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataService;
+import com.intellij.openapi.externalSystem.util.DisposeAwareProjectChange;
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.util.Computable;
+import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.python.facet.PythonFacet;
 import com.jetbrains.python.facet.PythonFacetType;
+import com.jetbrains.python.sdk.PythonSdkType;
+import com.jetbrains.python.sdk.PythonSdkUtil;
 import com.jetbrains.python.testing.TestRunnerService;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,34 +62,31 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
     }
 
     final Map<PythonInterpreterInfo, Sdk> interpreter2sdk = new HashMap<>();
+    final List<Sdk> createdSdks = new ArrayList<>();
 
-    /**
-     * TODO(yic): to move it to a thread appropriate place.
-     *
-     *  1) testPyTestRunConfiguration(com.twitter.intellij.pants.execution.OSSPantsPythonRunConfigurationIntegrationTest)
-     *  com.intellij.testFramework.LoggedErrorProcessor$TestLoggerAssertionError: Can't update SDK under write action, not allowed in background
-     */
-    //ExternalSystemApiUtil.executeProjectChangeAction(false, new DisposeAwareProjectChange(project) {
-    //  @Override
-    //  public void execute() {
-    //    for (final PythonInterpreterInfo interpreterInfo : interpreters) {
-    //      //final String binFolder = PathUtil.getParentPath(interpreter);
-    //      //final String interpreterHome = PathUtil.getParentPath(binFolder);
-    //      final String interpreter = interpreterInfo.getBinary();
-    //      Sdk pythonSdk = PythonSdkType.findSdkByPath(interpreter);
-    //      if (pythonSdk == null) {
-    //        final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-    //        pythonSdk = jdkTable.createSdk(PathUtil.getFileName(interpreter), PythonSdkType.getInstance());
-    //        jdkTable.addJdk(pythonSdk);
-    //        final SdkModificator modificator = pythonSdk.getSdkModificator();
-    //        modificator.setHomePath(interpreter);
-    //        modificator.commitChanges();
-    //        PythonSdkType.getInstance().setupSdkPaths(pythonSdk);
-    //      }
-    //      interpreter2sdk.put(interpreterInfo, pythonSdk);
-    //    }
-    //  }
-    //});
+    final PythonSdkType pythonSdkType = PythonSdkType.getInstance();
+
+    ExternalSystemApiUtil.executeProjectChangeAction(true, new DisposeAwareProjectChange(project) {
+      @Override
+      public void execute() {
+        for (final PythonInterpreterInfo interpreterInfo : interpreters) {
+          final String interpreter = interpreterInfo.getBinary();
+          Sdk pythonSdk = PythonSdkUtil.findSdkByPath(interpreter);
+          if (pythonSdk == null) {
+            final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
+            pythonSdk = jdkTable.createSdk(PathUtil.getFileName(interpreter), pythonSdkType);
+            jdkTable.addJdk(pythonSdk);
+            final SdkModificator modificator = pythonSdk.getSdkModificator();
+            modificator.setHomePath(interpreter);
+            modificator.commitChanges();
+            createdSdks.add(pythonSdk);
+          }
+          interpreter2sdk.put(interpreterInfo, pythonSdk);
+        }
+      }
+    });
+
+    createdSdks.forEach(pythonSdkType::setupSdkPaths);
 
     for (DataNode<PythonSetupData> dataNode : toImport) {
       final PythonSetupData pythonSetupData = dataNode.getData();
