@@ -127,14 +127,15 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
 
     for (String targetPath: targetSpecPathsWithoutChildren) {
       String relativePath = targetPath;
+      String absolutePath = new File(executor.getBuildRoot(), relativePath).getAbsolutePath();
       String moduleName = relativePath.replaceAll("/", "_") + "-project-root";
       final ModuleData moduleData = new ModuleData(
         moduleName,
         PantsConstants.SYSTEM_ID,
         ModuleTypeId.JAVA_MODULE,
         moduleName,
-        targetPath,
-        new File(executor.getBuildRoot(), relativePath).getAbsolutePath()
+        absolutePath,
+        absolutePath
       );
       DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
       modules.put(moduleName , moduleDataNode);
