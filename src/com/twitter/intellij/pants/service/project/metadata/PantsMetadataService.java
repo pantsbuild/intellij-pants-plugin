@@ -3,7 +3,10 @@
 
 package com.twitter.intellij.pants.service.project.metadata;
 
+import com.google.common.collect.Streams;
 import com.google.gson.Gson;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
@@ -13,6 +16,14 @@ import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataSer
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vcs.ProjectLevelVcsManager;
+import com.intellij.openapi.vcs.VcsDirectoryMapping;
+import com.intellij.openapi.vcs.VcsRoot;
+import com.intellij.openapi.vcs.roots.VcsRootDetector;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.service.project.PantsResolver;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -21,11 +32,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 public class PantsMetadataService implements ProjectDataService<TargetMetadata, Module> {
+  private static Logger logger =Logger.getInstance(PantsMetadataService.class);
   private static final Gson gson = new Gson();
 
   @NotNull
@@ -54,7 +70,33 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
         ExternalSystemModulePropertyManager.getInstance(module).setExternalModuleType(PantsConstants.PANTS_TARGET_MODULE_TYPE);
       }
     }
+    setVcsMappings(project, projectData.getLinkedExternalProjectPath());
   }
+
+  private static void setVcsMappings(@NotNull Project project, String linkedExternalProjectPath) {
+    VirtualFile linkedProjectVirtualFile = VirtualFileManager.getInstance().findFileByNioPath(Paths.get(linkedExternalProjectPath));
+    ProjectLevelVcsManager vcsManager = ProjectLevelVcsManager.getInstance(project);
+    VcsRoot[] currentVcsRoots = vcsManager.getAllVcsRoots();
+
+    if(linkedProjectVirtualFile == null) {
+      logger.error(new PantsException("File " + linkedExternalProjectPath + " does not exist. Could not setup VCS roots"));
+      return;
+    }
+
+    if(!VfsUtilCore.isUnder(linkedProjectVirtualFile, Arrays.stream(currentVcsRoots).map(VcsRoot::getPath).collect(Collectors.toSet()))){
+      VcsRootDetector detector = ServiceManager.getService(project, VcsRootDetector.class);
+      Collection<VcsRoot> detectedRoots = detector.detect(linkedProjectVirtualFile);
+      List<VcsDirectoryMapping> newMappings =
+        detectedRoots.stream()
+          .filter(detectedRoot -> Arrays.stream(currentVcsRoots).noneMatch(currentRoot -> currentRoot.equals(detectedRoot)))
+          .map(root -> new VcsDirectoryMapping(root.getPath().getPath(), Objects.requireNonNull(root.getVcs()).getName()))
+          .collect(Collectors.toList());
+      List<VcsDirectoryMapping> allMappings =
+        Streams.concat(newMappings.stream(), vcsManager.getDirectoryMappings().stream()).collect(Collectors.toList());
+      vcsManager.setDirectoryMappings(allMappings);
+    }
+  }
+
 
   @NotNull
   @Override

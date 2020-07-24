@@ -57,7 +57,6 @@ abstract class OpenProjectTest {
     Assert.assertTrue(s"Modules without sdk: $modulesWithoutSdk", modulesWithoutSdk.isEmpty)
   }
 
-  @Ignore // TODO: enable after this is fixed in pants plugin for 2020.2
   @Test def hasGitRepositoryRootDetected(): Unit = {
     val actualVcsRoots = intelliJ.probe.vcsRoots()
     val expectedRoot = VcsRoot("Git", intelliJ.workspace)
