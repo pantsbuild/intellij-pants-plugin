@@ -1,25 +1,11 @@
 package com.twitter.intellij.pants
 
-import java.nio.file.Paths
-
 import com.twitter.intellij.pants.protocol.PantsProjectSettingsChangeRequest
-import org.virtuslab.ideprobe.protocol.ProjectRef
-import org.virtuslab.ideprobe.protocol.Setting
 import org.junit.Assert._
 import org.junit.Test
+import org.virtuslab.ideprobe.protocol.Setting
 
-class PantsOpenProjectTest extends PantsTestSuite {
-  @Test
-  def openPantsGeneratedProjectWithValidName(): Unit = {
-    fixtureFromConfig().withWorkspace { ws =>
-      val projectPath = ws.runShell(Seq("./pants", "idea-plugin", "--open-with=echo", "java_app::")).out
-
-      ws.run { intelliJ =>
-        val projectRef = intelliJ.probe.openProject(Paths.get(projectPath))
-        assertEquals(ProjectRef("java_app::"), projectRef)
-      }
-    }
-  }
+class PantsSettingsTest extends PantsTestSuite {
 
   @Test def importProjectWithCustomSettings(): Unit = {
     fixtureFromConfig().run { intelliJ =>
@@ -29,7 +15,7 @@ class PantsOpenProjectTest extends PantsTestSuite {
           useIntellijCompiler = Setting.Changed(true)
         )
 
-      val projectRoot = intelliJ.workspace.resolve("java_app")
+      val projectRoot = intelliJ.workspace.resolve(intelliJ.config[String]("targetPath"))
       val project = intelliJ.probe.importProject(projectRoot, importSettings)
 
       val initialSettings = intelliJ.probe.getPantsProjectSettings()

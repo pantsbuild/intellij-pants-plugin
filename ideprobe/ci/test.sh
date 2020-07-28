@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
+set -x
 
 export IDEPROBE_DISPLAY=xvfb
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 export PANTS_PLUGIN_PATH="/tmp/pants.zip"
 
-sbt test
+if [ -z "${TEST_PATTERN}" ]; then
+  sbt "pantsTests/test"
+else
+  sbt "pantsTests/testOnly $TEST_PATTERN -- --ignore-runners=none"
+fi

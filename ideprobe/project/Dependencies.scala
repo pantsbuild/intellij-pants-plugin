@@ -7,7 +7,7 @@ object Dependencies {
   )
 
   object ideProbe {
-    val version = "0.0.0+13-87a51417+20200708-1038-SNAPSHOT"
+    val version = "0.1.3+9-5817c71e-SNAPSHOT"
 
     def apply(name: String): ModuleID = {
       "org.virtuslab.ideprobe" %% name % version
