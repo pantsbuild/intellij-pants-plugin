@@ -133,7 +133,7 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
         PantsConstants.SYSTEM_ID,
         ModuleTypeId.JAVA_MODULE,
         moduleName,
-        targetPath,
+        projectDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
         new File(executor.getBuildRoot(), relativePath).getAbsolutePath()
       );
       DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
