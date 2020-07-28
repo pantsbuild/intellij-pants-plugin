@@ -24,7 +24,7 @@ import com.jetbrains.python.psi.types.PyClassLikeType;
 import com.jetbrains.python.psi.types.PyClassTypeImpl;
 import com.jetbrains.python.psi.types.TypeEvalContext;
 import com.jetbrains.python.testing.PythonUnitTestUtil;
-import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTestWithPython;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
@@ -33,13 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsIntegrationTest {
-
-  @Override
-  public void tearDown() throws Exception {
-    removeJdks(jdk -> jdk.getName().startsWith("python"));
-    super.tearDown();
-  }
+public class OSSPantsPythonRunConfigurationIntegrationTest extends OSSPantsIntegrationTestWithPython {
 
   public void testPyTestRunConfiguration() throws Throwable {
     doImport("examples/tests/python/example_test/hello");

@@ -5,15 +5,9 @@ package com.twitter.intellij.pants.integration.python;
 
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.util.ArrayUtil;
-import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTestWithPython;
 
-public class OSSPantsPythonIntegrationTest extends OSSPantsIntegrationTest {
-
-  @Override
-  public void tearDown() throws Exception {
-    removeJdks(jdk -> jdk.getName().startsWith("python"));
-    super.tearDown();
-  }
+public class OSSPantsPythonIntegrationTest extends OSSPantsIntegrationTestWithPython {
 
   @Override
   protected String[] getRequiredPluginIds() {
