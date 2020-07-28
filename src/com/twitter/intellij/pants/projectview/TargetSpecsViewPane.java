@@ -14,6 +14,7 @@ import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.ide.util.treeView.AbstractTreeUpdater;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.PantsBundle;
+import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -52,6 +53,11 @@ public class TargetSpecsViewPane extends AbstractProjectViewPSIPane {
   @Override
   public int getWeight() {
     return 240;
+  }
+
+  @Override
+  public boolean isDefaultPane(@NotNull Project project) {
+    return PantsUtil.isPantsProject(project) || PantsUtil.isFastpassProject(project);
   }
 
   @NotNull
