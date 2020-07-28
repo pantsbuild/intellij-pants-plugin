@@ -503,6 +503,10 @@ public class PantsUtil {
     return ExternalProjectUtil.isExternalProject(project, PantsConstants.SYSTEM_ID);
   }
 
+  public static boolean isFastpassProject(@NotNull Project project) {
+    return PantsUtil.findPantsExecutable(project).isPresent() && PantsUtil.isBspProject(project);
+  }
+
   /**
    * Determine whether a project is trigger by Pants `idea-plugin` goal by
    * looking at the "pants_idea_plugin_version" property.

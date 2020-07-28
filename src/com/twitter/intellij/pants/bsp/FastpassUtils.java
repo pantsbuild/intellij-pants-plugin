@@ -12,11 +12,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,7 +87,10 @@ final public class FastpassUtils {
   public static CompletableFuture<Set<String>> selectedTargets(PantsBspData basePath) {
     return CompletableFuture.supplyAsync(() -> {
       try {
-        JsonReader reader = new JsonReader(new FileReader(basePath.getBspPath().resolve(Paths.get(".bsp", "bloop.json")).toFile()));
+        VirtualFile bloopJsonFile =
+          VirtualFileManager.getInstance().findFileByNioPath(basePath.getBspPath().resolve(Paths.get(".bsp", "bloop.json")));
+        byte[] bytes = bloopJsonFile.contentsToByteArray(true);
+        InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(bytes));
         Gson gson = new Gson();
         BloopConfig res = gson.fromJson(reader, BloopConfig.class);
         return new HashSet<>(res.getPantsTargets());
