@@ -27,9 +27,7 @@ class RunAppTest extends PantsTestSuite with ConfigFormat {
     buildProject: RunningIntelliJFixture => Unit,
   ): Unit = {
     import pureconfig.generic.auto._
-
     fixtureFromConfig().run { intelliJ =>
-      fixThriftJpsLibraryName(intelliJ.intelliJPaths)
       openProject(intelliJ)
       buildProject(intelliJ)
 
@@ -41,9 +39,4 @@ class RunAppTest extends PantsTestSuite with ConfigFormat {
     }
   }
 
-  // workaround for https://github.com/fkorotkov/intellij-thrift/pull/90
-  private def fixThriftJpsLibraryName(intelliJPaths: IntelliJPaths) = {
-    val thriftLibs = intelliJPaths.plugins.resolve("thrift/lib")
-    thriftLibs.resolve("jps-plugin.jar").copyTo(thriftLibs.resolve("thrift-jps.jar"))
-  }
 }
