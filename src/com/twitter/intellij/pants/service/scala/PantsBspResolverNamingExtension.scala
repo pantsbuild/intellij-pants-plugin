@@ -3,8 +3,8 @@
 
 package com.twitter.intellij.pants.service.scala
 
-import org.jetbrains.bsp.project.resolver.BspResolverNamingExtension
-import org.jetbrains.bsp.project.resolver.BspResolverDescriptors.ModuleDescription
+import org.jetbrains.bsp.project.importing.BspResolverNamingExtension
+import org.jetbrains.bsp.project.importing.BspResolverDescriptors.ModuleDescription
 
 class PantsBspResolverNamingExtension extends BspResolverNamingExtension {
 
