@@ -4,10 +4,7 @@ organization.in(ThisBuild) := "com.twitter.ideprobe"
 version.in(ThisBuild) := "0.1"
 scalaVersion.in(ThisBuild) := "2.12.10"
 intellijBuild.in(ThisBuild) := "202.6109.22"
-resolvers.in(ThisBuild) ++= Seq(
-  Resolver.sonatypeRepo("public"),
-  Resolver.sonatypeRepo("snapshots")
-)
+resolvers.in(ThisBuild) ++= Dependencies.ideProbe.resolvers
 skip in publish := true
 
 import IdeaPluginAdapter._
@@ -25,7 +22,8 @@ val pluginSettings = Seq(
   packageMethod := PackagingMethod.Standalone(),
   intellijPlugins ++= Seq(
     "com.intellij.java".toPlugin,
-    "JUnit".toPlugin
+    "JUnit".toPlugin,
+    "PythonCore".toPlugin
   )
 )
 

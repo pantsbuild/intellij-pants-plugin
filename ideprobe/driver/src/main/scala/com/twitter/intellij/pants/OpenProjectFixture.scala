@@ -16,6 +16,6 @@ trait OpenProjectFixture extends PantsFixture with BspFixture {
   }
 
   private def targetsFromConfig(intelliJ: RunningIntelliJFixture): Seq[String] =  {
-    intelliJ.config[Seq[String]]("targetSpecs")
+    intelliJ.config[Seq[String]]("pants.import.targets")
   }
 }
