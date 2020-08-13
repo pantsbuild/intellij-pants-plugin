@@ -47,7 +47,7 @@ lazy val pantsProbePlugin = ideaPlugin("probePlugin", id = "pantsProbePlugin")
       // seems to be no way to prevent including probePlugin.jar in the dist reasonable way.
       file.getName == "pantsProbePlugin.jar"
     },
-    intellijPlugins += "com.intellij.plugins.pants:1.15.1".toPlugin,
+    intellijPlugins += "com.intellij.plugins.pants:1.15.1.42d84c497b639ef81ebdae8328401e3966588b2c:bleedingedge".toPlugin,
     name := "pants-probe-plugin"
   )
 

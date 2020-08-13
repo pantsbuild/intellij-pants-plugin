@@ -3,16 +3,18 @@ package com.twitter.intellij.pants
 import java.nio.file.Path
 
 import com.twitter.intellij.pants.OpenProjectTestFixture.TestData
+import com.twitter.intellij.pants.protocol.PythonFacet
 import org.junit.Assert
 import org.junit.Assert.assertEquals
-import org.junit.Ignore
 import org.junit.Test
 import org.virtuslab.ideprobe.ConfigFormat
 import org.virtuslab.ideprobe.RunningIntelliJFixture
 import org.virtuslab.ideprobe.RunningIntellijPerSuite
 import org.virtuslab.ideprobe.Shell
+import org.virtuslab.ideprobe.protocol.FileRef
 import org.virtuslab.ideprobe.protocol.ModuleRef
 import org.virtuslab.ideprobe.protocol.ProjectRef
+import org.virtuslab.ideprobe.protocol.RunFixesSpec
 import org.virtuslab.ideprobe.protocol.SourceFolder
 import org.virtuslab.ideprobe.protocol.VcsRoot
 import pureconfig.ConfigReader
@@ -24,16 +26,35 @@ class OpenProjectTestPants extends CommonOpenProjectTests {
 
   // TODO see how can it be supported with BSP
   @Test def hasPythonFacetsSetup(): Unit = {
-    val project = intelliJ.probe.projectModel()
-    val pythonModules = intelliJ.config[Set[String]]("project.pythonModules")
-    project.modules.map(_.name).filter(pythonModules.contains).foreach { module =>
-      val facets = PantsProbeDriver(intelliJ.probe).getPythonFacets(ModuleRef(module))
-      Assert.assertTrue(s"Unexpected python facets $facets", facets.size == 1)
+    def checkFacetsForModule(module: ModuleRef, facets: Seq[PythonFacet]): Unit = {
+      Assert.assertTrue(s"Unexpected python facets $facets for $module", facets.size == 1)
       val Seq(facet) = facets
-      Assert.assertTrue(s"No sdk in python facet $facet", facet.sdk.isDefined)
+      Assert.assertTrue(s"No sdk in python facet $facet for $module", facet.sdk.isDefined)
       val Some(sdk) = facet.sdk
-      Assert.assertTrue(s"Sdk does not have home path: $sdk", sdk.homePath.nonEmpty)
-      Assert.assertEquals("Incorrect sdk type", "Python SDK", sdk.typeId)
+      Assert.assertTrue(s"Sdk does not have home path: $sdk for $module", sdk.homePath.nonEmpty)
+      Assert.assertEquals(s"Incorrect sdk type for $module", "Python SDK", sdk.typeId)
+    }
+
+    val pantsDriver = PantsProbeDriver(intelliJ.probe)
+
+    // check if python modules have python sdk set up
+    val pythonModules = intelliJ.config[Set[String]]("project.pythonModules")
+
+    intelliJ.probe.projectModel().modulesByNames(pythonModules).map(_.toRef()).foreach { module =>
+      val facets = pantsDriver.getPythonFacets(module)
+      checkFacetsForModule(module, facets)
+    }
+
+    // check if after running python facet inspection *all* modules have python sdk setup
+    intelliJ.probe.runLocalInspection(
+      "com.twitter.intellij.pants.inspection.PythonFacetInspection",
+      FileRef(intelliJ.workspace.resolve("java_app/BUILD")),
+      RunFixesSpec.All
+    )
+
+    intelliJ.probe.projectModel().moduleRefs.foreach { ref =>
+      val facets = pantsDriver.getPythonFacets(ref)
+      checkFacetsForModule(ref, facets)
     }
   }
 
