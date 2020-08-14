@@ -1,3 +1,3 @@
-FROM lwawrzyk/ideprobe-pants:202.6109.22
+FROM lwawrzyk/ideprobe-pants:202.6397.94
 ADD . /workspace
 WORKDIR /workspace
