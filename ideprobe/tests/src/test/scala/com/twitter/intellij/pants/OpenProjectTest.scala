@@ -48,7 +48,7 @@ class OpenProjectTestPants extends CommonOpenProjectTests {
     // check if after running python facet inspection *all* modules have python sdk setup
     intelliJ.probe.runLocalInspection(
       "com.twitter.intellij.pants.inspection.PythonFacetInspection",
-      FileRef(intelliJ.workspace.resolve("java_app/BUILD")),
+      FileRef(intelliJ.workspace.resolve(intelliJ.config[Path]("project.buildFile"))),
       RunFixesSpec.All
     )
 
@@ -89,7 +89,7 @@ abstract class CommonOpenProjectTests {
 
     val expectedModules = intelliJ.config[Seq[TestData.Module]]("project.modules")
     val importedModules = projectModel.modules.map { module =>
-      TestData.Module(module.name, module.contentRoots.all.map(sf => TestData.ContentRoot(relative(sf.path), sf.kind, sf.packagePrefix)))
+      TestData.Module(module.name, module.contentRoots.all.map(sf => TestData.SourceRoot(relative(sf.path), sf.kind, sf.packagePrefix)))
     }
 
     Assert.assertTrue(
@@ -118,9 +118,9 @@ abstract class CommonOpenProjectTests {
 
 object OpenProjectTestFixture extends ConfigFormat {
   object TestData {
-    case class ContentRoot(path: Path, kind: SourceFolder.Kind, packagePrefix: Option[String])
-    case class Module(name: String, contentRoots: Set[ContentRoot])
-    implicit val contentRootReader: ConfigReader[ContentRoot] = deriveReader[ContentRoot]
+    case class SourceRoot(path: Path, kind: SourceFolder.Kind, packagePrefix: Option[String])
+    case class Module(name: String, sourceRoots: Set[SourceRoot])
+    implicit val contentRootReader: ConfigReader[SourceRoot] = deriveReader[SourceRoot]
     implicit val moduleReader: ConfigReader[Module] = deriveReader[Module]
   }
 }
