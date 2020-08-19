@@ -22,6 +22,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.io.IOUtils;
@@ -217,9 +218,9 @@ public class FastpassUpdater {
 
   private static Optional<FastpassData> extractFastpassData(Project project) {
     try {
-      String path = project.getBasePath();
-      if (path != null) {
-        Optional<FastpassData> fromBsp = readJsonFile(Paths.get(path, ".bsp", "bloop.json"), BspSettings.class)
+      Optional<String> path = PantsBspData.importsFor(project).stream().findFirst().map(p -> p.getBspPath().toString());
+      if (path.isPresent()) {
+        Optional<FastpassData> fromBsp = readJsonFile(Paths.get(path.get(), ".bsp", "bloop.json"), BspSettings.class)
           .flatMap(settings -> {
             if (settings.fastpassVersion != null && settings.fastpassProjectName != null) {
               return Optional.of(new FastpassData(settings.fastpassVersion, settings.fastpassProjectName));
@@ -229,7 +230,7 @@ public class FastpassUpdater {
           });
 
         Supplier<Optional<FastpassData>> fromBloopSettings =
-          () -> readJsonFile(Paths.get(path, ".bloop", "bloop.settings.json"), BloopSettings.class).flatMap(settings -> {
+          () -> readJsonFile(Paths.get(path.get(), ".bloop", "bloop.settings.json"), BloopSettings.class).flatMap(settings -> {
             Pattern pattern = Pattern.compile("org\\.scalameta:fastpass_2\\.12:(.*)");
             Optional<String> version =
               settings.refreshProjectsCommand.stream().map(pattern::matcher).filter(Matcher::find).map(m -> m.group(1)).findFirst();
