@@ -60,11 +60,13 @@ public class JarMappings {
   private synchronized void ensureUpToDate() {
     try {
       if (!librariesFileIsUpToDate) {
-        VirtualFile file = librariesFile();
-        String content = new String(file.contentsToByteArray());
-        Type mapType = new TypeToken<Map<String, String>>() {}.getType();
-        libraryJarToLibrarySourceJar = new Gson().fromJson(content, mapType);
-        librariesFileIsUpToDate = true;
+        Optional<VirtualFile> file = librariesFile();
+        if(file.isPresent()) {
+          String content = new String(file.get().contentsToByteArray());
+          Type mapType = new TypeToken<Map<String, String>>() {}.getType();
+          libraryJarToLibrarySourceJar = new Gson().fromJson(content, mapType);
+          librariesFileIsUpToDate = true;
+        }
       }
     }
     catch (Exception e) {
@@ -98,8 +100,8 @@ public class JarMappings {
 
   public Optional<String> findSourceJarForTarget(String target) {
     String name = target.replaceAll("[:/]", ".") + SOURCES_JAR_SUFFIX;
-    Path path = bloopJarsPath(project).resolve(name);
-    return Optional.of(path.toString());
+    Optional<Path> path = bloopJarsPath(project).map(p -> p.resolve(name));
+    return path.map(Path::toString);
   }
 
   public Optional<String> findTargetForSourceJar(VirtualFile jar) {
@@ -125,17 +127,40 @@ public class JarMappings {
 
   private boolean isProjectInternalDependency(VirtualFile jar) {
     Path jarPath = Paths.get(jar.getPath());
-    Path bloopJarsPath = bloopJarsPath(project);
-    return jarPath.startsWith(bloopJarsPath);
+    return isBloopJarPath(jarPath) || isSourcesJarPath(jarPath);
   }
 
-  private static Path bloopJarsPath(Project project) {
-    return Paths.get(project.getBasePath(), ".bloop", "bloop-jars");
+  @NotNull
+  private Boolean isSourcesJarPath(@NotNull Path jarPath) {
+    return sourcesJarPath(project).map(jarPath::startsWith).orElse(false);
   }
 
-  private VirtualFile librariesFile() {
-    Path path = Paths.get(project.getBasePath(), ".pants", "libraries.json");
-    return LocalFileSystem.getInstance().findFileByIoFile(path.toFile());
+  @NotNull
+  private Boolean isBloopJarPath(@NotNull Path jarPath) {
+    return bloopJarsPath(project).map(jarPath::startsWith).orElse(false);
+  }
+
+  @NotNull
+  private static Optional<Path> bloopJarsPath(Project project) {
+    return bspDir(project).map(path -> Paths.get(path, ".bloop", "bloop-jars"));
+  }
+
+  @NotNull
+  private static Optional<Path> sourcesJarPath(Project project) {
+    return bspDir(project).map(path -> Paths.get(path, ".bloop", "sources-jar"));
+  }
+
+  @NotNull
+  private static Optional<String> bspDir(@NotNull Project project) {
+    return PantsBspData.importsFor(project).stream().findFirst().map(PantsBspData::getBspPath).map(Path::toString);
+  }
+
+  private Optional<VirtualFile> librariesFile() {
+    return bspDir(project)
+      .map(bspImport -> {
+        Path path = Paths.get(bspImport, ".pants", "libraries.json");
+        return LocalFileSystem.getInstance().findFileByIoFile(path.toFile());
+      });
   }
 
   public static Optional<VirtualFile> getParentJar(VirtualFile file) {
