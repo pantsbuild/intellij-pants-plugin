@@ -24,3 +24,5 @@
 /build-support/virtualenv-*
 .pants.workdir.file_lock
 .pants.d/
+/dist/
+pants_*.zip

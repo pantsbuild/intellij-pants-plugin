@@ -24,7 +24,7 @@ final class BUILDFilesTest extends PantsTestSuite with Assertions {
     fixtureFromConfig().run { intellij =>
       val project = openProject(intellij)
 
-      def file(name: String): FileRef = FileRef(project, intellij.workspace.resolve(name))
+      def file(name: String): FileRef = FileRef(intellij.workspace.resolve(name), project)
 
       val thriftLibBuild = file("thrift-lib/BUILD")
       val thirdPartyBuild = file("3rdParty/BUILD")

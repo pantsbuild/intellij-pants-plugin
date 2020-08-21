@@ -23,10 +23,6 @@ import org.virtuslab.ideprobe.protocol.Setting.Unchanged
 
 object PantsImport extends IntelliJApi {
 
-  // TODO update after merge of https://github.com/pantsbuild/intellij-pants-plugin/pull/479
-  // It removes the dialog for pants import depth and moves it to settings. Currently
-  // it is not possible to complete incremental import scenario as we can't interact
-  // with the dialog.
   def importProject(path: Path, settings: PantsProjectSettingsChangeRequest): ProjectRef = {
     Projects.importFromSources(
       path, {
