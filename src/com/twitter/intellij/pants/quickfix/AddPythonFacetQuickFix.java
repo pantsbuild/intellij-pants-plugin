@@ -10,6 +10,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -17,6 +18,7 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.python.facet.PythonFacet;
 import com.jetbrains.python.facet.PythonFacetConfiguration;
@@ -29,6 +31,7 @@ import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +39,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class AddPythonFacetQuickFix extends PantsQuickFix {
+
+  private static final Logger LOG = Logger.getInstance(AddPythonFacetQuickFix.class);
 
   @NotNull
   @Override
@@ -102,6 +107,8 @@ public class AddPythonFacetQuickFix extends PantsQuickFix {
       .filter(PantsPythonSdkUtil::hasNoPythonSdk)
       .collect(Collectors.toList());
 
+    List<Runnable> commits = new ArrayList<>();
+
     for (Module module : modules) {
       FacetManager facetManager = FacetManager.getInstance(module);
       Optional<PythonFacet> facetWithoutSdk = facetManager
@@ -109,39 +116,44 @@ public class AddPythonFacetQuickFix extends PantsQuickFix {
         .stream().filter(facet -> facet.getConfiguration().getSdk() == null)
         .findFirst();
 
-      ApplicationManager.getApplication().runWriteAction(() -> {
-        /* Remove existing facets if python interpreter is not selected
-         * this is a more resilient method than just adding sdk.
-         */
-        ModifiableFacetModel model = facetManager.createModifiableModel();
-        facetWithoutSdk.ifPresent(facet -> {
-          model.removeFacet(facet);
-          model.commit();
-        });
+      /* Remove existing facets if python interpreter is not selected
+       * this is a more resilient method than just adding sdk.
+       */
+      ModifiableFacetModel model = facetManager.createModifiableModel();
 
-        PythonFacetType type = PythonFacetType.getInstance();
-        PythonFacetConfiguration conf = type.createDefaultConfiguration();
-        conf.setSdk(sdk);
+      facetWithoutSdk.ifPresent(model::removeFacet);
 
-        String facetName = module.getName() + "-default-python";
-        PythonFacet facet = type.createFacet(module, facetName, conf, null);
+      PythonFacetType type = PythonFacetType.getInstance();
+      PythonFacetConfiguration conf = type.createDefaultConfiguration();
+      conf.setSdk(sdk);
 
-        model.addFacet(facet);
-        model.commit();
-      });
+      String facetName = module.getName() + "-default-python";
+      PythonFacet facet = type.createFacet(module, facetName, conf, null);
+
+      model.addFacet(facet);
+      commits.add(model::commit);
     }
+
+    String message = "Setting sdk for " + commits.size() + " modules. IDE may freeze.";
+    showNotification("Configuring Python SDK", message, NotificationType.INFORMATION);
+
+    ApplicationManager.getApplication().runWriteAction(() ->
+      ProjectRootManagerEx.getInstanceEx(project).mergeRootsChangesDuring(() ->
+        commits.forEach(Runnable::run)));
   }
 
   private void displayError() {
+    showNotification(
+      "Cannot find Python SDK", "Python SDK might need to be added manually", NotificationType.ERROR);
+  }
+
+  private void showNotification(String title, String message, NotificationType type) {
     Notification notification = new Notification(
-      PantsConstants.PANTS,
-      PantsIcons.Icon,
-      "Cannot find Python SDK",
-      null,
-      "Python SDK might need to be added manually",
-      NotificationType.ERROR,
-      null
-    );
-    Notifications.Bus.notify(notification);
+      PantsConstants.PANTS, PantsIcons.Icon, title, null, message, type, null);
+    try {
+      Notifications.Bus.notify(notification);
+    } catch (Exception e) {
+      LOG.warn("Failed to publish notification: " + message, e);
+    }
   }
 }
