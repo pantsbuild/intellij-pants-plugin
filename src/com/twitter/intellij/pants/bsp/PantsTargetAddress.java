@@ -72,6 +72,9 @@ public class PantsTargetAddress {
       return Optional.of(new PantsTargetAddress(Paths.get(strings[0]), AddressKind.ALL_TARGETS_DEEP, Optional.empty()));
     } else if (strings.length >= 1 && s.endsWith(":")) {
       return Optional.of(new PantsTargetAddress(Paths.get(strings[0]), AddressKind.ALL_TARGETS_FLAT, Optional.empty()));
+    } else if(!s.contains(":")) {
+      Path target = Paths.get(s).getFileName();
+      return Optional.of(new PantsTargetAddress(Paths.get(s), AddressKind.SINGLE_TARGET, Optional.of(target.toString())));
     } else {
       return Optional.empty();
     }

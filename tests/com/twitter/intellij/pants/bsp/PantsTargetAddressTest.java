@@ -24,6 +24,11 @@ public class PantsTargetAddressTest extends UsefulTestCase {
     assertEquals(t.get(), PantsTargetAddress.allTargetsInDirFlat(Paths.get("project")));
   }
 
+  public void testJustPath() {
+    Optional<PantsTargetAddress> t = PantsTargetAddress.tryParse("a/b/c");
+    assertEquals(t.get(), PantsTargetAddress.oneTargetInDir(Paths.get("a/b/c"), "c"));
+  }
+
   public void testJustColon() {
     Optional<PantsTargetAddress> t = PantsTargetAddress.tryParse(":");
     assertFalse(t.isPresent());

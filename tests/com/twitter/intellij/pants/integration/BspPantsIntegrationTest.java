@@ -42,17 +42,17 @@ public class BspPantsIntegrationTest extends OSSPantsIntegrationTest {
     assertEquals(1, parsedDeepDirectoryRule.values().stream().findFirst().get().size());
 
     // Test single target rule
-    Map<PantsTargetAddress, Collection<PantsTargetAddress>> parsedSingeTargetRule =
+    Map<PantsTargetAddress, Collection<PantsTargetAddress>> parsedSingleTargetRule =
       parse(Collections.singleton("examples/tests/java/org/pantsbuild/example/hello/greet:greet"));
-    assertEquals(1, parsedSingeTargetRule.size());
-    assertEquals(1, parsedSingeTargetRule.values().stream().findFirst().get().size());
+    assertEquals(1, parsedSingleTargetRule.size());
+    assertEquals(1, parsedSingleTargetRule.values().stream().findFirst().get().size());
 
-    // Throws for malformed target
-    assertThrows(
-      InvalidTargetException.class,
-      "Malformed address",
-      () -> parse(Collections.singleton("examples/tests/java/org/pantsbuild/example/hello/greet"))
-    );
+    // Test single target rule with implied target
+    Map<PantsTargetAddress, Collection<PantsTargetAddress>> parsedDefaultTargetRule =
+      parse(Collections.singleton("examples/tests/java/org/pantsbuild/example/hello/greet"));
+    assertEquals(1, parsedDefaultTargetRule.size());
+    assertEquals(1, parsedDefaultTargetRule.values().stream().findFirst().get().size());
+    assertEquals("greet", parsedDefaultTargetRule.values().stream().findFirst().get().iterator().next().getTargets().get());
 
     // Throws for non-existing folder
     assertThrows(
