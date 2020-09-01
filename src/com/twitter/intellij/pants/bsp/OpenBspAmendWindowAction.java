@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -32,7 +33,9 @@ public class OpenBspAmendWindowAction extends AnAction {
   public void update(@NotNull AnActionEvent e) {
     super.update(e);
     boolean isBsp = e.getProject() != null && BspUtil.isBspProject(e.getProject());
-    e.getPresentation().setEnabledAndVisible(isBsp);
+    boolean amendInProgress = ServiceManager.getService(e.getProject(), AmendService.class).isAmendProcessOngoing();
+    e.getPresentation().setVisible(isBsp);
+    e.getPresentation().setEnabled(!amendInProgress);
   }
 
   @Override
@@ -78,8 +81,6 @@ public class OpenBspAmendWindowAction extends AnAction {
     Optional<Set<String>> newTargets = FastpassManagerDialog.promptForNewTargetSpecs(project, firstProject, oldTargets, targetSpecs);
     amendAndRefreshIfNeeded(project, firstProject, oldTargets, newTargets);
   }
-
-
 
   private static void amendAndRefreshIfNeeded(
     @NotNull Project project,
