@@ -6,8 +6,6 @@ language: python
 cache:
   directories:
     - ${HOME}/.cache/pants
-    - .cache/bootstrap # See pants.ini [cache.bootstrap]
-    - .cache/pants     # Pants downloaded by scripts/setup-ci-environment.sh
   timeout: 1200
 notifications:
   email:
