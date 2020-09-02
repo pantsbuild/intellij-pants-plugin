@@ -43,6 +43,10 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     @Override
     public void logIndexingDuration(long milliSeconds) throws Throwable {
     }
+
+    @Override
+    public void logEvent(EventType event) {
+    }
   }
 
 

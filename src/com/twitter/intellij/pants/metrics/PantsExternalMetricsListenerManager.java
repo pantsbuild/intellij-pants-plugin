@@ -127,4 +127,14 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
       });
     }
   }
+
+  public void logEvent(EventType event) {
+    EP_NAME.getExtensionList().forEach(s -> {
+      try {
+        s.logEvent(event);
+      } catch (Throwable t) {
+        LOG.info(t);
+      }
+    });
+  }
 }

@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.execution;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.CommonProgramRunConfigurationParameters;
@@ -44,6 +45,7 @@ import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.model.PantsOptions;
+import com.twitter.intellij.pants.service.project.FastpassRecommendationNotificationService;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -54,6 +56,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
 
 import javax.swing.Icon;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -165,7 +168,10 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   ) {
     Project currentProject = configuration.getProject();
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
+    Stopwatch sw = Stopwatch.createStarted();
     PantsExecuteTaskResult result = executeCompileTask(currentProject, targetAddressesToCompile, false);
+    Duration buildDuration = sw.elapsed();
+    FastpassRecommendationNotificationService.getInstance().tick(configuration.getProject(), buildDuration);
     return result.succeeded;
   }
 
