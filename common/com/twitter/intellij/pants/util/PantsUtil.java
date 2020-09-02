@@ -889,7 +889,7 @@ public class PantsUtil {
   public static Optional<VirtualFile> findPantsExecutable(@NotNull Project project) {
     Module[] modules = ModuleManager.getInstance(project).getModules();
     if (modules.length == 0) {
-      throw new PantsException("No module found in project.");
+      return Optional.empty();
     }
     for (Module module : modules) {
       Optional<VirtualFile> buildRoot = findBuildRoot(module);

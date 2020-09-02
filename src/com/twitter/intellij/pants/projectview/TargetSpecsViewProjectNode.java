@@ -23,10 +23,12 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -58,10 +60,10 @@ public class TargetSpecsViewProjectNode extends AbstractProjectNode {
   @Override
   public Collection<? extends AbstractTreeNode<?>> getChildren() {
     Set<VirtualFile> topLevelNodes = PantsUtil.isFastpassProject(myProject)
-                                      ? fastpassTargetSpecViewTopLevelNodes(myProject)
-                                      : PantsUtil.isPantsProject(myProject)
-                                        ? regularPantsTargetSpecViewTopLevelNodes(myProject)
-                                        : Collections.emptySet();
+                                     ? fastpassTargetSpecViewTopLevelNodes(myProject)
+                                     : PantsUtil.isPantsProject(myProject)
+                                       ? regularPantsTargetSpecViewTopLevelNodes(myProject)
+                                       : Collections.emptySet();
     return topLevelNodes
       .stream()
       .sorted(Comparator.comparing(VirtualFile::toString))
@@ -93,7 +95,15 @@ public class TargetSpecsViewProjectNode extends AbstractProjectNode {
         .flatMap(s -> ((PantsProjectSettings) (s)).getSelectedTargetSpecs().stream())
         .map(PantsTargetAddress::fromString)
         .collect(Collectors.toList());
-    return roots.stream().map(address -> LocalFileSystem.getInstance().findFileByNioFile(address.getPath()))
+    return roots.stream()
+      .map(address -> {
+        Optional<String> absolutePath = address.getPath().isAbsolute()
+                                        ? Optional.of(address.getPath().toString())
+                                        : PantsUtil.findFileRelativeToBuildRoot(project, address.getPath().toString())
+                                          .map(VirtualFile::getCanonicalPath);
+        return absolutePath.map(p -> LocalFileSystem.getInstance().findFileByPath(p)).orElse(null);
+      })
+      .filter(Objects::nonNull)
       .collect(Collectors.toSet());
   }
 
