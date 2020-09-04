@@ -34,6 +34,10 @@ final public class PantsBspData {
     return myPantsRoot;
   }
 
+  public static Set<VirtualFile> pantsRoots(Project project) {
+    return importsFor(project).stream().map(PantsBspData::getPantsRoot).collect(Collectors.toSet());
+  }
+
   public static Set<PantsBspData> importsFor(Project project) {
     return
       Arrays.stream(ModuleManager.getInstance(project).getModules())

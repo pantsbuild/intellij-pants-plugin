@@ -125,7 +125,7 @@ public class JarMappings {
     return String.join("/", targetPath) + ":" + targetName;
   }
 
-  private boolean isProjectInternalDependency(VirtualFile jar) {
+  public boolean isProjectInternalDependency(VirtualFile jar) {
     Path jarPath = Paths.get(jar.getPath());
     return isBloopJarPath(jarPath) || isSourcesJarPath(jarPath);
   }
