@@ -4,7 +4,6 @@
 package com.twitter.intellij.pants.bsp;
 
 import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.module.Module;
@@ -19,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,37 +49,6 @@ final public class FastpassUtils {
     return Stream.of(ModuleRootManager.getInstance(module).getSourceRoots()).flatMap (
       sourceRoot -> toStream(PantsUtil.findPantsExecutable(sourceRoot.getPath()).map(VirtualFile::getParent))
     );
-  }
-
-  public static CompletableFuture<Void> amendAll(@NotNull PantsBspData importData, Collection<String> newTargets, Project project)
-    throws IOException, ExecutionException {
-    List<String> amendPart = Arrays.asList(
-      "amend",  "--no-bloop-exit", "--intellij", "--intellij-launcher", "echo",
-      importData.getBspPath().getFileName().toString(),
-      "--new-targets", String.join(",", newTargets)
-    );
-    GeneralCommandLine command = makeFastpassCommand(project, amendPart);
-    Process process = fastpassProcess(command, importData.getBspPath().getParent(), Paths.get(importData.getPantsRoot().getPath()));
-    return onExit(process).thenAccept(__ -> {});
-  }
-
-  /**
-   * Instead of of JDK9's CompletableFuture::onExit
-   */
-
-  @NotNull
-  private static CompletableFuture<Process> onExit(@NotNull Process process) {
-    return CompletableFuture.supplyAsync(() -> {
-      try {
-        process.waitFor();
-        if (process.exitValue() != 0) {
-          throw new IOException(toString(process.getErrorStream()));
-        }
-        return process;
-      } catch (Throwable e) {
-        throw new CompletionException(e);
-      }
-    });
   }
 
   public static CompletableFuture<Set<String>> selectedTargets(PantsBspData basePath) {
@@ -127,14 +94,6 @@ final public class FastpassUtils {
     commandLine.addParameters(coursierPart());
     commandLine.addParameters(new ArrayList<>(amendPart));
     return commandLine;
-  }
-
-  @NotNull
-  private static Process fastpassProcess(GeneralCommandLine command, Path fastpassHome, Path pantsWorkspace) throws ExecutionException {
-    return command
-      .withWorkDirectory(pantsWorkspace.toFile())
-      .withEnvironment("FASTPASS_HOME", fastpassHome.toString())
-      .createProcess();
   }
 
   @NotNull
@@ -247,5 +206,32 @@ final public class FastpassUtils {
                                   (col1, col2 ) -> col1
         ))
     );
+  }
+
+  /**
+   * Instead of of JDK9's CompletableFuture::onExit
+   */
+  @NotNull
+  public static CompletableFuture<Process> onExit(@NotNull Process process) {
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        process.waitFor();
+        if (process.exitValue() != 0) {
+          throw new IOException(toString(process.getErrorStream()));
+        }
+        return process;
+      } catch (Throwable e) {
+        throw new CompletionException(e);
+      }
+    });
+  }
+
+  @NotNull
+  public static Process fastpassProcess(GeneralCommandLine command, Path fastpassHome, Path pantsWorkspace)
+    throws ExecutionException {
+    return command
+      .withWorkDirectory(pantsWorkspace.toFile())
+      .withEnvironment("FASTPASS_HOME", fastpassHome.toString())
+      .createProcess();
   }
 }

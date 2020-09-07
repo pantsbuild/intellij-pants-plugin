@@ -64,7 +64,7 @@
       </action>
       <action id="com.twitter.intellij.pants.ui.PantsToBspProjectAction"
               class="com.twitter.intellij.pants.ui.PantsToBspProjectAction"
-              text="Create new BSP project based on this Pants project">
+              text="Create new Fastpass project based on this Pants project">
       </action>
       <action id="com.twitter.intellij.pants.components.impl.FastpassUpdater.Action"
               class="com.twitter.intellij.pants.components.impl.FastpassUpdater$Action"
@@ -159,8 +159,8 @@
 
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsSettings"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>
-
     <projectService serviceImplementation="com.twitter.intellij.pants.bsp.JarMappings"/>
+    <projectService serviceImplementation="com.twitter.intellij.pants.bsp.AmendService"/>
 
     <treeStructureProvider implementation="com.twitter.intellij.pants.projectview.PantsTreeStructureProvider"/>
     <projectViewPane implementation="com.twitter.intellij.pants.projectview.ProjectFilesViewPane"/>
