@@ -17,8 +17,11 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
+
+import static com.intellij.openapi.fileEditor.impl.LoadTextUtil.loadText;
 
 public class FilePathRelativeToBuiltRootMacro extends Macro {
   /**
@@ -36,7 +39,7 @@ public class FilePathRelativeToBuiltRootMacro extends Macro {
     return "Relative path from build root";
   }
 
-  private Optional<String> jarFilePath(Project project, VirtualFile vFile) {
+  private Optional<String> jarFilePathBasedOnFilename(Project project, VirtualFile vFile) {
     Optional<VirtualFile> jarFile = JarMappings.getParentJar(vFile);
     if(jarFile.isPresent()) {
       JarMappings mappings = JarMappings.getInstance(project);
@@ -59,6 +62,21 @@ public class FilePathRelativeToBuiltRootMacro extends Macro {
     return Optional.empty();
   }
 
+  private Optional<String> jarFilePathBasedOnMetaInf(VirtualFile vFile) {
+    Optional<VirtualFile> jarFile = JarMappings.getParentJar(vFile);
+    if(jarFile.isPresent()) {
+      Path pathInJar =Paths.get(jarFile.get().getPath()).relativize(Paths.get(vFile.getPath()));
+      VfsUtil.refreshAndFindChild(jarFile.get(), "META-INF"); // for some unknown reason, IJ can't find files without it
+      VirtualFile file = jarFile.get().findFileByRelativePath("META-INF/fastpass/source-root");
+      if (file != null) {
+        String sourceRoot = loadText(file).toString();
+        Path relativePath = Paths.get(sourceRoot, pathInJar.toString());
+        return Optional.of(relativePath.toString());
+      }
+    }
+    return Optional.empty();
+  }
+
 
   @Override
   public String expand(@NotNull final DataContext dataContext) {
@@ -72,9 +90,14 @@ public class FilePathRelativeToBuiltRootMacro extends Macro {
       return FileUtil.getRelativePath(VfsUtil.virtualToIoFile(buildRoot.get()), VfsUtil.virtualToIoFile(fileSelected));
     }
 
+    Optional<String> jarFileByMetaInf = jarFilePathBasedOnMetaInf(fileSelected);
+    if(jarFileByMetaInf.isPresent()) {
+      return jarFileByMetaInf.get();
+    }
+
     Project project = CommonDataKeys.PROJECT.getData(dataContext);
     if(project != null) {
-      Optional<String> jarFile = jarFilePath(project, fileSelected);
+      Optional<String> jarFile = jarFilePathBasedOnFilename(project, fileSelected);
       if(jarFile.isPresent()){
         return jarFile.get();
       }
