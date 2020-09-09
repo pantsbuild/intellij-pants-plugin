@@ -57,22 +57,5 @@ public interface PantsExternalMetricsListener {
    */
   void logIndexingDuration(long milliSeconds) throws Throwable;
 
-  /**
-   * Generic interface for logging different things.
-   *
-   * Having such a generic interface makes it easier to extend. You do not have to update
-   * both extensionPoint and extension simultaneously.
-   */
-  enum EventType{
-    /**
-     * Log that the notification recommending to use Fastpass was shown to the user
-     */
-    FASTPASS_RECOMMENDATION_SHOWN,
-    /**
-     * Log that the user converted the project to Fastpass after seeing notification
-     */
-    CONVERTED_TO_FASTPASS_AFTER_RECOMMENDATION
-  }
-
-  void logEvent(EventType event);
+  void logEvent(String event);
 }

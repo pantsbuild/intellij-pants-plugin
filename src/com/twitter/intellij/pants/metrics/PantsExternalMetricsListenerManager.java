@@ -128,7 +128,7 @@ public class PantsExternalMetricsListenerManager implements PantsExternalMetrics
     }
   }
 
-  public void logEvent(EventType event) {
+  public void logEvent(String event) {
     EP_NAME.getExtensionList().forEach(s -> {
       try {
         s.logEvent(event);

@@ -15,7 +15,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener.EventType;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.ui.PantsToBspProjectAction;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +43,7 @@ public class FastpassRecommendationNotificationService {
     Notification notification = createRecommendation();
     if(NotificationsConfigurationImpl.getSettings(groupId).getDisplayType() != NotificationDisplayType.NONE) {
       PantsExternalMetricsListenerManager metrics = PantsExternalMetricsListenerManager.getInstance();
-      metrics.logEvent(EventType.FASTPASS_RECOMMENDATION_SHOWN);
+      metrics.logEvent("FASTPASS_RECOMMENDATION_SHOWN");
     }
     notification.notify(project);
   }
@@ -60,7 +59,7 @@ public class FastpassRecommendationNotificationService {
       @Override
       public void actionPerformed(@NotNull AnActionEvent e) {
         PantsExternalMetricsListenerManager.getInstance()
-          .logEvent(EventType.CONVERTED_TO_FASTPASS_AFTER_RECOMMENDATION);
+          .logEvent("CONVERTED_TO_FASTPASS_AFTER_RECOMMENDATION");
         new PantsToBspProjectAction().actionPerformed(e);
       }
     });

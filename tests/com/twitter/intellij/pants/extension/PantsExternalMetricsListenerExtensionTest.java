@@ -45,7 +45,7 @@ public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrati
     }
 
     @Override
-    public void logEvent(EventType event) {
+    public void logEvent(String event) {
     }
   }
 
