@@ -900,8 +900,17 @@ public class PantsUtil {
     return Optional.empty();
   }
 
+  private static VirtualFile findFileByPath(@NotNull String projectPath) {
+    VirtualFile projectFile = LocalFileSystem.getInstance().findFileByPath(projectPath);
+    if(projectFile != null) {
+      return projectFile;
+    } else {
+      return LocalFileSystem.getInstance().refreshAndFindFileByPath(projectPath);
+    }
+  }
+
   public static Optional<VirtualFile> findPantsExecutable(@NotNull String projectPath) {
-    final VirtualFile buildFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(projectPath);
+    final VirtualFile buildFile = findFileByPath(projectPath);
     return findPantsExecutable(buildFile);
   }
 
