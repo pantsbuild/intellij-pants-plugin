@@ -56,4 +56,6 @@ public interface PantsExternalMetricsListener {
    * @throws Throwable
    */
   void logIndexingDuration(long milliSeconds) throws Throwable;
+
+  void logEvent(String event);
 }
