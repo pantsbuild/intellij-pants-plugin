@@ -86,7 +86,7 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
             projectPath.ifPresent(path -> registerNewBspProjectAndOpen(path, project));
             projectPath.orElseThrow(() -> new RuntimeException(formatError(output, outputErr)));
           } else {
-            Path projectPath = Paths.get(output).toAbsolutePath();
+            Path projectPath = newProjectPath(output);
             registerNewBspProjectAndOpen(projectPath, project);
           }
         }
@@ -115,10 +115,18 @@ public class PantsToBspProjectAction extends AnAction implements DumbAware {
     }
   }
 
+  @NotNull
+  private Path newProjectPath(String output) {
+    int lastIndexOfNl = output.lastIndexOf("\n");
+    String path = (lastIndexOfNl == -1) ? output : output.substring(lastIndexOfNl + 1);
+    return Paths.get(path).toAbsolutePath();
+  }
+
   private GeneralCommandLine createCommandLine(Project project) throws IOException {
     List<String> fastpassCommandBase = Arrays.asList(
       "create",
       "--intellij",
+      "--no-bloop-exit",
       "--intellijLauncher", "echo"
     );
     List<String> targets = pantsTargets(project);
