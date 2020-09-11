@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.service.task;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.intellij.execution.ExecutionException;
@@ -22,12 +23,14 @@ import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
+import com.twitter.intellij.pants.service.project.FastpassRecommendationNotificationService;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,6 +71,7 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
       final Process process = commandLine.createProcess();
       List<String> textOutputs = Lists.newArrayList();
       myCancellationMap.put(id, process);
+      Stopwatch sw = Stopwatch.createStarted();
       PantsUtil.getCmdOutput(
         process,
         commandLine.getCommandLineString(), new ProcessAdapter() {
@@ -86,6 +90,11 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
         }
       );
       int exitCode = process.waitFor();
+      Duration duration = sw.elapsed();
+
+      if(!mayBePythonTestCommandLine(commandLine)) {
+        FastpassRecommendationNotificationService.getInstance().tick(id.findProject(), duration);
+      }
       // https://github.com/JetBrains/intellij-community/blob/master/platform/external-system-impl/src/com/intellij/openapi/externalSystem/service/remote/wrapper/ExternalSystemTaskManagerWrapper.java#L54-L57
       // explicitly expects ExternalSystemException for the task to fail, so we are now throwing it upon non-zero exit.
       if (exitCode != 0) {
@@ -100,6 +109,17 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
       // Sync files as generated sources may have changed after `pants test` called
       PantsUtil.synchronizeFiles();
     }
+  }
+
+  /**
+   * Tries to estimate if the command line was created with PantsPythonTestRunConfigurationProducer
+   * so it's a python test case run
+   *
+   * The result is not guaranteed to be correct, so the methods should be used only in non-critical code
+   * (for example to reduce the number of non-critical notifications)
+   */
+  private boolean mayBePythonTestCommandLine(GeneralCommandLine commandLine) {
+    return commandLine.getCommandLineString().contains(PantsConstants.PANTS_CLI_OPTION_PYTEST);
   }
 
   @VisibleForTesting
