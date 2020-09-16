@@ -32,10 +32,16 @@ public class OpenBspAmendWindowAction extends AnAction {
   @Override
   public void update(@NotNull AnActionEvent e) {
     super.update(e);
-    boolean isBsp = e.getProject() != null && BspUtil.isBspProject(e.getProject());
-    boolean amendInProgress = ServiceManager.getService(e.getProject(), AmendService.class).isAmendProcessOngoing();
-    e.getPresentation().setVisible(isBsp);
-    e.getPresentation().setEnabled(!amendInProgress);
+    Project project = e.getProject();
+    if(project != null) {
+      boolean isBsp = BspUtil.isBspProject(project);
+      boolean amendInProgress = ServiceManager.getService(project, AmendService.class).isAmendProcessOngoing();
+      e.getPresentation().setVisible(isBsp);
+      e.getPresentation().setEnabled(!amendInProgress);
+    } else {
+      e.getPresentation().setVisible(false);
+      e.getPresentation().setEnabled(false);
+    }
   }
 
   @Override
