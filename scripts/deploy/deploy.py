@@ -71,7 +71,7 @@ if __name__ == "__main__":
       build_cmd = 'rm -rf dist;' \
                   './pants binary scripts/sdk:intellij-pants-plugin-publish'
       logger.info(build_cmd)
-      subprocess.check_output(build_cmd, shell=True, stderr=devnull)
+      subprocess.check_output(build_cmd, shell=True, stderr=subprocess.STDOUT)
 
       logger.info("Packaging into a zip")
       # Move the jar under pants/lib, but because there is already `pants` under build root,
@@ -85,12 +85,23 @@ if __name__ == "__main__":
                       'rm -rf tmp' \
         .format(jar=PLUGIN_JAR, zip=zip_name)
       logger.info(packaging_cmd)
-      subprocess.check_output(packaging_cmd, shell=True, stderr=devnull)
+      subprocess.check_output(packaging_cmd, shell=True, stderr=subprocess.STDOUT)
       logger.info('{} built successfully'.format(zip_name))
+
+    except subprocess.CalledProcessError as e:
+      logger.error('An error occurred while building pants.')
+      if e.stdout is not None:
+        logger.error('STDOUT:')
+        for l in e.stdout.splitlines():
+          logger.error(l)
+      if e.stderr is not None:
+        logger.error('STDERR:')
+        for l in e.stderr.splitlines():
+          logger.error(l)
 
     finally:
       # Reset `PLUGIN_XML` since it has been modified.
-      subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True, stderr=devnull)
+      subprocess.check_output('git checkout {}'.format(PLUGIN_XML), shell=True, stderr=subprocess.STDOUT)
 
     if args.skip_publish:
       logger.info("Publishing skipped.")
