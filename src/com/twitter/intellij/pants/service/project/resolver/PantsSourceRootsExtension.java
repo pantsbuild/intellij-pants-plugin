@@ -20,6 +20,7 @@ import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 
@@ -188,7 +189,7 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
     final List<String> baseRoots = new ArrayList<>();
     for (String root : sortedRoots) {
       if (!hasAnAncestorRoot(baseRoots, root)) {
-        baseRoots.add(root);
+        baseRoots.add(PantsUtil.resolveSymlinks(root));
       }
     }
     return baseRoots;
