@@ -23,7 +23,6 @@ import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,7 +59,7 @@ public class TargetSpecsViewProjectNode extends AbstractProjectNode {
   @Override
   public Collection<? extends AbstractTreeNode<?>> getChildren() {
     Set<VirtualFile> topLevelNodes = PantsUtil.isFastpassProject(myProject)
-                                     ? fastpassTargetSpecViewTopLevelNodes(myProject)
+                                     ? rootsForTargetSpecs(myProject)
                                      : PantsUtil.isPantsProject(myProject)
                                        ? regularPantsTargetSpecViewTopLevelNodes(myProject)
                                        : Collections.emptySet();
@@ -71,19 +70,18 @@ public class TargetSpecsViewProjectNode extends AbstractProjectNode {
       .collect(Collectors.toList());
   }
 
-  private Set<VirtualFile> fastpassTargetSpecViewTopLevelNodes(Project project) {
-    Set<PantsBspData> linkedProjects = PantsBspData.importsFor(project);
-    Set<CompletableFuture<Set<VirtualFile>>> futures = linkedProjects.stream().map(pantsBspData -> {
+  private Set<VirtualFile> rootsForTargetSpecs(Project project) {
+    Optional<PantsBspData> linkedProjects = PantsBspData.importsFor(project);
+    Optional<Set<VirtualFile>> answer = linkedProjects.map(pantsBspData -> {
       VirtualFile pantsRoot = pantsBspData.getPantsRoot();
       return FastpassUtils.selectedTargets(pantsBspData).thenApply(
         targetSpecs -> targetSpecs.stream()
           .map(targetSpecsItem -> pantsRoot.findFileByRelativePath(PantsTargetAddress.fromString(targetSpecsItem).getPath().toString()))
           .collect(Collectors.toSet())
       );
-    }).collect(Collectors.toSet());
-    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenApply(
-      __ -> futures.stream().flatMap(x -> x.join().stream()).collect(Collectors.toSet())
-    ).join();
+    }).map(CompletableFuture::join);
+    return answer.orElse(Collections.emptySet());
+
   }
 
   @NotNull

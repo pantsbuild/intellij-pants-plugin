@@ -14,8 +14,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 final public class PantsBspData {
   final private Path myBspPath;
@@ -34,30 +33,39 @@ final public class PantsBspData {
     return myPantsRoot;
   }
 
-  public static Set<VirtualFile> pantsRoots(Project project) {
-    return importsFor(project).stream().map(PantsBspData::getPantsRoot).collect(Collectors.toSet());
+  public static Optional<VirtualFile> pantsRoots(Project project) {
+    return Arrays.stream(ModuleManager.getInstance(project).getModules())
+      .filter(module ->
+                Objects
+                  .equals(
+                    ExternalSystemModulePropertyManager.getInstance(module).getExternalSystemId(),
+                    BSP.ProjectSystemId().getId())
+      )
+      .map(module -> FastpassUtils.pantsRoots(module).findFirst())
+      .filter(Optional::isPresent)
+      .findFirst()
+      .flatMap(Function.identity());
   }
 
-  public static Set<PantsBspData> importsFor(Project project) {
-    return
-      Arrays.stream(ModuleManager.getInstance(project).getModules())
-        .filter(module ->
-                  Objects
-                    .equals(ExternalSystemModulePropertyManager.getInstance(module).getExternalSystemId(), BSP.ProjectSystemId().getId()) &&
-                  FastpassUtils.pantsRoots(module).findFirst().isPresent()
-        )
-        .map(module -> {
-          String linkedProjectPath = ExternalSystemModulePropertyManager.getInstance(module).getLinkedProjectPath();
-          Optional<VirtualFile> pantsRoots = FastpassUtils.pantsRoots(module).findFirst();
-          if(linkedProjectPath != null && pantsRoots.isPresent()) {
-            Path bspRoot = Paths.get(linkedProjectPath);
-            return new PantsBspData(bspRoot, pantsRoots.get());
-          } else {
-            throw new RuntimeException("Invalid BSP-Pants import. LinkedProjectPath: " + linkedProjectPath + ", pantsRoot: " + pantsRoots.toString());
-          }
-        })
-        .collect(Collectors.toSet());
+  public static Optional<Path> bspRoot(Project project) {
+    if(project.getBasePath() != null) {
+      Path path = Paths.get(project.getBasePath());
+      if(path.resolve(".bloop").toFile().exists()) {
+        return Optional.of(path);
+      }
+    }
+    return Optional.empty();
   }
+
+  public static Optional<PantsBspData> importsFor(Project project) {
+    Optional<Path> bspRoot = PantsBspData.bspRoot(project);
+    Optional<VirtualFile> pantsRoot = PantsBspData.pantsRoots(project);
+    if (bspRoot.isPresent() && pantsRoot.isPresent()) {
+      return Optional.of(new PantsBspData(bspRoot.get(), pantsRoot.get()));
+    }
+    return Optional.empty();
+  }
+
 
   @Override
   public boolean equals(Object o) {

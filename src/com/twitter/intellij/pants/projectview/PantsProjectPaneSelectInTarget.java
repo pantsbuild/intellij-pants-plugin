@@ -10,11 +10,14 @@ import com.intellij.ide.impl.ProjectViewSelectInTarget;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.impl.http.LocalFileStorage;
 import com.intellij.psi.PsiFileSystemItem;
 import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.jaxen.function.ext.LocaleFunctionSupport;
 
 import java.util.Optional;
 import java.util.Set;
@@ -52,7 +55,7 @@ public class PantsProjectPaneSelectInTarget extends ProjectViewSelectInTarget {
       if (projectFileIndex.isInLibraryClasses(vFile) || projectFileIndex.isInLibrarySource(vFile)) {
         return true;
       }
-      if(PantsBspData.importsFor(myProject).stream().map(PantsBspData::getPantsRoot).anyMatch(root -> VfsUtil.isAncestor(root, vFile, false))) {
+      if(PantsBspData.pantsRoots(myProject).map(root -> VfsUtil.isAncestor(root, vFile, false)).orElse(false)) {
         return true;
       }
 

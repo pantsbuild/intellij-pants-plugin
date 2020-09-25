@@ -13,12 +13,14 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.bsp.ui.FastpassManagerDialog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.bsp.BspUtil;
 
 import javax.swing.SwingUtilities;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -56,25 +58,16 @@ public class OpenBspAmendWindowAction extends AnAction {
 
   public static void bspAmendWithDialog(Project project, Collection<String> targetsToAppend) {
     if (project != null) {
-      Set<PantsBspData> linkedProjects = PantsBspData.importsFor(project);
-      if (linkedProjects.size() > 1) {
-        Messages.showErrorDialog(
-          PantsBundle.message("pants.bsp.error.failed.more.than.one.bsp.project.not.supported.message"),
-          PantsBundle.message("pants.bsp.error.action.not.supported.title")
-        );
-      }
-      else if (linkedProjects.size() < 1) {
+      Optional<PantsBspData> imports = PantsBspData.importsFor(project);
+      if (imports.isPresent()) {
+        startAmendProcedure(project, imports.get(), targetsToAppend);
+      } else {
         Messages.showErrorDialog(
           PantsBundle.message("pants.bsp.error.failed.not.a.bsp.pants.project.message"),
           PantsBundle.message("pants.bsp.error.action.not.supported.title")
         );
       }
-      else {
-        PantsBspData importData = linkedProjects.stream().findFirst().get();
-        startAmendProcedure(project, importData, targetsToAppend);
-      }
-    }
-    else {
+    } else {
       Messages.showErrorDialog(
         PantsBundle.message("pants.bsp.error.no.project.found"),
         PantsBundle.message("pants.bsp.error.action.not.supported.title")

@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.intellij.openapi.fileEditor.impl.LoadTextUtil.loadText;
 
@@ -49,9 +48,8 @@ public class FilePathRelativeToBuiltRootMacro extends Macro {
         .map(PantsTargetAddress::getPath);
       if (target.isPresent()){
         String relativePath = target.get().resolve(vFile.getName()).toString();
-        Set<VirtualFile> pantsRoots = PantsBspData.pantsRoots(project);
-        boolean pathExists = pantsRoots.stream()
-          .anyMatch(x -> x.findFileByRelativePath(relativePath) != null);
+        Optional<VirtualFile> pantsRoots = PantsBspData.pantsRoots(project);
+        boolean pathExists = pantsRoots.map(x -> x.findFileByRelativePath(relativePath) != null).orElse(false);
         if (pathExists) {
           return Optional.of(relativePath);
         } else {
