@@ -46,18 +46,6 @@ matrix:
     - python: 3.7
       env: PANTS_SHA="release_1.16.0" TEST_SET=jvm-integration
 
-    - name: ideprobe-1
-      services:
-        - docker
-      env: TEST_PATTERN="com.twitter.intellij.pants.Suite1"
-      script: time docker build --tag ideprobe-pants:local ideprobe && ./ideprobe/ci/run_docker.sh bash ci/test.sh
-
-    - name: ideprobe-2
-      services:
-        - docker
-      env: TEST_PATTERN="com.twitter.intellij.pants.Suite2"
-      script: time docker build --tag ideprobe-pants:local ideprobe && ./ideprobe/ci/run_docker.sh bash ci/test.sh
-
 script:
   # Test a single Java target without scala plugin
   - ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
