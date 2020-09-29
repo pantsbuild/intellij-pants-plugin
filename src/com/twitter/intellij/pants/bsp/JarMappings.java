@@ -41,10 +41,12 @@ public class JarMappings {
     project.getMessageBus().connect().subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
       @Override
       public void after(@NotNull List<? extends VFileEvent> events) {
+        Optional<VirtualFile> libraries = librariesFile();
         events.forEach(event -> {
           if (event instanceof VFileContentChangeEvent &&
               event.getFile() != null &&
-              event.getFile().equals(librariesFile())) {
+              libraries.isPresent() &&
+              event.getFile().equals(libraries.get())) {
             librariesFileIsUpToDate = false;
           }
         });
@@ -152,7 +154,7 @@ public class JarMappings {
 
   @NotNull
   private static Optional<String> bspDir(@NotNull Project project) {
-    return PantsBspData.importsFor(project).stream().findFirst().map(PantsBspData::getBspPath).map(Path::toString);
+    return PantsBspData.bspRoot(project).map(Path::toString);
   }
 
   private Optional<VirtualFile> librariesFile() {

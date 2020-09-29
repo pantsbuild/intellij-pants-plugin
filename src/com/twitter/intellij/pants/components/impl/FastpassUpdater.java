@@ -218,7 +218,7 @@ public class FastpassUpdater {
 
   private static Optional<FastpassData> extractFastpassData(Project project) {
     try {
-      Optional<String> path = PantsBspData.importsFor(project).stream().findFirst().map(p -> p.getBspPath().toString());
+      Optional<String> path = PantsBspData.bspRoot(project).map(Path::toString);
       if (path.isPresent()) {
         Optional<FastpassData> fromBsp = readJsonFile(Paths.get(path.get(), ".bsp", "bloop.json"), BspSettings.class)
           .flatMap(settings -> {
