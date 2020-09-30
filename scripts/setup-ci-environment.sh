@@ -86,3 +86,12 @@ if [ ! -d .cache/pants/.git ]; then
   popd
   popd
 fi
+
+if [ ! -d .cache/pants-host/.git ]; then
+    pushd .cache
+    git clone https://github.com/tpasternak/pants -b 1.26.0.dev0-intellij-plugin pants-host
+    pushd pants-host
+    ./pants goals
+    popd
+    popd
+fi

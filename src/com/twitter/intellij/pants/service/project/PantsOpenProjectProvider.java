@@ -111,6 +111,7 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
       projectWorkspaceId,
       isProjectCreatedWithWizard,
       sendFrameBack,
+      false,
       null,
       null,
       null

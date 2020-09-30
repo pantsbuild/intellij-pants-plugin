@@ -4,6 +4,7 @@
 package com.twitter.intellij.pants.integration;
 
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +28,13 @@ public class WholeRepoIntegrationTest extends OSSPantsIntegrationTest {
     assertNotNull(myProjectRoot);
   }
 
-  public void testWholeRepo() throws Throwable {
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+    VfsRootAccess.allowRootAccess(myProject, "/usr/local/Cellar", "/opt/python");
+  }
+
+  public void testWholeRepo() {
     doImport("");
     assertProjectName("dummy_repo.::");
   }
