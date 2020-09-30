@@ -523,7 +523,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     // Kill nailgun after usage as memory on travis is limited, at a cost of slower later builds.
     killNailgun();
     cleanProjectRoot();
-    Messages.setTestDialog(TestDialog.DEFAULT);
+    // Messages.setTestDialog(TestDialog.DEFAULT);// todo find replacement
 
     // TODO(cosmicexplorer): after updating from 172.4343.14 to 173.3531.6,
     // intellij's provided test class sometimes yells about a leaky jdk

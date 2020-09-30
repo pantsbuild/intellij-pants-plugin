@@ -4,19 +4,19 @@
 package com.twitter.intellij.pants.testFramework.performance
 
 import java.io.File
-import java.util.Collections
 
 import com.intellij.ProjectTopics
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.roots.{ModuleRootAdapter, ModuleRootEvent, ModuleRootListener}
+import com.intellij.openapi.roots.{ModuleRootEvent, ModuleRootListener}
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.io.FileUtil
 import com.twitter.intellij.pants.model.PantsTargetAddress
 import com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase
 import com.twitter.intellij.pants.util.PantsUtil
 
-import scala.collection.JavaConversions.collectionAsScalaIterable
+import scala.jdk.CollectionConverters._
+// import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 
 object PantsPerformanceBenchmark {
   def main(args: Array[String]) {
@@ -42,7 +42,7 @@ object PantsPerformanceBenchmark {
   }
 
   def runBenchmarkAndOutput(options: Map[String, String]) = {
-    val pluginsToDisable = options.get("plugins").map(FileUtil.loadLines).map(_.toList).getOrElse(List())
+    val pluginsToDisable = options.get("plugins").map(FileUtil.loadLines).map(_.asScala).getOrElse(List())
     val timings = runBenchmark(options("target"), pluginsToDisable.toSet)
     val msg = s"Imported ${timings.target} in " +
               s"${timings.projectCreation / 1000}s / " +
@@ -81,7 +81,7 @@ class PantsPerformanceBenchmark(projectFolder: File, pluginsToDisable: Set[Strin
   override protected def getProjectFolder = projectFolder
 
   override protected def getRequiredPluginIds = {
-    val allPluginIds = PluginManagerCore.getLoadedPlugins.map(_.getPluginId.getIdString).toSet
+    val allPluginIds = PluginManagerCore.getLoadedPlugins.asScala.map(_.getPluginId.getIdString).toSet
     (allPluginIds -- pluginsToDisable).toArray
   }
 
