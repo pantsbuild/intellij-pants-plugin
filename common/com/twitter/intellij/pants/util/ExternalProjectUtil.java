@@ -17,6 +17,8 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 public class ExternalProjectUtil {
 
   public static void refresh(@NotNull Project project, ProjectSystemId id) {
@@ -28,7 +30,8 @@ public class ExternalProjectUtil {
         ApplicationManager.getApplication().runWriteAction(() -> FileDocumentManager.getInstance().saveAllDocuments());
 
         final ImportSpecBuilder specBuilder = new ImportSpecBuilder(project, id);
-        ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ?
+        ProgressExecutionMode executionMode = ApplicationManager.getApplication().isUnitTestMode() ||
+                                              Objects.equals(System.getenv("PANTS_PLUGIN_SYNC_REFRESH"), "true") ?
                                               ProgressExecutionMode.MODAL_SYNC : ProgressExecutionMode.IN_BACKGROUND_ASYNC;
         specBuilder.use(executionMode);
         ExternalSystemUtil.refreshProjects(specBuilder);
