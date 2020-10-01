@@ -73,10 +73,7 @@ if [ ! -d .cache/pants/.git ]; then
   pushd .cache
   git clone https://github.com/tpasternak/pants
   echo "Bootstrapping Pants..."
-  popd
-fi
-
-pushd .cache/pants
+  pushd pants
   # Bootstrap Pants in the testing SHA so it won't cause
   # tests to time out during Pants run.
   if [ -z ${PANTS_SHA+x} ]; then
@@ -86,5 +83,6 @@ pushd .cache/pants
     git checkout -f $PANTS_SHA
   fi
   ./pants goals
-popd
-
+  popd
+  popd
+fi
