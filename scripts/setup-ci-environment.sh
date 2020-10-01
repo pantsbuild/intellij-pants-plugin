@@ -86,3 +86,11 @@ if [ ! -d .cache/pants/.git ]; then
   popd
   popd
 fi
+
+pushd .cache
+git clone https://github.com/tpasternak/pants -b bump-zinc pants-new
+pushd pants-new
+./pants goals
+popd
+popd
+
