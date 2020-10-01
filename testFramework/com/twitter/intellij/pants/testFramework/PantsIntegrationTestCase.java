@@ -139,7 +139,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   public void setUp() throws Exception {
     cleanProjectIdeaDir();
     super.setUp();
-    VfsRootAccess.allowRootAccess(myProject, "/");
+    VfsRootAccess.allowRootAccess(myProject, "/Library/Java/JavaVirtualMachines");
     for (String pluginId : getRequiredPluginIds()) {
       IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId(pluginId));
       assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
