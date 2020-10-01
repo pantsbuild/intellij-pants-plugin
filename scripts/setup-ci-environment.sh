@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 source scripts/prepare-ci-environment.sh
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
@@ -87,10 +88,12 @@ if [ ! -d .cache/pants/.git ]; then
   popd
 fi
 
+if [ ! -d .cache/pants-new/.git ]; then
 pushd .cache
 git clone https://github.com/tpasternak/pants -b bump-zinc pants-new
 pushd pants-new
 ./pants goals
 popd
 popd
+fi
 
