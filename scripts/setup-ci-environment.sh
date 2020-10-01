@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 source scripts/prepare-ci-environment.sh
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
@@ -72,9 +71,12 @@ fi
 if [ ! -d .cache/pants/.git ]; then
   echo "Getting latest Pants..."
   pushd .cache
-  git clone https://github.com/pantsbuild/pants
+  git clone https://github.com/tpasternak/pants
   echo "Bootstrapping Pants..."
-  pushd pants
+  popd
+fi
+
+pushd .cache/pants
   # Bootstrap Pants in the testing SHA so it won't cause
   # tests to time out during Pants run.
   if [ -z ${PANTS_SHA+x} ]; then
@@ -84,16 +86,5 @@ if [ ! -d .cache/pants/.git ]; then
     git checkout -f $PANTS_SHA
   fi
   ./pants goals
-  popd
-  popd
-fi
-
-if [ ! -d .cache/pants-new/.git ]; then
-pushd .cache
-git clone https://github.com/tpasternak/pants -b bump-zinc pants-new
-pushd pants-new
-./pants goals
 popd
-popd
-fi
 
