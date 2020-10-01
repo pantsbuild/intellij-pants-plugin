@@ -101,6 +101,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="scala-sdk-2.13.3" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="scala-sdk-2.13.3" level="project" />
   </component>
 </module>
