@@ -57,6 +57,8 @@ public class OSSPantsPythonIntegrationTest extends OSSPantsIntegrationTestWithPy
   public void setUp() throws Exception {
     super.setUp();
     List<String> pythonRoots = pythonRoots();
+    pythonRoots.add("/usr/local/Cellar");
+    pythonRoots.add("/opt/python");
     // todo: Remove if possible. Now the test fails with VfsRootAccess to python interpreter in /opt
     VfsRootAccess.allowRootAccess(myProject, pythonRoots.toArray(new String[0]));
   }
