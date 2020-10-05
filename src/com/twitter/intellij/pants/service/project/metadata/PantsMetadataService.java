@@ -48,7 +48,6 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
       final TargetMetadata metadata = node.getData();
       final Module module = modelsProvider.findIdeModule(metadata.getModuleName());
       if (module != null) {
-        module.setOption(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, "pants"); // TODO: setOption deprecated https://github.com/JetBrains/intellij-community/blob/master/platform/core-api/src/com/intellij/openapi/module/Module.java#L88-L92
         module.setOption(PantsConstants.PANTS_LIBRARY_EXCLUDES_KEY, PantsUtil.dehydrateTargetAddresses(metadata.getLibraryExcludes()));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESSES_KEY, PantsUtil.dehydrateTargetAddresses(metadata.getTargetAddresses()));
         module.setOption(PantsConstants.PANTS_TARGET_ADDRESS_INFOS_KEY, gson.toJson(metadata.getTargetAddressInfoSet()));

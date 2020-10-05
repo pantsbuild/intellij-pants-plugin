@@ -500,11 +500,11 @@ public class PantsUtil {
   }
 
   public static boolean isPantsProject(@NotNull Project project) {
-    return ExternalProjectUtil.isExternalProject(project, PantsConstants.SYSTEM_ID);
+    return Arrays.stream(ModuleManager.getInstance(project).getModules()).anyMatch(PantsUtil::isPantsModule);
   }
 
   public static boolean isFastpassProject(@NotNull Project project) {
-    return PantsUtil.findPantsExecutable(project).isPresent() && PantsUtil.isBspProject(project);
+    return PantsUtil.isBspProject(project) && PantsUtil.findPantsExecutable(project).isPresent();
   }
 
   /**
@@ -533,7 +533,11 @@ public class PantsUtil {
   }
 
   public static boolean isPantsModule(@NotNull Module module) {
-    return ExternalProjectUtil.isExternalModule(module, PantsConstants.SYSTEM_ID);
+    return ExternalSystemApiUtil.isExternalSystemAwareModule(PantsConstants.SYSTEM_ID, module);
+  }
+
+  public static boolean isBspModule(@NotNull Module module) {
+    return ExternalSystemApiUtil.isExternalSystemAwareModule(PantsConstants.BSP_SYSTEM_ID, module);
   }
 
   @NotNull
@@ -625,8 +629,7 @@ public class PantsUtil {
   }
 
   public static boolean isBspProject(Project project) {
-    ProjectSystemId id = ProjectSystemId.findById("BSP");
-    return id != null && ExternalProjectUtil.isExternalProject(project, id);
+    return Arrays.stream(ModuleManager.getInstance(project).getModules()).anyMatch(PantsUtil::isBspModule);
   }
 
   public static Optional<VirtualFile> findFileByAbsoluteOrRelativePath(

@@ -34,17 +34,4 @@ public class ExternalProjectUtil {
         ExternalSystemUtil.refreshProjects(specBuilder);
       });
   }
-
-  public static boolean isExternalProject(@NotNull Project project, ProjectSystemId id) {
-    return ContainerUtil.exists(
-      ModuleManager.getInstance(project).getModules(),
-      module -> isExternalModule(module, id)
-    );
-  }
-
-  public static boolean isExternalModule(@NotNull Module module, ProjectSystemId id) {
-    final String systemId = module.getOptionValue(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY);
-    return StringUtil.equals(systemId, id.getId());
-  }
-
 }
