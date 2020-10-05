@@ -50,6 +50,7 @@ import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
+import com.intellij.openapi.ui.TestDialogManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
@@ -523,7 +524,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     // Kill nailgun after usage as memory on travis is limited, at a cost of slower later builds.
     killNailgun();
     cleanProjectRoot();
-    // Messages.setTestDialog(TestDialog.DEFAULT);// todo find replacement
+    TestDialogManager.setTestDialog(TestDialog.DEFAULT);
 
     // TODO(cosmicexplorer): after updating from 172.4343.14 to 173.3531.6,
     // intellij's provided test class sometimes yells about a leaky jdk
