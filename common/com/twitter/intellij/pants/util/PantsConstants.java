@@ -15,7 +15,6 @@ public class PantsConstants {
 
   @NotNull
   public static final ProjectSystemId SYSTEM_ID = new ProjectSystemId(PANTS);
-  public static final ProjectSystemId BSP_SYSTEM_ID = new ProjectSystemId("BSP");
   public static final String PANTS_PROJECT_MODULE_SUFFIX = "_module";
   public static final String PANTS_PROJECT_MODULE_ID_PREFIX = ".root.module.for.pants_";
 
