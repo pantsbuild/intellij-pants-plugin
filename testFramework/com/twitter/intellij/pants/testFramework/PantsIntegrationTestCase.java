@@ -530,7 +530,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     // intellij's provided test class sometimes yells about a leaky jdk
     // table. i don't think this indicates any problems, so for now if tests
     // fail with leaky sdk errors, broaden this to include the leaked sdks.
-    removeJdks(jdk -> jdk.getName().contains("pants"));
+    removeJdks(jdk -> jdk.getName().contains("pants") || jdk.toString().contains("MockSDK"));
 
     for (Project project : ProjectManager.getInstance().getOpenProjects()) {
       ((ProjectManagerEx)ProjectManager.getInstance()).forceCloseProject(project);
