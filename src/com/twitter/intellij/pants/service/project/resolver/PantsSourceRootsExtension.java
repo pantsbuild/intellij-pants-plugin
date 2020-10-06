@@ -126,21 +126,21 @@ public class PantsSourceRootsExtension implements PantsResolverExtension {
     targetSpecPathsWithoutChildren.removeIf(targetSpec -> allContentRoots.stream().anyMatch(contentRoot ->  projectPath.resolve(targetSpec).startsWith(contentRoot)));
 
     for (String targetPath: targetSpecPathsWithoutChildren) {
-      String relativePath = targetPath;
-      String moduleName = relativePath.replaceAll("/", "_") + "-project-root";
+      String absolutePath =  new File(executor.getBuildRoot(), targetPath).getAbsolutePath();
+      String moduleName = targetPath.replaceAll("/", "_") + "-project-root";
       final ModuleData moduleData = new ModuleData(
         moduleName,
         PantsConstants.SYSTEM_ID,
         ModuleTypeId.JAVA_MODULE,
         moduleName,
         projectDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
-        new File(executor.getBuildRoot(), relativePath).getAbsolutePath()
+        absolutePath
       );
       DataNode<ModuleData> moduleDataNode = projectDataNode.createChild(ProjectKeys.MODULE, moduleData);
       modules.put(moduleName , moduleDataNode);
 
       final ContentRootData contentRoot =
-        new ContentRootData(PantsConstants.SYSTEM_ID, targetPath);
+        new ContentRootData(PantsConstants.SYSTEM_ID, absolutePath);
       moduleDataNode.createChild(ProjectKeys.CONTENT_ROOT, contentRoot);
     }
   }
