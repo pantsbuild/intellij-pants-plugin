@@ -624,9 +624,13 @@ public class PantsUtil {
     }
   }
 
+  public static boolean isBspModule(Module module) {
+    return ExternalSystemApiUtil.isExternalSystemAwareModule(PantsConstants.BSP_SYSTEM_ID, module);
+  }
+
+
   public static boolean isBspProject(Project project) {
-    ProjectSystemId id = ProjectSystemId.findById("BSP");
-    return id != null && ExternalProjectUtil.isExternalProject(project, id);
+    return Arrays.stream(ModuleManager.getInstance(project).getModules()).anyMatch(PantsUtil::isBspModule);
   }
 
   public static Optional<VirtualFile> findFileByAbsoluteOrRelativePath(
