@@ -18,8 +18,7 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.util.Computable
 import org.jetbrains.plugins.scala.project.{LibraryExt, ScalaLibraryProperties, ScalaLibraryType, Version}
 
-import scala.collection.JavaConverters.{asScalaSetConverter, iterableAsScalaIterableConverter}
-
+import scala.jdk.CollectionConverters._
 object PantsScalaDataService {
   val LOG: Logger = Logger.getInstance(classOf[PantsScalaDataService])
 }
@@ -39,7 +38,7 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
     toImport.asScala.toSet.foreach[Unit](doImport(_, modelsProvider))
   }
 
-  private def doImport(scalaNode: DataNode[ScalaModelData], modelsProvider: IdeModifiableModelsProvider) {
+  private def doImport(scalaNode: DataNode[ScalaModelData], modelsProvider: IdeModifiableModelsProvider): Unit = {
     val scalaData: ScalaModelData = scalaNode.getData
 
     val scalaLibId: String = scalaData.getScalaLibId

@@ -97,7 +97,8 @@ final class FastpassOpenProjectProvider implements OpenProjectProvider {
         public void run(@NotNull ProgressIndicator indicator) {
           BspProjectImportBuilder builder = new BspProjectImportBuilder();
           try {
-            Try<FastpassConfigSetup> fastpassConfigSetup = FastpassConfigSetup.create(new File(projectFile.getPath()));
+            Try<FastpassConfigSetup> fastpassConfigSetup = FastpassConfigSetup.create(new File(projectFile.getPath()))
+              .map(x -> (FastpassConfigSetup) x);
             BuildReporter reporter = new IndicatorReporter(indicator);
             fastpassConfigSetup.get().run(reporter);
             ApplicationManager.getApplication().invokeAndWait(

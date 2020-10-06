@@ -7,6 +7,9 @@ import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.util.ArrayUtil;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTestWithPython;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class OSSPantsPythonIntegrationTest extends OSSPantsIntegrationTestWithPython {
 
   @Override
@@ -17,11 +20,14 @@ public class OSSPantsPythonIntegrationTest extends OSSPantsIntegrationTestWithPy
   @Override
   public void setUp() throws Exception {
     super.setUp();
+    List<String> pythonRoots = pythonRoots(Arrays.asList("src/python::", "tests/python/pants_test::", "contrib/::"));
+    pythonRoots.add("/usr/local/Cellar");
+    pythonRoots.add("/opt/python");
     // todo: Remove if possible. Now the test fails with VfsRootAccess to python interpreter in /opt
-    VfsRootAccess.allowRootAccess("/");
+    VfsRootAccess.allowRootAccess(myProject, pythonRoots.toArray(new String[0]));
   }
 
-  public void testIntelliJIntegration() throws Throwable {
+  public void testIntelliJIntegration() {
     final String pythonScript = "build-support/pants-intellij.sh";
     if (myProjectRoot.findFileByRelativePath(pythonScript) == null) {
       return;

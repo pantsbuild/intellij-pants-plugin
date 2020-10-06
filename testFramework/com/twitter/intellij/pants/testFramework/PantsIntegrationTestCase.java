@@ -50,6 +50,7 @@ import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
+import com.intellij.openapi.ui.TestDialogManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
@@ -139,7 +140,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   public void setUp() throws Exception {
     cleanProjectIdeaDir();
     super.setUp();
-    VfsRootAccess.allowRootAccess(myProject, "/");
+    VfsRootAccess.allowRootAccess(myProject, "/Library/Java/JavaVirtualMachines", "/usr/lib/jvm"); // TODO diagnostic: don't use project as disposable
     for (String pluginId : getRequiredPluginIds()) {
       IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId(pluginId));
       assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
@@ -523,13 +524,13 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     // Kill nailgun after usage as memory on travis is limited, at a cost of slower later builds.
     killNailgun();
     cleanProjectRoot();
-    Messages.setTestDialog(TestDialog.DEFAULT);
+    TestDialogManager.setTestDialog(TestDialog.DEFAULT);
 
     // TODO(cosmicexplorer): after updating from 172.4343.14 to 173.3531.6,
     // intellij's provided test class sometimes yells about a leaky jdk
     // table. i don't think this indicates any problems, so for now if tests
     // fail with leaky sdk errors, broaden this to include the leaked sdks.
-    removeJdks(jdk -> jdk.getName().contains("pants"));
+    removeJdks(jdk -> jdk.getName().contains("pants") || jdk.toString().contains("MockSDK"));
 
     for (Project project : ProjectManager.getInstance().getOpenProjects()) {
       ((ProjectManagerEx)ProjectManager.getInstance()).forceCloseProject(project);
