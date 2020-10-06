@@ -69,7 +69,7 @@ if __name__ == "__main__":
   with open(os.devnull, 'w') as devnull:
     try:
       build_cmd = 'rm -rf dist;' \
-                  './.cache/pants/pants binary scripts/sdk:intellij-pants-plugin-publish'
+                  '.cache/pants-host/pants binary scripts/sdk:intellij-pants-plugin-publish'
       logger.info(build_cmd)
       subprocess.check_output(build_cmd, shell=True, stderr=subprocess.STDOUT)
 

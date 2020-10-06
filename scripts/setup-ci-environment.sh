@@ -71,7 +71,7 @@ fi
 if [ ! -d .cache/pants/.git ]; then
   echo "Getting latest Pants..."
   pushd .cache
-  git clone https://github.com/tpasternak/pants
+  git clone https://github.com/pantsbuild/pants
   echo "Bootstrapping Pants..."
   pushd pants
   # Bootstrap Pants in the testing SHA so it won't cause
@@ -85,4 +85,13 @@ if [ ! -d .cache/pants/.git ]; then
   ./pants goals
   popd
   popd
+fi
+
+if [ ! -d .cache/pants-host/.git ]; then
+    pushd .cache
+    git clone https://github.com/tpasternak/pants -b 1.26.x-intellij-plugin pants-host
+    pushd pants-host
+    ./pants goals
+    popd
+    popd
 fi
