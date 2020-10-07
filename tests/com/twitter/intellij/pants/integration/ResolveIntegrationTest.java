@@ -32,8 +32,7 @@ public class ResolveIntegrationTest extends OSSPantsIntegrationTest {
       resourceModuleName,
       commonModuleName,
       "intellij-integration_extras_src_main_java_org_pantsbuild_testproject_lib",
-      "intellij-integration_extras_module",
-      "intellij-integration_extras-project-root"
+      "intellij-integration_extras_module"
     );
 
     Module testModule = getModule(testModuleName);

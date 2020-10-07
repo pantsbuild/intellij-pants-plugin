@@ -70,8 +70,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
       "examples_src_java_org_pantsbuild_example_hello_main_main-bin",
       "examples_src_java_org_pantsbuild_example_hello_module",
       "examples_src_java_org_pantsbuild_example_hello_main_readme",
-      "examples_src_java_org_pantsbuild_example_hello_main_common_sources",
-      "examples_src_java_org_pantsbuild_example_hello-project-root"
+      "examples_src_java_org_pantsbuild_example_hello_main_common_sources"
     };
 
     assertFirstSourcePartyModules(
@@ -124,8 +123,7 @@ public class OSSPantsJavaExamplesIntegrationTest extends OSSPantsIntegrationTest
 
     assertFirstSourcePartyModules(
       "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_excludes2",
-      "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_module",
-      "intellij-integration_src_java_org_pantsbuild_testproject_excludes2-project-root"
+      "intellij-integration_src_java_org_pantsbuild_testproject_excludes2_module"
     );
 
     assertPantsCompileExecutesAndSucceeds(
