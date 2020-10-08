@@ -13,7 +13,7 @@
       ]]>
   </change-notes>
 
-  <version>1.15.1</version>
+  <version>1.16.0</version>
   <vendor>Twitter, Inc.</vendor>
 
   <idea-version since-build="202.6109.22" until-build="202.*"/>
