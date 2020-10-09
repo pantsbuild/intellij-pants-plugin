@@ -57,6 +57,7 @@ public class AmendAction extends AnAction {
                                      PantsBundle.message("pants.message.amend.in.progress")
             );
           } else {
+            amendProcess.get().join();
             ExternalProjectUtil.refresh(project, BSP.ProjectSystemId());
           }
         }
