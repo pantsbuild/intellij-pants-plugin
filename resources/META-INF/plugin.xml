@@ -161,6 +161,7 @@
     <projectService serviceImplementation="com.twitter.intellij.pants.settings.PantsLocalSettings"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.bsp.JarMappings"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.bsp.AmendService"/>
+    <projectService serviceImplementation="com.twitter.intellij.pants.bsp.FastpassConfigSpecService"/>
     <applicationService serviceImplementation="com.twitter.intellij.pants.service.project.FastpassRecommendationNotificationService"/>
 
     <treeStructureProvider implementation="com.twitter.intellij.pants.projectview.PantsTreeStructureProvider"/>

@@ -180,6 +180,24 @@ final public class FastpassUtils {
   }
 
   /**
+   *   Equivalent of JDK9 CompletableFuture::completeOnTimeout
+   */
+  public static <T> T completeOnTimeout(@NotNull CompletableFuture<T> c, int millis, @NotNull T fallback){
+    if(!c.isDone()) {
+      try {
+        Thread.sleep(millis);
+      } catch (InterruptedException ignored) {
+
+      }
+    }
+    if(c.isDone()) {
+      return c.join();
+    } else {
+      return fallback;
+    }
+  }
+
+  /**
    * Replacement for JDK9's CompletableFuture::failedFuture
    */
   @NotNull

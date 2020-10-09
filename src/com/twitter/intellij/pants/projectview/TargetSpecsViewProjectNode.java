@@ -15,7 +15,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.PantsBundle;
-import com.twitter.intellij.pants.bsp.FastpassUtils;
+import com.twitter.intellij.pants.bsp.FastpassConfigSpecService;
 import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.bsp.PantsTargetAddress;
 import com.twitter.intellij.pants.settings.PantsProjectSettings;
@@ -30,8 +30,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+
+import static com.twitter.intellij.pants.bsp.FastpassUtils.completeOnTimeout;
 
 public class TargetSpecsViewProjectNode extends AbstractProjectNode {
 
@@ -74,12 +75,12 @@ public class TargetSpecsViewProjectNode extends AbstractProjectNode {
     Optional<PantsBspData> linkedProjects = PantsBspData.importsFor(project);
     Optional<Set<VirtualFile>> answer = linkedProjects.map(pantsBspData -> {
       VirtualFile pantsRoot = pantsBspData.getPantsRoot();
-      return FastpassUtils.selectedTargets(pantsBspData).thenApply(
+      return FastpassConfigSpecService.getInstance(project).getTargetSpecs().thenApply(
         targetSpecs -> targetSpecs.stream()
           .map(targetSpecsItem -> pantsRoot.findFileByRelativePath(PantsTargetAddress.fromString(targetSpecsItem).getPath().toString()))
           .collect(Collectors.toSet())
       );
-    }).map(CompletableFuture::join);
+    }).map(c -> completeOnTimeout(c, 100, Collections.emptySet()));
     return answer.orElse(Collections.emptySet());
 
   }
