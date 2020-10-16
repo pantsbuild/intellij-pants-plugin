@@ -5,8 +5,10 @@ package com.twitter.intellij.pants.service.project.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.ProjectJdkStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
@@ -22,14 +24,27 @@ import com.twitter.intellij.pants.service.project.detector.ProjectType;
 import com.twitter.intellij.pants.service.project.detector.SimpleProjectTypeDetector;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PantsProjectImportProvider extends AbstractExternalProjectImportProvider {
   private static final boolean CAN_BE_CANCELLED = true;
 
+  static private String label() {
+    return Optional
+      .ofNullable(PropertiesComponent.getInstance().getValue("pants.import.provider.label"))
+      .orElse("Pants");
+  }
+
   public PantsProjectImportProvider() {
     super(PantsProjectImportBuilder.getInstance(), PantsConstants.SYSTEM_ID);
+  }
+
+  @Override
+  public @NotNull
+  @Nls(capitalization = Nls.Capitalization.Sentence) String getName() {
+    return label();
   }
 
   @Override
