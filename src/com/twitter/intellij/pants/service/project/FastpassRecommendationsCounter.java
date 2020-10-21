@@ -18,7 +18,7 @@ public class FastpassRecommendationsCounter {
       }
       Duration sinceLast = Duration.between(lastTick, time);
       lastTick = time;
-      if(sinceLast.toMinutes() < 10 &&
+      if(sinceLast.toMinutes() <= 60 &&
          (lastNotify == null ||lastNotify.getDayOfYear() != time.getDayOfYear())) {
         lastNotify = time;
         return true;
