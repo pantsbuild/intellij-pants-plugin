@@ -139,8 +139,6 @@
     <projectOpenProcessor implementation="com.twitter.intellij.pants.service.project.PantsProjectOpenProcessor"/>
     <projectImportProvider
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider"/>
-    <projectImportProvider
-        implementation="com.twitter.intellij.pants.service.project.wizard.FastpassProjectImportProvider"/>
 
     <projectImportBuilder
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportBuilder"/>
