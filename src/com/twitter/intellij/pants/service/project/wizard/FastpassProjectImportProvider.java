@@ -25,6 +25,12 @@ public class FastpassProjectImportProvider extends BspProjectImportProvider {
     return PantsIcons.Icon;
   }
 
+  @NotNull
+  @Override
+  public String getId() {
+    return "Fastpass";
+  }
+
   @Override
   public @NotNull
   @Nls(capitalization = Nls.Capitalization.Sentence) String getName() {
