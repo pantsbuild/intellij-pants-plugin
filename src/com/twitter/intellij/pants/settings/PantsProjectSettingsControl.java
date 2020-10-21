@@ -32,13 +32,12 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
-import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-
 import java.awt.FlowLayout;
+import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -62,13 +61,15 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
   private JSpinner newImportDepthSpinner(){
     JSpinner spinner = new JSpinner();
     spinner.setModel(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
+    spinner.setEnabled(false);
     return spinner;
   }
 
   private JBCheckBox newEnableIcrementalImportCheckbox(){
     JBCheckBox checkbox = new JBCheckBox(PantsBundle.message("pants.settings.text.with.incremental.import"));
     checkbox.addActionListener(evt -> {
-      myImportDepthSpinner.setValue(((JBCheckBox) evt.getSource()).isSelected() ? getInitialSettings().incrementalImportDepth : 0);
+      int defaultIncrementalImportDepth = 10;
+      myImportDepthSpinner.setValue(((JBCheckBox) evt.getSource()).isSelected() ? defaultIncrementalImportDepth : 0);
       myImportDepthSpinner.setEnabled(((JBCheckBox) evt.getSource()).isSelected());
     });
     return checkbox;
