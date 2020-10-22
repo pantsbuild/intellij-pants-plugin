@@ -21,13 +21,13 @@ public class FastpassRecommendationsCounterTest extends TestCase {
   public void testFireSecondTime() {
     FastpassRecommendationsCounter counter = new FastpassRecommendationsCounter();
     assertFalse(counter.tick(Duration.ofSeconds(20), dateOf("2020-06-09 16:00")));
-    assertTrue(counter.tick(Duration.ofSeconds(20), dateOf("2020-06-09 16:05")));
+    assertTrue(counter.tick(Duration.ofSeconds(20), dateOf("2020-06-09 16:59")));
   }
 
   public void testNoFireIfDistanceTooBig() {
     FastpassRecommendationsCounter counter = new FastpassRecommendationsCounter();
     assertFalse(counter.tick(Duration.ofSeconds(20), dateOf("2020-06-09 16:00")));
-    assertFalse(counter.tick(Duration.ofSeconds(20), dateOf("2020-06-09 16:15")));
+    assertFalse(counter.tick(Duration.ofSeconds(20), dateOf("2020-06-09 17:01")));
   }
 
   public void testNoFireIfBuildWasTooShort() {
