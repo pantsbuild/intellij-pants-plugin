@@ -10,8 +10,11 @@ import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.RunManager;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
+import com.intellij.execution.configurations.WrappingRunConfiguration;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.impl.RunManagerImpl;
@@ -20,6 +23,7 @@ import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.notification.Notification;
@@ -54,6 +58,7 @@ import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
+import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
 import javax.swing.Icon;
 import java.time.Duration;
@@ -370,7 +375,15 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   protected Set<String> getTargetAddressesToCompile(RunConfiguration configuration) {
     /* Scala run configurations */
     if (PantsUtil.isScalaRelatedTestRunConfiguration(configuration)) {
-      Module module = ((AbstractTestRunConfiguration) configuration).getModule();
+      RunConfiguration conf;
+      if(configuration instanceof WrappingRunConfiguration) {
+        WrappingRunConfiguration<RunConfigurationBase> wrapper = (WrappingRunConfiguration<RunConfigurationBase>) configuration;
+        RunConfigurationBase base = wrapper.getPeer();
+        conf = base.clone();
+      } else {
+        conf = configuration;
+      }
+      Module module = ((ModuleBasedConfiguration) conf).getConfigurationModule().getModule();
       return getTargetAddressesToCompile(new Module[]{module});
     }
     /* JUnit, Application run configurations */
