@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 public class PantsProjectImportProvider extends AbstractExternalProjectImportProvider {
   private static final boolean CAN_BE_CANCELLED = true;
 
-  static private String label() {
+  static public String label() {
     return Optional
       .ofNullable(PropertiesComponent.getInstance().getValue("pants.import.provider.label"))
       .orElse("Pants");

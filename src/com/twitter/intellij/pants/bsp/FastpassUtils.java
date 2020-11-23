@@ -45,6 +45,14 @@ import java.util.stream.Stream;
 final public class FastpassUtils {
 
   @NotNull
+  public static boolean fastpassBinaryExists(@NotNull VirtualFile file) {
+    Optional<VirtualFile> buildRoot2 = PantsUtil.findBuildRoot(file);
+    return buildRoot2.map(b -> Paths.get(b.getPath())
+      .resolve("fastpass/bin/fastpass").toFile().exists())
+      .orElse(false);
+  }
+
+  @NotNull
   public static Stream<VirtualFile> pantsRoots(Module module) {
     return Stream.of(ModuleRootManager.getInstance(module).getSourceRoots()).flatMap (
       sourceRoot -> toStream(PantsUtil.findPantsExecutable(sourceRoot.getPath()).map(VirtualFile::getParent))

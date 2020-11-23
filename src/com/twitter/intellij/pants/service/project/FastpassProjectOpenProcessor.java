@@ -6,36 +6,32 @@ package com.twitter.intellij.pants.service.project;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.projectImport.ProjectOpenProcessor;
+import com.twitter.intellij.pants.service.project.wizard.FastpassProjectImportProvider;
 import com.twitter.intellij.pants.service.project.wizard.PantsProjectImportBuilder;
-import com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.Icon;
 
-final class PantsProjectOpenProcessor extends ProjectOpenProcessor {
-  @NotNull
-  private PantsProjectImportBuilder getBuilder() {
-    return PantsProjectImportBuilder.getInstance();
-  }
+final class FastpassProjectOpenProcessor extends ProjectOpenProcessor {
 
   @Nls
   @NotNull
   @Override
   public String getName() {
-    return "'" + PantsProjectImportProvider.label() + "'";
+    return "'" + FastpassProjectImportProvider.label() + "'";
   }
 
   @Nullable
   @Override
   public Icon getIcon() {
-    return getBuilder().getIcon();
+    return null;
   }
 
   @Override
   public boolean canOpenProject(@NotNull VirtualFile file) {
-    return PantsOpenProjectProvider.getInstance().canOpenProject(file);
+    return FastpassOpenProjectProvider.getInstance().canOpenProject(file);
   }
 
   @Nullable
@@ -43,7 +39,7 @@ final class PantsProjectOpenProcessor extends ProjectOpenProcessor {
   public Project doOpenProject(
     @NotNull VirtualFile file, @Nullable Project projectToClose, boolean forceOpenInNewFrame
   ) {
-    return PantsOpenProjectProvider.getInstance().openProject(file, projectToClose, forceOpenInNewFrame);
+    return FastpassOpenProjectProvider.getInstance().openProject(file, projectToClose, forceOpenInNewFrame);
   }
 
   @Override
@@ -53,6 +49,6 @@ final class PantsProjectOpenProcessor extends ProjectOpenProcessor {
 
   @Override
   public void importProjectAfterwards(@NotNull Project project, @NotNull VirtualFile file) {
-    PantsOpenProjectProvider.getInstance().linkToExistingProject(file, project);
+    FastpassOpenProjectProvider.getInstance().linkToExistingProject(file, project);
   }
 }
