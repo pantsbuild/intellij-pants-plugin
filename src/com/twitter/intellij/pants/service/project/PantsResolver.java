@@ -19,6 +19,8 @@ import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.model.SimpleExportResult;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
+import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
+import com.twitter.intellij.pants.service.project.model.PythonSetup;
 import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -28,7 +30,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -80,6 +85,11 @@ public class PantsResolver {
     }
   }
 
+  private boolean hasOnlyDefaultPython(PythonSetup py) {
+    List<PythonInterpreterInfo> environments = new ArrayList<>(py.getInterpreters().values());
+    return environments.size() == 1 && environments.get(0).equals(py.getDefaultInterpreterInfo());
+  }
+
   public void resolve(
     @NotNull Consumer<String> statusConsumer,
     @Nullable ProcessAdapter processAdapter
@@ -87,6 +97,16 @@ public class PantsResolver {
     try {
       String pantsExportResult = myExecutor.loadProjectStructure(statusConsumer, processAdapter);
       parse(pantsExportResult);
+
+      PythonSetup pythonSetup = myProjectInfo.getPythonSetup();
+      if(pythonSetup != null && hasOnlyDefaultPython(pythonSetup)) {
+        PythonVenvFinder finder = new PythonVenvFinder(Paths.get(myExecutor.getProjectDir()).getParent());
+        finder.getEnvironment().ifPresent(py -> {
+          String environmentName = String.format("Python virtual environment (%s)", finder.getVersion().orElse("unknown version"));
+          pythonSetup.getInterpreters().put(environmentName, py);
+          pythonSetup.setDefaultInterpreter(environmentName);
+        });
+      }
     }
     catch (ExecutionException | IOException e) {
       throw new ExternalSystemException(e);
