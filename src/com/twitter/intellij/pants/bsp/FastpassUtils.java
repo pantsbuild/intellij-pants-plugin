@@ -46,8 +46,8 @@ final public class FastpassUtils {
 
   @NotNull
   public static boolean fastpassBinaryExists(@NotNull VirtualFile file) {
-    Optional<VirtualFile> buildRoot2 = PantsUtil.findBuildRoot(file);
-    return buildRoot2.map(b -> Paths.get(b.getPath())
+    Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(file);
+    return buildRoot.map(b -> Paths.get(b.getPath())
       .resolve("fastpass/bin/fastpass").toFile().exists())
       .orElse(false);
   }
