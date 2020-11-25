@@ -14,7 +14,7 @@ import javax.swing.Icon;
 import java.util.Optional;
 
 public class FastpassProjectImportProvider extends BspProjectImportProvider {
-  static private String label() {
+  static public String label() {
     return Optional
       .ofNullable(PropertiesComponent.getInstance().getValue("fastpass.import.provider.label"))
       .orElse("Pants (Fastpass)");

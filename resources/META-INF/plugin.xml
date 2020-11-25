@@ -25,6 +25,7 @@
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
 
+
   <application-components>
     <component>
       <interface-class>com.twitter.intellij.pants.components.PantsInitComponent</interface-class>
@@ -136,7 +137,7 @@
                          instance="com.twitter.intellij.pants.settings.PantsConfigurable"
                          key="pants.name" bundle="com.twitter.intellij.pants.PantsBundle"/>
     <actionConfigurationCustomizer implementation="com.twitter.intellij.pants.components.impl.PantsActionConfigurationCustomizer"/>
-    <projectOpenProcessor implementation="com.twitter.intellij.pants.service.project.PantsProjectOpenProcessor"/>
+    <projectOpenProcessor implementation="com.twitter.intellij.pants.service.project.PantsProjectOpenProcessor" order="last"/>
     <projectImportProvider
         implementation="com.twitter.intellij.pants.service.project.wizard.PantsProjectImportProvider"/>
 

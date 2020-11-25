@@ -73,7 +73,7 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
       case Messages.NO:
         Project project = importPantsProject(projectFile);
         OpenProjectTask task = openTask(projectToClose, project, forceOpenInNewFrame);
-        return PlatformProjectOpenProcessor.openExistingProject(Paths.get(projectFile.getPath()), projectDir(projectFile), task);
+        return ProjectManagerEx.getInstanceEx().openProject(Paths.get(projectFile.getPath()), task);
       case Messages.YES:
         return PlatformProjectOpenProcessor.getInstance().doOpenProject(projectFile, projectToClose, forceOpenInNewFrame);
       default:
@@ -81,7 +81,7 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
     }
   }
 
-  private OpenProjectTask openTask(Project projectToClose, Project project, boolean forceOpenInNewFrame) {
+  public static OpenProjectTask openTask(Project projectToClose, Project project, boolean forceOpenInNewFrame) {
     boolean useDefaultTemplate = false;
     boolean isNewProject = true;
     boolean sendFrameBack = false;

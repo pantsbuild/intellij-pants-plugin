@@ -43,7 +43,7 @@ fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_VERSION="2020.2.717"
+export SCALA_PLUGIN_VERSION="2020.2.807"
 export SCALA_PLUGIN_CHANNEL="nightly"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
