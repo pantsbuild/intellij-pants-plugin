@@ -3,8 +3,6 @@
 
 package com.twitter.intellij.pants.service.project.resolver;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -14,7 +12,6 @@ import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.externalSystem.model.project.ProjectSdkData;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.ModuleTypeId;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.twitter.intellij.pants.PantsException;
@@ -28,7 +25,6 @@ import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.service.project.model.graph.BuildGraphNode;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
-import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -112,10 +108,15 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
-    DataNode<ProjectSdkData> sdk = ExternalSystemApiUtil.find(projectInfoDataNode, ProjectSdkData.KEY);
-    if(sdk != null){
-      ModuleSdkData moduleSdk = new ModuleSdkData(sdk.getData().getSdkName());
-      moduleDataNode.createChild(ModuleSdkData.KEY, moduleSdk);
+    if(targetInfo.isPythonTarget()) {
+      // FIXME this happens to work becuse a SDK with the matching name is created later. See PantsPythonSetupDataService.java:77
+      moduleDataNode.createChild(ModuleSdkData.KEY, new ModuleSdkData("python")); //FIXME
+    } else {
+      DataNode<ProjectSdkData> sdk = ExternalSystemApiUtil.find(projectInfoDataNode, ProjectSdkData.KEY);
+      if(sdk != null){
+        ModuleSdkData moduleSdk = new ModuleSdkData(sdk.getData().getSdkName());
+        moduleDataNode.createChild(ModuleSdkData.KEY, moduleSdk);
+      }
     }
 
     final TargetMetadata metadata = new TargetMetadata(PantsConstants.SYSTEM_ID, moduleName);
