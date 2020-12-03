@@ -12,6 +12,7 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
@@ -68,32 +69,27 @@ final public class FastpassUtils {
     });
   }
 
-
-  private static List<String> coursierPart(){
-    return Arrays.asList("launch", "org.scalameta:fastpass_2.12:latest.stable",
-                         "--main", "scala.meta.fastpass.Fastpass",
-                         "--"
-    );
-  }
-
-  public static Path coursierPath() throws IOException {
-    Path destination = Paths.get(System.getProperty("java.io.tmpdir"), "pants-plugin-coursier");
-    if (!Files.exists(destination)) {
-      URL url = new URL("https://git.io/coursier-cli");
-      Files.copy(url.openConnection().getInputStream(), destination);
-      destination.toFile().setExecutable(true);
+  @NotNull
+  public static GeneralCommandLine makeFastpassCommand(Project project, @NotNull Collection<String> amendPart) {
+    Optional<Path> fastpassPath = getFastpassPath(project);
+    if(fastpassPath.isPresent()) {
+      GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(project);
+      commandLine.setExePath(fastpassPath.get().toString());
+      commandLine.addParameters(new ArrayList<>(amendPart));
+      return commandLine;
+    } else {
+      throw new PantsException("Could not find fastpass executable");
     }
-    return destination;
   }
 
   @NotNull
-  public static GeneralCommandLine makeFastpassCommand(Project project, @NotNull Collection<String> amendPart) throws IOException {
-    GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(project);
-    String coursier = FastpassUtils.coursierPath().toString();
-    commandLine.setExePath(coursier);
-    commandLine.addParameters(coursierPart());
-    commandLine.addParameters(new ArrayList<>(amendPart));
-    return commandLine;
+  public static Optional<Path> getFastpassPath(Project project) {
+    Optional<Path> root = PantsUtil.findPantsExecutable(project).map(VirtualFile::getParent).map(r -> Paths.get(r.getCanonicalPath()));
+    if(!root.isPresent()){
+      throw new PantsException("Not a pants project");
+    }
+
+    return root.map(r -> r.resolve("fastpass/bin/fastpass"));
   }
 
   @NotNull

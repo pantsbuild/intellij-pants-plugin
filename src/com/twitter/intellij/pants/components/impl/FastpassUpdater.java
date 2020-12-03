@@ -22,6 +22,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.twitter.intellij.pants.bsp.FastpassUtils;
 import com.twitter.intellij.pants.bsp.PantsBspData;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -48,7 +49,6 @@ public class FastpassUpdater {
 
   private static final Logger LOG = Logger.getInstance(FastpassUpdater.class);
 
-  public static final String FASTPASS_PATH = "/opt/twitter_mde/bin/fastpass";
   public static final String BLOOP_PATH = "/opt/twitter_mde/bin/bloop";
 
   private static final String NOTIFICATION_TITLE = "Fastpass update available";
@@ -81,15 +81,21 @@ public class FastpassUpdater {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-      boolean show = fastpassBinaryExists();
-      e.getPresentation().setEnabledAndVisible(show);
+      Project project = e.getProject();
+      if(project != null) {
+        boolean show = FastpassUtils.getFastpassPath(project).isPresent();
+        e.getPresentation().setEnabledAndVisible(show);
+      } else {
+        e.getPresentation().setEnabledAndVisible(false);
+      }
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
       Project project = e.getProject();
-      if (fastpassBinaryExists()) {
-        systemVersion(FASTPASS_PATH)
+      Optional<Path> fastpassBinary = FastpassUtils.getFastpassPath(project);
+      if (fastpassBinary.isPresent()) {
+        systemVersion(fastpassBinary.get().toString())
           .ifPresent(systemVersion -> extractFastpassData(project)
             .ifPresent(data -> {
               if (!data.version.equals(systemVersion)) {
@@ -105,11 +111,6 @@ public class FastpassUpdater {
             }));
       }
     }
-
-    private boolean fastpassBinaryExists() {
-      VirtualFile fastpassBinary = LocalFileSystem.getInstance().findFileByPath(FASTPASS_PATH);
-      return fastpassBinary != null && fastpassBinary.exists();
-    }
   }
 
   public static void initialize(Project project) {
@@ -119,7 +120,7 @@ public class FastpassUpdater {
           ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
           TimeUnit timeUnit = TimeUnit.SECONDS;
           timer.scheduleWithFixedDelay(
-            FastpassUpdater::checkForFastpassUpdates,
+            (Runnable) () -> FastpassUpdater.checkForFastpassUpdates(project),
             timeUnit.convert(1, TimeUnit.MINUTES),
             timeUnit.convert(1, TimeUnit.DAYS),
             timeUnit
@@ -130,17 +131,20 @@ public class FastpassUpdater {
     }
   }
 
-  private static void checkForFastpassUpdates() {
-    VirtualFile fastpassBinary = LocalFileSystem.getInstance().findFileByPath(FASTPASS_PATH);
-    if (fastpassBinary != null && fastpassBinary.exists()) {
-      systemVersion(fastpassBinary.getPath())
-        .ifPresent(systemVersion -> allOpenBspProjects()
-          .forEach(project -> extractFastpassData(project)
-            .ifPresent(data -> {
-              if (!data.version.equals(systemVersion)) {
-                showUpdateNotification(project, systemVersion, data);
-              }
-            })));
+  private static void checkForFastpassUpdates(Project project) {
+    Optional<Path> fastpassPath = FastpassUtils.getFastpassPath(project);
+    if(fastpassPath.isPresent()) {
+      VirtualFile fastpassBinary = LocalFileSystem.getInstance().findFileByPath(fastpassPath.get().toString());
+      if (fastpassBinary != null && fastpassBinary.exists()) {
+        systemVersion(fastpassBinary.getPath())
+          .ifPresent(systemVersion -> allOpenBspProjects()
+            .forEach(openProject -> extractFastpassData(openProject)
+              .ifPresent(data -> {
+                if (!data.version.equals(systemVersion)) {
+                  showUpdateNotification(openProject, systemVersion, data);
+                }
+              })));
+      }
     }
   }
 
@@ -199,7 +203,8 @@ public class FastpassUpdater {
   private static boolean runFastpassRefresh(FastpassData data, Project project) {
     try {
       GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(project);
-      commandLine.setExePath(FASTPASS_PATH);
+      Optional<Path> fastpassPath = FastpassUtils.getFastpassPath(project);
+      commandLine.setExePath(fastpassPath.get().toString());
       commandLine.addParameters(
         "refresh",
         "--intellij",
