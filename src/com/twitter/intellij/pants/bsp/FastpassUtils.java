@@ -86,10 +86,15 @@ final public class FastpassUtils {
   public static Optional<Path> getFastpassPath(Project project) {
     Optional<Path> root = PantsUtil.findPantsExecutable(project).map(VirtualFile::getParent).map(r -> Paths.get(r.getCanonicalPath()));
     if(!root.isPresent()){
-      throw new PantsException("Not a pants project");
+      throw new PantsException("Not a Pants project");
     }
 
-    return root.map(r -> r.resolve("fastpass/bin/fastpass"));
+    Optional<Path> fastpassPath = root.map(r -> r.resolve("fastpass/bin/fastpass"));
+    if(fastpassPath.map(p -> p.toFile().exists()).orElse(false)){
+      return fastpassPath;
+    } else {
+      return Optional.empty();
+    }
   }
 
   @NotNull
