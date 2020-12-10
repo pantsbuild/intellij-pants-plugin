@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,20 +98,43 @@ public class PantsResolver {
     try {
       String pantsExportResult = myExecutor.loadProjectStructure(statusConsumer, processAdapter);
       parse(pantsExportResult);
-
-      PythonSetup pythonSetup = myProjectInfo.getPythonSetup();
-      if(pythonSetup != null && hasOnlyDefaultPython(pythonSetup)) {
-        PythonVenvFinder finder = new PythonVenvFinder(Paths.get(myExecutor.getProjectDir()).getParent());
-        finder.getEnvironment().ifPresent(py -> {
-          String environmentName = String.format("Python virtual environment (%s)", finder.getVersion().orElse("unknown version"));
-          pythonSetup.getInterpreters().put(environmentName, py);
-          pythonSetup.setDefaultInterpreter(environmentName);
-        });
-      }
     }
     catch (ExecutionException | IOException e) {
       throw new ExternalSystemException(e);
     }
+  }
+
+  public void resolvePythonEnvironment(
+    ProjectData projectData
+  ) {
+    PythonSetup pythonSetup = myProjectInfo.getPythonSetup();
+    boolean needsPython = myProjectInfo.getTargets().values().stream().anyMatch(t -> t.isPythonTarget());
+    if (!needsPython || pythonSetup == null || !hasOnlyDefaultPython(pythonSetup)) {
+      return;
+    }
+
+    PythonVenvFinder finder = new PythonVenvFinder(Paths.get(myExecutor.getProjectDir()).getParent());
+    Optional<PythonInterpreterInfo> python = finder.getEnvironment();
+    if(!python.isPresent()){
+      python = PythonVenvBuilder.find().map(builder -> {
+        String target = mainTargetName(projectData);
+        Path venvDir = Paths.get(projectData.getIdeProjectFileDirectoryPath());
+        return builder.build(target, venvDir);
+      });
+    }
+    python.ifPresent(py -> {
+      String environmentName = String.format("Python virtual environment (%s)", finder.getVersion().orElse("unknown version"));
+      pythonSetup.getInterpreters().put(environmentName, py);
+      pythonSetup.setDefaultInterpreter(environmentName);
+    });
+  }
+
+  private String mainTargetName(ProjectData projectData){
+    //FIXME check if this is the correct way
+    String[] foo = projectData.getExternalName().split("\\.");
+    String bar = foo[foo.length - 1];
+    String target = myProjectInfo.getTargets().keySet().stream().filter(k -> k.endsWith(":" + bar)).findFirst().get();
+    return target;
   }
 
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {

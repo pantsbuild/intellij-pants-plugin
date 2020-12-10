@@ -265,6 +265,7 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
         }
       }
     );
+    dependenciesResolver.resolvePythonEnvironment(projectDataNode.getData());
     dependenciesResolver.addInfoTo(projectDataNode);
   }
 
