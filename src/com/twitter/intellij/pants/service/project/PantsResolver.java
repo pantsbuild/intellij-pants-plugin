@@ -17,6 +17,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
+import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.model.SimpleExportResult;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
@@ -117,7 +118,7 @@ public class PantsResolver {
     Optional<PythonInterpreterInfo> python = finder.getEnvironment();
     if(!python.isPresent()){
       python = PythonVenvBuilder.find().map(builder -> {
-        String target = mainTargetName(projectData);
+        String target = mainTargetName();
         Path venvDir = Paths.get(projectData.getIdeProjectFileDirectoryPath());
         return builder.build(target, venvDir);
       });
@@ -129,11 +130,10 @@ public class PantsResolver {
     });
   }
 
-  private String mainTargetName(ProjectData projectData){
+  private String mainTargetName(){
     //FIXME check if this is the correct way
-    String[] foo = projectData.getExternalName().split("\\.");
-    String bar = foo[foo.length - 1];
-    String target = myProjectInfo.getTargets().keySet().stream().filter(k -> k.endsWith(":" + bar)).findFirst().get();
+    String target = myProjectInfo.getTargets().keySet().stream().map(x -> PantsTargetAddress.fromString(x))
+      .filter(t -> t.isMainTarget()).findFirst().get().getTargetName();
     return target;
   }
 
