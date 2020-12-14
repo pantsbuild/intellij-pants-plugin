@@ -23,8 +23,10 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.python.facet.PythonFacet;
 import com.jetbrains.python.facet.PythonFacetType;
+import com.jetbrains.python.sdk.PythonSdkAdditionalData;
 import com.jetbrains.python.sdk.PythonSdkType;
 import com.jetbrains.python.sdk.PythonSdkUtil;
+import com.jetbrains.python.sdk.flavors.VirtualEnvSdkFlavor;
 import com.jetbrains.python.testing.TestRunnerService;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
 import org.jetbrains.annotations.NotNull;
@@ -78,6 +80,9 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
             jdkTable.addJdk(pythonSdk);
             final SdkModificator modificator = pythonSdk.getSdkModificator();
             modificator.setHomePath(interpreter);
+            PythonSdkAdditionalData additionalData = new PythonSdkAdditionalData(VirtualEnvSdkFlavor.getInstance());
+            additionalData.associateWithModulePath(project.getBasePath());
+            modificator.setSdkAdditionalData(additionalData);
             modificator.commitChanges();
             createdSdks.add(pythonSdk);
           }
