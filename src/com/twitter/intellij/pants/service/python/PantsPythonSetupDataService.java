@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,12 +72,17 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
     ExternalSystemApiUtil.executeProjectChangeAction(true, new DisposeAwareProjectChange(project) {
       @Override
       public void execute() {
-        for (final PythonInterpreterInfo interpreterInfo : interpreters) {
+        Set<PythonInterpreterInfo> imported = new HashSet<>();
+        for (final DataNode<PythonSetupData> node : toImport) {
+          PythonInterpreterInfo interpreterInfo = node.getData().getInterpreterInfo();
+          if(imported.contains(interpreterInfo))
+            continue;
           final String interpreter = interpreterInfo.getBinary();
           Sdk pythonSdk = PythonSdkUtil.findSdkByPath(interpreter);
           if (pythonSdk == null) {
             final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-            pythonSdk = jdkTable.createSdk(PathUtil.getFileName(interpreter), pythonSdkType);
+            String sdkName = String.format("Python for %s", node.getData().getOwnerModuleData().getId());
+            pythonSdk = jdkTable.createSdk(sdkName, pythonSdkType);
             jdkTable.addJdk(pythonSdk);
             final SdkModificator modificator = pythonSdk.getSdkModificator();
             modificator.setHomePath(interpreter);
@@ -85,6 +91,7 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
             modificator.setSdkAdditionalData(additionalData);
             modificator.commitChanges();
             createdSdks.add(pythonSdk);
+            imported.add(interpreterInfo);
           }
           interpreter2sdk.put(interpreterInfo, pythonSdk);
         }
