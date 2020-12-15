@@ -5,7 +5,7 @@ package com.twitter.intellij.pants.service.python;
 
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
-import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
@@ -19,7 +19,6 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.util.Computable;
-import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.python.facet.PythonFacet;
 import com.jetbrains.python.facet.PythonFacetType;
@@ -42,6 +41,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class PantsPythonSetupDataService implements ProjectDataService<PythonSetupData, Module> {
+
+  protected static final Logger LOG = Logger.getInstance(PantsPythonSetupDataService.class);
+
   @NotNull
   @Override
   public Key<PythonSetupData> getTargetDataKey() {
@@ -74,14 +76,18 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
       public void execute() {
         Set<PythonInterpreterInfo> imported = new HashSet<>();
         for (final DataNode<PythonSetupData> node : toImport) {
-          PythonInterpreterInfo interpreterInfo = node.getData().getInterpreterInfo();
-          if(imported.contains(interpreterInfo))
+          PythonSetupData data = node.getData();
+          PythonInterpreterInfo interpreterInfo = data.getInterpreterInfo();
+          if(imported.contains(interpreterInfo)) {
+            LOG.warn(String.format("Not importing the Python interpreter for %s, because this interpreter has already been imported", project.getName()));
             continue;
+          }
           final String interpreter = interpreterInfo.getBinary();
           Sdk pythonSdk = PythonSdkUtil.findSdkByPath(interpreter);
           if (pythonSdk == null) {
+            LOG.info(String.format("Importing the Python interpreter for %s", project.getName()));
             final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-            String sdkName = String.format("Python for %s", node.getData().getOwnerModuleData().getId());
+            String sdkName = String.format("Python for %s", project.getName());
             pythonSdk = jdkTable.createSdk(sdkName, pythonSdkType);
             jdkTable.addJdk(pythonSdk);
             final SdkModificator modificator = pythonSdk.getSdkModificator();
@@ -92,6 +98,8 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
             modificator.commitChanges();
             createdSdks.add(pythonSdk);
             imported.add(interpreterInfo);
+          } else {
+            LOG.warn(String.format("Not importing the Python interpreter for %s, because this interpreter is already present", project.getName()));
           }
           interpreter2sdk.put(interpreterInfo, pythonSdk);
         }
