@@ -87,7 +87,7 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
           if (pythonSdk == null) {
             LOG.info(String.format("Importing the Python interpreter for %s", project.getName()));
             final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-            String sdkName = String.format("Python for %s", project.getName());
+            String sdkName = String.format("Python for %s", projectData.getExternalName());
             pythonSdk = jdkTable.createSdk(sdkName, pythonSdkType);
             jdkTable.addJdk(pythonSdk);
             final SdkModificator modificator = pythonSdk.getSdkModificator();
