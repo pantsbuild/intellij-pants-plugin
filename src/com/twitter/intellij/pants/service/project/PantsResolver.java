@@ -106,7 +106,8 @@ public class PantsResolver {
   }
 
   public void resolvePythonEnvironment(
-    ProjectData projectData
+    ProjectData projectData,
+    List<String> selectedTargets
   ) {
     PythonSetup pythonSetup = myProjectInfo.getPythonSetup();
     boolean needsPython = myProjectInfo.getTargets().values().stream().anyMatch(t -> t.isPythonTarget());
@@ -118,7 +119,7 @@ public class PantsResolver {
     Optional<PythonInterpreterInfo> python = finder.getEnvironment();
     if(!python.isPresent()){
       python = PythonVenvBuilder.find().map(builder -> {
-        String target = mainTargetName();
+        String target = mainTargetName(selectedTargets);
         Path venvDir = Paths.get(projectData.getIdeProjectFileDirectoryPath());
         return builder.build(target, venvDir);
       });
@@ -130,11 +131,9 @@ public class PantsResolver {
     });
   }
 
-  private String mainTargetName(){
-    //FIXME check if this is the correct way
-    String target = myProjectInfo.getTargets().keySet().stream().map(x -> PantsTargetAddress.fromString(x))
-      .filter(t -> t.isMainTarget()).findFirst().get().getTargetName();
-    return target;
+  private String mainTargetName(List<String> selectedTargets){
+    //FIXME can there be more than one target?
+    return selectedTargets.get(0);
   }
 
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
