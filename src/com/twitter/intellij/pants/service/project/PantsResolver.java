@@ -120,7 +120,7 @@ public class PantsResolver {
     if(!python.isPresent()){
       python = Optional.of(new PythonVenvBuilder(myExecutor.getBuildRoot().toString())).map(builder -> {
         String target = mainTargetName(selectedTargets);
-        Path venvDir = Paths.get(projectData.getIdeProjectFileDirectoryPath());
+        Path venvDir = Paths.get(projectData.getIdeProjectFileDirectoryPath(), "venv");
         return builder.build(target, venvDir);
       });
     }

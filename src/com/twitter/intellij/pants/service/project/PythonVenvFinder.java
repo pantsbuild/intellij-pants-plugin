@@ -43,7 +43,7 @@ public class PythonVenvFinder {
             .map(l -> l.substring(versionPrefix.length()))
             .findFirst();
         } catch (IOException e) {
-          LOG.warn(String.format("An error occurred while reading %s", config), e);
+          LOG.error(String.format("An error occurred while reading %s", config), e);
         }
         LOG.info(String.format("Found Python version %s at %s", version.orElse("unknown"), venv));
 
