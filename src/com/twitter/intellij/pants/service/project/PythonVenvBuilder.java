@@ -3,56 +3,61 @@
 
 package com.twitter.intellij.pants.service.project;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
+import com.twitter.intellij.pants.util.PantsUtil;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
 
 public class PythonVenvBuilder {
 
-  private final Path executable;
-
-  private static final String executableName = "venv_builder.pex";
-
   protected static final Logger LOG = Logger.getInstance(PythonVenvBuilder.class);
 
-  private PythonVenvBuilder(Path executable) {
-    this.executable = executable;
+  private String projectPath;
+
+  public PythonVenvBuilder(String projectPath) {
+    this.projectPath = projectPath;
   }
 
-  public PythonInterpreterInfo build(String target, Path venvDir){
+  public PythonInterpreterInfo build(String target, Path venvDir) {
     LOG.info(String.format("Invoking the .venv builder with target %s at %s", target, venvDir));
     try {
-      Process process = new ProcessBuilder(executable.toString(),
-                                           "--target", target,
-                                           "--venv-dir", venvDir.toString(),
-                                           "--pip"
-      ).start();
-      process.waitFor();
-      BufferedReader output = new BufferedReader(new InputStreamReader(process.getInputStream()));
-      LOG.info("Output of the .venv builder:");
-      output.lines().forEach(l -> LOG.info("  " + l));
-      PythonInterpreterInfo result = new PythonInterpreterInfo();
-      result.setBinary(venvDir.resolve("bin/python").toString());
-      result.setChroot(venvDir.toString());
-      return result;
-    } catch(IOException | InterruptedException ie) {
-      throw new RuntimeException("An error occurred while running the .venv builder", ie);
+      GeneralCommandLine command = buildAndRunVenvBuilder(target, venvDir);
+      final ProcessOutput processOutput = getProcessOutput(command);
+      if(processOutput.checkSuccess(LOG)) {
+        PythonInterpreterInfo result = new PythonInterpreterInfo();
+        result.setBinary(venvDir.resolve("bin/python").toString());
+        result.setChroot(venvDir.toString());
+        return result;
+      }
+      else {
+        throw new RuntimeException(String.format("Failed to create a Python virtual environment in %s", venvDir));
+      }
+    } catch(ExecutionException ee) {
+      throw new RuntimeException("An error occurred while running the .venv builder", ee);
     }
   }
 
-  public static Optional<PythonVenvBuilder> find() {
-    Path executable = Paths.get(System.getProperty("user.home"), "workspace", "source", "dist", executableName); //FIXME
-    if(Files.isRegularFile(executable) && Files.isExecutable(executable))
-      return Optional.of(new PythonVenvBuilder(executable));
-    else
-      return Optional.empty();
+  private GeneralCommandLine buildAndRunVenvBuilder(String target, Path venvDir) {
+    final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath)
+      .withEnvironment("PANTS_CONCURRENT", "true");
+    commandLine.addParameters("run", "entsec/venv_builder:venv_builder", "--");
+    commandLine.addParameters("--target", target);
+    commandLine.addParameters("--venv-dir", venvDir.toString());
+    commandLine.addParameters("--pip");
+    return commandLine;
+  }
+
+  private ProcessOutput getProcessOutput(
+    @NotNull GeneralCommandLine command
+  ) throws ExecutionException {
+    //Copied from PantsCompileOptionsExecutor
+    final Process process = command.createProcess();
+    return PantsUtil.getCmdOutput(process, command.getCommandLineString(), null);
   }
 
 }

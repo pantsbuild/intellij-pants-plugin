@@ -118,7 +118,7 @@ public class PantsResolver {
     PythonVenvFinder finder = new PythonVenvFinder(Paths.get(myExecutor.getProjectDir()).getParent());
     Optional<PythonInterpreterInfo> python = finder.getEnvironment();
     if(!python.isPresent()){
-      python = PythonVenvBuilder.find().map(builder -> {
+      python = Optional.of(new PythonVenvBuilder(myExecutor.getBuildRoot().toString())).map(builder -> {
         String target = mainTargetName(selectedTargets);
         Path venvDir = Paths.get(projectData.getIdeProjectFileDirectoryPath());
         return builder.build(target, venvDir);
