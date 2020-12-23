@@ -13,6 +13,8 @@ import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Optional;
 
 public class PythonVenvBuilder {
 
@@ -21,9 +23,17 @@ public class PythonVenvBuilder {
   private final String projectPath;
   private final ProcessAdapter processAdapter;
 
-  public PythonVenvBuilder(String projectPath, ProcessAdapter processAdapter) {
+  private PythonVenvBuilder(String projectPath, ProcessAdapter processAdapter) {
     this.projectPath = projectPath;
     this.processAdapter = processAdapter;
+  }
+
+  public static Optional<PythonVenvBuilder> forProjectPath(String projectPath, ProcessAdapter processAdapter){
+    Collection<String> allTargets = PantsUtil.listAllTargets(projectPath);
+    if(allTargets.contains("entsec/venv_builder:venv_builder"))
+      return Optional.of(new PythonVenvBuilder(projectPath, processAdapter));
+    else
+      return Optional.empty();
   }
 
   public PythonInterpreterInfo build(String target, Path venvDir) {
