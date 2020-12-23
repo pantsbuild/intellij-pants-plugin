@@ -5,6 +5,7 @@ package com.twitter.intellij.pants.service.project;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
@@ -17,10 +18,12 @@ public class PythonVenvBuilder {
 
   protected static final Logger LOG = Logger.getInstance(PythonVenvBuilder.class);
 
-  private String projectPath;
+  private final String projectPath;
+  private final ProcessAdapter processAdapter;
 
-  public PythonVenvBuilder(String projectPath) {
+  public PythonVenvBuilder(String projectPath, ProcessAdapter processAdapter) {
     this.projectPath = projectPath;
+    this.processAdapter = processAdapter;
   }
 
   public PythonInterpreterInfo build(String target, Path venvDir) {
@@ -43,6 +46,7 @@ public class PythonVenvBuilder {
   }
 
   private GeneralCommandLine buildAndRunVenvBuilder(String target, Path venvDir) {
+    //TODO Use PantsTaskManager.executeTasks?
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath)
       .withEnvironment("PANTS_CONCURRENT", "true");
     commandLine.addParameters("run", "entsec/venv_builder:venv_builder", "--");
@@ -57,7 +61,7 @@ public class PythonVenvBuilder {
   ) throws ExecutionException {
     //Copied from PantsCompileOptionsExecutor
     final Process process = command.createProcess();
-    return PantsUtil.getCmdOutput(process, command.getCommandLineString(), null);
+    return PantsUtil.getCmdOutput(process, command.getCommandLineString(), processAdapter);
   }
 
 }

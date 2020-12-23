@@ -107,7 +107,8 @@ public class PantsResolver {
 
   public void resolvePythonEnvironment(
     ProjectData projectData,
-    List<String> selectedTargets
+    List<String> selectedTargets,
+    ProcessAdapter processAdapter
   ) {
     PythonSetup pythonSetup = myProjectInfo.getPythonSetup();
     boolean needsPython = myProjectInfo.getTargets().values().stream().anyMatch(t -> t.isPythonTarget());
@@ -118,7 +119,7 @@ public class PantsResolver {
     PythonVenvFinder finder = new PythonVenvFinder(Paths.get(myExecutor.getProjectDir()).getParent());
     Optional<PythonInterpreterInfo> python = finder.getEnvironment();
     if(!python.isPresent()){
-      python = Optional.of(new PythonVenvBuilder(myExecutor.getBuildRoot().toString())).map(builder -> {
+      python = Optional.of(new PythonVenvBuilder(myExecutor.getBuildRoot().toString(), processAdapter)).map(builder -> {
         String target = mainTargetName(selectedTargets);
         Path venvDir = Paths.get(projectData.getIdeProjectFileDirectoryPath(), "venv");
         return builder.build(target, venvDir);
