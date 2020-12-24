@@ -374,6 +374,10 @@ public class PantsUtil {
   }
 
   public static Collection<String> listAllTargets(@NotNull String projectPath) throws PantsException {
+    return  listAllTargets(projectPath, false);
+  }
+
+  public static Collection<String> listAllTargets(@NotNull String projectPath, boolean recursive) throws PantsException {
     if (!PantsUtil.isBUILDFilePath(projectPath)) {
       return Lists.newArrayList();
     }
@@ -381,7 +385,7 @@ public class PantsUtil {
     try (TempFile tempFile = TempFile.create("list", ".out")) {
       cmd.addParameters(
         "list",
-        Paths.get(projectPath).getParent().toString() + ':',
+        Paths.get(projectPath).getParent().toString() + (recursive ? "::" : ":"),
         String.format("%s=%s", PantsConstants.PANTS_CLI_OPTION_LIST_OUTPUT_FILE,
                       tempFile.getFile().getPath()
         )
