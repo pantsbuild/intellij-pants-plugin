@@ -87,11 +87,6 @@ public class PantsResolver {
     }
   }
 
-  private boolean hasOnlyDefaultPython(PythonSetup py) {
-    List<PythonInterpreterInfo> environments = new ArrayList<>(py.getInterpreters().values());
-    return environments.size() == 1 && environments.get(0).equals(py.getDefaultInterpreterInfo());
-  }
-
   public void resolve(
     @NotNull Consumer<String> statusConsumer,
     @Nullable ProcessAdapter processAdapter
@@ -112,24 +107,16 @@ public class PantsResolver {
   ) {
     PythonSetup pythonSetup = myProjectInfo.getPythonSetup();
     boolean needsPython = myProjectInfo.getTargets().values().stream().anyMatch(t -> t.isPythonTarget());
-    if (!needsPython || pythonSetup == null || !hasOnlyDefaultPython(pythonSetup)) {
-      return;
-    }
-
-    PythonVenvFinder finder = new PythonVenvFinder(Paths.get(myExecutor.getProjectDir()).getParent());
-    Optional<PythonInterpreterInfo> python = finder.getEnvironment();
-    if(!python.isPresent()){
-      python = PythonVenvBuilder.forProjectPath(myExecutor.getBuildRoot().toString(), processAdapter).map(builder -> {
+    if (needsPython && pythonSetup != null) {
+      PythonVenvBuilder.forProjectPath(myExecutor.getBuildRoot().toString(), processAdapter).ifPresent(builder -> {
         String target = mainTargetName(selectedTargets);
         Path venvDir = Paths.get(projectData.getIdeProjectFileDirectoryPath(), "venv");
-        return builder.build(target, venvDir);
+        PythonInterpreterInfo python = builder.build(target, venvDir);
+        String environmentName = "Python virtual environment from venv_builder";
+        pythonSetup.getInterpreters().put(environmentName, python);
+        pythonSetup.setDefaultInterpreter(environmentName);
       });
     }
-    python.ifPresent(py -> {
-      String environmentName = String.format("Python virtual environment (%s)", finder.getVersion().orElse("unknown version"));
-      pythonSetup.getInterpreters().put(environmentName, py);
-      pythonSetup.setDefaultInterpreter(environmentName);
-    });
   }
 
   private String mainTargetName(List<String> selectedTargets){
