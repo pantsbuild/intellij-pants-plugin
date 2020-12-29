@@ -80,6 +80,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -390,6 +391,54 @@ public class PantsUtil {
       if (processOutput.checkSuccess(LOG)) {
         // output only exists if "list" task succeeds
         final String output = FileUtil.loadFile(tempFile.getFile());
+        return Arrays.asList(output.split("\n"));
+      }
+      else {
+        List<String> errorLogs = Lists.newArrayList(
+          String.format(
+            "Could not list targets: Pants exited with status %d",
+            processOutput.getExitCode()
+          ),
+          String.format("argv: '%s'", cmd.getCommandLineString()),
+          "stdout:",
+          processOutput.getStdout(),
+          "stderr:",
+          processOutput.getStderr()
+        );
+        final String errorMessage = String.join("\n", errorLogs);
+        LOG.warn(errorMessage);
+        throw new PantsException(errorMessage);
+      }
+    }
+    catch (IOException | ExecutionException e) {
+      final String processCreationFailureMessage =
+        String.format(
+          "Could not execute command: '%s' due to error: '%s'",
+          cmd.getCommandLineString(),
+          e.getMessage()
+        );
+      LOG.warn(processCreationFailureMessage, e);
+      throw new PantsException(processCreationFailureMessage);
+    }
+  }
+
+  public static Collection<String> listMatchingTargets(@NotNull String projectPath, String selector) throws PantsException {
+    String definitionPath = selector.split(":", 2)[0];
+    String buildFilePath = projectPath + "/" + definitionPath + "/BUILD";
+    if (!PantsUtil.isBUILDFilePath(buildFilePath) || Files.notExists(Paths.get(buildFilePath))) {
+      return Lists.newArrayList();
+    }
+    GeneralCommandLine cmd = PantsUtil.defaultCommandLine(projectPath);
+    try (TempFile tempFile = TempFile.create("list", ".out")) {
+      cmd.addParameters(
+        "filter", selector,
+        String.format("%s=%s", PantsConstants.PANTS_CLI_OPTION_LIST_OUTPUT_FILE,
+                      tempFile.getFile().getPath()
+        )
+      );
+      final ProcessOutput processOutput = PantsUtil.getCmdOutput(cmd, null);
+      if (processOutput.checkSuccess(LOG)) {
+        final String output = processOutput.getStdout();
         return Arrays.asList(output.split("\n"));
       }
       else {

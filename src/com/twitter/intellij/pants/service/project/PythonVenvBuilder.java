@@ -29,8 +29,8 @@ public class PythonVenvBuilder {
   }
 
   public static Optional<PythonVenvBuilder> forProjectPath(String projectPath, ProcessAdapter processAdapter){
-    Collection<String> allTargets = PantsUtil.listAllTargets(projectPath);
-    if(allTargets.contains("entsec/venv_builder:venv_builder"))
+    Collection<String> allTargets = PantsUtil.listMatchingTargets(projectPath, "entsec/venv_builder:venv_builder");
+    if(!allTargets.isEmpty())
       return Optional.of(new PythonVenvBuilder(projectPath, processAdapter));
     else
       return Optional.empty();
