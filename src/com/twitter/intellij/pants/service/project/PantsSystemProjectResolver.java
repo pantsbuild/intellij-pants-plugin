@@ -256,15 +256,17 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
     @NotNull DataNode<ProjectData> projectDataNode
   ) {
     final PantsResolver dependenciesResolver = new PantsResolver(executor);
+    ProcessAdapter processAdapter = new ProcessAdapter() {
+      @Override
+      public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+        listener.onTaskOutput(id, event.getText(), outputType == ProcessOutputTypes.STDOUT);
+      }
+    };
     dependenciesResolver.resolve(
       status -> listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, status)),
-      new ProcessAdapter() {
-        @Override
-        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-          listener.onTaskOutput(id, event.getText(), outputType == ProcessOutputTypes.STDOUT);
-        }
-      }
+      processAdapter
     );
+    dependenciesResolver.resolvePythonEnvironment(projectDataNode.getData(), executor.getTargetSpecs(), processAdapter);
     dependenciesResolver.addInfoTo(projectDataNode);
   }
 

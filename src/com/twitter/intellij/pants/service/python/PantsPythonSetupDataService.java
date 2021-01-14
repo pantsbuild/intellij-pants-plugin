@@ -5,7 +5,7 @@ package com.twitter.intellij.pants.service.python;
 
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
-import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
@@ -19,12 +19,13 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.util.Computable;
-import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.python.facet.PythonFacet;
 import com.jetbrains.python.facet.PythonFacetType;
+import com.jetbrains.python.sdk.PythonSdkAdditionalData;
 import com.jetbrains.python.sdk.PythonSdkType;
 import com.jetbrains.python.sdk.PythonSdkUtil;
+import com.jetbrains.python.sdk.flavors.VirtualEnvSdkFlavor;
 import com.jetbrains.python.testing.TestRunnerService;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
 import org.jetbrains.annotations.NotNull;
@@ -34,11 +35,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class PantsPythonSetupDataService implements ProjectDataService<PythonSetupData, Module> {
+
+  protected static final Logger LOG = Logger.getInstance(PantsPythonSetupDataService.class);
+
   @NotNull
   @Override
   public Key<PythonSetupData> getTargetDataKey() {
@@ -69,17 +74,32 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
     ExternalSystemApiUtil.executeProjectChangeAction(true, new DisposeAwareProjectChange(project) {
       @Override
       public void execute() {
-        for (final PythonInterpreterInfo interpreterInfo : interpreters) {
+        Set<PythonInterpreterInfo> imported = new HashSet<>();
+        for (final DataNode<PythonSetupData> node : toImport) {
+          PythonSetupData data = node.getData();
+          PythonInterpreterInfo interpreterInfo = data.getInterpreterInfo();
+          if(imported.contains(interpreterInfo)) {
+            LOG.warn(String.format("Not importing the Python interpreter for %s, because this interpreter has already been imported", project.getName()));
+            continue;
+          }
           final String interpreter = interpreterInfo.getBinary();
           Sdk pythonSdk = PythonSdkUtil.findSdkByPath(interpreter);
           if (pythonSdk == null) {
+            LOG.info(String.format("Importing the Python interpreter for %s", project.getName()));
             final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-            pythonSdk = jdkTable.createSdk(PathUtil.getFileName(interpreter), pythonSdkType);
+            String sdkName = String.format("Python for %s", projectData.getExternalName());
+            pythonSdk = jdkTable.createSdk(sdkName, pythonSdkType);
             jdkTable.addJdk(pythonSdk);
             final SdkModificator modificator = pythonSdk.getSdkModificator();
             modificator.setHomePath(interpreter);
+            PythonSdkAdditionalData additionalData = new PythonSdkAdditionalData(VirtualEnvSdkFlavor.getInstance());
+            additionalData.associateWithModulePath(project.getBasePath());
+            modificator.setSdkAdditionalData(additionalData);
             modificator.commitChanges();
             createdSdks.add(pythonSdk);
+            imported.add(interpreterInfo);
+          } else {
+            LOG.warn(String.format("Not importing the Python interpreter for %s, because this interpreter is already present", project.getName()));
           }
           interpreter2sdk.put(interpreterInfo, pythonSdk);
         }
