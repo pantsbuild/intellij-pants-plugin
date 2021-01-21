@@ -14,10 +14,12 @@ set -e
     echo "$IDEA_SHA idea.zip" | sha256sum -c - && unzip -q idea.zip
     mv "/tmp/intellij-community-idea-${IDEA_VERSION}" $SOURCES_DIR
 )
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 
-export IDEPROBE_DISPLAY=xvfb
-sbt test
-
+(
+    cd $DIR
+    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 
+    export IDEPROBE_DISPLAY=xvfb
+    sbt test
+)
 (
     cd /tmp
     cp $SOURCES_DIR/LICENSE.txt intellij_license.txt
