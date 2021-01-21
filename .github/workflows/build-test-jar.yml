@@ -17,7 +17,7 @@ jobs:
       uses: olafurpg/setup-scala@v10
       with:
         java-version: openjdk@1.11.0-2
-    - name: Build
+    - name: Build external-system-test-api.jar
       run: ./build-external-api-jar/run.sh
     - name: SHA256
       run: |
