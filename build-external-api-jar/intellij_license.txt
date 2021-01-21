@@ -187,7 +187,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2014 Pants Project Contributors (see CONTRIBUTORS.md)
+   Copyright 2000-2018 JetBrains s.r.o.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -200,13 +200,3 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-
-====================================================================
-
-Code in this repository builds and contains the external-system-test-api.jar file which is built from parts of IntelliJ source code.
-For more details, please check IntelliJ's repository https://github.com/JetBrains/intellij-community
-According to IntelliJ's Apache license, we copy the LICENSE.txt and NOTICE.txt from the original source to this repository:
-
-The file intellij_notice.txt is from https://raw.githubusercontent.com/JetBrains/intellij-community/c04baf8730ec222de2e56e885d5e3ef5a2705ecc/NOTICE.txt
-The file intellij_license.txt is from https://raw.githubusercontent.com/JetBrains/intellij-community/c04baf8730ec222de2e56e885d5e3ef5a2705ecc/LICENSE.txt
