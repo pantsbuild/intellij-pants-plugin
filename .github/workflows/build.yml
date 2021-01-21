@@ -1,0 +1,48 @@
+name: Build
+
+on: push
+
+env:
+  artifact_path: /tmp/external-system-test-api.zip
+  tag_pattern: refs/tags/external-system-test-api-v
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Prepare
+      run: sudo apt-get install openjdk-11-jdk xvfb
+    - name: Setup Scala
+      uses: olafurpg/setup-scala@v10
+      with:
+        java-version: openjdk@1.11.0-2
+    - name: Build
+      run: ./build-external-api-jar/run.sh
+    - name: SHA256
+      run: |
+        ls -l ${{ env.artifact_path }}
+        sha256sum ${{ env.artifact_path }}
+    - name: Create Release
+      if: startsWith(github.ref, ${{ env.tag_pattern }})
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset
+      if: startsWith(github.ref, ${{ env.tag_pattern }})
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.artifact_path }}
+        asset_name: external-system-test-api.zip
+        asset_content_type: application/zip
+
