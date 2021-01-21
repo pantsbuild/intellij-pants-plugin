@@ -4,7 +4,7 @@ on: push
 
 env:
   artifact_path: /tmp/external-system-test-api.zip
-  tag_pattern: refs/tags/external-system-test-api-v
+  tag_pattern: 'refs/tags/external-system-test-api-v'
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
       uses: olafurpg/setup-scala@v10
       with:
         java-version: openjdk@1.11.0-2
-    - name: Build external-system-test-api.jar
+    - name: Build external-system-test-api.jar'1;95;0c
       run: ./build-external-api-jar/run.sh
     - name: SHA256
       run: |
