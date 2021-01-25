@@ -16,7 +16,6 @@ import com.twitter.intellij.pants.testFramework.PantsIntegrationTestCase
 import com.twitter.intellij.pants.util.PantsUtil
 
 import scala.jdk.CollectionConverters._
-// import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 
 object PantsPerformanceBenchmark {
   def main(args: Array[String]) {
