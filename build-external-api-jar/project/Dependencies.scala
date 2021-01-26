@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   val junit = Seq(
-    "junit" % "junit" % "4.12" % Test,
+    "junit" % "junit" % "4.13" % Test,
     ("com.novocode" % "junit-interface" % "0.11" % Test).exclude("junit", "junit-dep")
   )
 
