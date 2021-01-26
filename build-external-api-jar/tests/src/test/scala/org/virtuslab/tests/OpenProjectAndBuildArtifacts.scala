@@ -146,9 +146,8 @@ class OpenProjectAndBuildArtifacts extends IdeProbeTestSuite with ProbeExtension
 
   @Test def build: Unit = fixtureFromConfig().run { intelliJ =>
     val project = intelliJ.probe.openProject(intelliJ.workspace)
-    Thread.sleep(10*1000)
 
-    def waitUntilTrueForAllTasks(predicate: Seq[String] => Boolean) = {
+    def waitUntilTrueForAllTasks(predicate: Seq[String] => Boolean) = synchronized {
       var scanning = false
       while (!scanning) {
         val tasks = intelliJ.probe.backgroundTasks
