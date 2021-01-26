@@ -82,38 +82,27 @@ final class PantsOpenProjectProvider implements OpenProjectProvider {
   }
 
   public static OpenProjectTask openTask(Project projectToClose, Project project, boolean forceOpenInNewFrame) {
-    boolean useDefaultTemplate = false;
-    boolean isNewProject = true;
-    boolean sendFrameBack = false;
-    boolean showWelcomeScreen = false;
-    ProjectOpenedCallback callback = null;
-    String projectWorkspaceId = null;
-    FrameInfo frame = null;
-    boolean runConfigurators = false;
-    boolean runConversionsBeforeOpen = false;
-    boolean isProjectCreatedWithWizard = false;
-    boolean isRefreshVfsNeeded = false;
     return new OpenProjectTask(
       forceOpenInNewFrame,
       projectToClose,
-      isNewProject,
-      useDefaultTemplate,
+      true, // isNewProject
+      false, // useDefaultProjectAsTemplate
       project,
-      project.getName(),
-      showWelcomeScreen,
-      callback,
-      frame,
-      -1,
-      -1,
-      isRefreshVfsNeeded,
-      runConfigurators,
-      runConversionsBeforeOpen,
-      projectWorkspaceId,
-      isProjectCreatedWithWizard,
-      sendFrameBack,
-      null,
-      null,
-      null
+      project.getName(), // projectName
+      false, // showWelcomeScreen
+      null, // callback
+      null, //frameManager
+      -1, // line
+      -1, // column
+      false, // isRefreshVfsNeeded
+      false, // runConfigurators
+      false, // runConversionBeforeOpen
+      null, // projectWorkspaceId
+      false, //isProjectCreatedWithWizard
+      false, // preloadServices
+      null, // beforeInit
+      null, // beforeOpen
+      null // preparedToOpen
     );
   }
 

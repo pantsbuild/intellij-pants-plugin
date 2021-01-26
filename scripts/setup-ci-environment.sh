@@ -37,6 +37,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   echo "Loading $IJ_BUILD..."
   wget -q -O $IJ_TAR_NAME "https://download.jetbrains.com/idea/$IJ_TAR_NAME"
   {
+    echo "$IJ_SHA $IJ_TAR_NAME" | sha256sum -c - &&
     tar zxf $IJ_TAR_NAME &&
     UNPACKED_IDEA=$(find . -name 'idea-I*' | head -n 1) &&
     mv "$UNPACKED_IDEA" ".cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist" &&
@@ -54,12 +55,16 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   pushd plugins
 
   # wget -q --no-check-certificate -O Scala.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$SCALA_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
-  wget -q --no-check-certificate -O Scala.zip "https://plugins.jetbrains.com/plugin/download?pluginId=$SCALA_PLUGIN_ID&version=$SCALA_PLUGIN_VERSION&channel=$SCALA_PLUGIN_CHANNEL"
-  unzip -q Scala.zip
+  if [ "$SCALA_PLUGIN_CHANNEL" == "stable" ]; then
+      wget -q -O Scala.zip "https://plugins.jetbrains.com/plugin/download?pluginId=$SCALA_PLUGIN_ID&version=$SCALA_PLUGIN_VERSION"
+  else
+      wget -q -O Scala.zip "https://plugins.jetbrains.com/plugin/download?pluginId=$SCALA_PLUGIN_ID&version=$SCALA_PLUGIN_VERSION&channel=$SCALA_PLUGIN_CHANNEL"
+  fi
+  (echo "$SCALA_PLUGIN_SHA Scala.zip" | sha256sum -c -) && unzip -q Scala.zip
   rm -f Scala.zip
 
-  wget -q --no-check-certificate  -O python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
-  unzip -q python.zip
+  wget -q -O python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
+  (echo "$PYTHON_PLUGIN_SHA python.zip" | sha256sum -c -) && unzip -q python.zip
   rm -f python.zip
 
   popd
@@ -86,3 +91,19 @@ if [ ! -d .cache/pants/.git ]; then
   popd
   popd
 fi
+
+if [ ! -d .cache/pants-host/.git ]; then
+    pushd .cache
+    git clone https://github.com/scalameta/pants -b 1.26.x-intellij-plugin pants-host
+    pushd pants-host
+    ./pants goals
+    popd
+    popd
+fi
+
+
+(
+    cd "$CWD/testData"
+    curl -L "$EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL" -o "external-system-test-api.zip"
+    echo "$EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA external-system-test-api.zip" | sha256sum -c - && unzip "external-system-test-api.zip"
+)

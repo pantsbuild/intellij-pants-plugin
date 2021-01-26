@@ -12,8 +12,9 @@ fi
 export CWD=$(pwd)
 # Normally, IJ_VERSION is of the form YEAR.x[.y[.z]]
 # But for EAPs, set IJ_VERSION to the same as IJ_BUILD_NUMBER
-export IJ_VERSION="2020.2"
-export IJ_BUILD_NUMBER="202.6397.94"
+export IJ_VERSION="2020.3"
+export IJ_BUILD_NUMBER="203.5981.165"
+export IJ_SHA="c6f78b72cf7b82619685651ae8517c3faf983dc558c4d4f4c171801ab8d43674"
 
 # tests run from within pants repository must use java 8
 export PANTS_TEST_JUNIT_STRICT_JVM_VERSION=true
@@ -39,18 +40,23 @@ else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
   export PYTHON_PLUGIN_ID="PythonCore"
+  export PYTHON_PLUGIN_SHA="e39f8a5a7e8c62966a7f986cddea18e3e6fac1465cd27c662b939e019888569d"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_VERSION="2020.2.807"
-export SCALA_PLUGIN_CHANNEL="nightly"
+export SCALA_PLUGIN_VERSION="2020.3.16"
+export SCALA_PLUGIN_CHANNEL="stable"
+export SCALA_PLUGIN_SHA="446627b282cde9c5f49708cad5378e002dce2c9dc4557af94d8c2cdd5c4ef6f9"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
 export OSS_PANTS_HOME="$CWD/.cache/pants"
 export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
 export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
+
+export EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL=https://github.com/pantsbuild/intellij-pants-plugin/releases/download/external-system-test-api-v203.5981.41/external-system-test-api.zip
+export EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA=4fa2e4a8a13382d16be11a649ae33f6a37efe2c693f04e02b7b703120b0966dd
 
 append_intellij_jvm_options() {
   scope=$1

@@ -26,3 +26,5 @@
 .pants.d/
 /dist/
 pants_*.zip
+testData/external-system-test-api.*
+testData/*.txt
