@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public class PythonVenvBuilder {
@@ -36,10 +37,10 @@ public class PythonVenvBuilder {
       return Optional.empty();
   }
 
-  public PythonInterpreterInfo build(String target, Path venvDir) {
-    LOG.info(String.format("Invoking the .venv builder with target %s at %s", target, venvDir));
+  public PythonInterpreterInfo build(List<String> targets, Path venvDir) {
+    LOG.info(String.format("Invoking the .venv builder with targets %s at %s", targets, venvDir));
     try {
-      GeneralCommandLine command = buildAndRunVenvBuilder(target, venvDir);
+      GeneralCommandLine command = buildAndRunVenvBuilder(targets, venvDir);
       final ProcessOutput processOutput = getProcessOutput(command);
       if(processOutput.checkSuccess(LOG)) {
         PythonInterpreterInfo result = new PythonInterpreterInfo();
@@ -55,12 +56,14 @@ public class PythonVenvBuilder {
     }
   }
 
-  private GeneralCommandLine buildAndRunVenvBuilder(String target, Path venvDir) {
+  private GeneralCommandLine buildAndRunVenvBuilder(List<String> targets, Path venvDir) {
     //TODO Use PantsTaskManager.executeTasks?
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath)
       .withEnvironment("PANTS_CONCURRENT", "true");
     commandLine.addParameters("run", "entsec/venv_builder:venv_builder", "--");
-    commandLine.addParameters("--target", target);
+    for(String target: targets){
+      commandLine.addParameters("--target", target);
+    }
     commandLine.addParameters("--venv-dir", venvDir.toString());
     commandLine.addParameters("--pip");
     return commandLine;

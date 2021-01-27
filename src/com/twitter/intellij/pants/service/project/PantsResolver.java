@@ -17,7 +17,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.PantsException;
-import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.model.SimpleExportResult;
 import com.twitter.intellij.pants.service.PantsCompileOptionsExecutor;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
@@ -33,7 +32,6 @@ import org.jetbrains.annotations.TestOnly;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,19 +107,13 @@ public class PantsResolver {
     boolean needsPython = myProjectInfo.getTargets().values().stream().anyMatch(t -> t.isPythonTarget());
     if (needsPython && pythonSetup != null) {
       PythonVenvBuilder.forProjectPath(myExecutor.getBuildRoot().toString(), processAdapter).ifPresent(builder -> {
-        String target = mainTargetName(selectedTargets);
         Path venvDir = Paths.get(projectData.getIdeProjectFileDirectoryPath(), "venv");
-        PythonInterpreterInfo python = builder.build(target, venvDir);
+        PythonInterpreterInfo python = builder.build(selectedTargets, venvDir);
         String environmentName = "Python virtual environment from venv_builder";
         pythonSetup.getInterpreters().put(environmentName, python);
         pythonSetup.setDefaultInterpreter(environmentName);
       });
     }
-  }
-
-  private String mainTargetName(List<String> selectedTargets){
-    //FIXME can there be more than one target?
-    return selectedTargets.get(0);
   }
 
   public void addInfoTo(@NotNull DataNode<ProjectData> projectInfoDataNode) {
