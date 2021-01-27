@@ -7,6 +7,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.twitter.intellij.pants.service.project.model.PythonInterpreterInfo;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -30,7 +31,7 @@ public class PythonVenvBuilder {
   }
 
   public static Optional<PythonVenvBuilder> forProjectPath(String projectPath, ProcessAdapter processAdapter){
-    Collection<String> allTargets = PantsUtil.listMatchingTargets(projectPath, "entsec/venv_builder:venv_builder");
+    Collection<String> allTargets = PantsUtil.listMatchingTargets(projectPath, venvBuilderTarget());
     if(!allTargets.isEmpty())
       return Optional.of(new PythonVenvBuilder(projectPath, processAdapter));
     else
@@ -60,7 +61,7 @@ public class PythonVenvBuilder {
     //TODO Use PantsTaskManager.executeTasks?
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath)
       .withEnvironment("PANTS_CONCURRENT", "true");
-    commandLine.addParameters("run", "entsec/venv_builder:venv_builder", "--");
+    commandLine.addParameters("run", venvBuilderTarget(), "--");
     for(String target: targets){
       commandLine.addParameters("--target", target);
     }
@@ -75,6 +76,14 @@ public class PythonVenvBuilder {
     //Copied from PantsCompileOptionsExecutor
     final Process process = command.createProcess();
     return PantsUtil.getCmdOutput(process, command.getCommandLineString(), processAdapter);
+  }
+
+  private static String venvBuilderTarget() {
+    String targetName = Optional.ofNullable(PropertiesComponent.getInstance().getValue("pants.python.venv_builder.target"))
+      //FIXME replace with "entsec/venv_builder:venv_builder"
+      .orElse("entsec/foobar:venv_builder");
+    LOG.info(String.format("The venv_builder tool is assumed to be at %s", targetName));
+    return targetName;
   }
 
 }
