@@ -94,7 +94,7 @@ fi
 
 if [ ! -d .cache/pants-host/.git ]; then
     pushd .cache
-    git clone https://github.com/scalameta/pants -b 1.26.x-intellij-plugin pants-host
+    git clone https://github.com/wisechengyi/pants -b 1.26.x-intellij-plugin pants-host
     pushd pants-host
     ./pants goals
     popd
