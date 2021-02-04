@@ -12,7 +12,7 @@ set -e
 (
     cd /tmp
     curl -L "https://github.com/JetBrains/intellij-community/archive/idea/${IDEA_VERSION}.zip" -o idea.zip
-    echo "$IDEA_SHA idea.zip" | sha256sum -c - && unzip -q idea.zip
+    echo "$IDEA_SHA idea.zip" | sha256sum -c - && unzip -o -q idea.zip
     mv "/tmp/intellij-community-idea-${IDEA_VERSION}" $SOURCES_DIR
 )
 (

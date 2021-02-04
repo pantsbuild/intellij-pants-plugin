@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -exo pipefail
 source scripts/prepare-ci-environment.sh
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
@@ -35,7 +36,7 @@ done
 if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist ]; then
   IJ_TAR_NAME=idea${IJ_BUILD}.tar.gz
   echo "Loading $IJ_BUILD..."
-  wget -q -O $IJ_TAR_NAME "https://download.jetbrains.com/idea/$IJ_TAR_NAME"
+  curl -LSso $IJ_TAR_NAME "https://download.jetbrains.com/idea/$IJ_TAR_NAME"
   {
     echo "$IJ_SHA $IJ_TAR_NAME" | sha256sum -c - &&
     tar zxf $IJ_TAR_NAME &&
@@ -54,17 +55,19 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   mkdir -p plugins
   pushd plugins
 
-  # wget -q --no-check-certificate -O Scala.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$SCALA_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
   if [ "$SCALA_PLUGIN_CHANNEL" == "stable" ]; then
-      wget -q -O Scala.zip "https://plugins.jetbrains.com/plugin/download?pluginId=$SCALA_PLUGIN_ID&version=$SCALA_PLUGIN_VERSION"
+      curl -LSso Scala.zip "https://plugins.jetbrains.com/plugin/download?pluginId=$SCALA_PLUGIN_ID&version=$SCALA_PLUGIN_VERSION"
   else
-      wget -q -O Scala.zip "https://plugins.jetbrains.com/plugin/download?pluginId=$SCALA_PLUGIN_ID&version=$SCALA_PLUGIN_VERSION&channel=$SCALA_PLUGIN_CHANNEL"
+      curl -LSso Scala.zip "https://plugins.jetbrains.com/plugin/download?pluginId=$SCALA_PLUGIN_ID&version=$SCALA_PLUGIN_VERSION&channel=$SCALA_PLUGIN_CHANNEL"
   fi
-  (echo "$SCALA_PLUGIN_SHA Scala.zip" | sha256sum -c -) && unzip -q Scala.zip
+  curl -LSso python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
+
+  sha256sum --strict -c ../scripts/checksums.txt
+
+  unzip -o -q Scala.zip
   rm -f Scala.zip
 
-  wget -q -O python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
-  (echo "$PYTHON_PLUGIN_SHA python.zip" | sha256sum -c -) && unzip -q python.zip
+  unzip -o -q python.zip
   rm -f python.zip
 
   popd
@@ -104,6 +107,6 @@ fi
 
 (
     cd "$CWD/testData"
-    curl -L "$EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL" -o "external-system-test-api.zip"
-    echo "$EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA external-system-test-api.zip" | sha256sum -c - && unzip "external-system-test-api.zip"
+    curl -LSso "external-system-test-api.zip" "$EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL"
+    echo "$EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA external-system-test-api.zip" | sha256sum -c - && unzip -o "external-system-test-api.zip"
 )
