@@ -40,14 +40,14 @@ else
   export IJ_BUILD="IC-${IJ_VERSION}"
   export FULL_IJ_BUILD_NUMBER="IC-${IJ_BUILD_NUMBER}"
   export PYTHON_PLUGIN_ID="PythonCore"
-  export PYTHON_PLUGIN_SHA="e39f8a5a7e8c62966a7f986cddea18e3e6fac1465cd27c662b939e019888569d"
+  export PYTHON_PLUGIN_SHA="aaaee0052620cd063ad76fa9cf4672c7b38c1db2d0007372fecd05d3d9ccb2f2"
 fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
 export SCALA_PLUGIN_VERSION="2020.3.16"
 export SCALA_PLUGIN_CHANNEL="stable"
-export SCALA_PLUGIN_SHA="446627b282cde9c5f49708cad5378e002dce2c9dc4557af94d8c2cdd5c4ef6f9"
+export SCALA_PLUGIN_SHA="ce7fe52a7c3012073b3cdf4f4dff1c0b0003f9f1dbde69b430a288a7ee0dcad8"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
