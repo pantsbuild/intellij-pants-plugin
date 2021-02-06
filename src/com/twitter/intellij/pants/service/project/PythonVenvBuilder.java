@@ -38,9 +38,10 @@ public class PythonVenvBuilder {
   }
 
   public PythonInterpreterInfo build(List<String> targets, Path venvDir) {
-    LOG.info(String.format("Invoking the .venv builder with targets %s at %s", targets, venvDir));
+    LOG.info(String.format("Building a Python virtual environment with targets %s at %s", targets, venvDir));
     try {
       GeneralCommandLine command = buildAndRunVenvBuilder(targets, venvDir);
+      LOG.info(String.format("Executing command: %s", command.getCommandLineString()));
       final ProcessOutput processOutput = getProcessOutput(command);
       if(processOutput.checkSuccess(LOG)) {
         PythonInterpreterInfo result = new PythonInterpreterInfo();
@@ -49,7 +50,14 @@ public class PythonVenvBuilder {
         return result;
       }
       else {
-        throw new RuntimeException(String.format("Failed to create a Python virtual environment in %s", venvDir));
+        String message = String.format("Failed to create a Python virtual environment in %s", venvDir);
+        LOG.error(message);
+        LOG.error("  ----- Beginning of the stderr output");
+        processOutput.getStderrLines().forEach(line -> {
+          LOG.error(line);
+        });
+        LOG.error("  ----- End of the stderr output");
+        throw new RuntimeException(message);
       }
     } catch(ExecutionException ee) {
       throw new RuntimeException("An error occurred while running the .venv builder", ee);
@@ -57,7 +65,6 @@ public class PythonVenvBuilder {
   }
 
   private GeneralCommandLine buildAndRunVenvBuilder(List<String> targets, Path venvDir) {
-    //TODO Use PantsTaskManager.executeTasks?
     final GeneralCommandLine commandLine = PantsUtil.defaultCommandLine(projectPath)
       .withEnvironment("PANTS_CONCURRENT", "true");
     commandLine.addParameters("run", "entsec/venv_builder:venv_builder", "--");
