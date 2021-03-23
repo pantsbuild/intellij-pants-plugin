@@ -266,7 +266,6 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
       status -> listener.onStatusChange(new ExternalSystemTaskNotificationEvent(id, status)),
       processAdapter
     );
-    dependenciesResolver.resolvePythonEnvironment(projectDataNode.getData(), executor.getTargetSpecs(), processAdapter);
     dependenciesResolver.addInfoTo(projectDataNode);
   }
 

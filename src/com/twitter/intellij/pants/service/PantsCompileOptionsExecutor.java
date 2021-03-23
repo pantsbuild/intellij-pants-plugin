@@ -251,7 +251,7 @@ public class PantsCompileOptionsExecutor {
   }
 
   @NotNull
-  public List<String> getTargetSpecs() {
+  private List<String> getTargetSpecs() {
     // If project is opened via pants cli, the targets are in specs.
     return Collections.unmodifiableList(getOptions().getSelectedTargetSpecs());
   }

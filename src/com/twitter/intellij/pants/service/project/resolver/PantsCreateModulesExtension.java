@@ -108,16 +108,10 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
 
     final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
 
-    if(targetInfo.isPythonTarget()) {
-      // FIXME this happens to work because a SDK with the matching name is created later. See PantsPythonSetupDataService.java:84
-      String sdkName = String.format("Python for %s", projectInfoDataNode.getData().getExternalName());
-      moduleDataNode.createChild(ModuleSdkData.KEY, new ModuleSdkData(sdkName));
-    } else {
-      DataNode<ProjectSdkData> sdk = ExternalSystemApiUtil.find(projectInfoDataNode, ProjectSdkData.KEY);
-      if(sdk != null){
-        ModuleSdkData moduleSdk = new ModuleSdkData(sdk.getData().getSdkName());
-        moduleDataNode.createChild(ModuleSdkData.KEY, moduleSdk);
-      }
+    DataNode<ProjectSdkData> sdk = ExternalSystemApiUtil.find(projectInfoDataNode, ProjectSdkData.KEY);
+    if(sdk != null){
+      ModuleSdkData moduleSdk = new ModuleSdkData(sdk.getData().getSdkName());
+      moduleDataNode.createChild(ModuleSdkData.KEY, moduleSdk);
     }
 
     final TargetMetadata metadata = new TargetMetadata(PantsConstants.SYSTEM_ID, moduleName);
