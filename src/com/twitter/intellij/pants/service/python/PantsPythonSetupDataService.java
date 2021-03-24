@@ -87,7 +87,7 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
           if (pythonSdk == null) {
             LOG.info(String.format("Importing the Python interpreter for %s", project.getName()));
             final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-            String sdkName = pythonSdkName(interpreterInfo, projectData);
+            String sdkName = String.format("Python for %s", projectData.getExternalName());
             pythonSdk = jdkTable.createSdk(sdkName, pythonSdkType);
             jdkTable.addJdk(pythonSdk);
             final SdkModificator modificator = pythonSdk.getSdkModificator();
@@ -126,11 +126,6 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
         TestRunnerService.getInstance(module).setProjectConfiguration("py.test");
       }
     }
-  }
-
-  private String pythonSdkName(PythonInterpreterInfo pythonInterpreterInfo, ProjectData projectData) {
-    boolean isVenv = pythonInterpreterInfo.getChroot().endsWith("venv");
-    return String.format("%s Python for %s", isVenv ? "venv" : "", projectData.getExternalName());
   }
 
   @NotNull
