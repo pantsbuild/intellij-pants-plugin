@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 
 public class TargetSpecsFileTreeNode extends ProjectViewNode<VirtualFile> {
   private final Boolean myIsRoot;
@@ -88,9 +89,12 @@ public class TargetSpecsFileTreeNode extends ProjectViewNode<VirtualFile> {
   public Collection<? extends AbstractTreeNode<?>> getChildren() {
     final VirtualFile virtualFile = getValue();
     final PsiManager psiManager = PsiManager.getInstance(myProject);
-
+    VirtualFile[] files = virtualFile.isValid() && virtualFile.isDirectory()
+                          ? Arrays.stream(virtualFile.getChildren()).sorted(Comparator.comparing(VirtualFile::getName))
+                            .toArray(VirtualFile[]::new)
+                          : VirtualFile.EMPTY_ARRAY;
     return ContainerUtil.mapNotNull(
-      virtualFile.isValid() && virtualFile.isDirectory() ? virtualFile.getChildren() : VirtualFile.EMPTY_ARRAY,
+      files,
       (Function<VirtualFile, AbstractTreeNode<?>>) file -> {
         final PsiElement psiElement = file.isDirectory() ? psiManager.findDirectory(file) : psiManager.findFile(file);
         if (psiElement instanceof PsiDirectory) {
