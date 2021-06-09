@@ -23,7 +23,6 @@ import com.intellij.execution.process.CapturingProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.notification.Notification;
@@ -49,7 +48,6 @@ import com.twitter.intellij.pants.file.FileChangeTracker;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.model.PantsOptions;
-import com.twitter.intellij.pants.service.project.FastpassRecommendationNotificationService;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
@@ -58,7 +56,6 @@ import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.AbstractTestRunConfiguration;
-import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
 import javax.swing.Icon;
 import java.time.Duration;
@@ -173,10 +170,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
   ) {
     Project currentProject = configuration.getProject();
     Set<String> targetAddressesToCompile = PantsUtil.filterGenTargets(getTargetAddressesToCompile(configuration));
-    Stopwatch sw = Stopwatch.createStarted();
     PantsExecuteTaskResult result = executeCompileTask(currentProject, targetAddressesToCompile, false);
-    Duration buildDuration = sw.elapsed();
-    FastpassRecommendationNotificationService.getInstance().tick(configuration.getProject(), buildDuration);
     return result.succeeded;
   }
 

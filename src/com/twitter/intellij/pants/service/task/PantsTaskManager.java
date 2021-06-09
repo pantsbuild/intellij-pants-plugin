@@ -23,7 +23,6 @@ import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
-import com.twitter.intellij.pants.service.project.FastpassRecommendationNotificationService;
 import com.twitter.intellij.pants.settings.PantsExecutionSettings;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
@@ -71,7 +70,6 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
       final Process process = commandLine.createProcess();
       List<String> textOutputs = Lists.newArrayList();
       myCancellationMap.put(id, process);
-      Stopwatch sw = Stopwatch.createStarted();
       PantsUtil.getCmdOutput(
         process,
         commandLine.getCommandLineString(), new ProcessAdapter() {
@@ -90,11 +88,7 @@ public class PantsTaskManager implements ExternalSystemTaskManager<PantsExecutio
         }
       );
       int exitCode = process.waitFor();
-      Duration duration = sw.elapsed();
 
-      if(!mayBePythonTestCommandLine(commandLine)) {
-        FastpassRecommendationNotificationService.getInstance().tick(id.findProject(), duration);
-      }
       // https://github.com/JetBrains/intellij-community/blob/master/platform/external-system-impl/src/com/intellij/openapi/externalSystem/service/remote/wrapper/ExternalSystemTaskManagerWrapper.java#L54-L57
       // explicitly expects ExternalSystemException for the task to fail, so we are now throwing it upon non-zero exit.
       if (exitCode != 0) {
