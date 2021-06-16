@@ -8,13 +8,13 @@ object Dependencies {
 
   object ideProbe {
 
-    val version = "0.3.0+28-b36b0a51+20210114-1358-SNAPSHOT"
+    val version = "0.9.0"
     val resolvers = Seq(
       Resolver.sonatypeRepo("public"),
       Resolver.sonatypeRepo("snapshots"),
       MavenRepository(
         "jetbrains-3rd",
-        "https://jetbrains.bintray.com/intellij-third-party-dependencies")
+        "https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
     )
 
     def apply(name: String): ModuleID = {
