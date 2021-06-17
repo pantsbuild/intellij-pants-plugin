@@ -198,6 +198,8 @@ When GH Action is successful, and the release is done, update link in `scripts/p
             <root id="archive" name="external-system-test-api.jar">
               <element id="module-test-output" name="intellij.platform.externalSystem.impl" />
               <element id="module-test-output" name="intellij.platform.externalSystem.tests" />
+              <element id="module-output" name="intellij.platform.externalSystem.api" />
+              <element id="module-output" name="intellij.platform.externalSystem.impl" />
             </root>
           </artifact>
         </component>

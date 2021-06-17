@@ -2,7 +2,10 @@ package org.virtuslab.tests
 
 import org.junit.Test
 import org.virtuslab.ideprobe.junit4.IdeProbeTestSuite
+import org.virtuslab.ideprobe.WaitLogic
 import org.virtuslab.ideprobe.ProbeExtensions
+
+import scala.concurrent.duration.DurationInt
 
 import java.nio.file.Paths
 
@@ -121,6 +124,8 @@ object OpenProjectAndBuildArtifacts
         |    <root id="archive" name="external-system-test-api.jar">
         |      <element id="module-test-output" name="intellij.platform.externalSystem.impl" />
         |      <element id="module-test-output" name="intellij.platform.externalSystem.tests" />
+        |      <element id="module-output" name="intellij.platform.externalSystem.api" />
+        |      <element id="module-output" name="intellij.platform.externalSystem.impl" />
         |    </root>
         |  </artifact>
         |
@@ -145,7 +150,7 @@ class OpenProjectAndBuildArtifacts extends IdeProbeTestSuite with ProbeExtension
   )
 
   @Test def build: Unit = fixtureFromConfig().run { intelliJ =>
-    val project = intelliJ.probe.openProject(intelliJ.workspace)
+    val project = intelliJ.probe.openProject(intelliJ.workspace, WaitLogic.emptyNamedBackgroundTasks(atMost = 1.hour))
 
     def waitUntilTrueForAllTasks(predicate: Seq[String] => Boolean) = synchronized {
       var scanning = false
