@@ -90,7 +90,7 @@ if [ ! -d .cache/pants/.git ]; then
     echo "Using $PANTS_SHA..."
     git checkout -f $PANTS_SHA
   fi
-  ./pants goals
+  ./pants help goals
   popd
   popd
 fi
@@ -99,7 +99,7 @@ if [ ! -d .cache/pants-host/.git ]; then
     pushd .cache
     git clone https://github.com/scalameta/pants -b 1.26.x-intellij-plugin pants-host
     pushd pants-host
-    ./pants goals
+    ./pants help goals
     popd
     popd
 fi

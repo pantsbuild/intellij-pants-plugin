@@ -12,9 +12,9 @@ fi
 export CWD=$(pwd)
 # Normally, IJ_VERSION is of the form YEAR.x[.y[.z]]
 # But for EAPs, set IJ_VERSION to the same as IJ_BUILD_NUMBER
-export IJ_VERSION="2020.3"
-export IJ_BUILD_NUMBER="203.5981.165"
-export IJ_SHA="c6f78b72cf7b82619685651ae8517c3faf983dc558c4d4f4c171801ab8d43674"
+export IJ_VERSION="2021.1.1"
+export IJ_BUILD_NUMBER="211.7142.45"
+export IJ_SHA="8505ba8ff24f595654b82eb45c1fa2f0530a6f307b25cd9858a4bf796e0a5ee9"
 
 # tests run from within pants repository must use java 8
 export PANTS_TEST_JUNIT_STRICT_JVM_VERSION=true
@@ -44,7 +44,7 @@ fi
 
 # we will use Community ids to download plugins.
 export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_VERSION="2020.3.16"
+export SCALA_PLUGIN_VERSION="2021.1.18"
 export SCALA_PLUGIN_CHANNEL="stable"
 
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
@@ -53,8 +53,8 @@ export OSS_PANTS_HOME="$CWD/.cache/pants"
 export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
 export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
 
-export EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL=https://github.com/pantsbuild/intellij-pants-plugin/releases/download/external-system-test-api-v203.5981.41/external-system-test-api.zip
-export EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA=4fa2e4a8a13382d16be11a649ae33f6a37efe2c693f04e02b7b703120b0966dd
+export EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL=https://github.com/pantsbuild/intellij-pants-plugin/releases/download/external-system-test-api-v211.7142.45/external-system-test-api.zip
+export EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA=4c95b4e4465c5a5543054732b8a016d7469456fd416aa87261f9a5e3840749c0
 
 append_intellij_jvm_options() {
   scope=$1

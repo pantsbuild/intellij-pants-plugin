@@ -30,7 +30,7 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
   def getTargetDataKey: Key[ScalaModelData] = ScalaModelData.KEY
 
   override def importData(
-    toImport: util.Collection[DataNode[ScalaModelData]],
+    toImport: util.Collection[_ <: DataNode[ScalaModelData]],
     projectData: ProjectData,
     project: Project,
     modelsProvider: IdeModifiableModelsProvider
@@ -68,7 +68,7 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
     }
   }
 
-  override def computeOrphanData(toImport: util.Collection[DataNode[ScalaModelData]],
+  override def computeOrphanData(toImport: util.Collection[_ <: DataNode[ScalaModelData]],
                                  projectData: ProjectData,
                                  project: Project,
                                  modelsProvider: IdeModifiableModelsProvider
@@ -77,8 +77,8 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
       override def compute(): util.Collection[Library] = Collections.emptyList()
     }
 
-  override def removeData(toRemove: Computable[util.Collection[Library]],
-                          toIgnore: util.Collection[DataNode[ScalaModelData]],
+  override def removeData(toRemove: Computable[_ <: util.Collection[_ <: Library]],
+                          toIgnore: util.Collection[_ <: DataNode[ScalaModelData]],
                           projectData: ProjectData,
                           project: Project,
                           modelsProvider: IdeModifiableModelsProvider): Unit = { }
