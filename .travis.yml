@@ -35,21 +35,20 @@ env:
 matrix:
   include:
     - python: 3.7
-      env: CACHE_NAME=C1.2 PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=0/2
+      env: CACHE_NAME=C1.3 PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=0/2
 
     - python: 3.7
-      env: CACHE_NAME=C2.2 PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=1/2
+      env: CACHE_NAME=C2.3 PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=1/2
 
     - python: 3.7
-      env: CACHE_NAME=C3.2 PANTS_SHA="release_1.18.0" TEST_SET=jvm-integration
+      env: CACHE_NAME=C3.3 PANTS_SHA="release_1.18.0" TEST_SET=jvm-integration
 
     - python: 3.7
-      env: CACHE_NAME=C4.2 PANTS_SHA="release_1.16.0" TEST_SET=jvm-integration
+      env: CACHE_NAME=C4.3 PANTS_SHA="release_1.16.0" TEST_SET=jvm-integration
 
 script:
   # Test a single Java target without scala plugin
-  - ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
-  - travis_wait 105 ./scripts/run-tests-ci.sh
+  - travis_wait 105 ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest#testJaxb
 
 after_success:
   - scripts/deploy/deploy.sh
