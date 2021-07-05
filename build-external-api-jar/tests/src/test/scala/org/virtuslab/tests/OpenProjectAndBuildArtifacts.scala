@@ -146,16 +146,6 @@ class OpenProjectAndBuildArtifacts extends IdeProbeTestSuite with ProbeExtension
 
   @Test def build: Unit = fixtureFromConfig().run { intelliJ =>
     val project = intelliJ.probe.openProject(intelliJ.workspace, WaitLogic.emptyNamedBackgroundTasks(atMost = 1.hour))
-
-    def waitUntilTrueForAllTasks(predicate: Seq[String] => Boolean) = {
-      var scanning = false
-      while (!scanning) {
-        val tasks = intelliJ.probe.backgroundTasks
-        if (predicate(tasks)) scanning = true
-        Thread.sleep(1000)
-      }
-    }
-
     intelliJ.probe.buildArtifact(project, "external-system-test-api")
     intelliJ.probe.await(WaitLogic.backgroundTaskCompletes("Build", maxTaskDuration = 30.minutes))
     intelliJ.workspace.resolve("out/artifacts/external_system_test_api/external-system-test-api.jar")
