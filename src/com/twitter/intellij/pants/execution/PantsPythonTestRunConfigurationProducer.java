@@ -17,7 +17,7 @@ import com.jetbrains.python.codeInsight.testIntegration.PyTestFinder;
 import com.jetbrains.python.psi.PyClass;
 import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyFunction;
-import com.jetbrains.python.testing.PythonUnitTestUtil;
+import com.jetbrains.python.testing.PythonUnitTestDetectorsBasedOnSettings;
 import com.twitter.intellij.pants.model.IJRC;
 import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
@@ -119,7 +119,7 @@ public class PantsPythonTestRunConfigurationProducer extends PantsTestRunConfigu
       PyFile pyFile = (PyFile) element;
 
       for (PyClass pyClass : pyFile.getTopLevelClasses()) {
-        if (PythonUnitTestUtil.isTestClass(pyClass, ThreeState.YES, null)) {
+        if (PythonUnitTestDetectorsBasedOnSettings.isTestClass(pyClass, ThreeState.YES, null)) {
           return true;
         }
       }

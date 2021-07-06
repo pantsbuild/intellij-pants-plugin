@@ -37,7 +37,7 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
 
   @Override
   public void importData(
-    @NotNull final Collection<DataNode<TargetMetadata>> toImport,
+    @NotNull final Collection<? extends DataNode<TargetMetadata>> toImport,
     @Nullable ProjectData projectData,
     @NotNull Project project,
     @NotNull IdeModifiableModelsProvider modelsProvider
@@ -61,7 +61,7 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
   @NotNull
   @Override
   public Computable<Collection<Module>> computeOrphanData(
-    @NotNull Collection<DataNode<TargetMetadata>> toImport,
+    @NotNull Collection<? extends DataNode<TargetMetadata>> toImport,
     @NotNull ProjectData projectData,
     @NotNull Project project,
     @NotNull IdeModifiableModelsProvider modelsProvider
@@ -71,8 +71,8 @@ public class PantsMetadataService implements ProjectDataService<TargetMetadata, 
 
   @Override
   public void removeData(
-    @NotNull Computable<Collection<Module>> toRemove,
-    @NotNull Collection<DataNode<TargetMetadata>> toIgnore,
+    @NotNull Computable<? extends Collection<? extends Module>> toRemove,
+    @NotNull Collection<? extends DataNode<TargetMetadata>> toIgnore,
     @NotNull ProjectData projectData,
     @NotNull Project project,
     @NotNull IdeModifiableModelsProvider modelsProvider

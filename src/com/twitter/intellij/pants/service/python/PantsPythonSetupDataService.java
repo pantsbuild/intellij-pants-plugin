@@ -52,7 +52,7 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
 
   @Override
   public void importData(
-    @NotNull final Collection<DataNode<PythonSetupData>> toImport,
+    @NotNull final Collection<? extends DataNode<PythonSetupData>> toImport,
     @Nullable ProjectData projectData,
     @NotNull Project project,
     @NotNull final IdeModifiableModelsProvider modelsProvider
@@ -131,7 +131,7 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
   @NotNull
   @Override
   public Computable<Collection<Module>> computeOrphanData(
-    @NotNull Collection<DataNode<PythonSetupData>> toImport,
+    @NotNull Collection<? extends DataNode<PythonSetupData>> toImport,
     @NotNull ProjectData projectData,
     @NotNull Project project,
     @NotNull IdeModifiableModelsProvider modelsProvider
@@ -146,8 +146,8 @@ public class PantsPythonSetupDataService implements ProjectDataService<PythonSet
 
   @Override
   public void removeData(
-    @NotNull Computable<Collection<Module>> toRemove,
-    @NotNull Collection<DataNode<PythonSetupData>> toIgnore,
+    @NotNull Computable<? extends Collection<? extends Module>> toRemove,
+    @NotNull Collection<? extends DataNode<PythonSetupData>> toIgnore,
     @NotNull ProjectData projectData,
     @NotNull Project project,
     @NotNull IdeModifiableModelsProvider modelsProvider

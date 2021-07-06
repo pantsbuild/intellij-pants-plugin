@@ -60,7 +60,7 @@ public class PantsClasspathRunConfigurationExtension extends RunConfigurationExt
    * particular test that's being run.
    */
   @Override
-  public <T extends RunConfigurationBase> void updateJavaParameters(
+  public <T extends RunConfigurationBase<?>> void updateJavaParameters(
     T configuration,
     @NotNull JavaParameters params,
     RunnerSettings runnerSettings

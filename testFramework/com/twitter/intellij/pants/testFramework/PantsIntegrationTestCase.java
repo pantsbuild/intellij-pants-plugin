@@ -11,6 +11,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -26,6 +27,7 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.execution.runners.ExecutionUtil;
+import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
@@ -41,6 +43,8 @@ import com.intellij.openapi.externalSystem.test.ExternalSystemImportingTestCase;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.project.DumbServiceImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ex.ProjectManagerEx;
@@ -93,6 +97,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -140,7 +145,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   public void setUp() throws Exception {
     cleanProjectIdeaDir();
     super.setUp();
-    VfsRootAccess.allowRootAccess(myProject, "/Library/Java/JavaVirtualMachines", "/usr/lib/jvm"); // TODO diagnostic: don't use project as disposable
+    VfsRootAccess.allowRootAccess(myProject, "/Library/Java/JavaVirtualMachines", "/usr/lib/jvm", "/workspace/.cache/pants"); // TODO diagnostic: don't use project as disposable
     for (String pluginId : getRequiredPluginIds()) {
       IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId(pluginId));
       assertNotNull(pluginId + " plugin should be in classpath for integration tests!", plugin);
@@ -332,7 +337,7 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         });
       });
     });
-    importProject();
+    importProject(false);
     PantsMetrics.markIndexEnd();
   }
 
@@ -448,10 +453,19 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
         }
       }
     };
+    CompletableFuture<RunContentDescriptor> future = new CompletableFuture<RunContentDescriptor>();
+    DumbServiceImpl dumbService = (DumbServiceImpl) DumbService.getInstance(environment.getProject());
+    dumbService.setDumb(true);
+    ProgramRunnerUtil.executeConfigurationAsync(environment, false, false, new ProgramRunner.Callback() {
 
-    ProgramRunnerUtil.executeConfiguration(environment, false, false);
-    OSProcessHandler handler = (OSProcessHandler) environment.getContentToReuse().getProcessHandler();
+      @Override
+      public void processStarted(RunContentDescriptor descriptor) {
+        future.complete(descriptor);
+      }
+    });
+    OSProcessHandler handler = (OSProcessHandler) future.join().getProcessHandler();
     handler.addProcessListener(processAdapter);
+    dumbService.setDumb(false);
     assertTrue(handler.waitFor());
 
     return new RunResult(handler.getExitCode(), output, errors);
@@ -540,8 +554,8 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   @Override
-  protected void importProject(@NonNls @Language("Python") String config) throws IOException {
-    super.importProject(config);
+  protected void importProject(@NonNls @Language("Python") String config, Boolean skipIndexing ) throws IOException {
+    super.importProject(config, skipIndexing);
   }
 
   @Override
