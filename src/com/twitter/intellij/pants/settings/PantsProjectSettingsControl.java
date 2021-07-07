@@ -263,7 +263,7 @@ public class PantsProjectSettingsControl extends AbstractExternalProjectSettings
           setGeneratedName(buildRoot + File.separator + name);
         }
         myTargetSpecsBox.setEnabled(true);
-        myTargetSpecsBox.setEmptyText(StatusText.DEFAULT_EMPTY_TEXT);
+        myTargetSpecsBox.setEmptyText(StatusText.getDefaultEmptyText());
         myLibsWithSourcesCheckBox.setEnabled(true);
 
         ProgressManager.getInstance().run(new Task.Modal(getProject(),
