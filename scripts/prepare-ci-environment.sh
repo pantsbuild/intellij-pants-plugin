@@ -53,8 +53,8 @@ export OSS_PANTS_HOME="$CWD/.cache/pants"
 export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
 export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
 
-export EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL=https://github.com/pantsbuild/intellij-pants-plugin/releases/download/external-system-test-api-v211.7142.45/external-system-test-api.zip
-export EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA=4c95b4e4465c5a5543054732b8a016d7469456fd416aa87261f9a5e3840749c0
+export EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL=https://github.com/lukaszwawrzyk/intellij-pants-plugin/releases/download/external-system-test-api-v2021.2/external-system-test-api.zip
+export EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA=700069145cf471b0e05f82c432c71693aab1504b13ff995a3049b379566a4983
 
 append_intellij_jvm_options() {
   scope=$1
