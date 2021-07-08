@@ -7,16 +7,23 @@ import java.io.File
 import java.util
 import java.util.Collections
 
+import com.intellij.ProjectTopics
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.externalSystem.model.project.ProjectData
 import com.intellij.openapi.externalSystem.model.{DataNode, ExternalSystemException, Key, ProjectKeys}
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataService
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.project.{ModuleListener, Project}
 import com.intellij.openapi.roots.impl.libraries.LibraryEx.ModifiableModelEx
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.util.Computable
+import com.twitter.intellij.pants.util.PantsUtil
+import org.jetbrains.plugins.scala.findUsages.compilerReferences.ScalaCompilerReferenceService
 import org.jetbrains.plugins.scala.project.{LibraryExt, ScalaLibraryProperties, ScalaLibraryType, Version}
+import com.twitter.intellij.pants.settings.PantsSettings
+import com.twitter.intellij.pants.util.PantsConstants
 
 import scala.jdk.CollectionConverters._
 object PantsScalaDataService {
@@ -36,6 +43,34 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
     modelsProvider: IdeModifiableModelsProvider
   ): Unit = {
     toImport.asScala.toSet.foreach[Unit](doImport(_, modelsProvider))
+
+    // Workaround for bug in Scala Plugin https://youtrack.jetbrains.com/issue/SCL-16768
+    //
+    // Correct initialization of `ScalaCompilerReferenceService` is required for "Find usages"
+    // feature to work correctly. Unfortunately, it's broken in that way, it does nothing when
+    // there are no modules in the project right after the moment, when the project is opened.
+    // This happens when a project is imported, the module creation starts after opening project.
+    val pantsSettings = ExternalSystemApiUtil.getSettings(project, PantsConstants.SYSTEM_ID).asInstanceOf[PantsSettings]
+    if (pantsSettings.isUseIntellijCompiler) {
+      doOnceOnPantsModuleAdded(project) {
+        ScalaCompilerReferenceService(project).initializeReferenceService()
+      }
+    }
+  }
+
+  private def doOnceOnPantsModuleAdded(project: Project)(action: => Unit): Unit = {
+    project.getMessageBus.connect().subscribe(ProjectTopics.MODULES, new ModuleListener {
+      var done = false
+
+      override def moduleAdded(project: Project, module: Module): Unit = {
+        if (!done) {
+          if (PantsUtil.isPantsModule(module)) {
+            action
+            done = true;
+          }
+        }
+      }
+    })
   }
 
   private def doImport(scalaNode: DataNode[ScalaModelData], modelsProvider: IdeModifiableModelsProvider): Unit = {
@@ -73,9 +108,7 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
                                  project: Project,
                                  modelsProvider: IdeModifiableModelsProvider
   ): Computable[util.Collection[Library]] =
-    new Computable[util.Collection[Library]] {
-      override def compute(): util.Collection[Library] = Collections.emptyList()
-    }
+    () => Collections.emptyList()
 
   override def removeData(toRemove: Computable[_ <: util.Collection[_ <: Library]],
                           toIgnore: util.Collection[_ <: DataNode[ScalaModelData]],
