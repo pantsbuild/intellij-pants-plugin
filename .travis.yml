@@ -48,30 +48,30 @@ matrix:
 
 script:
   # Test a single Java target without scala plugin
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.BspPantsIntegrationTest
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.BspPantsIntegrationTest
   - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.CopyPathRelativeToBuildRootActionTest | grep -v StubUpdatingIndex
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.ExternalBuilderIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.NoopCompileTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSFileSyncIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsCompileActionsTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsExamplesMultiTargetsIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsFromScriptIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsIdeaPluginGoalIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsImportTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsMakeIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsScalaExamplesIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsTestExamplesIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSProjectInfoResolveTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSRefreshPromptIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSSdkRefreshActionTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.PantsCompileOptionsExecutorTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.PantsOpenProjectTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.ResolveIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.ScalaWelcomeProjectData
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.TargetFileCompletionIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.TargetFileResolutionIntegrationTest
-#  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.WholeRepoIntegrationTest
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.ExternalBuilderIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.NoopCompileTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSFileSyncIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsCompileActionsTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsExamplesMultiTargetsIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsFromScriptIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsIdeaPluginGoalIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsImportTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsMakeIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsScalaExamplesIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsTestExamplesIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSProjectInfoResolveTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSRefreshPromptIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSSdkRefreshActionTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.PantsCompileOptionsExecutorTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.PantsOpenProjectTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.ResolveIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.ScalaWelcomeProjectData | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.TargetFileCompletionIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.TargetFileResolutionIntegrationTest | grep -v StubUpdatingIndex
+  - ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.WholeRepoIntegrationTest | grep -v StubUpdatingIndex
 
 after_success:
   - scripts/deploy/deploy.sh
