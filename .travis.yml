@@ -48,7 +48,7 @@ matrix:
 
 script:
   # Test a single Java target without scala plugin
-  - travis_wait 105 ./scripts/run-tests-ci.sh | grep -v StubUpdatingIndex
+  - travis_wait 105 ./scripts/run-tests-ci.sh
 
 after_success:
   - scripts/deploy/deploy.sh
