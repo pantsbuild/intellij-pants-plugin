@@ -87,6 +87,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestConfigurationType;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 import org.jetbrains.plugins.scala.testingSupport.test.testdata.SingleTestData;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 import java.io.File;
 import java.io.IOException;
@@ -109,6 +113,13 @@ import java.util.stream.Stream;
  * @see com.twitter.intellij.pants.highlighting.PantsHighlightingIntegrationTest
  */
 public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTestCase {
+
+  @Rule
+  public TestRule watcher = new TestWatcher() {
+    protected void starting(Description description) {
+      System.out.println("Starting test: " + description.getClassName() + description.getMethodName());
+    }
+  };
 
   private final boolean readOnly;
 

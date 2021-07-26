@@ -28,10 +28,22 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 import java.util.Optional;
 
 abstract public class PantsCodeInsightFixtureTestCase extends LightJavaCodeInsightFixtureTestCase {
+  @Rule
+  public TestRule watcher = new TestWatcher() {
+    protected void starting(Description description) {
+      System.out.println("Starting test: " + description.getClassName() + description.getMethodName());
+    }
+  };
+
+
   private final String myPath;
 
   public PantsCodeInsightFixtureTestCase() {
