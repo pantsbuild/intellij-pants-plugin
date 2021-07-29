@@ -82,14 +82,8 @@ if [ ! -d .cache/pants/.git ]; then
   git clone https://github.com/pantsbuild/pants
   echo "Bootstrapping Pants..."
   pushd pants
-  # Bootstrap Pants in the testing SHA so it won't cause
-  # tests to time out during Pants run.
-  if [ -z ${PANTS_SHA+x} ]; then
-    echo "Using the latest master..."
-  else
-    echo "Using $PANTS_SHA..."
-    git checkout -f $PANTS_SHA
-  fi
+
+  git checkout 15dff7a4944c91d402751e287a69bc143ac398da
   ./pants help goals
   popd
   popd
@@ -99,6 +93,7 @@ if [ ! -d .cache/pants-host/.git ]; then
     pushd .cache
     git clone https://github.com/scalameta/pants -b 1.26.x-intellij-plugin pants-host
     pushd pants-host
+    git checkout 70bcd0aacb3dd3aacf61231c9db54592597776a8
     ./pants help goals
     popd
     popd
