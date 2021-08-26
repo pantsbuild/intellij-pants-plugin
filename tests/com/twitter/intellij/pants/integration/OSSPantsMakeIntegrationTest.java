@@ -8,6 +8,11 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
 public class OSSPantsMakeIntegrationTest extends OSSPantsIntegrationTest {
 
+  @Override
+  protected boolean runInDispatchThread() {
+    return false;
+  }
+
   public void testPantsMake() throws Throwable {
     doImport("testprojects/tests/java/org/pantsbuild/testproject/matcher");
     assertPantsCompileExecutesAndSucceeds(pantsCompileProject());
