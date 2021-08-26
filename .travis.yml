@@ -35,10 +35,10 @@ env:
 matrix:
   include:
     - python: 3.7
-      env: CACHE_NAME=C1.3 PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=0/2
+      env: CACHE_NAME=C1.4 PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=0/2
 
     - python: 3.7
-      env: CACHE_NAME=C2.3 PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=1/2
+      env: CACHE_NAME=C2.4 PANTS_SHA="1.25.x-twtr" IJ_ULTIMATE=false PANTS_TEST_JUNIT_TEST_SHARD=1/2
 
 script:
   # Test a single Java target without scala plugin
