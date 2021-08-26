@@ -22,7 +22,7 @@
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.python.PantsPythonSetupDataService"/>
 
     <fileTypeDetector implementation="com.twitter.intellij.pants.file.BUILDFileTypeDetector"/>
-    <fileTypeFactory implementation="com.twitter.intellij.pants.file.PexFileTypeFactory"/>
+    <fileType name="ARCHIVE" extensions="pex"/>
 
     <completion.contributor language="Python"
                             implementationClass="com.twitter.intellij.pants.completion.PantsCompletionContributor"/>
