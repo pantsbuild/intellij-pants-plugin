@@ -9,6 +9,12 @@ import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 import com.twitter.intellij.pants.testFramework.RunResult;
 
 public class OSSPantsTestExamplesIntegrationTest extends OSSPantsIntegrationTest {
+
+  @Override
+  protected boolean runInDispatchThread() {
+    return false;
+  }
+
   @Override
   protected String[] getRequiredPluginIds() {
     return ArrayUtil.append(super.getRequiredPluginIds(), "JUnit");

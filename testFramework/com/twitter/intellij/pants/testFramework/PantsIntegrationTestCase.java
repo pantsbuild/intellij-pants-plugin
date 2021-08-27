@@ -52,10 +52,9 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TestDialog;
 import com.intellij.openapi.ui.TestDialogManager;
-import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -98,6 +97,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -134,11 +134,12 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
   }
 
   public static void removeJdks(@NotNull final Predicate<Sdk> pred) {
-    getAllJdks().filter(pred).forEach(jdk -> {
-      ApplicationManager.getApplication().runWriteAction(() -> {
-        ProjectJdkTable.getInstance().removeJdk(jdk);
-      });
-    });
+    getAllJdks().filter(pred).forEach(
+      jdk -> ApplicationManager.getApplication().invokeAndWait(
+        () -> ApplicationManager.getApplication().runWriteAction(
+          () -> ProjectJdkTable.getInstance().removeJdk(jdk)
+      )
+    ));
   }
 
   @Override
@@ -303,18 +304,24 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     final PsiClass psiClass = findClassAndAssert(qualifiedName);
     final PsiFile psiFile = psiClass.getContainingFile();
     final PsiParserFacade parserFacade = PsiParserFacade.SERVICE.getInstance(myProject);
-    final PsiComment comment = parserFacade.createBlockCommentFromText(psiFile.getLanguage(), "Foo");
+    final PsiComment comment = ApplicationManager.getApplication().runReadAction(
+      (Computable<PsiComment>) () -> parserFacade.createBlockCommentFromText(psiFile.getLanguage(), "Foo"));
+
     WriteCommandAction.runWriteCommandAction(
       myProject,
       ((Runnable) () -> psiFile.add(comment))
     );
     FileDocumentManager manager = FileDocumentManager.getInstance();
-    manager.saveAllDocuments();
+    ApplicationManager.getApplication().invokeAndWait(manager::saveAllDocuments);
+
   }
 
   @NotNull
   protected PsiClass findClassAndAssert(@NonNls @NotNull String qualifiedName) {
-    final PsiClass[] classes = JavaPsiFacade.getInstance(myProject).findClasses(qualifiedName, GlobalSearchScope.allScope(myProject));
+    final PsiClass[] classes = ApplicationManager.getApplication().runReadAction(
+      (Computable<PsiClass[]>) () ->
+        JavaPsiFacade.getInstance(myProject).findClasses(qualifiedName, GlobalSearchScope.allScope(myProject))
+    );
     Set<PsiClass> deduppedClasses = Stream.of(classes).collect(Collectors.toSet());
     assertTrue("Several classes with the same qualified name " + qualifiedName, deduppedClasses.size() < 2);
     assertFalse(qualifiedName + " class not found!", deduppedClasses.isEmpty());
@@ -455,20 +462,26 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     };
     CompletableFuture<RunContentDescriptor> future = new CompletableFuture<RunContentDescriptor>();
     DumbServiceImpl dumbService = (DumbServiceImpl) DumbService.getInstance(environment.getProject());
-    dumbService.setDumb(true);
-    ProgramRunnerUtil.executeConfigurationAsync(environment, false, false, new ProgramRunner.Callback() {
-
+    ApplicationManager.getApplication().invokeAndWait(
+      () -> ApplicationManager.getApplication().runWriteAction(() -> dumbService.setDumb(true))
+    );
+    ApplicationManager.getApplication().invokeAndWait(() -> ProgramRunnerUtil.executeConfigurationAsync(environment, false, false, new ProgramRunner.Callback() {
       @Override
       public void processStarted(RunContentDescriptor descriptor) {
         future.complete(descriptor);
       }
-    });
-    OSProcessHandler handler = (OSProcessHandler) future.join().getProcessHandler();
-    handler.addProcessListener(processAdapter);
-    dumbService.setDumb(false);
-    assertTrue(handler.waitFor());
+    }));
 
-    return new RunResult(handler.getExitCode(), output, errors);
+    try {
+      OSProcessHandler handler = (OSProcessHandler) future.get(10, TimeUnit.MINUTES).getProcessHandler();
+      handler.addProcessListener(processAdapter);
+      ApplicationManager.getApplication().invokeAndWait(() -> dumbService.setDumb(false));
+      assertTrue(handler.waitFor());
+
+      return new RunResult(handler.getExitCode(), output, errors);
+    } catch (Throwable e) {
+      throw new RuntimeException("Exception thrown:", e);
+    }
   }
 
   @NotNull
@@ -547,9 +560,10 @@ public abstract class PantsIntegrationTestCase extends ExternalSystemImportingTe
     removeJdks(jdk -> jdk.getName().contains("pants") || jdk.toString().contains("MockSDK"));
 
     for (Project project : ProjectManager.getInstance().getOpenProjects()) {
-      ((ProjectManagerEx)ProjectManager.getInstance()).forceCloseProject(project);
+      ApplicationManager.getApplication().invokeAndWait(
+        () -> ((ProjectManagerEx)ProjectManager.getInstance()).forceCloseProject(project)
+      );
     }
-
     super.tearDown();
   }
 
