@@ -6,9 +6,8 @@ resolvers.in(ThisBuild) ++= Dependencies.ideProbe.resolvers
 skip in publish := true
 
 lazy val tests = project
-  .in(file("tests"))
+  .in(file("builder"))
   .settings(
-    name := "pants-tests",
-    libraryDependencies += Dependencies.ideProbe.jUnitDriver,
-    libraryDependencies ++= Dependencies.junit
+    name := "builder",
+    libraryDependencies += Dependencies.ideProbe.driver,
   )
