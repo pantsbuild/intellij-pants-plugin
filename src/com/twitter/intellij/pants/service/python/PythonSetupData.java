@@ -20,7 +20,7 @@ public class PythonSetupData extends AbstractExternalEntityData {
   private final PythonInterpreterInfo myInterpreterInfo;
   private final ModuleData myOwnerModuleData;
 
-  @PropertyMapping({"myOwnerModuleData", "interpreterInfo"})
+  @PropertyMapping({"myOwnerModuleData", "myInterpreterInfo"})
   public PythonSetupData(ModuleData ownerModuleData, @NotNull PythonInterpreterInfo interpreterInfo) {
     super(PantsConstants.SYSTEM_ID);
     myOwnerModuleData = ownerModuleData;
