@@ -79,9 +79,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightJavaCodeInsig
       assertTrue("Failed to enable Python plugin!", PluginManagerCore.enablePlugin(pyPluginId));
     }
 
-    final String testUserHome = VfsUtil.pathToUrl(FileUtil.toSystemIndependentName(PantsTestUtils.BASE_TEST_DATA_PATH + "/userHome"));
-    final Optional<VirtualFile> folderWithPex =
-      PantsUtil.findFolderWithPex(Optional.ofNullable(VirtualFileManager.getInstance().findFileByUrl(testUserHome)));
+    final Optional<VirtualFile> folderWithPex = PantsUtil.findFolderWithPex();
     assertTrue("Folder with pex files should be configured", folderWithPex.isPresent());
     final VirtualFile[] pexFiles = folderWithPex.get().getChildren();
     assertTrue("There should be only one pex file!", pexFiles.length == 1);

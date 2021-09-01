@@ -35,7 +35,7 @@ public class PantsResolveTest extends PantsCodeInsightFixtureTestCase {
   }
 
   public void testDependencies() {
-    myFixture.configureByText("BUILD", "depend<caret>encies()");
+    myFixture.configureByText("BUILD", "depend<caret>encies = []");
     doTest(1);
   }
 
