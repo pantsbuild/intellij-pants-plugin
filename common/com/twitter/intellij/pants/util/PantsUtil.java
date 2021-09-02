@@ -118,7 +118,7 @@ public class PantsUtil {
   private static final Logger LOG = Logger.getInstance(PantsUtil.class);
   private static final List<String> PYTHON_PLUGIN_IDS = ContainerUtil.immutableList("PythonCore", "Pythonid");
   private static final String PANTS_VERSION_REGEXP = "pants_version: (.+)";
-  private static final String PEX_RELATIVE_PATH = ".cache/pants/bin/pants-pex"; // ".pants.d/bin/pants.pex";
+  private static final String PEX_RELATIVE_PATH = ".cache/pants/bin/pants-pex";
 
   /**
    * This aims to prepares for any breakage we might introduce from pants side, in which case we can adjust the version

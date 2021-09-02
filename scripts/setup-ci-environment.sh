@@ -85,9 +85,15 @@ if [ ! -d .cache/pants/.git ]; then
 
   git checkout $PANTS_SHA
   ./pants help goals
+
   popd
   popd
 fi
+
+PANTS_PEX_DIR=".cache/pants/bin/pants-pex"
+mkdir -p "$PANTS_PEX_DIR"
+cp ./cache/pants/pants.pex "$PANTS_PEX_DIR"
+
 
 if [ ! -d .cache/pants-host/.git ]; then
     pushd .cache
