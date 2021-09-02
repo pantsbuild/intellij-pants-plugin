@@ -92,10 +92,8 @@ fi
 
 (
     cd .cache/pants
-    ./pants
+    ./build-support/bin/bootstrap_pants_pex.sh
 )
-
-
 PANTS_PEX_DIR=".cache/pants/bin/pants-pex"
 mkdir -p "$PANTS_PEX_DIR"
 cp ./cache/pants/pants.pex "$PANTS_PEX_DIR"
