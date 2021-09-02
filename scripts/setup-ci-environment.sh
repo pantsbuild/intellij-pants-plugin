@@ -93,7 +93,10 @@ fi
 PANTS_PEX_DIR=".cache/pants/bin/pants-pex"
 mkdir -p "$PANTS_PEX_DIR"
 cp ./cache/pants/pants.pex "$PANTS_PEX_DIR"
-
+(
+    cd .cache/pants
+    ./pants
+)
 
 if [ ! -d .cache/pants-host/.git ]; then
     pushd .cache
