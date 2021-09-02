@@ -90,13 +90,15 @@ if [ ! -d .cache/pants/.git ]; then
   popd
 fi
 
-PANTS_PEX_DIR=".cache/pants/bin/pants-pex"
-mkdir -p "$PANTS_PEX_DIR"
-cp ./cache/pants/pants.pex "$PANTS_PEX_DIR"
 (
     cd .cache/pants
     ./pants
 )
+
+
+PANTS_PEX_DIR=".cache/pants/bin/pants-pex"
+mkdir -p "$PANTS_PEX_DIR"
+cp ./cache/pants/pants.pex "$PANTS_PEX_DIR"
 
 if [ ! -d .cache/pants-host/.git ]; then
     pushd .cache
