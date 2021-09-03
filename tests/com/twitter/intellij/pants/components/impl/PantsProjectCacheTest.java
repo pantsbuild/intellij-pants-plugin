@@ -55,6 +55,7 @@ public class PantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
 
   public void testEmpty() {
     final PantsProjectCache cache = PantsProjectCache.getInstance(myFixture.getProject());
+    myFixture.getProject().getBaseDir().refresh(false, true);
     assertFalse(cache.folderContainsSourceRoot(myFixture.getProject().getBaseDir()));
   }
 
