@@ -94,9 +94,9 @@ fi
     cd .cache/pants
     ./build-support/bin/bootstrap_pants_pex.sh
 )
-PANTS_PEX_DIR=".cache/pants/bin/pants-pex"
+PANTS_PEX_DIR="testData/userHome/.cache/pants/bin/pants-pex"
 mkdir -p "$PANTS_PEX_DIR"
-cp ./.cache/pants/pants.pex "testData/userHome/$PANTS_PEX_DIR"
+cp ./.cache/pants/pants.pex "$PANTS_PEX_DIR"
 
 if [ ! -d .cache/pants-host/.git ]; then
     pushd .cache
