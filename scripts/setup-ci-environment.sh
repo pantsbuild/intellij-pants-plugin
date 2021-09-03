@@ -60,7 +60,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   else
       curl -LSso Scala.zip "https://plugins.jetbrains.com/plugin/download?pluginId=$SCALA_PLUGIN_ID&version=$SCALA_PLUGIN_VERSION&channel=$SCALA_PLUGIN_CHANNEL"
   fi
-  curl -LSso python.zip "https://plugins.jetbrains.com/pluginManager/?action=download&id=$PYTHON_PLUGIN_ID&build=$FULL_IJ_BUILD_NUMBER"
+  curl -LSso python.zip "https://plugins.jetbrains.com/plugin/download?pluginId=$PYTHON_PLUGIN_ID&version=$FULL_IJ_BUILD_NUMBER"
 
   sha256sum --strict -c ../scripts/checksums.txt
 
