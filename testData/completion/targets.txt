@@ -1,5 +1,3 @@
 BASIC 1 INCLUDES
-java_tests
 java_library
 java_thrift_library
-java_thriftstore_dml_library
