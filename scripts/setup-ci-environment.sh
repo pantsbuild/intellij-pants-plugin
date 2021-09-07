@@ -12,7 +12,8 @@ if [ ! -d .cache/pants/.git ]; then
   echo "Bootstrapping Pants..."
   pushd pants
 
-  git checkout 15dff7a4944c91d402751e287a69bc143ac398da
+  git checkout -b wisechengyi-yic/fix_setuptools 1.25.x-twtr
+  git pull https://github.com/wisechengyi/pants.git yic/fix_setuptools
   ./pants help goals
   popd
   popd
