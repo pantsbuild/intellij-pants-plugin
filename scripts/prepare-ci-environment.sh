@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Option not to exit terminal while iterating.
-echo $TESTVAR
+echo $TESTVAR | cut -c 1
+echo $TESTVAR | cut -c2-
 exit_on_error="${EXIT_ON_ERROR:-1}"
 if [[ $exit_on_error -ne 0 ]]; then
   set -e
