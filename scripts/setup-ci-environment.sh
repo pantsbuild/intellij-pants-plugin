@@ -8,12 +8,11 @@ mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 if [ ! -d .cache/pants/.git ]; then
   echo "Getting latest Pants..."
   pushd .cache
-  git clone https://github.com/pantsbuild/pants
+  git clone https://github.com/wisechengyi/pants
   echo "Bootstrapping Pants..."
   pushd pants
 
-  git checkout -b wisechengyi-yic/fix_setuptools 1.25.x-twtr
-  git pull https://github.com/wisechengyi/pants.git yic/fix_setuptools
+  git checkout yic/fix_setuptools
   ./pants help goals
   popd
   popd
