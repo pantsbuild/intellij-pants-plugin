@@ -3,6 +3,31 @@ set -exo pipefail
 source scripts/prepare-ci-environment.sh
 mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
 
+# Checking .git because cache entry '.cache/pants' in .travis.yml
+# will alawys create directory .cache/pants
+if [ ! -d .cache/pants/.git ]; then
+  echo "Getting latest Pants..."
+  pushd .cache
+  git clone https://github.com/pantsbuild/pants
+  echo "Bootstrapping Pants..."
+  pushd pants
+
+  git checkout 15dff7a4944c91d402751e287a69bc143ac398da
+  ./pants help goals
+  popd
+  popd
+fi
+
+if [ ! -d .cache/pants-host/.git ]; then
+    pushd .cache
+    git clone https://github.com/scalameta/pants -b 1.26.x-intellij-plugin pants-host
+    pushd pants-host
+    git checkout 70bcd0aacb3dd3aacf61231c9db54592597776a8
+    ./pants help goals
+    popd
+    popd
+fi
+
 verify_md5(){
   FILE=$1
   EXPECTED_MD5=$2
@@ -74,30 +99,7 @@ if [ ! -d .cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins ]; then
   mv plugins ".cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 fi
 
-# Checking .git because cache entry '.cache/pants' in .travis.yml
-# will alawys create directory .cache/pants
-if [ ! -d .cache/pants/.git ]; then
-  echo "Getting latest Pants..."
-  pushd .cache
-  git clone https://github.com/pantsbuild/pants
-  echo "Bootstrapping Pants..."
-  pushd pants
 
-  git checkout 15dff7a4944c91d402751e287a69bc143ac398da
-  ./pants help goals
-  popd
-  popd
-fi
-
-if [ ! -d .cache/pants-host/.git ]; then
-    pushd .cache
-    git clone https://github.com/scalameta/pants -b 1.26.x-intellij-plugin pants-host
-    pushd pants-host
-    git checkout 70bcd0aacb3dd3aacf61231c9db54592597776a8
-    ./pants help goals
-    popd
-    popd
-fi
 
 
 (
