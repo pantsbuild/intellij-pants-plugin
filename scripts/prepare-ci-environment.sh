@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Option not to exit terminal while iterating.
+echo $TOKEN | cut -c 1
 exit_on_error="${EXIT_ON_ERROR:-1}"
 if [[ $exit_on_error -ne 0 ]]; then
   set -e
