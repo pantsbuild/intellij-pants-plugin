@@ -29,7 +29,7 @@ jdk:
 env:
   # Make the build time faster for Pants.
   # Runtime perf is less important because this is a small repo.
-  - MODE="debug" TESTVAR=123
+  - MODE="debug" secure: I4u7KTGW3UJnDF/Dy+4ubnqtHSgyry0g4wLk2xPv8NVyFdl2zu5aV4KxstAAQPGxGZ3iwHJWwBWjI3V3LnpFRFYIKA3esYcCK37m8o8Rdsaf/nHB4qqh29f6+RMeGSKLxPAX3T20G8VORTs+N9dVuwJqU4bMt2kwtrHhD9oz6Xo=
 
 # General policy is to support pants for the past 10 releases and the latest master.
 matrix:
