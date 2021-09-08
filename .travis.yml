@@ -44,7 +44,7 @@ matrix:
 
 script:
   # Test a single Java target without scala plugin
-  - echo $TESTVAR | cut -c3
+  - echo $TOKEN | cut -c1
 
 after_success:
   - scripts/deploy/deploy.sh
