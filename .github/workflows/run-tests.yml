@@ -6,11 +6,11 @@ env:
   artifact_path: /tmp/external-system-test-api.zip
   PANTS_SHA: "1.25.x-twtr"
   IJ_ULTIMATE: false
-  CI: false
+  CI: true
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
       - name: Prepare

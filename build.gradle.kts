@@ -5,7 +5,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
 
 plugins {
     scala
-    id("org.jetbrains.intellij") version "1.1.4"
+    id("org.jetbrains.intellij") version "1.1.6"
 }
 
 group = "com.intellij.plugins"
@@ -17,34 +17,67 @@ allprojects {
     }
 
     pluginManager.withPlugin("org.jetbrains.intellij") {
-        val idea_version: String by project
-        val scala_plugin_version: String by project
+        val ideaVersion: String by project
+        val scalaPluginVersion: String by project
         intellij {
             type.set("IC")
-            version.set(idea_version)
+            version.set(ideaVersion)
             plugins.set(listOf(
                     "com.intellij.properties",
                     "org.intellij.groovy",
                     "com.intellij.gradle",
                     "com.intellij.java",
-                    "PythonCore:$idea_version",
-                    "org.intellij.scala:$scala_plugin_version",
+                    "PythonCore:$ideaVersion",
+                    "org.intellij.scala:$scalaPluginVersion",
                     "JUnit")
             )
+        }
+    }
+    tasks {
+        withType<JavaCompile> {
+            sourceCompatibility = "1.8"
+            targetCompatibility = "1.8"
         }
     }
 }
 
 dependencies {
-    val scala_version: String by project
-    compileOnly("org.scala-lang:scala-library:$scala_version")
+    val scalaVersion: String by project
     implementation(project(":common"))
     testImplementation(project(":testFramework"))
+    compileOnly("org.scala-lang:scala-library:$scalaVersion")
     testCompileOnly(files("testFramework/external-system-test-api.jar"))
-    testCompileOnly("org.scala-lang:scala-library:$scala_version")
+    testCompileOnly("org.scala-lang:scala-library:$scalaVersion")
 }
 
 tasks {
+    patchPluginXml {
+        val pluginVersion: String by project
+        val pluginSinceBuild: String by project
+        val pluginUntilBuild: String by project
+        version.set(pluginVersion)
+        sinceBuild.set(pluginSinceBuild)
+        untilBuild.set(pluginUntilBuild)
+    }
+
+    val separateTests by registering(Test::class) {
+        // Those tests have to run separately due to the reuse of the project between tests
+        group = "verification"
+        useJUnit()
+        filter {
+            includeTestsMatching("*.PantsProjectCacheTest")
+        }
+        testLogging {
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+            exceptionFormat = FULL
+            if (utils.isCI) showStandardStreams = true
+        }
+        maxParallelForks = 1
+        setForkEvery(1)
+    }
+
     test {
         useJUnit()
         testLogging {
@@ -65,36 +98,6 @@ tasks {
             // Remove IntelliJ index cache.
             file(".cache/intellij/*/idea-dist/system/caches/").takeIf { it.exists() }?.deleteRecursively()
         }
-    }
-    patchPluginXml {
-        pluginXmlFiles.addAll(
-                file("src/main/resources/META-INF/pants-python.xml"),
-                file("src/main/resources/META-INF/pants-scala.xml"),
-        )
-    }
-
-    val miscTests by creating(org.gradle.api.tasks.testing.Test::class) {
-        useJUnit()
-        filter {
-            includeTestsMatching("*.completion.*")
-            includeTestsMatching("*.components.*")
-            includeTestsMatching("*.execution.*")
-            includeTestsMatching("*.extension.*")
-            includeTestsMatching("*.highlighting.*")
-            includeTestsMatching("*.macro.*")
-            includeTestsMatching("*.model.*")
-            includeTestsMatching("*.psi.*")
-            includeTestsMatching("*.quickfix.*")
-            includeTestsMatching("*.resolve.*")
-            includeTestsMatching("*.service.*")
-            includeTestsMatching("*.settings.*")
-            includeTestsMatching("*.util.*")
-            includeTestsMatching("*.rc.*")
-        }
-        testLogging {
-            showCauses = true
-            showStackTraces = true
-            exceptionFormat = FULL
-        }
+        finalizedBy(separateTests)
     }
 }

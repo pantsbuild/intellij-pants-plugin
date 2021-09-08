@@ -9,8 +9,9 @@ plugins {
 
 
 dependencies {
-    implementation("org.scala-lang:scala-library:2.13.3")
-    implementation(project(":common"))
+    val scalaVersion: String by project
     implementation(project(":"))
+    implementation(project(":common"))
+    compileOnly("org.scala-lang:scala-library:$scalaVersion")
     api(files("external-system-test-api.jar"))
 }
