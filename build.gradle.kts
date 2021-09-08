@@ -36,10 +36,12 @@ allprojects {
 }
 
 dependencies {
-    implementation("org.scala-lang:scala-library:2.13.3")
+    val scala_version: String by project
+    compileOnly("org.scala-lang:scala-library:$scala_version")
     implementation(project(":common"))
     testImplementation(project(":testFramework"))
     testCompileOnly(files("testFramework/external-system-test-api.jar"))
+    testCompileOnly("org.scala-lang:scala-library:$scala_version")
 }
 
 tasks {
@@ -50,6 +52,7 @@ tasks {
             showCauses = true
             showStackTraces = true
             exceptionFormat = FULL
+            if (utils.isCI) showStandardStreams = true
         }
         maxParallelForks = 1
 
@@ -57,6 +60,7 @@ tasks {
             // For tests/com/twitter/intellij/pants/integration/WholeRepoIntegrationTest.java
             file(".cache/dummy_repo").takeIf { it.exists() }?.deleteRecursively()
             file("src/test/resources/testData/dummy_repo").copyRecursively(file(".cache/dummy_repo"), overwrite = true)
+            file(".cache/dummy_repo/pants").setExecutable(true)
 
             // Remove IntelliJ index cache.
             file(".cache/intellij/*/idea-dist/system/caches/").takeIf { it.exists() }?.deleteRecursively()

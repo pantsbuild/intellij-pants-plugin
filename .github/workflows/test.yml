@@ -1,4 +1,4 @@
-name: Build
+name: Run Gradle tests
 
 on: push
 
@@ -6,14 +6,19 @@ env:
   artifact_path: /tmp/external-system-test-api.zip
   PANTS_SHA: "1.25.x-twtr"
   IJ_ULTIMATE: false
+  CI: false
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - name: Prepare
         run: sudo apt-get install -y openjdk-8-jdk openjdk-11-jdk unzip curl python3-dev python3-virtualenv pkg-config git g++ libssl-dev make g++ zip
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: '11'
       - name: Setup CI
         run: PANTS_SHA=${{ env.PANTS_SHA }} ./scripts/setup-ci-environment.sh
       - name: Test
