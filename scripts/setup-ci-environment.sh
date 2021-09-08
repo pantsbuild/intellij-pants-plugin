@@ -83,7 +83,7 @@ if [ ! -d .cache/pants/.git ]; then
   echo "Bootstrapping Pants..."
   pushd pants
 
-  git checkout $PANTS_SHA
+  git checkout 33735fe23228472367dc73f26bb96a755452192f
   ./pants help goals
 
   popd
