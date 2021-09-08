@@ -11,6 +11,17 @@
       <entry name="!?*.kt" />
       <entry name="!?*.clj" />
     </wildcardResourcePatterns>
-    <bytecodeTargetLevel target="11" />
+    <bytecodeTargetLevel target="11">
+      <module name="intellij-pants-plugin.buildSrc.main" target="1.8" />
+      <module name="intellij-pants-plugin.buildSrc.test" target="1.8" />
+      <module name="intellij-pants-plugin.common.main" target="1.8" />
+      <module name="intellij-pants-plugin.common.test" target="1.8" />
+      <module name="intellij-pants-plugin.externalTestApi.main" target="1.8" />
+      <module name="intellij-pants-plugin.externalTestApi.test" target="1.8" />
+      <module name="intellij-pants-plugin.main" target="1.8" />
+      <module name="intellij-pants-plugin.test" target="1.8" />
+      <module name="intellij-pants-plugin.testFramework.main" target="1.8" />
+      <module name="intellij-pants-plugin.testFramework.test" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

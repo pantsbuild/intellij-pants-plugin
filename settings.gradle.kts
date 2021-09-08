@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "intellij-pants-plugin"
-include("common", "testFramework")
+include("common", "testFramework", "externalTestApi")

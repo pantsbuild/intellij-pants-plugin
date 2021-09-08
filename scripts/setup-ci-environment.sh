@@ -47,9 +47,3 @@ if [ ! -d .cache/pants/.git ]; then
   popd
   popd
 fi
-
-(
-    cd "$CWD/src/test/resources/testData"
-    curl -LSso "external-system-test-api.zip" "$EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL"
-    echo "$EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA external-system-test-api.zip" | sha256sum -c - && unzip -o "external-system-test-api.zip"
-)

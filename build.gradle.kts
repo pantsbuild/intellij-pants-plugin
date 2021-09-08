@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+import utils.publicationChannels
 
 // Copyright 2021 Pants project contributors (see CONTRIBUTORS.md).
 // Licensed under the Apache License, Version 2.0 (see LICENSE).
@@ -13,7 +14,6 @@ group = "com.intellij.plugins"
 allprojects {
     repositories {
         mavenCentral()
-        maven("https://cache-redirector.jetbrains.com/intellij-jbr")
     }
 
     pluginManager.withPlugin("org.jetbrains.intellij") {
@@ -44,9 +44,9 @@ allprojects {
 dependencies {
     val scalaVersion: String by project
     implementation(project(":common"))
-    testImplementation(project(":testFramework"))
     compileOnly("org.scala-lang:scala-library:$scalaVersion")
-    testCompileOnly(files("testFramework/external-system-test-api.jar"))
+
+    testImplementation(project(":testFramework"))
     testCompileOnly("org.scala-lang:scala-library:$scalaVersion")
 }
 
@@ -99,5 +99,10 @@ tasks {
             file(".cache/intellij/*/idea-dist/system/caches/").takeIf { it.exists() }?.deleteRecursively()
         }
         finalizedBy(separateTests)
+    }
+
+    signPlugin {}
+    publishPlugin {
+        channels.set(publicationChannels)
     }
 }

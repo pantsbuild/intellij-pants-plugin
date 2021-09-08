@@ -7,11 +7,10 @@ plugins {
     id("org.jetbrains.intellij")
 }
 
-
 dependencies {
     val scalaVersion: String by project
     implementation(project(":"))
     implementation(project(":common"))
     compileOnly("org.scala-lang:scala-library:$scalaVersion")
-    api(files("external-system-test-api.jar"))
+    api(project(":externalTestApi"))
 }
