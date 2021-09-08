@@ -44,7 +44,8 @@ matrix:
 
 script:
   # Test a single Java target without scala plugin
-  - echo $TOKEN | cut -c1
+  - ENABLE_SCALA_PLUGIN=false ./scripts/run-tests-ci.sh --test-junit-test=com.twitter.intellij.pants.integration.OSSPantsJavaExamplesIntegrationTest
+  - travis_wait 105 ./scripts/run-tests-ci.sh
 
 after_success:
   - scripts/deploy/deploy.sh
