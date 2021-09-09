@@ -88,7 +88,7 @@ public class SimpleExportResult {
         String.format("%s=%s", PantsConstants.PANTS_CLI_OPTION_EXPORT_OUTPUT_FILE,
                       tempFile.getFile().getPath()));
       final ProcessOutput processOutput = PantsUtil.getCmdOutput(commandline, null);
-      System.out.println(processOutput);
+
       if (processOutput.checkSuccess(LOG)) {
         SimpleExportResult result = parse(FileUtil.loadFile(tempFile.getFile()));
         simpleExportCache.put(pantsExecutableFile, result);
