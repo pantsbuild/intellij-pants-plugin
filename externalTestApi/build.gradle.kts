@@ -28,7 +28,8 @@ fun externalSystemTestApiJar() = zipTree(externalSystemTestApi.singleFile).match
 }
 
 dependencies {
-    externalSystemTestApi("pantsbuild:intellij-pants-plugin:external-system-test-api-v211.7142.45:external-system-test-api@zip")
+    val externalSystemTestApiVersion: String by project
+    externalSystemTestApi("pantsbuild:intellij-pants-plugin:external-system-test-api-v$externalSystemTestApiVersion:external-system-test-api@zip")
     api(externalSystemTestApiJar())
 }
 
