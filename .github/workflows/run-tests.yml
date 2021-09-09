@@ -3,8 +3,7 @@ name: Run Gradle tests
 on: push
 
 env:
-  artifact_path: /tmp/external-system-test-api.zip
-  PANTS_SHA: "1.25.x-twtr"
+  PANTS_SHA: "33735fe23228472367dc73f26bb96a755452192f"
   IJ_ULTIMATE: false
   CI: true
 
@@ -23,9 +22,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .cache
-          key: gradle-properties-${{ hashFiles('gradle.properties') }}
+          key: pants-${{ env.PANTS_SHA }}
       - name: Setup CI
-        run: PANTS_SHA=${{ env.PANTS_SHA }} ./scripts/setup-ci-environment.sh
+        run: PANTS_SHA=${{ env.PANTS_SHA }} IJ_ULTIMATE=${{ env.IJ_ULTIMATE }} ./scripts/setup-ci-environment.sh
       - name: Test
         run: |
           export CWD=$(pwd)
@@ -33,10 +32,10 @@ jobs:
           export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
           export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
           ./gradlew :test
-      - name: Save build report if tests failed
-        if: ${{ failure() }}
+      - name: Save build report
+        if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: build-reports
           path: 'build/reports/'
-          retention-days: 2
+          retention-days: 3
