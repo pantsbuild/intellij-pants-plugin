@@ -9,6 +9,7 @@
       <trusted-artifacts>
          <trust file=".*-javadoc[.]jar" regex="true"/>
          <trust file=".*-sources[.]jar" regex="true"/>
+         <trust file=".*-src[.]zip" regex="true"/>
          <trust file="ivy-.*[.]xml" regex="true"/>
       </trusted-artifacts>
    </configuration>
