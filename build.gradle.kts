@@ -101,8 +101,10 @@ tasks {
         finalizedBy(separateTests)
     }
 
-    signPlugin {}
     publishPlugin {
         channels.set(publicationChannels)
+        System.getenv("TOKEN")?.takeIf { it.isNotBlank() }?.let {
+            token.set(it)
+        }
     }
 }

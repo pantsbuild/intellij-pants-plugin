@@ -1,0 +1,43 @@
+name: Publish Gradle plugin
+
+on: workflow_dispatch # only run manually
+
+env:
+  PANTS_SHA: "33735fe23228472367dc73f26bb96a755452192f"
+  IJ_ULTIMATE: false
+  CI: true
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Prepare
+        run: sudo apt-get install -y openjdk-8-jdk unzip curl python3-dev python3-virtualenv pkg-config git g++ libssl-dev make g++ zip
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+      - name: Cache .cache
+        uses: actions/cache@v2
+        with:
+          path: .cache
+          key: pants-${{ env.PANTS_SHA }}
+      - name: Setup CI
+        run: PANTS_SHA=${{ env.PANTS_SHA }} IJ_ULTIMATE=${{ env.IJ_ULTIMATE }} ./scripts/setup-ci-environment.sh
+      - name: Test
+        run: |
+          export CWD=$(pwd)
+          export OSS_PANTS_HOME="$CWD/.cache/pants"
+          export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
+          export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
+          ./gradlew :buildPlugin :verifyPlugin :publishPlugin
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+      - name: Save build report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-reports
+          path: 'build/reports/'
+          retention-days: 3
