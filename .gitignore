@@ -1,15 +1,4 @@
-.idea/codeStyles/Project.xml
-.idea/codeStyles/codeStyleConfig.xml
-.idea/encodings.xml
-.idea/dictionaries/
-.idea/highlighting.xml
-.idea/inspectionProfiles/
-.idea/markdown*
-.idea/misc.xml
-.idea/scopes/
-.idea/shelf/
-.idea/thriftCompiler.xml
-.idea/workspace.xml
+.idea/
 .DS_Store
 .pids/
 *.class
@@ -29,4 +18,3 @@ testData/*.txt
 .gradle
 build/
 /.pants.d
-.idea/
