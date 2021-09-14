@@ -24,7 +24,7 @@ jobs:
           path: .cache
           key: pants-${{ env.PANTS_SHA }}
       - name: Setup CI
-        run: PANTS_SHA=${{ env.PANTS_SHA }} IJ_ULTIMATE=${{ env.IJ_ULTIMATE }} ./scripts/setup-ci-environment.sh
+        run: ./scripts/setup-ci-environment.sh
       - name: Test
         run: |
           export CWD=$(pwd)
