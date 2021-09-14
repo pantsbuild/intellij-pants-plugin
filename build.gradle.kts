@@ -1,4 +1,4 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+import utils.configureTests
 import utils.publicationChannels
 
 // Copyright 2021 Pants project contributors (see CONTRIBUTORS.md).
@@ -63,31 +63,17 @@ tasks {
     val separateTests by registering(Test::class) {
         // Those tests have to run separately due to the reuse of the project between tests
         group = "verification"
-        useJUnit()
+
+        configureTests()
+        setForkEvery(1)
+
         filter {
             includeTestsMatching("*.PantsProjectCacheTest")
         }
-        testLogging {
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-            exceptionFormat = FULL
-            if (utils.isCI) showStandardStreams = true
-        }
-        maxParallelForks = 1
-        setForkEvery(1)
     }
 
     test {
-        useJUnit()
-        testLogging {
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-            exceptionFormat = FULL
-            if (utils.isCI) showStandardStreams = true
-        }
-        maxParallelForks = 1
+        configureTests()
 
         doFirst {
             // For tests/com/twitter/intellij/pants/integration/WholeRepoIntegrationTest.java
