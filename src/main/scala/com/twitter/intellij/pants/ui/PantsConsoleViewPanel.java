@@ -131,6 +131,7 @@ public class PantsConsoleViewPanel extends JPanel {
     JPanel toolbarPanel = new JPanel(new BorderLayout());
     ActionManager actionManager = ActionManager.getInstance();
     ActionToolbar leftToolbar = actionManager.createActionToolbar(ActionPlaces.COMPILER_MESSAGES_TOOLBAR, leftUpdateableActionGroup, false);
+    leftToolbar.setTargetComponent(toolbarPanel);
     toolbarPanel.add(leftToolbar.getComponent(), BorderLayout.WEST);
 
     return toolbarPanel;

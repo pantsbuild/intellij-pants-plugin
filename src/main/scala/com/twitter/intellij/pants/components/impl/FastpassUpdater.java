@@ -82,7 +82,7 @@ public class FastpassUpdater {
     @Override
     public void update(@NotNull AnActionEvent e) {
       Project project = e.getProject();
-      if(project != null) {
+      if(project != null && PantsUtil.isFastpassProject(project)) {
         boolean show = FastpassUtils.getFastpassPath(project).isPresent();
         e.getPresentation().setEnabledAndVisible(show);
       } else {
