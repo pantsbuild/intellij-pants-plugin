@@ -84,6 +84,9 @@ tasks {
             // Remove IntelliJ index cache.
             file(".cache/intellij/*/idea-dist/system/caches/").takeIf { it.exists() }?.deleteRecursively()
         }
+        filter {
+            excludeTestsMatching("*.PantsProjectCacheTest")
+        }
         finalizedBy(separateTests)
     }
 
