@@ -4,7 +4,7 @@ source scripts/prepare-ci-environment.sh
 
 # For tests/com/twitter/intellij/pants/integration/WholeRepoIntegrationTest.java
 rm -rf .cache/dummy_repo
-cp -r testData/dummy_repo .cache/
+cp -r src/test/resources/testData/dummy_repo .cache/
 
 # Remove IntelliJ index cache.
 rm -rf .cache/intellij/*/idea-dist/system/caches/
