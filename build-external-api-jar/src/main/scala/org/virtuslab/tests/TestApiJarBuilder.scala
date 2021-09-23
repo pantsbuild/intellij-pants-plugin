@@ -1,16 +1,11 @@
 package org.virtuslab.tests
 
-import org.junit.Test
-import org.virtuslab.ideprobe.junit4.IdeProbeTestSuite
-import org.virtuslab.ideprobe.WaitLogic
-import org.virtuslab.ideprobe.ProbeExtensions
-
+import java.nio.file.Paths
+import org.virtuslab.ideprobe.Extensions.PathExtension
+import org.virtuslab.ideprobe.{IdeProbeFixture, WaitLogic}
 import scala.concurrent.duration.DurationInt
 
-import java.nio.file.Paths
-
-object OpenProjectAndBuildArtifacts
-{
+object TestApiJarBuilder extends IdeProbeFixture {
   val jdkDef = {
     """
       |<application>
@@ -116,55 +111,38 @@ object OpenProjectAndBuildArtifacts
       |</application>
       """.stripMargin
   }
-   val artifactVal =
-      """
-        |<component name="ArtifactManager">
-        |  <artifact type="jar" name="external-system-test-api">
-        |    <output-path>$PROJECT_DIR$/out/artifacts/external_system_test_api</output-path>
-        |    <root id="archive" name="external-system-test-api.jar">
-        |      <element id="module-test-output" name="intellij.platform.externalSystem.impl" />
-        |      <element id="module-test-output" name="intellij.platform.externalSystem.tests" />
-        |      <element id="module-output" name="intellij.platform.externalSystem.api" />
-        |      <element id="module-output" name="intellij.platform.externalSystem.impl" />
-        |    </root>
-        |  </artifact>
-        |
-        |
-        |</component>""".stripMargin
-}
+  val artifactVal =
+    """
+      |<component name="ArtifactManager">
+      |  <artifact type="jar" name="external-system-test-api">
+      |    <output-path>$PROJECT_DIR$/out/artifacts/external_system_test_api</output-path>
+      |    <root id="archive" name="external-system-test-api.jar">
+      |      <element id="module-test-output" name="intellij.platform.externalSystem.impl" />
+      |      <element id="module-test-output" name="intellij.platform.externalSystem.tests" />
+      |      <element id="module-output" name="intellij.platform.externalSystem.api" />
+      |      <element id="module-output" name="intellij.platform.externalSystem.impl" />
+      |    </root>
+      |  </artifact>
+      |
+      |
+      |</component>""".stripMargin
 
-
-class OpenProjectAndBuildArtifacts extends IdeProbeTestSuite with ProbeExtensions {
-
-  import OpenProjectAndBuildArtifacts._
-
-  registerFixtureTransformer(
-    _.withAfterIntelliJInstall{ (_, installedIntelliJ) =>
-      installedIntelliJ.paths.config.resolve( "options/jdk.table.xml" ).write(OpenProjectAndBuildArtifacts.jdkDef)
-    }
-  )
-  registerFixtureTransformer(
-    _.withAfterWorkspaceSetup{(_, path) =>
-      path.resolve(".idea/artifacts/external_system_test_api.xml").write(artifactVal)
-    }
-  )
-
-  @Test def build: Unit = fixtureFromConfig().run { intelliJ =>
-    val project = intelliJ.probe.openProject(intelliJ.workspace, WaitLogic.emptyNamedBackgroundTasks(atMost = 1.hour))
-
-    def waitUntilTrueForAllTasks(predicate: Seq[String] => Boolean) = synchronized {
-      var scanning = false
-      while (!scanning) {
-        val tasks = intelliJ.probe.backgroundTasks
-        if (predicate(tasks)) scanning = true
-        Thread.sleep(1000)
+  def main(args: Array[String]): Unit = {
+    val fixture = fixtureFromConfig()
+      .withAfterIntelliJInstall { (_, installedIntelliJ) =>
+        installedIntelliJ.paths.config.resolve("options/jdk.table.xml").write(jdkDef)
+      }.withAfterWorkspaceSetup { (_, path) =>
+        path.resolve(".idea/artifacts/external_system_test_api.xml").write(artifactVal)
       }
-    }
 
-    waitUntilTrueForAllTasks(_.exists(_.contains("Updating indexes")))
-    intelliJ.probe.buildArtifact(project, "external-system-test-api")
-    waitUntilTrueForAllTasks(_.exists(_.contains("Build")))
-    waitUntilTrueForAllTasks(_.forall(!_.contains("Build")))
-    intelliJ.workspace.resolve("out/artifacts/external_system_test_api/external-system-test-api.jar").copyTo(Paths.get("/tmp/external-system-test-api.jar"))
+    fixture.run { intelliJ =>
+      val project = intelliJ.probe.openProject(intelliJ.workspace, WaitLogic.emptyNamedBackgroundTasks(atMost = 1.hour))
+      intelliJ.probe.buildArtifact(project, "external-system-test-api")
+      intelliJ.probe.await(WaitLogic.backgroundTaskCompletes("Build", maxTaskDuration = 30.minutes))
+
+      val outputPath = "out/artifacts/external_system_test_api/external-system-test-api.jar"
+      val artifact = intelliJ.workspace.resolve(outputPath)
+      artifact.copyTo(Paths.get("/tmp/external-system-test-api.jar"))
+    }
   }
 }
