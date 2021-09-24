@@ -1,6 +1,10 @@
 name: Run Gradle tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 env:
   PANTS_SHA: "33735fe23228472367dc73f26bb96a755452192f"
