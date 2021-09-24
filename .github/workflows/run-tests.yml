@@ -1,6 +1,6 @@
 name: Run Gradle tests
 
-on: push
+on: [push, pull_request]
 
 env:
   PANTS_SHA: "33735fe23228472367dc73f26bb96a755452192f"
@@ -8,7 +8,7 @@ env:
   CI: true
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
