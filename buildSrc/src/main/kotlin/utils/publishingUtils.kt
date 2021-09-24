@@ -18,8 +18,8 @@ enum class PublicationChannel(val channelName: String) {
 }
 
 
-val publicationChannels: List<String>
-    get() = System.getenv("publicationChannels")
+val Project.publicationChannels: List<String>
+    get() = (properties["publicationChannels"] as String?)
             ?.takeIf { it.isNotBlank() }
             ?.split(",")
             ?.map { name -> PublicationChannel.from(name).channelName }
