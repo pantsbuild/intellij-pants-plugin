@@ -1,4 +1,5 @@
 import utils.configureTests
+import utils.projectVersion
 import utils.publicationChannels
 
 // Copyright 2021 Pants project contributors (see CONTRIBUTORS.md).
@@ -10,6 +11,7 @@ plugins {
 }
 
 group = "com.intellij.plugins"
+version = projectVersion
 
 allprojects {
     repositories {
@@ -52,10 +54,8 @@ dependencies {
 
 tasks {
     patchPluginXml {
-        val pluginVersion: String by project
         val pluginSinceBuild: String by project
         val pluginUntilBuild: String by project
-        version.set(pluginVersion)
         sinceBuild.set(pluginSinceBuild)
         untilBuild.set(pluginUntilBuild)
     }

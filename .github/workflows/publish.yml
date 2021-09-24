@@ -1,7 +1,9 @@
 name: Publish Gradle plugin
 
-on: workflow_dispatch # only run manually
-
+on:
+  push:
+    branches:
+      - master
 env:
   PANTS_SHA: "33735fe23228472367dc73f26bb96a755452192f"
   IJ_ULTIMATE: false
@@ -31,7 +33,7 @@ jobs:
           export OSS_PANTS_HOME="$CWD/.cache/pants"
           export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
           export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
-          ./gradlew :buildPlugin :verifyPlugin :publishPlugin
+          ./gradlew :buildPlugin :verifyPlugin :publishPlugin -PversionSuffix=.${GITHUB_SHA}
         env:
           TOKEN: ${{ secrets.TOKEN }}
       - name: Save build report
