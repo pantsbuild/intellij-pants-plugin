@@ -1,18 +1,6 @@
 #!/usr/bin/env bash
 set -exo pipefail
 source scripts/prepare-ci-environment.sh
-mkdir -p .cache/intellij/$FULL_IJ_BUILD_NUMBER
-
-verify_md5(){
-  FILE=$1
-  EXPECTED_MD5=$2
-  ACTUAL_MD5=$(get_md5 $1)
-  if [ $ACTUAL_MD5 != $EXPECTED_MD5 ];
-  then
-    echo "$1 md5 incorrect. Expected: $EXPECTED_MD5. Actual: $ACTUAL_MD5" >&2
-#    exit 1
-  fi
-}
 
 if [ -z $JAVA_HOME ]; then
   echo "Please set JAVA_HOME"

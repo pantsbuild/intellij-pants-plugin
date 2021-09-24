@@ -42,19 +42,11 @@ else
   export PYTHON_PLUGIN_ID="PythonCore"
 fi
 
-# we will use Community ids to download plugins.
-export SCALA_PLUGIN_ID="org.intellij.scala"
-export SCALA_PLUGIN_VERSION="2021.2.17"
-export SCALA_PLUGIN_CHANNEL="stable"
-
 export INTELLIJ_PLUGINS_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/plugins"
 export INTELLIJ_HOME="$CWD/.cache/intellij/$FULL_IJ_BUILD_NUMBER/idea-dist"
 export OSS_PANTS_HOME="$CWD/.cache/pants"
 export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
 export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
-
-export EXTERNAL_SYSTEM_TEST_IMPL_JAR_URL=https://github.com/lukaszwawrzyk/intellij-pants-plugin/releases/download/external-system-test-api-v2021.2.1/external-system-test-api.zip
-export EXTERNAL_SYSTEM_TEST_IMPL_JAR_SHA=f01ca3d50c5ce6dc11a10f3d5e0d3bab6893148ae03727f876486ec0b20df40d
 
 append_intellij_jvm_options() {
   scope=$1
