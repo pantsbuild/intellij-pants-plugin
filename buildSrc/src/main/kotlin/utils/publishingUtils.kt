@@ -3,6 +3,8 @@
 
 package utils
 
+import org.gradle.api.*
+
 enum class PublicationChannel(val channelName: String) {
     Stable("Stable"), BleedingEdge("BleedingEdge");
 
@@ -16,8 +18,14 @@ enum class PublicationChannel(val channelName: String) {
 }
 
 
-val publicationChannels: List<String> = System.getenv("publicationChannels")
-        ?.takeIf { it.isNotBlank() }
-        ?.split(",")
-        ?.map { name -> PublicationChannel.from(name).channelName }
-        ?: listOf(PublicationChannel.BleedingEdge.channelName)
+val Project.publicationChannels: List<String>
+    get() = (properties["publicationChannels"] as String?)
+            ?.takeIf { it.isNotBlank() }
+            ?.split(",")
+            ?.map { name -> PublicationChannel.from(name).channelName }
+            ?: listOf(PublicationChannel.BleedingEdge.channelName)
+
+val Project.projectVersion: String
+    get() = properties["pluginVersion"] as String +
+            (properties["versionSuffix"] as String?)?.takeIf { it.isNotBlank() }.orEmpty()
+

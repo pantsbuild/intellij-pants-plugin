@@ -1,18 +1,16 @@
-name: Run Gradle tests
+name: Publish a bleeding edge release
 
 on:
   push:
     branches:
       - master
-  pull_request:
-
 env:
   PANTS_SHA: "33735fe23228472367dc73f26bb96a755452192f"
   IJ_ULTIMATE: false
   CI: true
 
 jobs:
-  test:
+  publish_bleeding_edge:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
@@ -29,13 +27,15 @@ jobs:
           key: pants-${{ env.PANTS_SHA }}
       - name: Setup CI
         run: ./scripts/setup-ci-environment.sh
-      - name: Test
+      - name: Publish
         run: |
           export CWD=$(pwd)
           export OSS_PANTS_HOME="$CWD/.cache/pants"
           export DUMMY_REPO_HOME="$CWD/.cache/dummy_repo"
           export JDK_LIBS_HOME="$CWD/.cache/jdk-libs"
-          ./gradlew :test
+          ./gradlew :buildPlugin :verifyPlugin :publishPlugin -PversionSuffix=.${GITHUB_SHA}
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
       - name: Save build report
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
