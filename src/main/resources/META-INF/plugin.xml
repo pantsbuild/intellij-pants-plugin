@@ -25,14 +25,6 @@
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
 
-
-  <application-components>
-    <component>
-      <interface-class>com.twitter.intellij.pants.components.PantsInitComponent</interface-class>
-      <implementation-class>com.twitter.intellij.pants.components.impl.PantsInitComponentImpl</implementation-class>
-    </component>
-  </application-components>
-
   <actions>
     <!--  This group adds "Import Project" action which to the Welcome screen which was removed in 2020.1  -->
     <group id="WelcomeScreen.QuickStart.Pants">
@@ -179,6 +171,8 @@
   </extensions>
 
   <applicationListeners>
+    <listener class="com.twitter.intellij.pants.components.impl.PantsInitImpl"
+              topic="com.intellij.ide.AppLifecycleListener"/>
     <listener class="com.twitter.intellij.pants.components.impl.PantsProjectComponentImpl"
               topic="com.intellij.openapi.project.ProjectManagerListener"/>
   </applicationListeners>
