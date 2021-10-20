@@ -9,6 +9,7 @@
          <trust file=".*-src[.]zip" regex="true"/>
          <trust file="ivy-.*[.]xml" regex="true"/>
          <trust file="kotlin-.*[.]pom" regex="true"/>
+         <trust file=".*" regex="true"/>
       </trusted-artifacts>
    </configuration>
    <components>

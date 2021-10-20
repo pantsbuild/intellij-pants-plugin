@@ -45,10 +45,8 @@ allprojects {
 
 dependencies {
     val scalaVersion: String by project
-    implementation(project(":common"))
     compileOnly("org.scala-lang:scala-library:$scalaVersion")
-
-    testImplementation(project(":testFramework"))
+    testImplementation(project(":externalTestApi"))
     testCompileOnly("org.scala-lang:scala-library:$scalaVersion")
 }
 
