@@ -18,7 +18,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private final boolean myLibsWithSourcesAndDocs;
   private final boolean myUseIdeaProjectJdk;
   private final boolean myUseIntellijCompiler;
-  private final Optional<Integer> myIncrementalImportDepth;
+  private final Integer myIncrementalImportDepth;
 
   private final boolean myImportSourceDepsAsJars;
   private final List<String> myTargetSpecs;
@@ -27,7 +27,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   private static final List<String> DEFAULT_TARGET_SPECS = Collections.emptyList();
   private static final boolean DEFAULT_WITH_SOURCES_AND_DOCS = true;
   private static final boolean DEFAULT_USE_IDEA_PROJECT_SDK = false;
-  private static final Optional<Integer> DEFAULT_INCREMENTAL_IMPORT = Optional.empty();
+  private static final Integer DEFAULT_INCREMENTAL_IMPORT = null;
   private static final boolean DEFAULT_IMPORT_SOURCE_DEPS_AS_JARS = false;
   private static final boolean DEFAULT_USE_INTELLIJ_COMPILER = false;
 
@@ -38,7 +38,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
       DEFAULT_WITH_SOURCES_AND_DOCS,
       DEFAULT_USE_IDEA_PROJECT_SDK,
       DEFAULT_IMPORT_SOURCE_DEPS_AS_JARS,
-      DEFAULT_INCREMENTAL_IMPORT,
+      Optional.ofNullable(DEFAULT_INCREMENTAL_IMPORT),
       DEFAULT_USE_INTELLIJ_COMPILER
     );
   }
@@ -57,7 +57,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
     myLibsWithSourcesAndDocs = libsWithSourcesAndDocs;
     myUseIdeaProjectJdk = useIdeaProjectJdk;
     myImportSourceDepsAsJars = importSourceDepsAsJars;
-    myIncrementalImportDepth = enableIncrementalImport;
+    myIncrementalImportDepth = enableIncrementalImport.orElse(null);
     myUseIntellijCompiler = useIntellijCompiler;
   }
 
@@ -97,7 +97,7 @@ public class PantsExecutionSettings extends ExternalSystemExecutionSettings impl
   }
 
   public Optional<Integer> incrementalImportDepth() {
-    return myIncrementalImportDepth;
+    return Optional.ofNullable(myIncrementalImportDepth);
   }
 
   @Override
