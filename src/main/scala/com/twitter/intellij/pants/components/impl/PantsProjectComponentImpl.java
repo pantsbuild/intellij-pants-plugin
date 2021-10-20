@@ -56,6 +56,7 @@ public class PantsProjectComponentImpl implements ProjectManagerListener {
 
   @Override
   public void projectOpened(@NotNull Project project) {
+    PantsInitImpl.initialize();
     PantsMetrics.initialize();
     if (PantsUtil.isPantsProject(project)) {
       // projectOpened() is called on the dispatch thread, while

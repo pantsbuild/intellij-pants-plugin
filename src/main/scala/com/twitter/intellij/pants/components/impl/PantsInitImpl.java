@@ -15,10 +15,14 @@ import java.util.List;
 
 public class PantsInitImpl implements AppLifecycleListener {
 
-  @Override
-  public void appFrameCreated(@NotNull List<String> commandLineArgs) {
+  public static void initialize() {
     final String key = PantsConstants.SYSTEM_ID.getId() + ExternalSystemConstants.USE_IN_PROCESS_COMMUNICATION_REGISTRY_KEY_SUFFIX;
     Registry.get(key).setValue(true);
+  }
+
+  @Override
+  public void appFrameCreated(@NotNull List<String> commandLineArgs) {
+    initialize();
   }
 
   @Override
