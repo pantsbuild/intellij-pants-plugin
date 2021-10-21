@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Prepare
-        run: sudo apt-get install -y openjdk-8-jdk unzip curl python3-dev python3-virtualenv pkg-config git g++ libssl-dev make g++ zip
+        run: sudo apt-get update && sudo apt-get install -y openjdk-8-jdk unzip curl python3-dev python3-virtualenv pkg-config git g++ libssl-dev make g++ zip
       - uses: actions/setup-java@v2
         with:
           distribution: 'zulu'
