@@ -12,7 +12,7 @@ import com.twitter.intellij.pants.metrics.PantsExternalMetricsListenerManager;
 import junit.framework.AssertionFailedError;
 import org.jetbrains.plugins.scala.testingSupport.test.scalatest.ScalaTestRunConfiguration;
 
-public class EdtPantsExternalMetricsListenerExtensionTest extends PantsExternalMetricsListenerExtensionTest{
+public class EdtPantsExternalMetricsListenerExtensionTest extends PantsExternalMetricsListenerExtensionTestBase {
 
   public void testScalaRunnerMetrics() throws Exception {
     class TestMetricsListener extends EmptyMetricsTestListener {

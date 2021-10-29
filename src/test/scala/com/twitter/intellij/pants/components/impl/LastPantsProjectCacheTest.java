@@ -11,7 +11,7 @@ import com.twitter.intellij.pants.components.PantsProjectCache;
 
 import java.io.IOException;
 
-public class LastPantsProjectCacheTest extends BasePantsProjectCacheTest {
+public class LastPantsProjectCacheTest extends PantsProjectCacheTestBase {
 
   public void testLastOne() {
     final PantsProjectCache cache = PantsProjectCache.getInstance(myFixture.getProject());

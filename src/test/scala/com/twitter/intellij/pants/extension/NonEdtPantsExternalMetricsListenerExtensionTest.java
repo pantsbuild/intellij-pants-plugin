@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.extension;
 import com.intellij.openapi.extensions.Extensions;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
 
-public class NonEdtPantsExternalMetricsListenerExtensionTest extends PantsExternalMetricsListenerExtensionTest{
+public class NonEdtPantsExternalMetricsListenerExtensionTest extends PantsExternalMetricsListenerExtensionTestBase {
 
   @Override
   protected boolean runInDispatchThread() {

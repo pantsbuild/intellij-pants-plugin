@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-public abstract class BasePantsProjectCacheTest extends PantsCodeInsightFixtureTestCase {
+public abstract class PantsProjectCacheTestBase extends PantsCodeInsightFixtureTestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();

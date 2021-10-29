@@ -7,7 +7,7 @@ import utils.publicationChannels
 
 plugins {
     scala
-    id("org.jetbrains.intellij") version "1.1.6"
+    id("org.jetbrains.intellij") version "1.2.1"
 }
 
 group = "com.intellij.plugins"
@@ -67,9 +67,8 @@ tasks {
         configureTests()
         setForkEvery(1)
 
-        filter {
-            includeTestsMatching("*PantsProjectCacheTest")
-        }
+        isScanForTestClasses = false
+        include("**/*PantsProjectCacheTest.class")
     }
 
     test {
@@ -84,9 +83,9 @@ tasks {
             // Remove IntelliJ index cache.
             file(".cache/intellij/*/idea-dist/system/caches/").takeIf { it.exists() }?.deleteRecursively()
         }
-        filter {
-            excludeTestsMatching("*PantsProjectCacheTest")
-        }
+        isScanForTestClasses = false
+        include("**/*Test.class")
+        exclude("**/*PantsProjectCacheTest.class")
         finalizedBy(separateTests)
     }
 

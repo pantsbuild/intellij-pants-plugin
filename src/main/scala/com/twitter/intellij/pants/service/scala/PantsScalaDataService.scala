@@ -58,8 +58,8 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
                                                    scalaNode.getData(ProjectKeys.MODULE).getExternalName))
 
     if (!scalaLibrary.isScalaSdk) {
-      val properties = ScalaLibraryProperties(Some(compilerVersion.presentation))
-      properties.compilerClasspath = scalaData.getClasspath.asScala.toSeq.map(new File(_))
+      val compilerClasspath = scalaData.getClasspath.asScala.toSeq.map(new File(_))
+      val properties = ScalaLibraryProperties(Some(compilerVersion.presentation), compilerClasspath, Nil)
       val modifiableModelEx = modelsProvider.getModifiableLibraryModel(scalaLibrary).asInstanceOf[ModifiableModelEx]
       modifiableModelEx.setKind(ScalaLibraryType().getKind)
       modifiableModelEx.setProperties(properties)
@@ -72,14 +72,11 @@ class PantsScalaDataService extends ProjectDataService[ScalaModelData, Library] 
                                  projectData: ProjectData,
                                  project: Project,
                                  modelsProvider: IdeModifiableModelsProvider
-  ): Computable[util.Collection[Library]] =
-    new Computable[util.Collection[Library]] {
-      override def compute(): util.Collection[Library] = Collections.emptyList()
-    }
+  ): Computable[util.Collection[Library]] = () => Collections.emptyList()
 
   override def removeData(toRemove: Computable[_ <: util.Collection[_ <: Library]],
                           toIgnore: util.Collection[_ <: DataNode[ScalaModelData]],
                           projectData: ProjectData,
                           project: Project,
-                          modelsProvider: IdeModifiableModelsProvider): Unit = { }
+                          modelsProvider: IdeModifiableModelsProvider): Unit = ()
 }

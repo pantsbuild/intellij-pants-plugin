@@ -14,7 +14,6 @@ repositories {
         }
         metadataSources { artifact() }
     }
-
     exclusiveContent {
         forRepositories(github)
         filter { includeGroup("pantsbuild") }
