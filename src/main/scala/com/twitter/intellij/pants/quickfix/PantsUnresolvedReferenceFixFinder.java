@@ -17,6 +17,7 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
+import com.twitter.intellij.pants.util.PantsTargetsUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +46,7 @@ public class PantsUnresolvedReferenceFixFinder {
     final ProjectFileIndex fileIndex = ProjectRootManager.getInstance(project).getFileIndex();
     final Module containingModule = fileIndex.getModuleForFile(containingClassFile);
 
-    final List<PantsTargetAddress> addresses = PantsUtil.getTargetAddressesFromModule(containingModule);
+    final List<PantsTargetAddress> addresses = PantsTargetsUtil.getTargetAddressesFromModule(containingModule);
     if (addresses.size() != 1) return Collections.emptyList();
 
     final PantsTargetAddress currentAddress = addresses.iterator().next();
@@ -55,7 +56,7 @@ public class PantsUnresolvedReferenceFixFinder {
     final List<PantsQuickFix> result = new ArrayList<>();
     for (PsiClass dependency : allowedDependencies) {
       final Module module = ModuleUtil.findModuleForPsiElement(dependency);
-      for (PantsTargetAddress addressToAdd : PantsUtil.getTargetAddressesFromModule(module)) {
+      for (PantsTargetAddress addressToAdd : PantsTargetsUtil.getTargetAddressesFromModule(module)) {
         result.add(new AddPantsTargetDependencyFix(currentAddress, addressToAdd));
       }
       // todo(fkoroktov): handle jars

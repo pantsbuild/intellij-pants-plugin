@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.twitter.intellij.pants.util.PantsTargetsUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +29,7 @@ public class PantsCompileAllTargetsAction extends PantsCompileActionBase {
   public Stream<String> getTargets(@NotNull AnActionEvent e, @NotNull Project project) {
     Module[] modules = ModuleManager.getInstance(project).getModules();
     return Arrays.stream(modules)
-      .map(PantsUtil::getNonGenTargetAddresses)
+      .map(PantsTargetsUtil::getNonGenTargetAddresses)
       .flatMap(Collection::stream);
   }
 }

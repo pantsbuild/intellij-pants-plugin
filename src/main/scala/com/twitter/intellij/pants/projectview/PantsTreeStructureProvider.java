@@ -19,6 +19,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.twitter.intellij.pants.util.PantsTargetsUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
@@ -46,8 +47,8 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
     List<PsiFileNode> newNodes =
       Optional.ofNullable(getModuleOf(directory))
         .filter(module -> isModuleRoot(directory, module))
-        .flatMap(PantsUtil::findModuleAddress)
-        .flatMap(buildPAth -> PantsUtil.findFileRelativeToBuildRoot(project, buildPAth))
+        .flatMap(PantsTargetsUtil::findModuleAddress)
+        .flatMap(buildPath -> PantsUtil.findFileRelativeToBuildRoot(project, buildPath))
         .filter(buildFile -> !alreadyExists(collection, buildFile))
         .map(buildFile -> createNode(settings, project, buildFile))
         .orElseGet(Collections::emptyList);
@@ -70,7 +71,7 @@ public class PantsTreeStructureProvider implements TreeStructureProvider {
   @NotNull
   private List<PsiFileNode> createNode(ViewSettings settings, Project project, VirtualFile buildFile) {
     final PsiFile buildPsiFile = PsiManager.getInstance(project).findFile(buildFile);
-    if(buildPsiFile == null) return Collections.emptyList();
+    if (buildPsiFile == null) return Collections.emptyList();
 
     PsiFileNode node = new PsiFileNode(project, buildPsiFile, settings) {
       @Override

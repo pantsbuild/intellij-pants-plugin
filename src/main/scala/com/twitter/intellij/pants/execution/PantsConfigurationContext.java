@@ -7,6 +7,7 @@ import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.twitter.intellij.pants.util.PantsTargetsUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +41,7 @@ public class PantsConfigurationContext {
     final Optional<VirtualFile> buildRoot = PantsUtil.findBuildRoot(module);
     if (!buildRoot.isPresent()) return Optional.empty();
 
-    final List<String> targets = PantsUtil.getNonGenTargetAddresses(module);
+    final List<String> targets = PantsTargetsUtil.getNonGenTargetAddresses(module);
     if (targets.isEmpty()) return Optional.empty();
 
     final PsiElement psiLocation = context.getPsiLocation();

@@ -23,7 +23,6 @@ import com.twitter.intellij.pants.service.project.model.ProjectInfo;
 import com.twitter.intellij.pants.service.project.model.TargetInfo;
 import com.twitter.intellij.pants.service.project.model.graph.BuildGraph;
 import com.twitter.intellij.pants.service.project.model.graph.BuildGraphNode;
-import com.twitter.intellij.pants.util.PantsConstants;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,8 +36,6 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
 
   private static Logger logger = Logger.getInstance("#" + PantsCreateModulesExtension.class.getName());
 
-  private Integer depthToInclude = null;
-
   @Override
   public void resolve(
     @NotNull ProjectInfo projectInfo,
@@ -49,8 +46,7 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
   ) {
     Set<TargetInfo> targetInfoWithinLevel = null;
     if (buildGraph.isPresent()) {
-      final int maxDepth = buildGraph.get().getMaxDepth();
-      depthToInclude = executor.getIncrementalImportDepth().orElse(null);
+      Integer depthToInclude = executor.getIncrementalImportDepth().orElse(null);
       if (depthToInclude == null) {
         throw new PantsException("Task cancelled");
       }
@@ -97,16 +93,15 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
   ) {
     final String moduleName = PantsUtil.getCanonicalModuleName(targetName);
 
-    final ModuleData moduleData = new ModuleData(
+    final TargetMetadata metadata = new TargetMetadata(
       targetName,
-      PantsConstants.SYSTEM_ID,
       ModuleTypeId.JAVA_MODULE,
       moduleName,
       projectInfoDataNode.getData().getIdeProjectFileDirectoryPath() + "/" + moduleName,
       new File(executor.getBuildRoot(), targetName).getAbsolutePath()
     );
 
-    final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, moduleData);
+    final DataNode<ModuleData> moduleDataNode = projectInfoDataNode.createChild(ProjectKeys.MODULE, metadata);
 
     DataNode<ProjectSdkData> sdk = ExternalSystemApiUtil.find(projectInfoDataNode, ProjectSdkData.KEY);
     if(sdk != null){
@@ -114,7 +109,6 @@ public class PantsCreateModulesExtension implements PantsResolverExtension {
       moduleDataNode.createChild(ModuleSdkData.KEY, moduleSdk);
     }
 
-    final TargetMetadata metadata = new TargetMetadata(PantsConstants.SYSTEM_ID, moduleName);
     metadata.setTargetAddresses(ContainerUtil.map(targetInfo.getAddressInfos(), TargetAddressInfo::getTargetAddress));
     metadata.setTargetAddressInfoSet(targetInfo.getAddressInfos());
     metadata.setLibraryExcludes(targetInfo.getExcludes());

@@ -21,6 +21,7 @@ import com.jetbrains.python.psi.*;
 import com.twitter.intellij.pants.PantsBundle;
 import com.twitter.intellij.pants.model.PantsTargetAddress;
 import com.twitter.intellij.pants.util.PantsPsiUtil;
+import com.twitter.intellij.pants.util.PantsTargetsUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,7 +57,7 @@ public class AddPantsTargetDependencyFix extends PantsQuickFix {
   @Override
   public boolean isAvailable(@NotNull Project project, Editor editor, PsiFile file) {
     final Module module = ModuleUtil.findModuleForPsiElement(file);
-    return module != null && PantsUtil.findBUILDFileForModule(module) != null;
+    return module != null && PantsTargetsUtil.findBUILDFileForModule(module).isPresent();
   }
 
   @Override
@@ -67,7 +68,7 @@ public class AddPantsTargetDependencyFix extends PantsQuickFix {
   @Override
   public void invoke(@NotNull Project project, @Nullable Editor editor, @NotNull PsiFile psiFile) throws IncorrectOperationException {
     final Module module = ModuleUtil.findModuleForPsiElement(psiFile);
-    final VirtualFile buildFile = module != null ? PantsUtil.findBUILDFileForModule(module).orElse(null) : null;
+    final VirtualFile buildFile = module != null ? PantsTargetsUtil.findBUILDFileForModule(module).orElse(null) : null;
     final PsiFile psiBuildFile = buildFile != null ? PsiManager.getInstance(project).findFile(buildFile) : null;
     if (psiBuildFile != null && StringUtil.isNotEmpty(myAddress.getTargetName())) {
       doInsert(psiBuildFile, myAddress.getTargetName(), myAddressToAdd);

@@ -1,14 +1,11 @@
-// Copyright 2015 Pants project contributors (see CONTRIBUTORS.md).
-// Licensed under the Apache License, Version 2.0 (see LICENSE).
-
 package com.twitter.intellij.pants.service.project.metadata;
 
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
-import com.intellij.openapi.externalSystem.model.ProjectSystemId;
-import com.intellij.openapi.externalSystem.model.project.AbstractExternalEntityData;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
 import com.intellij.serialization.PropertyMapping;
 import com.twitter.intellij.pants.model.TargetAddressInfo;
+import com.twitter.intellij.pants.util.PantsConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -16,26 +13,28 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class TargetMetadata extends AbstractExternalEntityData {
+public class TargetMetadata extends ModuleData {
   private static final long serialVersionUID = 1L;
   @NotNull
   public static final Key<TargetMetadata> KEY =
     Key.create(TargetMetadata.class, ProjectKeys.MODULE.getProcessingWeight() + 1);
 
-  private final String myModuleName;
   private Set<String> myLibraryExcludes = Collections.emptySet();
   private Set<String> myTargetAddresses = Collections.emptySet();
   private Set<TargetAddressInfo> myTargetAddressInfoSet = Collections.emptySet();
 
-  @PropertyMapping({"owner" , "myModuleName"})
-  public TargetMetadata(ProjectSystemId systemId, @NotNull String moduleName) {
-    super(systemId);
-    myModuleName = moduleName;
-  }
-
-  @NotNull
-  public String getModuleName() {
-    return myModuleName;
+  @PropertyMapping({"id", "moduleTypeId", "externalName", "moduleFileDirectoryPath", "externalConfigPath"})
+  public TargetMetadata(
+    @NotNull String id,
+    @NotNull String moduleTypeId,
+    @NotNull String externalName,
+    @NotNull String moduleFileDirectoryPath,
+    @NotNull String externalConfigPath
+  ) {
+    super(id, PantsConstants.SYSTEM_ID, moduleTypeId,
+          externalName, moduleFileDirectoryPath, externalConfigPath
+    );
+    setModuleName(externalName);
   }
 
   @NotNull

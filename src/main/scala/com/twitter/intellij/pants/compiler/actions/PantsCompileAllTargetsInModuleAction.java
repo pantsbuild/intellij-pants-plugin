@@ -6,6 +6,7 @@ package com.twitter.intellij.pants.compiler.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.twitter.intellij.pants.util.PantsTargetsUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,7 +35,7 @@ public class PantsCompileAllTargetsInModuleAction extends PantsCompileActionBase
         .flatMap(file -> PantsUtil.getModuleForFile(file, project));
     }
     return module
-      .map(PantsUtil::getNonGenTargetAddresses)
+      .map(PantsTargetsUtil::getNonGenTargetAddresses)
       .orElse(new LinkedList<>())
       .stream();
   }

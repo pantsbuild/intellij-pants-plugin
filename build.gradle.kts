@@ -68,7 +68,7 @@ tasks {
         setForkEvery(1)
 
         filter {
-            includeTestsMatching("*.PantsProjectCacheTest")
+            includeTestsMatching("*PantsProjectCacheTest")
         }
     }
 
@@ -85,7 +85,7 @@ tasks {
             file(".cache/intellij/*/idea-dist/system/caches/").takeIf { it.exists() }?.deleteRecursively()
         }
         filter {
-            excludeTestsMatching("*.PantsProjectCacheTest")
+            excludeTestsMatching("*PantsProjectCacheTest")
         }
         finalizedBy(separateTests)
     }

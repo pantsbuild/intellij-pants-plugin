@@ -168,6 +168,7 @@
     <externalProjectDataService implementation="com.twitter.intellij.pants.service.project.metadata.PantsMetadataService"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.components.PantsProjectCache"/>
     <projectService serviceImplementation="com.twitter.intellij.pants.ui.PantsConsoleManager"/>
+    <moduleService serviceImplementation="com.twitter.intellij.pants.service.project.metadata.ModuleTargetMetadataStorage"/>
   </extensions>
 
   <applicationListeners>

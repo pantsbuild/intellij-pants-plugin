@@ -14,6 +14,7 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsTargetsUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -58,7 +59,7 @@ public class PantsCompileActionGroup extends ActionGroup {
     if (module == null) {
       return emptyAction;
     }
-    List<String> targetAddresses = PantsUtil.getNonGenTargetAddresses(module);
+    List<String> targetAddresses = PantsTargetsUtil.getNonGenTargetAddresses(module);
     // TODO: signal if no addresses found?
     if (targetAddresses.isEmpty()) {
       return emptyAction;

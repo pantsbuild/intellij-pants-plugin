@@ -7,6 +7,7 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.util.ExternalSystemConstants;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -65,7 +66,7 @@ abstract public class PantsCodeInsightFixtureTestCase extends LightJavaCodeInsig
   protected void setUp() throws Exception {
     super.setUp();
 
-    getModule().setOption(ExternalSystemConstants.EXTERNAL_SYSTEM_ID_KEY, PantsConstants.SYSTEM_ID.getId());
+    ExternalSystemModulePropertyManager.getInstance(getModule()).setExternalId(PantsConstants.SYSTEM_ID);
 
     final String pyPluginId = "PythonCore";
     final IdeaPluginDescriptor pyPlugin = PluginManagerCore.getPlugin(PluginId.getId(pyPluginId));
