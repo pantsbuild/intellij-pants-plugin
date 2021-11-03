@@ -14,6 +14,7 @@ import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.externalSystem.ExternalSystemModulePropertyManager;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.ExternalSystemException;
 import com.intellij.openapi.externalSystem.model.ProjectKeys;
@@ -81,7 +82,10 @@ public class PantsSystemProjectResolver implements ExternalSystemProjectResolver
 
       Module[] modules = ModuleManager.getInstance(project).getModules();
       for (Module module : modules) {
-        boolean hasPantsProjectPath = Objects.equals(module.getOptionValue(PantsConstants.PANTS_OPTION_LINKED_PROJECT_PATH), Paths.get(projectPath).normalize().toString());
+        String rootProjectPath = ExternalSystemModulePropertyManager.getInstance(module).getRootProjectPath();
+        if (rootProjectPath == null) continue;
+
+        boolean hasPantsProjectPath = Objects.equals(rootProjectPath, Paths.get(projectPath).normalize().toString());
         boolean isNotBeingImported = !importedModules.contains(module.getName());
         if (hasPantsProjectPath && isNotBeingImported) {
           ModuleManager.getInstance(project).disposeModule(module);

@@ -28,6 +28,7 @@ import com.twitter.intellij.pants.execution.PantsExecuteTaskResult;
 import com.twitter.intellij.pants.execution.PantsMakeBeforeRun;
 import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
+import com.twitter.intellij.pants.util.PantsTargetsUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 
 import java.util.ArrayList;
@@ -105,7 +106,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
     assertEquals(mixedModule, PantsUtil.getModuleForFile(vf, myProject).get());
     Set<String> expectedTargetsMixed = Sets.newHashSet(
       "testprojects/src/java/org/pantsbuild/testproject/junit/mixed/tests/org/pantsbuild/tmp/tests:tests");
-    assertEquals(expectedTargetsMixed, PantsUtil.getNonGenTargetAddresses(mixedModule).stream().collect(Collectors.toSet()));
+    assertEquals(expectedTargetsMixed, PantsTargetsUtil.getNonGenTargetAddresses(mixedModule).stream().collect(Collectors.toSet()));
     DataContext dcMock = new DataContext() {
         @Override
         public Object getData(String dataId) {
@@ -191,7 +192,7 @@ public class OSSPantsCompileActionsTest extends OSSPantsIntegrationTest {
       "testprojects/src/java/org/pantsbuild/testproject/annotation/processorwithdep/main:main",
       "testprojects/src/java/org/pantsbuild/testproject/annotation/main:main");
     Set<String> importAddresses = modules.stream()
-      .flatMap(module -> PantsUtil.getNonGenTargetAddresses(module).stream())
+      .flatMap(module -> PantsTargetsUtil.getNonGenTargetAddresses(module).stream())
       .collect(Collectors.toSet());
     assertEquals(expectedAddresses, importAddresses);
     // check if lint completes successfully

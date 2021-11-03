@@ -18,7 +18,7 @@ import com.twitter.intellij.pants.util.PantsUtil
 import scala.jdk.CollectionConverters._
 
 object PantsPerformanceBenchmark {
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     def nextOption(map : Map[String, String], list: List[String]) : Map[String, String] = {
       list match {
         case Nil => map

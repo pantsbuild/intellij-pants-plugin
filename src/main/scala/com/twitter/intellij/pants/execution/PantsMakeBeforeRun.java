@@ -51,6 +51,7 @@ import com.twitter.intellij.pants.model.PantsOptions;
 import com.twitter.intellij.pants.settings.PantsSettings;
 import com.twitter.intellij.pants.ui.PantsConsoleManager;
 import com.twitter.intellij.pants.util.PantsConstants;
+import com.twitter.intellij.pants.util.PantsTargetsUtil;
 import com.twitter.intellij.pants.util.PantsUtil;
 import icons.PantsIcons;
 import org.jetbrains.annotations.NotNull;
@@ -398,7 +399,7 @@ public class PantsMakeBeforeRun extends ExternalSystemBeforeRunTaskProvider {
     }
     Set<String> result = new HashSet<>();
     for (Module targetModule : targetModules) {
-      result.addAll(PantsUtil.getNonGenTargetAddresses(targetModule));
+      result.addAll(PantsTargetsUtil.getNonGenTargetAddresses(targetModule));
     }
     return result;
   }
