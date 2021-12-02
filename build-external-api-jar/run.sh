@@ -1,6 +1,7 @@
 #!/bin/bash
 
-SOURCES_DIR="/tmp/idea-sources"
+set -e
+
 DIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 GIT_ROOT=$DIR/..
 
@@ -15,8 +16,6 @@ GIT_ROOT=$DIR/..
 )
 (
     cd /tmp
-    cp $SOURCES_DIR/LICENSE.txt intellij_license.txt
-    cp $SOURCES_DIR/NOTICE.txt intellij_notice.txt
     cp "$GIT_ROOT/LICENSE" license_from_build_project.txt
-    zip -xi external-system-test-api.zip -xi external-system-test-api.jar intellij_notice.txt intellij_license.txt license_from_build_project.txt
+    zip -xi external-system-test-api.zip -xi external-system-test-api.jar license_from_build_project.txt
 )
