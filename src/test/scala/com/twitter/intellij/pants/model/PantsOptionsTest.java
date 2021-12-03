@@ -3,6 +3,7 @@
 
 package com.twitter.intellij.pants.model;
 
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.twitter.intellij.pants.PantsException;
 import com.twitter.intellij.pants.util.PantsConstants;
 import junit.framework.TestCase;
@@ -10,7 +11,7 @@ import junit.framework.TestCase;
 import java.util.Optional;
 
 
-public class PantsOptionsTest extends TestCase {
+public class PantsOptionsTest extends BasePlatformTestCase {
 
   public void testWorkdir() {
     PantsOptions options = new PantsOptions("pants_workdir = /Users/abc/workspace/intellij-pants-plugin/.pants.d (from HARDCODED)");

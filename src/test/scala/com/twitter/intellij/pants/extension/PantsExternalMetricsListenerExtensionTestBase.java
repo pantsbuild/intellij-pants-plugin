@@ -6,7 +6,7 @@ package com.twitter.intellij.pants.extension;
 import com.twitter.intellij.pants.metrics.PantsExternalMetricsListener;
 import com.twitter.intellij.pants.testFramework.OSSPantsIntegrationTest;
 
-abstract public class PantsExternalMetricsListenerExtensionTest extends OSSPantsIntegrationTest {
+abstract public class PantsExternalMetricsListenerExtensionTestBase extends OSSPantsIntegrationTest {
 
   /**
    * Empty listener class, so the tests covering part of the `PantsExternalMetricsListener` do not have

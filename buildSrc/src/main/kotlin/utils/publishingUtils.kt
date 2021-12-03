@@ -9,7 +9,7 @@ enum class PublicationChannel(val channelName: String) {
     Stable("Stable"), BleedingEdge("BleedingEdge");
 
     companion object {
-        fun from(name: String) = when (name.toLowerCase()) {
+        fun from(name: String) = when (name.lowercase()) {
             "stable" -> Stable
             "bleedingedge" -> BleedingEdge
             else -> throw IllegalArgumentException("Unrecognized publication channel: $name")

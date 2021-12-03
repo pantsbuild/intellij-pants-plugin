@@ -5,7 +5,7 @@ package com.twitter.intellij.pants.components.impl;
 
 import com.twitter.intellij.pants.components.PantsProjectCache;
 
-public class EmptyPantsProjectCacheTest extends BasePantsProjectCacheTest {
+public class EmptyPantsProjectCacheTest extends PantsProjectCacheTestBase {
 
   public void testEmpty() {
     final PantsProjectCache cache = PantsProjectCache.getInstance(myFixture.getProject());

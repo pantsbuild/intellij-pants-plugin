@@ -23,8 +23,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-abstract public class PantsHighlightingIntegrationTest extends OSSPantsIntegrationTest {
-  public PantsHighlightingIntegrationTest() {
+abstract public class PantsHighlightingIntegrationTestBase extends OSSPantsIntegrationTest {
+  public PantsHighlightingIntegrationTestBase() {
     // we do some code modifications in the tests.
     super(false);
   }
