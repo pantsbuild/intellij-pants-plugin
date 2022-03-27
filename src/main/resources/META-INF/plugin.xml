@@ -22,6 +22,7 @@
   <depends>com.intellij.gradle</depends>
 
   <depends optional="true" config-file="pants-scala.xml">org.intellij.scala</depends>
+  <depends optional="true" config-file="pants-indexing.xml">intellij.indexing.shared.core</depends>
   <depends optional="true" config-file="pants-python.xml">Pythonid</depends>
   <depends optional="true" config-file="pants-python.xml">PythonCore</depends>
 
