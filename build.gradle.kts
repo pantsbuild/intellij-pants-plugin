@@ -7,7 +7,7 @@ import utils.publicationChannels
 
 plugins {
     scala
-    id("org.jetbrains.intellij") version "1.2.1"
+    id("org.jetbrains.intellij") version "1.3.0"
 }
 
 group = "com.intellij.plugins"
@@ -21,6 +21,7 @@ allprojects {
     pluginManager.withPlugin("org.jetbrains.intellij") {
         val ideaVersion: String by project
         val scalaPluginVersion: String by project
+        val pythonCoreVersion: String by project
         intellij {
             type.set("IC")
             version.set(ideaVersion)
@@ -29,7 +30,8 @@ allprojects {
                     "org.intellij.groovy",
                     "com.intellij.gradle",
                     "com.intellij.java",
-                    "PythonCore:$ideaVersion",
+                    "PythonCore:$pythonCoreVersion",
+                    "indexing-shared",
                     "org.intellij.scala:$scalaPluginVersion",
                     "JUnit")
             )
@@ -86,6 +88,7 @@ tasks {
         isScanForTestClasses = false
         include("**/*Test.class")
         exclude("**/*PantsProjectCacheTest.class")
+        exclude("**/*NotUsedTest.class")
         finalizedBy(separateTests)
     }
 
