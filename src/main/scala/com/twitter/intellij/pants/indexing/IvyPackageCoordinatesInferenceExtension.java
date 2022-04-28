@@ -19,9 +19,8 @@ public class IvyPackageCoordinatesInferenceExtension implements MavenPackageCoor
     @Nullable
     @Override
     public MavenPackageId infer(@NotNull String path, @NotNull List<String> reversePathElements) {
-        Stream<String> elements = reversePathElements.stream();
-        if (elements.noneMatch(s -> s.equals(".ivy2"))) return null;
-        String[] fileName = elements.findFirst().map(
+        if (reversePathElements.stream().noneMatch(s -> s.equals(".ivy2"))) return null;
+        String[] fileName = reversePathElements.stream().findFirst().map(
                 s -> s.replace(".jar", "").split("-")
         ).orElse(null);
         if (fileName == null) return null;

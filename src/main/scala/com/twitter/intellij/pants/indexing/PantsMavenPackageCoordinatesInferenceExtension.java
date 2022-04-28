@@ -21,7 +21,6 @@ public class PantsMavenPackageCoordinatesInferenceExtension implements MavenPack
     @Nullable
     @Override
     public MavenPackageId infer(@NotNull String path, @NotNull List<String> reversePathElements) {
-        Stream<String> elements = reversePathElements.stream();
         int cachePosition = reversePathElements.indexOf("coursier");
         if (cachePosition < 7) return null;
         List<String> groupIdList = reversePathElements.subList(3, cachePosition - 3 );
