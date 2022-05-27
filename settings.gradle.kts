@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "pants"
-include("common", "testFramework", "externalTestApi")
+include("common", "testFramework", "externalTestApi", "ci")
